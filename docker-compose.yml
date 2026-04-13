@@ -1,0 +1,58 @@
+services:
+  radar:
+    #image: ghcr.io/666ghj/bettafish:latest
+    build:
+      context: .
+    # Speed up mirror
+    # image: ghcr.nju.edu.cn/666ghj/bettafish:latest
+    container_name: radar
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STREAMLIT_SERVER_ENABLE_FILE_WATCHER=false
+      - HF_ENDPOINT=https://hf-mirror.com
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/app/logs
+      - ./final_reports:/app/final_reports
+      - ./.env:/app/.env  
+      - ./MindSpider/DeepSentimentCrawling/MediaCrawler/browser_data:/app/MindSpider/DeepSentimentCrawling/MediaCrawler/browser_data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: pgvector/pgvector:pg15
+    container_name: radar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-radar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-radar}
+      POSTGRES_DB: ${POSTGRES_DB:-radar}
+    ports:
+      - "${POSTGRES_PORT:-5444}:5432"
+    volumes:
+      - radar_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  adminer:
+    image: adminer:4
+    container_name: radar-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  radar_db_data:
