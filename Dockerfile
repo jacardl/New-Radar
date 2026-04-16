@@ -55,15 +55,14 @@ RUN set -euo pipefail; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# Install the latest uv release and expose it on PATH
-RUN curl -LsSf --retry 3 --retry-delay 2 --proto '=https' --proto-redir '=https' --tlsv1.2 https://astral.sh/uv/install.sh | sh
-
 WORKDIR /app
+
+# Upgrade pip to latest version
+RUN pip install --upgrade pip
 
 # Install Python dependencies first to leverage Docker layer caching
 COPY requirements.txt ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Install Playwright browser binaries (system deps already handled above)
 RUN python -m playwright install chromium
