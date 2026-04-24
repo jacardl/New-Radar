@@ -3,7 +3,7 @@
 Connects to the Twilio REST API for outbound SMS and runs an aiohttp
 webhook server to receive inbound messages.
 
-Shares credentials with the optional telephony skill â€?same env vars:
+Shares credentials with the optional telephony skill Ã©Â¥?same env vars:
   - TWILIO_ACCOUNT_SID
   - TWILIO_AUTH_TOKEN
   - TWILIO_PHONE_NUMBER  (E.164 from-number, e.g. +15551234567)
@@ -11,8 +11,8 @@ Shares credentials with the optional telephony skill â€?same env vars:
 Gateway-specific env vars:
   - SMS_WEBHOOK_PORT     (default 8080)
   - SMS_WEBHOOK_HOST     (default 0.0.0.0)
-  - SMS_WEBHOOK_URL      (public URL for Twilio signature validation â€?required)
-  - SMS_INSECURE_NO_SIGNATURE  (true to disable signature validation â€?dev only)
+  - SMS_WEBHOOK_URL      (public URL for Twilio signature validation Ã©Â¥?required)
+  - SMS_INSECURE_NO_SIGNATURE  (true to disable signature validation Ã©Â¥?dev only)
   - SMS_ALLOWED_USERS    (comma-separated E.164 phone numbers)
   - SMS_ALLOW_ALL_USERS  (true/false)
   - SMS_HOME_CHANNEL     (phone number for cron delivery)
@@ -91,7 +91,7 @@ class SmsAdapter(BasePlatformAdapter):
         from aiohttp import web
 
         if not self._from_number:
-            logger.error("[sms] TWILIO_PHONE_NUMBER not set â€?cannot send replies")
+            logger.error("[sms] TWILIO_PHONE_NUMBER not set Ã©Â¥?cannot send replies")
             return False
 
         insecure_no_sig = os.getenv("SMS_INSECURE_NO_SIGNATURE", "").lower() == "true"
@@ -108,7 +108,7 @@ class SmsAdapter(BasePlatformAdapter):
 
         if insecure_no_sig and not self._webhook_url:
             logger.warning(
-                "[sms] SMS_INSECURE_NO_SIGNATURE=true â€?Twilio signature validation "
+                "[sms] SMS_INSECURE_NO_SIGNATURE=true Ã©Â¥?Twilio signature validation "
                 "is DISABLED. Any client that can reach port %d can inject messages. "
                 "Do NOT use this in production.",
                 self._webhook_port,
@@ -208,7 +208,7 @@ class SmsAdapter(BasePlatformAdapter):
     # ------------------------------------------------------------------
 
     def format_message(self, content: str) -> str:
-        """Strip markdown â€?SMS renders it as literal characters."""
+        """Strip markdown Ã©Â¥?SMS renders it as literal characters."""
         return strip_markdown(content)
 
     # ------------------------------------------------------------------
@@ -263,20 +263,20 @@ class SmsAdapter(BasePlatformAdapter):
             return None
 
         if parsed.port == default_port:
-            # Has explicit default port â†?strip it
+            # Has explicit default port Ã©Â«?strip it
             return urllib.parse.urlunparse(
                 (parsed.scheme, parsed.hostname, parsed.path,
                  parsed.params, parsed.query, parsed.fragment)
             )
         elif parsed.port is None:
-            # No port â†?add default
+            # No port Ã©Â«?add default
             netloc = f"{parsed.hostname}:{default_port}"
             return urllib.parse.urlunparse(
                 (parsed.scheme, netloc, parsed.path,
                  parsed.params, parsed.query, parsed.fragment)
             )
 
-        # Non-standard port â€?no variant
+        # Non-standard port Ã©Â¥?no variant
         return None
 
     # ------------------------------------------------------------------
@@ -366,7 +366,7 @@ class SmsAdapter(BasePlatformAdapter):
         self._background_tasks.add(task)
         task.add_done_callback(self._background_tasks.discard)
 
-        # Return empty TwiML â€?we send replies via the REST API, not inline TwiML
+        # Return empty TwiML Ã©Â¥?we send replies via the REST API, not inline TwiML
         return web.Response(
             text='<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
             content_type="application/xml",

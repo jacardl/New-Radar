@@ -28,7 +28,7 @@ class TestRedirectStdoutIsProcessWide(unittest.TestCase):
             # Check what sys.stdout is
             if sys.stdout is not real_stdout:
                 other_thread_saw_devnull.set()
-            # Try to print �?this should go to devnull
+            # Try to print é¥?this should go to devnull
             captured_from_other_thread.append(sys.stdout)
 
         t = threading.Thread(target=other_thread_work, daemon=True)
@@ -44,10 +44,10 @@ class TestRedirectStdoutIsProcessWide(unittest.TestCase):
         # The other thread should have seen devnull, NOT the real stdout
         self.assertTrue(
             other_thread_saw_devnull.is_set(),
-            "redirect_stdout was NOT process-wide �?other thread still saw real stdout. "
+            "redirect_stdout was NOT process-wide é¥?other thread still saw real stdout. "
             "This test's premise is wrong."
         )
-        print("Confirmed: redirect_stdout IS process-wide �?affects all threads")
+        print("Confirmed: redirect_stdout IS process-wide é¥?affects all threads")
 
 
 if __name__ == "__main__":

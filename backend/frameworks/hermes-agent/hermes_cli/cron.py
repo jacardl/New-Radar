@@ -50,9 +50,9 @@ def cron_list(show_all: bool = False):
         return
 
     print()
-    print(color("┌─────────────────────────────────────────────────────────────────────────�?, Colors.CYAN))
-    print(color("�?                        Scheduled Jobs                                  �?, Colors.CYAN))
-    print(color("└─────────────────────────────────────────────────────────────────────────�?, Colors.CYAN))
+    print(color("+-------------------------------------------------------------------------â?, Colors.CYAN))
+    print(color("â?                        Scheduled Jobs                                  â?, Colors.CYAN))
+    print(color("â-------------------------------------------------------------------------â?, Colors.CYAN))
     print()
 
     for job in jobs:
@@ -65,7 +65,7 @@ def cron_list(show_all: bool = False):
         repeat_info = job.get("repeat", {})
         repeat_times = repeat_info.get("times")
         repeat_completed = repeat_info.get("completed", 0)
-        repeat_str = f"{repeat_completed}/{repeat_times}" if repeat_times else "�?
+        repeat_str = f"{repeat_completed}/{repeat_times}" if repeat_times else "â?
 
         deliver = job.get("deliver", ["local"])
         if isinstance(deliver, str):
@@ -106,13 +106,13 @@ def cron_list(show_all: bool = False):
 
         delivery_err = job.get("last_delivery_error")
         if delivery_err:
-            print(f"    {color('�?Delivery failed:', Colors.YELLOW)} {delivery_err}")
+            print(f"    {color('â?Delivery failed:', Colors.YELLOW)} {delivery_err}")
 
         print()
 
     from hermes_cli.gateway import find_gateway_pids
     if not find_gateway_pids():
-        print(color("  �? Gateway is not running �?jobs won't fire automatically.", Colors.YELLOW))
+        print(color("  â? Gateway is not running â?jobs won't fire automatically.", Colors.YELLOW))
         print(color("     Start it with: hermes gateway install", Colors.DIM))
         print(color("                    sudo hermes gateway install --system  # Linux servers", Colors.DIM))
         print()
@@ -133,10 +133,10 @@ def cron_status():
 
     pids = find_gateway_pids()
     if pids:
-        print(color("�?Gateway is running �?cron jobs will fire automatically", Colors.GREEN))
+        print(color("â?Gateway is running â?cron jobs will fire automatically", Colors.GREEN))
         print(f"  PID: {', '.join(map(str, pids))}")
     else:
-        print(color("�?Gateway is not running �?cron jobs will NOT fire", Colors.RED))
+        print(color("â?Gateway is not running â?cron jobs will NOT fire", Colors.RED))
         print()
         print("  To enable automatic execution:")
         print("    hermes gateway install    # Install as a user service")

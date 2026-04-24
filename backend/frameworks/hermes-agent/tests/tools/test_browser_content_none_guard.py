@@ -1,7 +1,7 @@
 """Tests for None guard on browser_tool LLM response content.
 
 browser_tool.py has two call sites that access response.choices[0].message.content
-without checking for None �?_extract_relevant_content (line 996) and
+without checking for None â?_extract_relevant_content (line 996) and
 browser_vision (line 1626). When reasoning-only models (DeepSeek-R1, QwQ)
 return content=None, these produce null snapshots or null analysis.
 
@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
-# ── helpers ────────────────────────────────────────────────────────────────
+# -- helpers ----------------------------------------------------------------
 
 def _make_response(content):
     """Build a minimal OpenAI-compatible ChatCompletion response stub."""
@@ -23,10 +23,10 @@ def _make_response(content):
     return types.SimpleNamespace(choices=[choice])
 
 
-# ── _extract_relevant_content (line 996) ──────────────────────────────────
+# -- _extract_relevant_content (line 996) ----------------------------------
 
 class TestExtractRelevantContentNoneGuard:
-    """tools/browser_tool.py �?_extract_relevant_content()"""
+    """tools/browser_tool.py â?_extract_relevant_content()"""
 
     def test_none_content_falls_back_to_truncated(self):
         """When LLM returns None content, should fall back to truncated snapshot."""
@@ -59,10 +59,10 @@ class TestExtractRelevantContentNoneGuard:
         assert len(result) > 0
 
 
-# ── browser_vision (line 1626) ────────────────────────────────────────────
+# -- browser_vision (line 1626) --------------------------------------------
 
 class TestBrowserVisionNoneGuard:
-    """tools/browser_tool.py �?browser_vision() analysis extraction"""
+    """tools/browser_tool.py â?browser_vision() analysis extraction"""
 
     def test_none_content_produces_fallback_message(self):
         """When LLM returns None content, analysis should have a fallback message."""
@@ -81,7 +81,7 @@ class TestBrowserVisionNoneGuard:
         assert fallback == "The page shows a login form."
 
 
-# ── source line verification ──────────────────────────────────────────────
+# -- source line verification ----------------------------------------------
 
 class TestBrowserSourceLinesAreGuarded:
     """Verify the actual source file has the fix applied."""
@@ -98,12 +98,12 @@ class TestBrowserSourceLinesAreGuarded:
         # The old unguarded pattern should NOT exist
         assert "return response.choices[0].message.content\n" not in src, (
             "browser_tool.py _extract_relevant_content still has unguarded "
-            ".content return �?apply None guard"
+            ".content return â?apply None guard"
         )
 
     def test_browser_vision_guarded(self):
         src = self._read_file()
         assert "analysis = response.choices[0].message.content\n" not in src, (
             "browser_tool.py browser_vision still has unguarded "
-            ".content assignment �?apply None guard"
+            ".content assignment â?apply None guard"
         )

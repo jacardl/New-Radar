@@ -18,7 +18,7 @@ from loguru import logger
 
 DEFAULT_MODEL_NAME = "new-radar-agent"
 
-# 单引擎 chunk 大小（每 N 个字符 yield 一个 delta）
+# åå¼æ chunk å¤§å°ï¼æ¯ N ä¸ªå­ç¬¦ yield ä¸ä¸ª deltaï¼
 CHUNK_SIZE = 20
 
 
@@ -45,12 +45,12 @@ class MultiEngineDispatcher:
         """
         msg_lower = user_message.lower()
 
-        insight_keywords = ["舆情", "情感", "趋势", "分析", "观点", "评论", "热点", "sentiment", "opinion", "trend", "analyze", "insight"]
+        insight_keywords = ["èæ", "ææ", "è¶å¿", "åæ", "è§ç¹", "è¯è®º", "ç­ç¹", "sentiment", "opinion", "trend", "analyze", "insight"]
         for kw in insight_keywords:
             if kw in msg_lower:
                 return "insight"
 
-        media_keywords = ["视频", "图片", "多媒体", "video", "image", "media", "multimedia", "直播", "短视频"]
+        media_keywords = ["è§é¢", "å¾ç", "å¤åªä½", "video", "image", "media", "multimedia", "ç´æ­", "ç­è§é¢"]
         for kw in media_keywords:
             if kw in msg_lower:
                 return "media"
@@ -79,7 +79,7 @@ class MultiEngineDispatcher:
             return forum_agent.chat(synthesis_prompt)
         except Exception as e:
             logger.exception("ForumAgent synthesis failed")
-            return f"\n\n## 综合分析\n\n[ForumAgent 综合分析失败: {str(e)}]\n"
+            return f"\n\n## ç»¼ååæ\n\n[ForumAgent ç»¼ååæå¤±è´¥: {str(e)}]\n"
 
     def _build_synthesis_prompt(
         self,
@@ -87,30 +87,30 @@ class MultiEngineDispatcher:
         engine_results: Dict[str, str]
     ) -> str:
         """Build a structured prompt for ForumAgent to synthesize engine results."""
-        sections = [f"## 用户分析请求\n{user_message}\n"]
+        sections = [f"## ç¨æ·åæè¯·æ±\n{user_message}\n"]
 
-        sections.append("## 各引擎原始分析结果\n")
+        sections.append("## åå¼æåå§åæç»æ\n")
 
         for eng in ["insight", "media", "query"]:
             result = engine_results.get(eng, "")
             if result:
                 labels = {
-                    "insight": "### Insight 引擎（本地舆情数据库 + 情感分析）",
-                    "media": "### Media 引擎（多媒体内容分析）",
-                    "query": "### Query 引擎（网络搜索）",
+                    "insight": "### Insight å¼æï¼æ¬å°èææ°æ®åº + ææåæï¼",
+                    "media": "### Media å¼æï¼å¤åªä½åå®¹åæï¼",
+                    "query": "### Query å¼æï¼ç½ç»æç´¢ï¼",
                 }
                 sections.append(f"{labels.get(eng, eng)}\n\n{result[:4000]}\n")
 
-        sections.append("""## 综合分析要求
+        sections.append("""## ç»¼ååæè¦æ±
 
-请作为客观分析助手，基于以上三个引擎的数据进行综合分析：
+è¯·ä½ä¸ºå®¢è§åæå©æï¼åºäºä»¥ä¸ä¸ä¸ªå¼æçæ°æ®è¿è¡ç»¼ååæï¼
 
-1. **交叉验证**：对比三个引擎的结果，找出共识和分歧
-2. **事实标注**：对低置信度内容（如数据冲突），标注来源并保留原文 URL
-3. **数据不足时**：直接声明"数据不足，无法分析"，禁止编造
-4. **输出格式**：使用 Markdown 标题结构，客观严谨
+1. **äº¤åéªè¯**ï¼å¯¹æ¯ä¸ä¸ªå¼æçç»æï¼æ¾åºå±è¯ååæ­§
+2. **äºå®æ æ³¨**ï¼å¯¹ä½ç½®ä¿¡åº¦åå®¹ï¼å¦æ°æ®å²çªï¼ï¼æ æ³¨æ¥æºå¹¶ä¿çåæ URL
+3. **æ°æ®ä¸è¶³æ¶**ï¼ç´æ¥å£°æ"æ°æ®ä¸è¶³ï¼æ æ³åæ"ï¼ç¦æ­¢ç¼é 
+4. **è¾åºæ ¼å¼**ï¼ä½¿ç¨ Markdown æ é¢ç»æï¼å®¢è§ä¸¥è°¨
 
-请开始综合分析：
+è¯·å¼å§ç»¼ååæï¼
 """)
         return "\n".join(sections)
 
@@ -159,7 +159,7 @@ class MultiEngineDispatcher:
 
         # Yield opening
         yield self._sse_chunk(completion_id, model, created, "assistant",
-            f"🔍 正在启动全引擎分析（主引擎: {primary_engine}）...\n\n",
+            f"ð æ­£å¨å¯å¨å¨å¼æåæï¼ä¸»å¼æ: {primary_engine}ï¼...\n\n",
             index=0)
 
         received_results: Dict[str, bool] = {}
@@ -180,13 +180,13 @@ class MultiEngineDispatcher:
                 received_results[eng] = True
                 engine_results[eng] = result
 
-                icons = {"insight": "🧠", "media": "🎬", "query": "🌐"}
+                icons = {"insight": "ð§ ", "media": "ð¬", "query": "ð"}
                 labels = {
-                    "insight": "Insight Engine（舆情分析）",
-                    "media": "Media Engine（多媒体分析）",
-                    "query": "Query Engine（网络搜索）",
+                    "insight": "Insight Engineï¼èæåæï¼",
+                    "media": "Media Engineï¼å¤åªä½åæï¼",
+                    "query": "Query Engineï¼ç½ç»æç´¢ï¼",
                 }
-                icon = icons.get(eng, "📊")
+                icon = icons.get(eng, "ð")
                 label = labels.get(eng, eng.upper())
 
                 header = f"\n\n{icon} **{label}**\n\n"
@@ -207,7 +207,7 @@ class MultiEngineDispatcher:
                     if pending_count > 0:
                         pending_names = [k for k in ["insight", "media", "query"] if k not in received_results]
                         names_str = "/".join(pending_names)
-                        heartbeat_msg = f"⏳ {names_str} engine(s) still running...\n\n"
+                        heartbeat_msg = f"â³ {names_str} engine(s) still running...\n\n"
                         yield self._sse_chunk(completion_id, model, created, "assistant", heartbeat_msg, index=0)
                     last_heartbeat = time.time()
 
@@ -215,7 +215,7 @@ class MultiEngineDispatcher:
 
         # ForumAgent synthesis
         yield self._sse_chunk(completion_id, model, created, "assistant",
-            "\n\n🤖 **ForumAgent 综合分析**（正在整合三引擎观点...）\n\n",
+            "\n\nð¤ **ForumAgent ç»¼ååæ**ï¼æ­£å¨æ´åä¸å¼æè§ç¹...ï¼\n\n",
             index=0)
         last_heartbeat = time.time()
 
@@ -225,7 +225,7 @@ class MultiEngineDispatcher:
                 yield self._sse_chunk(completion_id, model, created, "assistant", chunk, index=0)
         except Exception as e:
             logger.exception("ForumAgent synthesis streaming failed")
-            error_msg = f"\n\n[ForumAgent 综合分析失败: {str(e)}]\n"
+            error_msg = f"\n\n[ForumAgent ç»¼ååæå¤±è´¥: {str(e)}]\n"
             for chunk in self._stream_text(error_msg, chunk_size=CHUNK_SIZE):
                 yield self._sse_chunk(completion_id, model, created, "assistant", chunk, index=0)
 
@@ -236,7 +236,7 @@ class MultiEngineDispatcher:
 
     def analyze(self, user_message: str) -> str:
         """
-        Non-streaming analysis — runs all engines + ForumAgent synthesis.
+        Non-streaming analysis - runs all engines + ForumAgent synthesis.
         """
         primary_engine = self._classify_intent(user_message)
 
@@ -265,18 +265,18 @@ class MultiEngineDispatcher:
         # ForumAgent synthesis
         synthesis = self._run_forum_synthesis(user_message, results)
 
-        icons = {"insight": "🧠", "media": "🎬", "query": "🌐"}
+        icons = {"insight": "ð§ ", "media": "ð¬", "query": "ð"}
         labels = {"insight": "Insight Engine", "media": "Media Engine", "query": "Query Engine"}
 
         output_parts = []
         for eng in ["insight", "media", "query"]:
             result = results.get(eng, "")
             if result:
-                icon = icons.get(eng, "📊")
+                icon = icons.get(eng, "ð")
                 label = labels.get(eng, eng.upper())
                 output_parts.append(f"{icon} **{label}**\n\n{result}\n\n---\n")
 
-        output_parts.append(f"🤖 **ForumAgent 综合分析**\n\n{synthesis}\n")
+        output_parts.append(f"ð¤ **ForumAgent ç»¼ååæ**\n\n{synthesis}\n")
         return "\n".join(output_parts)
 
     def _run_engine(self, engine_name: str, user_message: str) -> str:

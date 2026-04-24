@@ -1,6 +1,6 @@
 """
-文本处理工具函数
-用于清理LLM输出、解析JSON�?
+ææ¬å¤çå·¥å·å½æ°
+ç¨äºæ¸çLLMè¾åºãè§£æJSONç­?
 """
 
 import re
@@ -11,15 +11,15 @@ from json.decoder import JSONDecodeError
 
 def clean_json_tags(text: str) -> str:
     """
-    清理文本中的JSON标签
+    æ¸çææ¬ä¸­çJSONæ ç­¾
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        清理后的文本
+        æ¸çåçææ¬
     """
-    # 移除```json �?```标签
+    # ç§»é¤```json å?```æ ç­¾
     text = re.sub(r'```json\s*', '', text)
     text = re.sub(r'```\s*$', '', text)
     text = re.sub(r'```', '', text)
@@ -29,15 +29,15 @@ def clean_json_tags(text: str) -> str:
 
 def clean_markdown_tags(text: str) -> str:
     """
-    清理文本中的Markdown标签
+    æ¸çææ¬ä¸­çMarkdownæ ç­¾
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        清理后的文本
+        æ¸çåçææ¬
     """
-    # 移除```markdown �?```标签
+    # ç§»é¤```markdown å?```æ ç­¾
     text = re.sub(r'```markdown\s*', '', text)
     text = re.sub(r'```\s*$', '', text)
     text = re.sub(r'```', '', text)
@@ -47,33 +47,33 @@ def clean_markdown_tags(text: str) -> str:
 
 def remove_reasoning_from_output(text: str) -> str:
     """
-    移除输出中的推理过程文本
+    ç§»é¤è¾åºä¸­çæ¨çè¿ç¨ææ¬
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        清理后的文本
+        æ¸çåçææ¬
     """
-    # 查找JSON开始位�?
+    # æ¥æ¾JSONå¼å§ä½ç½?
     json_start = -1
     
-    # 尝试找到第一�?{ �?[
+    # å°è¯æ¾å°ç¬¬ä¸ä¸?{ æ?[
     for i, char in enumerate(text):
         if char in '{[':
             json_start = i
             break
     
     if json_start != -1:
-        # 从JSON开始位置截�?
+        # ä»JSONå¼å§ä½ç½®æªå?
         return text[json_start:].strip()
     
-    # 如果没有找到JSON标记，尝试其他方�?
-    # 移除常见的推理标�?
+    # å¦ææ²¡ææ¾å°JSONæ è®°ï¼å°è¯å¶ä»æ¹æ³?
+    # ç§»é¤å¸¸è§çæ¨çæ è¯?
     patterns = [
-        r'(?:reasoning|推理|思考|分析)[:：]\s*.*?(?=\{|\[)',  # 移除推理部分
-        r'(?:explanation|解释|说明)[:：]\s*.*?(?=\{|\[)',   # 移除解释部分
-        r'^.*?(?=\{|\[)',  # 移除JSON前的所有文�?
+        r'(?:reasoning|æ¨ç|æè|åæ)[:ï¼]\s*.*?(?=\{|\[)',  # ç§»é¤æ¨çé¨å
+        r'(?:explanation|è§£é|è¯´æ)[:ï¼]\s*.*?(?=\{|\[)',   # ç§»é¤è§£éé¨å
+        r'^.*?(?=\{|\[)',  # ç§»é¤JSONåçææææ?
     ]
     
     for pattern in patterns:
@@ -84,25 +84,25 @@ def remove_reasoning_from_output(text: str) -> str:
 
 def extract_clean_response(text: str) -> Dict[str, Any]:
     """
-    提取并清理响应中的JSON内容
+    æåå¹¶æ¸çååºä¸­çJSONåå®¹
     
     Args:
-        text: 原始响应文本
+        text: åå§ååºææ¬
         
     Returns:
-        解析后的JSON字典
+        è§£æåçJSONå­å¸
     """
-    # 清理文本
+    # æ¸çææ¬
     cleaned_text = clean_json_tags(text)
     cleaned_text = remove_reasoning_from_output(cleaned_text)
     
-    # 尝试直接解析
+    # å°è¯ç´æ¥è§£æ
     try:
         return json.loads(cleaned_text)
     except JSONDecodeError:
         pass
     
-    # 尝试修复不完整的JSON
+    # å°è¯ä¿®å¤ä¸å®æ´çJSON
     fixed_text = fix_incomplete_json(cleaned_text)
     if fixed_text:
         try:
@@ -110,7 +110,7 @@ def extract_clean_response(text: str) -> Dict[str, Any]:
         except JSONDecodeError:
             pass
     
-    # 尝试查找JSON对象
+    # å°è¯æ¥æ¾JSONå¯¹è±¡
     json_pattern = r'\{.*\}'
     match = re.search(json_pattern, cleaned_text, re.DOTALL)
     if match:
@@ -119,7 +119,7 @@ def extract_clean_response(text: str) -> Dict[str, Any]:
         except JSONDecodeError:
             pass
     
-    # 尝试查找JSON数组
+    # å°è¯æ¥æ¾JSONæ°ç»
     array_pattern = r'\[.*\]'
     match = re.search(array_pattern, cleaned_text, re.DOTALL)
     if match:
@@ -128,78 +128,78 @@ def extract_clean_response(text: str) -> Dict[str, Any]:
         except JSONDecodeError:
             pass
     
-    # 如果所有方法都失败，返回错误信�?
-    print(f"无法解析JSON响应: {cleaned_text[:200]}...")
-    return {"error": "JSON解析失败", "raw_text": cleaned_text}
+    # å¦ææææ¹æ³é½å¤±è´¥ï¼è¿åéè¯¯ä¿¡æ?
+    print(f"æ æ³è§£æJSONååº: {cleaned_text[:200]}...")
+    return {"error": "JSONè§£æå¤±è´¥", "raw_text": cleaned_text}
 
 
 def fix_incomplete_json(text: str) -> str:
     """
-    修复不完整的JSON响应
+    ä¿®å¤ä¸å®æ´çJSONååº
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        修复后的JSON文本，如果无法修复则返回空字符串
+        ä¿®å¤åçJSONææ¬ï¼å¦ææ æ³ä¿®å¤åè¿åç©ºå­ç¬¦ä¸²
     """
     import json_repair
     try:
-        # json_repair.repair_json 会自动补全缺失的引号、括号等
+        # json_repair.repair_json ä¼èªå¨è¡¥å¨ç¼ºå¤±çå¼å·ãæ¬å·ç­
         repaired = json_repair.repair_json(text, return_objects=False)
         if repaired:
             return repaired
     except Exception as e:
-        print(f"json_repair 修复失败: {e}")
+        print(f"json_repair ä¿®å¤å¤±è´¥: {e}")
     
     return ""
 
 
 def fix_aggressive_json(text: str) -> str:
     """
-    更激进的JSON修复方法
+    æ´æ¿è¿çJSONä¿®å¤æ¹æ³
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        修复后的JSON文本
+        ä¿®å¤åçJSONææ¬
     """
-    # 查找所有可能的JSON对象
+    # æ¥æ¾ææå¯è½çJSONå¯¹è±¡
     objects = re.findall(r'\{[^{}]*\}', text)
     
     if len(objects) >= 2:
-        # 如果有多个对象，包装成数�?
+        # å¦ææå¤ä¸ªå¯¹è±¡ï¼åè£ææ°ç»?
         return '[' + ','.join(objects) + ']'
     elif len(objects) == 1:
-        # 如果只有一个对象，包装成数�?
+        # å¦æåªæä¸ä¸ªå¯¹è±¡ï¼åè£ææ°ç»?
         return '[' + objects[0] + ']'
     else:
-        # 如果没有找到对象，返回空数组
+        # å¦ææ²¡ææ¾å°å¯¹è±¡ï¼è¿åç©ºæ°ç»
         return '[]'
 
 
 def update_state_with_search_results(search_results: List[Dict[str, Any]], 
                                    paragraph_index: int, state: Any) -> Any:
     """
-    将搜索结果更新到状态中
+    å°æç´¢ç»ææ´æ°å°ç¶æä¸­
     
     Args:
-        search_results: 搜索结果列表
-        paragraph_index: 段落索引
-        state: 状态对�?
+        search_results: æç´¢ç»æåè¡¨
+        paragraph_index: æ®µè½ç´¢å¼
+        state: ç¶æå¯¹è±?
         
     Returns:
-        更新后的状态对�?
+        æ´æ°åçç¶æå¯¹è±?
     """
     if 0 <= paragraph_index < len(state.paragraphs):
-        # 获取最后一次搜索的查询（假设是当前查询�?
+        # è·åæåä¸æ¬¡æç´¢çæ¥è¯¢ï¼åè®¾æ¯å½åæ¥è¯¢ï¼?
         current_query = ""
         if search_results:
-            # 从搜索结果推断查询（这里需要改进以获取实际查询�?
-            current_query = "搜索查询"
+            # ä»æç´¢ç»ææ¨æ­æ¥è¯¢ï¼è¿ééè¦æ¹è¿ä»¥è·åå®éæ¥è¯¢ï¼?
+            current_query = "æç´¢æ¥è¯¢"
         
-        # 添加搜索结果到状�?
+        # æ·»å æç´¢ç»æå°ç¶æ?
         state.paragraphs[paragraph_index].research.add_search_results(
             current_query, search_results
         )
@@ -209,37 +209,37 @@ def update_state_with_search_results(search_results: List[Dict[str, Any]],
 
 def validate_json_schema(data: Dict[str, Any], required_fields: List[str]) -> bool:
     """
-    验证JSON数据是否包含必需字段
+    éªè¯JSONæ°æ®æ¯å¦åå«å¿éå­æ®µ
     
     Args:
-        data: 要验证的数据
-        required_fields: 必需字段列表
+        data: è¦éªè¯çæ°æ®
+        required_fields: å¿éå­æ®µåè¡¨
         
     Returns:
-        验证是否通过
+        éªè¯æ¯å¦éè¿
     """
     return all(field in data for field in required_fields)
 
 
 def truncate_content(content: str, max_length: int = 20000) -> str:
     """
-    截断内容到指定长�?
+    æªæ­åå®¹å°æå®é¿åº?
     
     Args:
-        content: 原始内容
-        max_length: 最大长�?
+        content: åå§åå®¹
+        max_length: æå¤§é¿åº?
         
     Returns:
-        截断后的内容
+        æªæ­åçåå®¹
     """
     if len(content) <= max_length:
         return content
     
-    # 尝试在单词边界截�?
+    # å°è¯å¨åè¯è¾¹çæªæ?
     truncated = content[:max_length]
     last_space = truncated.rfind(' ')
     
-    if last_space > max_length * 0.8:  # 如果最后一个空格位置合�?
+    if last_space > max_length * 0.8:  # å¦ææåä¸ä¸ªç©ºæ ¼ä½ç½®åç?
         return truncated[:last_space] + "..."
     else:
         return truncated + "..."
@@ -248,14 +248,14 @@ def truncate_content(content: str, max_length: int = 20000) -> str:
 def format_search_results_for_prompt(search_results: List[Dict[str, Any]], 
                                    max_length: int = 20000) -> List[str]:
     """
-    格式化搜索结果用于提示词
+    æ ¼å¼åæç´¢ç»æç¨äºæç¤ºè¯
     
     Args:
-        search_results: 搜索结果列表
-        max_length: 每个结果的最大长�?
+        search_results: æç´¢ç»æåè¡¨
+        max_length: æ¯ä¸ªç»æçæå¤§é¿åº?
         
     Returns:
-        格式化后的内容列�?
+        æ ¼å¼ååçåå®¹åè¡?
     """
     formatted_results = []
     

@@ -19,7 +19,7 @@ import pytest
 from agent.auxiliary_client import extract_content_or_reasoning
 
 
-# ── helpers ────────────────────────────────────────────────────────────────
+# -- helpers ----------------------------------------------------------------
 
 def _make_response(content, **msg_attrs):
     """Build a minimal OpenAI-compatible ChatCompletion response stub.
@@ -37,10 +37,10 @@ def _run(coro):
     return asyncio.get_event_loop().run_until_complete(coro)
 
 
-# ── mixture_of_agents_tool �?reference model (line 146) ───────────────────
+# -- mixture_of_agents_tool â?reference model (line 146) -------------------
 
 class TestMoAReferenceModelContentNone:
-    """tools/mixture_of_agents_tool.py �?_query_model()"""
+    """tools/mixture_of_agents_tool.py â?_query_model()"""
 
     def test_none_content_raises_before_fix(self):
         """Demonstrate that None content from a reasoning model crashes."""
@@ -65,10 +65,10 @@ class TestMoAReferenceModelContentNone:
         assert content == "Hello world"
 
 
-# ── mixture_of_agents_tool �?aggregator (line 214) ────────────────────────
+# -- mixture_of_agents_tool â?aggregator (line 214) ------------------------
 
 class TestMoAAggregatorContentNone:
-    """tools/mixture_of_agents_tool.py �?_run_aggregator()"""
+    """tools/mixture_of_agents_tool.py â?_run_aggregator()"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -83,10 +83,10 @@ class TestMoAAggregatorContentNone:
         assert content == ""
 
 
-# ── web_tools �?LLM content processor (line 419) ─────────────────────────
+# -- web_tools â?LLM content processor (line 419) -------------------------
 
 class TestWebToolsProcessorContentNone:
-    """tools/web_tools.py �?_process_with_llm() return line"""
+    """tools/web_tools.py â?_process_with_llm() return line"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -101,10 +101,10 @@ class TestWebToolsProcessorContentNone:
         assert content == ""
 
 
-# ── web_tools �?synthesis/summarization (line 538) ────────────────────────
+# -- web_tools â?synthesis/summarization (line 538) ------------------------
 
 class TestWebToolsSynthesisContentNone:
-    """tools/web_tools.py �?synthesize_content() final_summary line"""
+    """tools/web_tools.py â?synthesize_content() final_summary line"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -119,10 +119,10 @@ class TestWebToolsSynthesisContentNone:
         assert content == ""
 
 
-# ── vision_tools (line 350) ───────────────────────────────────────────────
+# -- vision_tools (line 350) -----------------------------------------------
 
 class TestVisionToolsContentNone:
-    """tools/vision_tools.py �?analyze_image() analysis extraction"""
+    """tools/vision_tools.py â?analyze_image() analysis extraction"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -137,10 +137,10 @@ class TestVisionToolsContentNone:
         assert content == ""
 
 
-# ── skills_guard (line 963) ───────────────────────────────────────────────
+# -- skills_guard (line 963) -----------------------------------------------
 
 class TestSkillsGuardContentNone:
-    """tools/skills_guard.py �?_llm_audit_skill() llm_text extraction"""
+    """tools/skills_guard.py â?_llm_audit_skill() llm_text extraction"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -155,10 +155,10 @@ class TestSkillsGuardContentNone:
         assert content == ""
 
 
-# ── session_search_tool (line 164) ────────────────────────────────────────
+# -- session_search_tool (line 164) ----------------------------------------
 
 class TestSessionSearchContentNone:
-    """tools/session_search_tool.py �?_summarize_session() return line"""
+    """tools/session_search_tool.py â?_summarize_session() return line"""
 
     def test_none_content_raises_before_fix(self):
         response = _make_response(None)
@@ -173,7 +173,7 @@ class TestSessionSearchContentNone:
         assert content == ""
 
 
-# ── integration: verify the actual source lines are guarded ───────────────
+# -- integration: verify the actual source lines are guarded ---------------
 
 class TestSourceLinesAreGuarded:
     """Read the actual source files and verify the fix is applied.
@@ -194,42 +194,42 @@ class TestSourceLinesAreGuarded:
         # The unguarded pattern should NOT exist
         assert ".message.content.strip()" not in src, (
             "tools/mixture_of_agents_tool.py still has unguarded "
-            ".content.strip() �?apply `(... or \"\").strip()` guard"
+            ".content.strip() â?apply `(... or \"\").strip()` guard"
         )
 
     def test_web_tools_guarded(self):
         src = self._read_file("tools/web_tools.py")
         assert ".message.content.strip()" not in src, (
             "tools/web_tools.py still has unguarded "
-            ".content.strip() �?apply `(... or \"\").strip()` guard"
+            ".content.strip() â?apply `(... or \"\").strip()` guard"
         )
 
     def test_vision_tools_guarded(self):
         src = self._read_file("tools/vision_tools.py")
         assert ".message.content.strip()" not in src, (
             "tools/vision_tools.py still has unguarded "
-            ".content.strip() �?apply `(... or \"\").strip()` guard"
+            ".content.strip() â?apply `(... or \"\").strip()` guard"
         )
 
     def test_skills_guard_guarded(self):
         src = self._read_file("tools/skills_guard.py")
         assert ".message.content.strip()" not in src, (
             "tools/skills_guard.py still has unguarded "
-            ".content.strip() �?apply `(... or \"\").strip()` guard"
+            ".content.strip() â?apply `(... or \"\").strip()` guard"
         )
 
     def test_session_search_tool_guarded(self):
         src = self._read_file("tools/session_search_tool.py")
         assert ".message.content.strip()" not in src, (
             "tools/session_search_tool.py still has unguarded "
-            ".content.strip() �?apply `(... or \"\").strip()` guard"
+            ".content.strip() â?apply `(... or \"\").strip()` guard"
         )
 
 
-# ── extract_content_or_reasoning() ────────────────────────────────────────
+# -- extract_content_or_reasoning() ----------------------------------------
 
 class TestExtractContentOrReasoning:
-    """agent/auxiliary_client.py �?extract_content_or_reasoning()"""
+    """agent/auxiliary_client.py â?extract_content_or_reasoning()"""
 
     def test_normal_content_returned(self):
         response = _make_response("  Hello world  ")

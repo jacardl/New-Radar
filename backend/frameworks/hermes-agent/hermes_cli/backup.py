@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 
 # Directory names to skip entirely (matched against each path component)
 _EXCLUDED_DIRS = {
-    "hermes-agent",     # the codebase repo �?re-clone instead
-    "__pycache__",      # bytecode caches �?regenerated on import
+    "hermes-agent",     # the codebase repo é¥?re-clone instead
+    "__pycache__",      # bytecode caches é¥?regenerated on import
     ".git",             # nested git dirs (profiles shouldn't have these, but safety)
     "node_modules",     # js deps if website/ somehow leaks in
 }
@@ -78,7 +78,7 @@ def _should_exclude(rel_path: Path) -> bool:
 def _safe_copy_db(src: Path, dst: Path) -> bool:
     """Copy a SQLite database safely using the backup() API.
 
-    Handles WAL mode �?produces a consistent snapshot even while
+    Handles WAL mode é¥?produces a consistent snapshot even while
     the DB is being written to.  Falls back to raw copy on failure.
     """
     try:

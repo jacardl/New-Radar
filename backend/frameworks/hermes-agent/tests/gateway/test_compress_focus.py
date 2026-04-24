@@ -1,4 +1,4 @@
-"""Tests for gateway /compress <focus> �?focus topic on the gateway side."""
+"""Tests for gateway /compress <focus> é¥?focus topic on the gateway side."""
 
 from datetime import datetime
 from unittest.mock import MagicMock, patch

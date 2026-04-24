@@ -5,14 +5,14 @@ Allows users to interact with Hermes by sending emails.
 Uses IMAP to receive and SMTP to send messages.
 
 Environment variables:
-    EMAIL_IMAP_HOST     �?IMAP server host (e.g., imap.gmail.com)
-    EMAIL_IMAP_PORT     �?IMAP server port (default: 993)
-    EMAIL_SMTP_HOST     �?SMTP server host (e.g., smtp.gmail.com)
-    EMAIL_SMTP_PORT     �?SMTP server port (default: 587)
-    EMAIL_ADDRESS       �?Email address for the agent
-    EMAIL_PASSWORD      �?Email password or app-specific password
-    EMAIL_POLL_INTERVAL �?Seconds between mailbox checks (default: 15)
-    EMAIL_ALLOWED_USERS �?Comma-separated list of allowed sender addresses
+    EMAIL_IMAP_HOST     é¥?IMAP server host (e.g., imap.gmail.com)
+    EMAIL_IMAP_PORT     é¥?IMAP server port (default: 993)
+    EMAIL_SMTP_HOST     é¥?SMTP server host (e.g., smtp.gmail.com)
+    EMAIL_SMTP_PORT     é¥?SMTP server port (default: 587)
+    EMAIL_ADDRESS       é¥?Email address for the agent
+    EMAIL_PASSWORD      é¥?Email password or app-specific password
+    EMAIL_POLL_INTERVAL é¥?Seconds between mailbox checks (default: 15)
+    EMAIL_ALLOWED_USERS é¥?Comma-separated list of allowed sender addresses
 """
 
 import asyncio
@@ -43,7 +43,7 @@ from gateway.platforms.base import (
 from gateway.config import Platform, PlatformConfig
 
 logger = logging.getLogger(__name__)
-# Automated sender patterns �?emails from these are silently ignored
+# Automated sender patterns é¥?emails from these are silently ignored
 _NOREPLY_PATTERNS = (
     "noreply", "no-reply", "no_reply", "donotreply", "do-not-reply",
     "mailer-daemon", "postmaster", "bounce", "notifications@",
@@ -232,7 +232,7 @@ class EmailAdapter(BasePlatformAdapter):
         self._smtp_port = int(os.getenv("EMAIL_SMTP_PORT", "587"))
         self._poll_interval = int(os.getenv("EMAIL_POLL_INTERVAL", "15"))
 
-        # Skip attachments �?configured via config.yaml:
+        # Skip attachments é¥?configured via config.yaml:
         #   platforms:
         #     email:
         #       skip_attachments: true
@@ -253,14 +253,14 @@ class EmailAdapter(BasePlatformAdapter):
         """Keep only the most recent UIDs to prevent unbounded memory growth.
 
         IMAP UIDs are monotonically increasing integers. When the set grows
-        beyond the cap, we keep only the highest half �?old UIDs are safe to
+        beyond the cap, we keep only the highest half é¥?old UIDs are safe to
         drop because new messages always have higher UIDs and IMAP's UNSEEN
         flag prevents re-delivery regardless.
         """
         if len(self._seen_uids) <= self._seen_uids_max:
             return
         try:
-            # UIDs are bytes like b'1234' �?sort numerically and keep top half
+            # UIDs are bytes like b'1234' é¥?sort numerically and keep top half
             sorted_uids = sorted(self._seen_uids, key=lambda u: int(u))
             keep = self._seen_uids_max // 2
             self._seen_uids = set(sorted_uids[-keep:])
@@ -524,7 +524,7 @@ class EmailAdapter(BasePlatformAdapter):
         return msg_id
 
     async def send_typing(self, chat_id: str, metadata: Optional[Dict[str, Any]] = None) -> None:
-        """Email has no typing indicator �?no-op."""
+        """Email has no typing indicator é¥?no-op."""
 
     async def send_image(
         self,

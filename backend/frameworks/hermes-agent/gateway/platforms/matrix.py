@@ -7,7 +7,7 @@ when installed with ``pip install "mautrix[encryption]"``.
 Environment variables:
     MATRIX_HOMESERVER           Homeserver URL (e.g. https://matrix.example.org)
     MATRIX_ACCESS_TOKEN         Access token (preferred auth method)
-    MATRIX_USER_ID              Full user ID (@bot:server) �?required for password login
+    MATRIX_USER_ID              Full user ID (@bot:server) é¥?required for password login
     MATRIX_PASSWORD             Password (alternative to access token)
     MATRIX_ENCRYPTION           Set "true" to enable E2EE
     MATRIX_DEVICE_ID            Stable device ID for E2EE persistence across restarts
@@ -111,7 +111,7 @@ _STARTUP_GRACE_SECONDS = 5
 
 # Pending undecrypted events: cap and TTL for retry buffer.
 _MAX_PENDING_EVENTS = 100
-_PENDING_EVENT_TTL = 300  # seconds �?stop retrying after 5 min
+_PENDING_EVENT_TTL = 300  # seconds é¥?stop retrying after 5 min
 
 
 _E2EE_INSTALL_HINT = (
@@ -188,7 +188,7 @@ class _CryptoStateStore:
         return None
 
     async def find_shared_rooms(self, user_id: str) -> list:
-        # Return all joined rooms �?simple but correct for a single-user bot.
+        # Return all joined rooms é¥?simple but correct for a single-user bot.
         return list(self._joined_rooms)
 
 
@@ -231,7 +231,7 @@ class MatrixAdapter(BasePlatformAdapter):
         self._closing = False
         self._startup_ts: float = 0.0
 
-        # Cache: room_id �?bool (is DM)
+        # Cache: room_id é«?bool (is DM)
         self._dm_rooms: Dict[str, bool] = {}
         # Set of room IDs we've joined
         self._joined_rooms: Set[str] = set()
@@ -247,7 +247,7 @@ class MatrixAdapter(BasePlatformAdapter):
         # Thread participation tracking (for require_mention bypass)
         self._threads = ThreadParticipationTracker("matrix")
 
-        # Mention/thread gating �?parsed once from env vars.
+        # Mention/thread gating é¥?parsed once from env vars.
         self._require_mention: bool = os.getenv("MATRIX_REQUIRE_MENTION", "true").lower() not in ("false", "0", "no")
         free_rooms_raw = os.getenv("MATRIX_FREE_RESPONSE_ROOMS", "")
         self._free_rooms: Set[str] = {r.strip() for r in free_rooms_raw.split(",") if r.strip()}
@@ -294,7 +294,7 @@ class MatrixAdapter(BasePlatformAdapter):
             resp = await client.query_keys({client.mxid: [client.device_id]})
         except Exception as exc:
             logger.error(
-                "Matrix: cannot verify device keys on server: %s �?refusing E2EE", exc,
+                "Matrix: cannot verify device keys on server: %s é¥?refusing E2EE", exc,
             )
             return False
 
@@ -305,7 +305,7 @@ class MatrixAdapter(BasePlatformAdapter):
         our_keys = our_user_devices.get(str(client.device_id))
 
         if not our_keys:
-            logger.warning("Matrix: device keys missing from server �?re-uploading")
+            logger.warning("Matrix: device keys missing from server é¥?re-uploading")
             olm.account.shared = False
             try:
                 await olm.share_keys()
@@ -326,9 +326,9 @@ class MatrixAdapter(BasePlatformAdapter):
 
         if server_ed25519 != local_ed25519:
             if olm.account.shared:
-                # Restored account from DB but server has different keys �?corrupted state.
+                # Restored account from DB but server has different keys é¥?corrupted state.
                 logger.error(
-                    "Matrix: server has different identity keys for device %s �?"
+                    "Matrix: server has different identity keys for device %s é¥?"
                     "local crypto state is stale. Delete %s and restart.",
                     client.device_id,
                     _CRYPTO_DB_PATH,
@@ -338,7 +338,7 @@ class MatrixAdapter(BasePlatformAdapter):
             # Fresh account (never uploaded). Server has stale keys from a
             # previous installation. Try to delete the old device and re-upload.
             logger.warning(
-                "Matrix: server has stale keys for device %s �?attempting re-upload",
+                "Matrix: server has stale keys for device %s é¥?attempting re-upload",
                 client.device_id,
             )
             try:
@@ -351,7 +351,7 @@ class MatrixAdapter(BasePlatformAdapter):
                 logger.info("Matrix: deleted stale device %s from server", client.device_id)
             except Exception:
                 # Device deletion often requires UIA or may simply not be
-                # permitted �?that's fine, share_keys will try to overwrite.
+                # permitted é¥?that's fine, share_keys will try to overwrite.
                 pass
             try:
                 await olm.share_keys()
@@ -427,7 +427,7 @@ class MatrixAdapter(BasePlatformAdapter):
                 )
             except Exception as exc:
                 logger.error(
-                    "Matrix: whoami failed �?check MATRIX_ACCESS_TOKEN and MATRIX_HOMESERVER: %s",
+                    "Matrix: whoami failed é¥?check MATRIX_ACCESS_TOKEN and MATRIX_HOMESERVER: %s",
                     exc,
                 )
                 await api.session.close()
@@ -444,7 +444,7 @@ class MatrixAdapter(BasePlatformAdapter):
                     client.device_id = resp.device_id
                 logger.info("Matrix: logged in as %s", self._user_id)
             except Exception as exc:
-                logger.error("Matrix: login failed �?%s", exc)
+                logger.error("Matrix: login failed é¥?%s", exc)
                 await api.session.close()
                 return False
         else:
@@ -457,7 +457,7 @@ class MatrixAdapter(BasePlatformAdapter):
             if not _check_e2ee_deps():
                 logger.error(
                     "Matrix: MATRIX_ENCRYPTION=true but E2EE dependencies are missing. %s. "
-                    "Refusing to connect �?encrypted rooms would silently fail.",
+                    "Refusing to connect é¥?encrypted rooms would silently fail.",
                     _E2EE_INSTALL_HINT,
                 )
                 await api.session.close()
@@ -510,7 +510,7 @@ class MatrixAdapter(BasePlatformAdapter):
 
                 # Import cross-signing private keys from SSSS and self-sign
                 # the current device. Required after any device-key rotation
-                # (fresh crypto.db, share_keys re-upload) �?otherwise the
+                # (fresh crypto.db, share_keys re-upload) é¥?otherwise the
                 # device's self-signing signature is stale and peers refuse
                 # to share Megolm sessions with the rotated device.
                 recovery_key = os.getenv("MATRIX_RECOVERY_KEY", "").strip()
@@ -850,7 +850,7 @@ class MatrixAdapter(BasePlatformAdapter):
         return await self._send_local_file(chat_id, video_path, "m.video", caption, reply_to, metadata=metadata)
 
     def format_message(self, content: str) -> str:
-        """Pass-through �?Matrix supports standard Markdown natively."""
+        """Pass-through é¥?Matrix supports standard Markdown natively."""
         # Strip image markdown; media is uploaded separately.
         content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"\2", content)
         return content
@@ -965,7 +965,7 @@ class MatrixAdapter(BasePlatformAdapter):
                 if _sync_msg and isinstance(_sync_msg, str):
                     _lower = _sync_msg.lower()
                     if "m_unknown_token" in _lower or "unknown_token" in _lower:
-                        logger.error("Matrix: permanent auth error from sync: %s �?stopping", _sync_msg)
+                        logger.error("Matrix: permanent auth error from sync: %s é¥?stopping", _sync_msg)
                         return
 
                 if isinstance(sync_data, dict):
@@ -1002,9 +1002,9 @@ class MatrixAdapter(BasePlatformAdapter):
                 # Detect permanent auth/permission failures.
                 err_str = str(exc).lower()
                 if "401" in err_str or "403" in err_str or "unauthorized" in err_str or "forbidden" in err_str:
-                    logger.error("Matrix: permanent auth error: %s �?stopping sync", exc)
+                    logger.error("Matrix: permanent auth error: %s é¥?stopping sync", exc)
                     return
-                logger.warning("Matrix: sync error: %s �?retrying in 5s", exc)
+                logger.warning("Matrix: sync error: %s é¥?retrying in 5s", exc)
                 await asyncio.sleep(5)
 
     async def _retry_pending_decryptions(self) -> None:
@@ -1088,7 +1088,7 @@ class MatrixAdapter(BasePlatformAdapter):
         if content is None:
             return
 
-        # Get msgtype �?either from content object or raw dict.
+        # Get msgtype é¥?either from content object or raw dict.
         if hasattr(content, "msgtype"):
             msgtype = str(content.msgtype)
         elif isinstance(content, dict):
@@ -1144,7 +1144,7 @@ class MatrixAdapter(BasePlatformAdapter):
             thread_id = relates_to.get("event_id")
 
         formatted_body = source_content.get("formatted_body")
-        # m.mentions.user_ids (MSC3952 / Matrix v1.7) �?authoritative mention signal.
+        # m.mentions.user_ids (MSC3952 / Matrix v1.7) é¥?authoritative mention signal.
         mentions_block = source_content.get("m.mentions") or {}
         mention_user_ids = mentions_block.get("user_ids") if isinstance(mentions_block, dict) else None
         is_mentioned = self._is_bot_mentioned(body, formatted_body, mention_user_ids)
@@ -1392,7 +1392,7 @@ class MatrixAdapter(BasePlatformAdapter):
             return
 
         logger.warning(
-            "Matrix: could not decrypt event %s in %s �?buffering for retry",
+            "Matrix: could not decrypt event %s in %s é¥?buffering for retry",
             event_id, room_id,
         )
 
@@ -1406,7 +1406,7 @@ class MatrixAdapter(BasePlatformAdapter):
         room_id = str(getattr(event, "room_id", ""))
 
         logger.info(
-            "Matrix: invited to %s �?joining",
+            "Matrix: invited to %s é¥?joining",
             room_id,
         )
         try:
@@ -1581,7 +1581,7 @@ class MatrixAdapter(BasePlatformAdapter):
         async def _send() -> None:
             try:
                 await self.send_read_receipt(room_id, event_id)
-            except Exception as exc:  # pragma: no cover �?defensive
+            except Exception as exc:  # pragma: no cover é¥?defensive
                 logger.debug("Matrix: background read receipt failed: %s", exc)
         asyncio.ensure_future(_send())
 
@@ -1786,12 +1786,12 @@ class MatrixAdapter(BasePlatformAdapter):
 
         Per MSC3952, ``m.mentions.user_ids`` is the authoritative mention
         signal in the Matrix spec.  When the sender's client populates that
-        field with the bot's user-id, we trust it �?even when the visible
+        field with the bot's user-id, we trust it é¥?even when the visible
         body text does not contain an explicit ``@bot`` string (some clients
         only render mention "pills" in ``formatted_body`` or use display
         names).
         """
-        # m.mentions.user_ids �?authoritative per MSC3952 / Matrix v1.7.
+        # m.mentions.user_ids é¥?authoritative per MSC3952 / Matrix v1.7.
         if mention_user_ids and self._user_id and self._user_id in mention_user_ids:
             return True
         if not body and not formatted_body:
@@ -1846,7 +1846,7 @@ class MatrixAdapter(BasePlatformAdapter):
         ``matrix`` extra).  Falls back to a comprehensive regex converter
         that handles fenced code blocks, inline code, headers, bold,
         italic, strikethrough, links, blockquotes, lists, and horizontal
-        rules �?everything the Matrix HTML spec allows.
+        rules é¥?everything the Matrix HTML spec allows.
         """
         try:
             import markdown as _md

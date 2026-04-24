@@ -17,7 +17,7 @@ from model_tools import (
 )
 
 
-# ── Low-level coercion helpers ────────────────────────────────────────────
+# -- Low-level coercion helpers --------------------------------------------
 
 
 class TestCoerceNumber:
@@ -135,7 +135,7 @@ class TestCoerceValue:
         assert _coerce_value("hello", ["number", "string"]) == "hello"
 
 
-# ── Full coerce_tool_args with registry ───────────────────────────────────
+# -- Full coerce_tool_args with registry -----------------------------------
 
 
 class TestCoerceToolArgs:
@@ -252,7 +252,7 @@ class TestCoerceToolArgs:
 
     def test_real_read_file_schema(self):
         """Test against the actual read_file schema from the registry."""
-        # This uses the real registry �?read_file should be registered
+        # This uses the real registry â?read_file should be registered
         args = {"path": "foo.py", "offset": "10", "limit": "100"}
         result = coerce_tool_args("read_file", args)
         assert result["path"] == "foo.py"

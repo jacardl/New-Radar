@@ -165,11 +165,11 @@ class TestFileDedup(unittest.TestCase):
         mock_ops.return_value = _make_fake_ops(
             content="line one\nline two\n", file_size=20,
         )
-        # First read �?full content
+        # First read é¥?full content
         r1 = json.loads(read_file_tool(self._tmpfile, task_id="dup"))
         self.assertNotIn("dedup", r1)
 
-        # Second read �?should get dedup stub
+        # Second read é¥?should get dedup stub
         r2 = json.loads(read_file_tool(self._tmpfile, task_id="dup"))
         self.assertTrue(r2.get("dedup"), "Second read should return dedup stub")
         self.assertIn("unchanged", r2.get("content", ""))
@@ -182,7 +182,7 @@ class TestFileDedup(unittest.TestCase):
         )
         read_file_tool(self._tmpfile, task_id="mod")
 
-        # Modify the file �?ensure mtime changes
+        # Modify the file é¥?ensure mtime changes
         time.sleep(0.05)
         with open(self._tmpfile, "w") as f:
             f.write("changed content\n")
@@ -244,7 +244,7 @@ class TestDedupResetOnCompression(unittest.TestCase):
         mock_ops.return_value = _make_fake_ops(
             content="original content\n", file_size=18,
         )
-        # First read �?populates dedup cache
+        # First read é¥?populates dedup cache
         read_file_tool(self._tmpfile, task_id="comp")
 
         # Verify dedup works before reset
@@ -254,7 +254,7 @@ class TestDedupResetOnCompression(unittest.TestCase):
         # Simulate compression
         reset_file_dedup("comp")
 
-        # Read again �?should get full content
+        # Read again é¥?should get full content
         r_post = json.loads(read_file_tool(self._tmpfile, task_id="comp"))
         self.assertNotEqual(r_post.get("dedup"), True,
                             "Post-compression read should return full content")
@@ -268,7 +268,7 @@ class TestDedupResetOnCompression(unittest.TestCase):
         read_file_tool(self._tmpfile, task_id="t1")
         read_file_tool(self._tmpfile, task_id="t2")
 
-        reset_file_dedup()  # no task_id �?clear all
+        reset_file_dedup()  # no task_id é¥?clear all
 
         r1 = json.loads(read_file_tool(self._tmpfile, task_id="t1"))
         r2 = json.loads(read_file_tool(self._tmpfile, task_id="t2"))
@@ -283,16 +283,16 @@ class TestDedupResetOnCompression(unittest.TestCase):
         )
         # Build up consecutive count (read 1 and 2)
         read_file_tool(self._tmpfile, task_id="loop")
-        # 2nd read is deduped �?doesn't increment consecutive counter
+        # 2nd read is deduped é¥?doesn't increment consecutive counter
         read_file_tool(self._tmpfile, task_id="loop")
 
         reset_file_dedup("loop")
 
-        # 3rd read �?counter should still be at 2 from before reset
+        # 3rd read é¥?counter should still be at 2 from before reset
         # (dedup was hit for read 2, but consecutive counter was 1 for that)
         # After reset, this read goes through full path, incrementing to 2
         r3 = json.loads(read_file_tool(self._tmpfile, task_id="loop"))
-        # Should NOT be blocked or warned �?counter restarted since dedup
+        # Should NOT be blocked or warned é¥?counter restarted since dedup
         # intercepted reads before they reached the counter
         self.assertNotIn("error", r3)
 

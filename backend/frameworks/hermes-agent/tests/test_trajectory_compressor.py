@@ -1,4 +1,4 @@
-"""Tests for trajectory_compressor.py �?config, metrics, and compression logic."""
+"""Tests for trajectory_compressor.py é¥?config, metrics, and compression logic."""
 
 import json
 from types import SimpleNamespace

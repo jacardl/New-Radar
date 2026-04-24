@@ -1,7 +1,7 @@
 """Tests for /approve and /deny gateway commands.
 
 Verifies that dangerous command approvals use the blocking gateway approval
-mechanism �?the agent thread blocks until the user responds with /approve
+mechanism é¥?the agent thread blocks until the user responds with /approve
 or /deny, mirroring the CLI's synchronous input() flow.
 
 Supports multiple concurrent approvals (parallel subagents, execute_code)
@@ -331,7 +331,7 @@ class TestBareTextNoLongerApproves:
         entry = _ApprovalEntry({"command": "test"})
         _gateway_queues[session_key] = [entry]
 
-        # "yes" is not /approve �?entry should still be pending
+        # "yes" is not /approve é¥?entry should still be pending
         assert not entry.event.is_set()
 
 
@@ -341,7 +341,7 @@ class TestBareTextNoLongerApproves:
 
 
 class TestBlockingApprovalE2E:
-    """Test the full blocking flow: agent thread blocks �?user approves �?agent resumes."""
+    """Test the full blocking flow: agent thread blocks é«?user approves é«?agent resumes."""
 
     def setup_method(self):
         _clear_approval_state()
@@ -580,7 +580,7 @@ class TestBlockingApprovalE2E:
 
         # Wait for both threads to register pending approvals instead of
         # relying on a fixed sleep.  The approval module stores entries in
-        # _gateway_queues[session_key] �?poll until we see 2 entries.
+        # _gateway_queues[session_key] é¥?poll until we see 2 entries.
         from tools.approval import _gateway_queues
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:

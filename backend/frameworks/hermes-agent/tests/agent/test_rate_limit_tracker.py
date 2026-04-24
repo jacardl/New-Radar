@@ -1,4 +1,4 @@
-"""Tests for agent.rate_limit_tracker �?header parsing and formatting."""
+"""Tests for agent.rate_limit_tracker â?header parsing and formatting."""
 
 import time
 import pytest
@@ -14,7 +14,7 @@ from agent.rate_limit_tracker import (
 )
 
 
-# ── Sample headers from Nous inference API ──────────────────────────────
+# -- Sample headers from Nous inference API ------------------------------
 
 NOUS_HEADERS = {
     "x-ratelimit-limit-requests": "800",
@@ -141,9 +141,9 @@ class TestFormatting:
 
     def test_bar(self):
         bar = _bar(50.0, width=10)
-        assert bar == "[█████░░░░░]"
-        assert _bar(0.0, width=10) == "[░░░░░░░░░░]"
-        assert _bar(100.0, width=10) == "[██████████]"
+        assert bar == "[ââââââââââ]"
+        assert _bar(0.0, width=10) == "[ââââââââââ]"
+        assert _bar(100.0, width=10) == "[ââââââââââ]"
 
     def test_format_display_no_data(self):
         state = RateLimitState()
@@ -167,7 +167,7 @@ class TestFormatting:
         }
         state = parse_rate_limit_headers(headers)
         result = format_rate_limit_display(state)
-        assert "�? in result
+        assert "â? in result
 
     def test_format_compact(self):
         state = parse_rate_limit_headers(NOUS_HEADERS, provider="nous")

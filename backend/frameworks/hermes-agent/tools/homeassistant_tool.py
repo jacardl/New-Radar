@@ -39,7 +39,7 @@ def _get_config():
 _ENTITY_ID_RE = re.compile(r"^[a-z_][a-z0-9_]*\.[a-z0-9_]+$")
 
 # Regex for valid HA service/domain names (e.g. "light", "turn_on", "shell_command").
-# Only lowercase ASCII letters, digits, and underscores �?no slashes, dots, or
+# Only lowercase ASCII letters, digits, and underscores é¥?no slashes, dots, or
 # other characters that could allow path traversal in URL construction.
 # The domain and service are interpolated into /api/services/{domain}/{service},
 # so allowing arbitrary strings would enable SSRF via path traversal
@@ -255,7 +255,7 @@ def _handle_call_service(args: dict, **kw) -> str:
     if not domain or not service:
         return tool_error("Missing required parameters: domain and service")
 
-    # Validate domain/service format BEFORE the blocklist check �?prevents
+    # Validate domain/service format BEFORE the blocklist check é¥?prevents
     # path traversal in /api/services/{domain}/{service} and blocklist bypass
     # via payloads like "shell_command/../light".
     if not _SERVICE_NAME_RE.match(domain):
@@ -482,7 +482,7 @@ registry.register(
     schema=HA_LIST_ENTITIES_SCHEMA,
     handler=_handle_list_entities,
     check_fn=_check_ha_available,
-    emoji="🏠",
+    emoji="é¦å½",
 )
 
 registry.register(
@@ -491,7 +491,7 @@ registry.register(
     schema=HA_GET_STATE_SCHEMA,
     handler=_handle_get_state,
     check_fn=_check_ha_available,
-    emoji="🏠",
+    emoji="é¦å½",
 )
 
 registry.register(
@@ -500,7 +500,7 @@ registry.register(
     schema=HA_LIST_SERVICES_SCHEMA,
     handler=_handle_list_services,
     check_fn=_check_ha_available,
-    emoji="🏠",
+    emoji="é¦å½",
 )
 
 registry.register(
@@ -509,5 +509,5 @@ registry.register(
     schema=HA_CALL_SERVICE_SCHEMA,
     handler=_handle_call_service,
     check_fn=_check_ha_available,
-    emoji="🏠",
+    emoji="é¦å½",
 )

@@ -9,7 +9,7 @@ class TestCustomProvidersValidation:
     """custom_providers must be a YAML list, not a dict."""
 
     def test_dict_instead_of_list(self):
-        """The exact Discord user scenario �?custom_providers as flat dict."""
+        """The exact Discord user scenario é¥?custom_providers as flat dict."""
         issues = validate_config_structure({
             "custom_providers": {
                 "name": "Generativelanguage.googleapis.com",
@@ -129,7 +129,7 @@ class TestFallbackModelValidation:
         assert any("should be a dict" in i.message for i in issues)
 
     def test_empty_fallback_dict_no_issues(self):
-        """Empty fallback_model dict means disabled �?no warnings needed."""
+        """Empty fallback_model dict means disabled é¥?no warnings needed."""
         issues = validate_config_structure({
             "fallback_model": {},
         })

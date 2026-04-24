@@ -1,6 +1,6 @@
 """Tests for UnicodeEncodeError recovery with ASCII codec.
 
-Covers the fix for issue #6843 �?systems with ASCII locale (LANG=C)
+Covers the fix for issue #6843 â?systems with ASCII locale (LANG=C)
 that can't encode non-ASCII characters in API request payloads.
 """
 
@@ -22,19 +22,19 @@ class TestStripNonAscii:
         assert _strip_non_ascii("hello world") == "hello world"
 
     def test_removes_non_ascii(self):
-        assert _strip_non_ascii("hello �?world") == "hello  world"
+        assert _strip_non_ascii("hello â?world") == "hello  world"
 
     def test_removes_emoji(self):
-        assert _strip_non_ascii("test 🤖 done") == "test  done"
+        assert _strip_non_ascii("test ð¤ done") == "test  done"
 
     def test_chinese_chars(self):
-        assert _strip_non_ascii("你好world") == "world"
+        assert _strip_non_ascii("ä½ å¥½world") == "world"
 
     def test_empty_string(self):
         assert _strip_non_ascii("") == ""
 
     def test_only_non_ascii(self):
-        assert _strip_non_ascii("⚕�?) == ""
+        assert _strip_non_ascii("âð¤?) == ""
 
 
 class TestSanitizeMessagesNonAscii:
@@ -46,20 +46,20 @@ class TestSanitizeMessagesNonAscii:
         assert messages[0]["content"] == "hello"
 
     def test_sanitizes_content_string(self):
-        messages = [{"role": "user", "content": "hello �?world"}]
+        messages = [{"role": "user", "content": "hello â?world"}]
         assert _sanitize_messages_non_ascii(messages) is True
         assert messages[0]["content"] == "hello  world"
 
     def test_sanitizes_content_list(self):
         messages = [{
             "role": "user",
-            "content": [{"type": "text", "text": "hello 🤖"}]
+            "content": [{"type": "text", "text": "hello ð¤"}]
         }]
         assert _sanitize_messages_non_ascii(messages) is True
         assert messages[0]["content"][0]["text"] == "hello "
 
     def test_sanitizes_name_field(self):
-        messages = [{"role": "tool", "name": "⚕tool", "content": "ok"}]
+        messages = [{"role": "tool", "name": "âtool", "content": "ok"}]
         assert _sanitize_messages_non_ascii(messages) is True
         assert messages[0]["name"] == "tool"
 
@@ -72,7 +72,7 @@ class TestSanitizeMessagesNonAscii:
                 "type": "function",
                 "function": {
                     "name": "read_file",
-                    "arguments": '{"path": "⚕test.txt"}'
+                    "arguments": '{"path": "âtest.txt"}'
                 }
             }]
         }]
@@ -88,8 +88,8 @@ class TestSanitizeMessagesNonAscii:
 
     def test_multiple_messages(self):
         messages = [
-            {"role": "system", "content": "�?System prompt"},
-            {"role": "user", "content": "Hello 你好"},
+            {"role": "system", "content": "â?System prompt"},
+            {"role": "user", "content": "Hello ä½ å¥½"},
             {"role": "assistant", "content": "Hi there!"},
         ]
         assert _sanitize_messages_non_ascii(messages) is True
@@ -131,14 +131,14 @@ class TestSurrogateVsAsciiSanitization:
 
     def test_ascii_codec_strips_all_non_ascii(self):
         """ASCII codec case: all non-ASCII is stripped, not replaced."""
-        messages = [{"role": "user", "content": "test ⚕🤖你�?end"}]
+        messages = [{"role": "user", "content": "test âð¤ä½ å¥?end"}]
         assert _sanitize_messages_non_ascii(messages) is True
         # All non-ASCII chars removed; spaces around them collapse
         assert messages[0]["content"] == "test  end"
 
     def test_no_surrogates_returns_false(self):
         """When no surrogates present, _sanitize_messages_surrogates returns False."""
-        messages = [{"role": "user", "content": "hello �?world"}]
+        messages = [{"role": "user", "content": "hello â?world"}]
         assert _sanitize_messages_surrogates(messages) is False
 
 
@@ -151,13 +151,13 @@ class TestSanitizeToolsNonAscii:
                 "type": "function",
                 "function": {
                     "name": "read_file",
-                    "description": "Print structured output �?with emoji 🤖",
+                    "description": "Print structured output â?with emoji ð¤",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "path": {
                                 "type": "string",
-                                "description": "File path �?with unicode",
+                                "description": "File path â?with unicode",
                             }
                         },
                     },
@@ -196,8 +196,8 @@ class TestSanitizeStructureNonAscii:
     def test_sanitizes_nested_dict_structure(self):
         payload = {
             "default_headers": {
-                "X-Title": "Hermes �?Agent",
-                "User-Agent": "Hermes/1.0 🤖",
+                "X-Title": "Hermes â?Agent",
+                "User-Agent": "Hermes/1.0 ð¤",
             }
         }
         assert _sanitize_structure_non_ascii(payload) is True

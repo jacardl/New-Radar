@@ -1,6 +1,6 @@
 """
-报告格式化节�?
-负责将最终研究结果格式化为美观的Markdown报告
+æ¥åæ ¼å¼åèç?
+è´è´£å°æç»ç ç©¶ç»ææ ¼å¼åä¸ºç¾è§çMarkdownæ¥å
 """
 
 import json
@@ -18,19 +18,19 @@ from ..utils.text_processing import (
 
 
 class ReportFormattingNode(BaseNode):
-    """格式化最终报告的节点"""
+    """æ ¼å¼åæç»æ¥åçèç¹"""
     
     def __init__(self, llm_client):
         """
-        初始化报告格式化节点
+        åå§åæ¥åæ ¼å¼åèç¹
         
         Args:
-            llm_client: LLM客户�?
+            llm_client: LLMå®¢æ·ç«?
         """
         super().__init__(llm_client, "ReportFormattingNode")
     
     def validate_input(self, input_data: Any) -> bool:
-        """验证输入数据"""
+        """éªè¯è¾å¥æ°æ®"""
         if isinstance(input_data, str):
             try:
                 data = json.loads(input_data)
@@ -49,88 +49,88 @@ class ReportFormattingNode(BaseNode):
     
     def run(self, input_data: Any, **kwargs) -> str:
         """
-        调用LLM生成Markdown格式报告
+        è°ç¨LLMçæMarkdownæ ¼å¼æ¥å
         
         Args:
-            input_data: 包含所有段落信息的列表
-            **kwargs: 额外参数
+            input_data: åå«æææ®µè½ä¿¡æ¯çåè¡¨
+            **kwargs: é¢å¤åæ°
             
         Returns:
-            格式化的Markdown报告
+            æ ¼å¼åçMarkdownæ¥å
         """
         try:
             if not self.validate_input(input_data):
-                raise ValueError("输入数据格式错误，需要包含title和paragraph_latest_state的列�?)
+                raise ValueError("è¾å¥æ°æ®æ ¼å¼éè¯¯ï¼éè¦åå«titleåparagraph_latest_stateçåè¡?)
             
-            # 准备输入数据
+            # åå¤è¾å¥æ°æ®
             if isinstance(input_data, str):
                 message = input_data
             else:
                 message = json.dumps(input_data, ensure_ascii=False)
             
-            logger.info("正在格式化最终报�?)
+            logger.info("æ­£å¨æ ¼å¼åæç»æ¥å?)
             
-            # 调用LLM（流式，安全拼接UTF-8�?
+            # è°ç¨LLMï¼æµå¼ï¼å®å¨æ¼æ¥UTF-8ï¼?
             response = self.llm_client.stream_invoke_to_string(
                 SYSTEM_PROMPT_REPORT_FORMATTING,
                 message,
             )
             
-            # 处理响应
+            # å¤çååº
             processed_response = self.process_output(response)
             
-            logger.info("成功生成格式化报�?)
+            logger.info("æåçææ ¼å¼åæ¥å?)
             return processed_response
             
         except Exception as e:
-            logger.exception(f"报告格式化失�? {str(e)}")
+            logger.exception(f"æ¥åæ ¼å¼åå¤±è´? {str(e)}")
             raise e
     
     def process_output(self, output: str) -> str:
         """
-        处理LLM输出，清理Markdown格式
+        å¤çLLMè¾åºï¼æ¸çMarkdownæ ¼å¼
         
         Args:
-            output: LLM原始输出
+            output: LLMåå§è¾åº
             
         Returns:
-            清理后的Markdown报告
+            æ¸çåçMarkdownæ¥å
         """
         try:
-            # 清理响应文本
+            # æ¸çååºææ¬
             cleaned_output = remove_reasoning_from_output(output)
             cleaned_output = clean_markdown_tags(cleaned_output)
             
-            # 确保报告有基本结�?
+            # ç¡®ä¿æ¥åæåºæ¬ç»æ?
             if not cleaned_output.strip():
-                return "# 报告生成失败\n\n无法生成有效的报告内容�?
+                return "# æ¥åçæå¤±è´¥\n\næ æ³çæææçæ¥ååå®¹
             
-            # 如果没有标题，添加一个默认标�?
+            # å¦ææ²¡ææ é¢ï¼æ·»å ä¸ä¸ªé»è®¤æ é¢?
             if not cleaned_output.strip().startswith('#'):
-                cleaned_output = "# 深度研究报告\n\n" + cleaned_output
+                cleaned_output = "# æ·±åº¦ç ç©¶æ¥å\n\n" + cleaned_output
             
             return cleaned_output.strip()
             
         except Exception as e:
-            logger.exception(f"处理输出失败: {str(e)}")
-            return "# 报告处理失败\n\n报告格式化过程中发生错误�?
+            logger.exception(f"å¤çè¾åºå¤±è´¥: {str(e)}")
+            return "# æ¥åå¤çå¤±è´¥\n\næ¥åæ ¼å¼åè¿ç¨ä¸­åçéè¯¯
     
     def format_report_manually(self, paragraphs_data: List[Dict[str, str]], 
-                             report_title: str = "深度研究报告") -> str:
+                             report_title: str = "æ·±åº¦ç ç©¶æ¥å") -> str:
         """
-        手动格式化报告（备用方法�?
+        æå¨æ ¼å¼åæ¥åï¼å¤ç¨æ¹æ³ï¼?
         
         Args:
-            paragraphs_data: 段落数据列表
-            report_title: 报告标题
+            paragraphs_data: æ®µè½æ°æ®åè¡¨
+            report_title: æ¥åæ é¢
             
         Returns:
-            格式化的Markdown报告
+            æ ¼å¼åçMarkdownæ¥å
         """
         try:
-            logger.info("使用手动格式化方�?)
+            logger.info("ä½¿ç¨æå¨æ ¼å¼åæ¹æ³?)
             
-            # 构建报告
+            # æå»ºæ¥å
             report_lines = [
                 f"# {report_title}",
                 "",
@@ -138,9 +138,9 @@ class ReportFormattingNode(BaseNode):
                 ""
             ]
             
-            # 添加各个段落
+            # æ·»å åä¸ªæ®µè½
             for i, paragraph in enumerate(paragraphs_data, 1):
-                title = paragraph.get("title", f"段落 {i}")
+                title = paragraph.get("title", f"æ®µè½ {i}")
                 content = paragraph.get("paragraph_latest_state", "")
                 
                 if content:
@@ -153,18 +153,18 @@ class ReportFormattingNode(BaseNode):
                         ""
                     ])
             
-            # 添加结论
+            # æ·»å ç»è®º
             if len(paragraphs_data) > 1:
                 report_lines.extend([
-                    "## 结论",
+                    "## ç»è®º",
                     "",
-                    "本报告通过深度搜索和研究，对相关主题进行了全面分析�?
-                    "以上各个方面的内容为理解该主题提供了重要参考�?,
+                    "æ¬æ¥åéè¿æ·±åº¦æç´¢åç ç©¶ï¼å¯¹ç¸å³ä¸»é¢è¿è¡äºå¨é¢åæ
+                    "ä»¥ä¸åä¸ªæ¹é¢çåå®¹ä¸ºçè§£è¯¥ä¸»é¢æä¾äºéè¦åè,
                     ""
                 ])
             
             return "\n".join(report_lines)
             
         except Exception as e:
-            logger.exception(f"手动格式化失�? {str(e)}")
-            return "# 报告生成失败\n\n无法完成报告格式化�?
+            logger.exception(f"æå¨æ ¼å¼åå¤±è´? {str(e)}")
+            return "# æ¥åçæå¤±è´¥\n\næ æ³å®ææ¥åæ ¼å¼å

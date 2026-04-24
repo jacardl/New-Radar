@@ -120,7 +120,7 @@ class WhatsAppAdapter(BasePlatformAdapter):
     - session_path: Path to store WhatsApp session data
     """
     
-    # WhatsApp message limits �?practical UX limit, not protocol max.
+    # WhatsApp message limits é¥?practical UX limit, not protocol max.
     # WhatsApp allows ~65K but long messages are unreadable on mobile.
     MAX_MESSAGE_LENGTH = 4096
     
@@ -435,9 +435,9 @@ class WhatsAppAdapter(BasePlatformAdapter):
                     except Exception:
                         continue
                 else:
-                    # Still not connected �?warn but proceed (bridge may
+                    # Still not connected é¥?warn but proceed (bridge may
                     # auto-reconnect later, e.g. after a code 515 restart).
-                    print(f"[{self.name}] �?WhatsApp not connected after 30s")
+                    print(f"[{self.name}] é¿?WhatsApp not connected after 30s")
                     print(f"[{self.name}]   Bridge log: {self._bridge_log}")
                     print(f"[{self.name}]   If session expired, re-pair: hermes whatsapp")
             
@@ -566,19 +566,19 @@ class WhatsAppAdapter(BasePlatformAdapter):
         result = re.sub(r"`[^`\n]+`", _save_code, result)
 
         # --- 3. Convert markdown formatting to WhatsApp syntax ---
-        # Bold: **text** or __text__ �?*text*
+        # Bold: **text** or __text__ é«?*text*
         result = re.sub(r"\*\*(.+?)\*\*", r"*\1*", result)
         result = re.sub(r"__(.+?)__", r"*\1*", result)
-        # Strikethrough: ~~text~~ �?~text~
+        # Strikethrough: ~~text~~ é«?~text~
         result = re.sub(r"~~(.+?)~~", r"~\1~", result)
-        # Italic: *text* is already WhatsApp italic �?leave as-is
-        # _text_ is already WhatsApp italic �?leave as-is
+        # Italic: *text* is already WhatsApp italic é¥?leave as-is
+        # _text_ is already WhatsApp italic é¥?leave as-is
 
         # --- 4. Convert markdown headers to bold text ---
-        # # Header �?*Header*
+        # # Header é«?*Header*
         result = re.sub(r"^#{1,6}\s+(.+)$", r"*\1*", result, flags=re.MULTILINE)
 
-        # --- 5. Convert markdown links: [text](url) �?text (url) ---
+        # --- 5. Convert markdown links: [text](url) é«?text (url) ---
         result = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 (\2)", result)
 
         # --- 6. Restore protected sections ---
@@ -763,7 +763,7 @@ class WhatsAppAdapter(BasePlatformAdapter):
         reply_to: Optional[str] = None,
         **kwargs,
     ) -> SendResult:
-        """Send a video natively via bridge �?plays inline in WhatsApp."""
+        """Send a video natively via bridge é¥?plays inline in WhatsApp."""
         return await self._send_media_to_bridge(chat_id, video_path, "video", caption)
 
     async def send_document(
@@ -908,7 +908,7 @@ class WhatsAppAdapter(BasePlatformAdapter):
                         cached_urls.append(url)
                         media_types.append("image/jpeg")
                 elif msg_type == MessageType.PHOTO and os.path.isabs(url):
-                    # Local file path �?bridge already downloaded the image
+                    # Local file path é¥?bridge already downloaded the image
                     cached_urls.append(url)
                     media_types.append("image/jpeg")
                     print(f"[{self.name}] Using bridge-cached image: {url}", flush=True)
@@ -923,12 +923,12 @@ class WhatsAppAdapter(BasePlatformAdapter):
                         cached_urls.append(url)
                         media_types.append("audio/ogg")
                 elif msg_type == MessageType.VOICE and os.path.isabs(url):
-                    # Local file path �?bridge already downloaded the audio
+                    # Local file path é¥?bridge already downloaded the audio
                     cached_urls.append(url)
                     media_types.append("audio/ogg")
                     print(f"[{self.name}] Using bridge-cached audio: {url}", flush=True)
                 elif msg_type == MessageType.DOCUMENT and os.path.isabs(url):
-                    # Local file path �?bridge already downloaded the document
+                    # Local file path é¥?bridge already downloaded the document
                     cached_urls.append(url)
                     ext = Path(url).suffix.lower()
                     mime = SUPPORTED_DOCUMENT_TYPES.get(ext, "application/octet-stream")

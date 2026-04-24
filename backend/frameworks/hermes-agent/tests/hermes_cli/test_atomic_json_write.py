@@ -1,4 +1,4 @@
-"""Tests for utils.atomic_json_write �?crash-safe JSON file writes."""
+"""Tests for utils.atomic_json_write é¥?crash-safe JSON file writes."""
 
 import json
 import os
@@ -41,7 +41,7 @@ class TestAtomicJsonWrite:
         original = {"preserved": True}
         target.write_text(json.dumps(original))
 
-        # Try to write non-serializable data �?should fail
+        # Try to write non-serializable data é¥?should fail
         with pytest.raises(TypeError):
             atomic_json_write(target, {"bad": object()})
 
@@ -126,12 +126,12 @@ class TestAtomicJsonWrite:
 
     def test_unicode_content(self, tmp_path):
         target = tmp_path / "unicode.json"
-        data = {"emoji": "🎉", "japanese": "日本�?}
+        data = {"emoji": "é¦å¸", "japanese": "éã¦æ¹°ç¾?}
         atomic_json_write(target, data)
 
         result = json.loads(target.read_text(encoding="utf-8"))
-        assert result["emoji"] == "🎉"
-        assert result["japanese"] == "日本�?
+        assert result["emoji"] == "é¦å¸"
+        assert result["japanese"] == "éã¦æ¹°ç¾?
 
     def test_concurrent_writes_dont_corrupt(self, tmp_path):
         """Multiple rapid writes should each produce valid JSON."""

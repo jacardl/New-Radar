@@ -1,4 +1,4 @@
-"""Tests for agent/skill_commands.py �?skill slash command scanning and platform filtering."""
+"""Tests for agent/skill_commands.py é¥?skill slash command scanning and platform filtering."""
 
 import os
 from datetime import datetime

@@ -1,4 +1,4 @@
-"""Tests for hermes_cli.plugins_cmd �?the ``hermes plugins`` CLI subcommand."""
+"""Tests for hermes_cli.plugins_cmd â?the ``hermes plugins`` CLI subcommand."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from hermes_cli.plugins_cmd import (
 )
 
 
-# ── _sanitize_plugin_name ─────────────────────────────────────────────────
+# -- _sanitize_plugin_name -------------------------------------------------
 
 
 class TestSanitizePluginName:
@@ -64,7 +64,7 @@ class TestSanitizePluginName:
             _sanitize_plugin_name("", tmp_path)
 
 
-# ── _resolve_git_url ──────────────────────────────────────────────────────
+# -- _resolve_git_url ------------------------------------------------------
 
 
 class TestResolveGitUrl:
@@ -99,7 +99,7 @@ class TestResolveGitUrl:
             _resolve_git_url("a/b/c")
 
 
-# ── _repo_name_from_url ──────────────────────────────────────────────────
+# -- _repo_name_from_url --------------------------------------------------
 
 
 class TestRepoNameFromUrl:
@@ -123,7 +123,7 @@ class TestRepoNameFromUrl:
         assert _repo_name_from_url("ssh://git@github.com/owner/repo.git") == "repo"
 
 
-# ── plugins_command dispatch ──────────────────────────────────────────────
+# -- plugins_command dispatch ----------------------------------------------
 
 
 class TestPluginsCommandDispatch:
@@ -179,7 +179,7 @@ class TestPluginsCommandDispatch:
         mock_remove.assert_called_once_with("bar")
 
 
-# ── _read_manifest ────────────────────────────────────────────────────────
+# -- _read_manifest --------------------------------------------------------
 
 
 class TestReadManifest:
@@ -209,7 +209,7 @@ class TestReadManifest:
         assert result == {}
 
 
-# ── cmd_install tests ─────────────────────────────────────────────────────────
+# -- cmd_install tests ---------------------------------------------------------
 
 
 class TestCmdInstall:
@@ -265,7 +265,7 @@ class TestCmdInstall:
         mock_display_after_install.assert_not_called()
 
 
-# ── cmd_update tests ─────────────────────────────────────────────────────────
+# -- cmd_update tests ---------------------------------------------------------
 
 
 class TestCmdUpdate:
@@ -310,7 +310,7 @@ class TestCmdUpdate:
         assert exc_info.value.code == 1
 
 
-# ── cmd_remove tests ─────────────────────────────────────────────────────────
+# -- cmd_remove tests ---------------------------------------------------------
 
 
 class TestCmdRemove:
@@ -349,7 +349,7 @@ class TestCmdRemove:
         assert exc_info.value.code == 1
 
 
-# ── cmd_list tests ─────────────────────────────────────────────────────────
+# -- cmd_list tests ---------------------------------------------------------
 
 
 class TestCmdList:
@@ -384,7 +384,7 @@ class TestCmdList:
         cmd_list()
 
 
-# ── _copy_example_files tests ─────────────────────────────────────────────────
+# -- _copy_example_files tests -------------------------------------------------
 
 
 class TestCopyExampleFiles:
@@ -463,7 +463,7 @@ class TestPromptPluginEnvVars:
         console = MagicMock()
         with patch("hermes_cli.config.get_env_value", return_value="already-set"):
             _prompt_plugin_env_vars({"requires_env": ["MY_KEY"]}, console)
-        # No prompt should appear �?all vars are set
+        # No prompt should appear â?all vars are set
         console.print.assert_not_called()
 
     def test_prompts_for_missing_var_simple_format(self):
@@ -557,7 +557,7 @@ class TestPromptPluginEnvVars:
         mock_save.assert_not_called()
 
 
-# ── curses_radiolist ─────────────────────────────────────────────────────
+# -- curses_radiolist -----------------------------------------------------
 
 
 class TestCursesRadiolist:
@@ -578,7 +578,7 @@ class TestCursesRadiolist:
             assert result == 1
 
 
-# ── Provider discovery helpers ───────────────────────────────────────────
+# -- Provider discovery helpers -------------------------------------------
 
 
 class TestProviderDiscovery:
@@ -639,7 +639,7 @@ class TestProviderDiscovery:
             assert result == []
 
 
-# ── Auto-activation fix ──────────────────────────────────────────────────
+# -- Auto-activation fix --------------------------------------------------
 
 
 class TestNoAutoActivation:
@@ -647,7 +647,7 @@ class TestNoAutoActivation:
 
     def test_compressor_default_ignores_plugin(self):
         """When context.engine is 'compressor', a plugin-registered engine should NOT
-        be used �?only explicit config triggers plugin engines."""
+        be used â?only explicit config triggers plugin engines."""
         # This tests the run_agent.py logic indirectly by checking that the
         # code path for default config doesn't call get_plugin_context_engine.
         import run_agent as ra_module

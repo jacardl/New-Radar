@@ -1,4 +1,4 @@
-"""Tests for network.force_ipv4 �?the socket.getaddrinfo monkey-patch."""
+"""Tests for network.force_ipv4 é¥?the socket.getaddrinfo monkey-patch."""
 
 import importlib
 import socket

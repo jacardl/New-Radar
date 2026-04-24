@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Guard �?Security scanner for externally-sourced skills.
+Skills Guard â?Security scanner for externally-sourced skills.
 
 Every skill downloaded from a registry passes through this scanner before
 installation. It uses regex-based static analysis to detect known-bad patterns
@@ -76,11 +76,11 @@ class ScanResult:
 
 
 # ---------------------------------------------------------------------------
-# Threat patterns �?(regex, pattern_id, severity, category, description)
+# Threat patterns â?(regex, pattern_id, severity, category, description)
 # ---------------------------------------------------------------------------
 
 THREAT_PATTERNS = [
-    # ── Exfiltration: shell commands leaking secrets ──
+    # -- Exfiltration: shell commands leaking secrets --
     (r'curl\s+[^\n]*\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)',
      "env_exfil_curl", "critical", "exfiltration",
      "curl command interpolating secret environment variable"),
@@ -97,7 +97,7 @@ THREAT_PATTERNS = [
      "env_exfil_requests", "critical", "exfiltration",
      "requests library call with secret variable"),
 
-    # ── Exfiltration: reading credential stores ──
+    # -- Exfiltration: reading credential stores --
     (r'base64[^\n]*env',
      "encoded_exfil", "high", "exfiltration",
      "base64 encoding combined with environment access"),
@@ -123,7 +123,7 @@ THREAT_PATTERNS = [
      "read_secrets_file", "critical", "exfiltration",
      "reads known secrets file"),
 
-    # ── Exfiltration: programmatic env access ──
+    # -- Exfiltration: programmatic env access --
     (r'printenv|env\s*\|',
      "dump_all_env", "high", "exfiltration",
      "dumps all environment variables"),
@@ -140,7 +140,7 @@ THREAT_PATTERNS = [
      "ruby_env_secret", "critical", "exfiltration",
      "reads secret via Ruby ENV[]"),
 
-    # ── Exfiltration: DNS and staging ──
+    # -- Exfiltration: DNS and staging --
     (r'\b(dig|nslookup|host)\s+[^\n]*\$',
      "dns_exfil", "critical", "exfiltration",
      "DNS lookup with variable interpolation (possible DNS exfiltration)"),
@@ -148,7 +148,7 @@ THREAT_PATTERNS = [
      "tmp_staging", "critical", "exfiltration",
      "writes to /tmp then exfiltrates"),
 
-    # ── Exfiltration: markdown/link based ──
+    # -- Exfiltration: markdown/link based --
     (r'!\[.*\]\(https?://[^\)]*\$\{?',
      "md_image_exfil", "high", "exfiltration",
      "markdown image URL with variable interpolation (image-based exfil)"),
@@ -156,7 +156,7 @@ THREAT_PATTERNS = [
      "md_link_exfil", "high", "exfiltration",
      "markdown link with variable interpolation"),
 
-    # ── Prompt injection ──
+    # -- Prompt injection --
     (r'ignore\s+(?:\w+\s+)*(previous|all|above|prior)\s+instructions',
      "prompt_injection_ignore", "critical", "injection",
      "prompt injection: ignore previous instructions"),
@@ -194,7 +194,7 @@ THREAT_PATTERNS = [
      "hidden_div", "high", "injection",
      "hidden HTML div (invisible instructions)"),
 
-    # ── Destructive operations ──
+    # -- Destructive operations --
     (r'rm\s+-rf\s+/',
      "destructive_root_rm", "critical", "destructive",
      "recursive delete from root"),
@@ -220,7 +220,7 @@ THREAT_PATTERNS = [
      "truncate_system", "critical", "destructive",
      "truncates system file to zero bytes"),
 
-    # ── Persistence ──
+    # -- Persistence --
     (r'\bcrontab\b',
      "persistence_cron", "medium", "persistence",
      "modifies cron jobs"),
@@ -249,7 +249,7 @@ THREAT_PATTERNS = [
      "git_config_global", "medium", "persistence",
      "modifies global git configuration"),
 
-    # ── Network: reverse shells and tunnels ──
+    # -- Network: reverse shells and tunnels --
     (r'\bnc\s+-[lp]|ncat\s+-[lp]|\bsocat\b',
      "reverse_shell", "critical", "network",
      "potential reverse shell listener"),
@@ -278,7 +278,7 @@ THREAT_PATTERNS = [
      "paste_service", "medium", "network",
      "references paste service (possible data staging)"),
 
-    # ── Obfuscation: encoding and eval ──
+    # -- Obfuscation: encoding and eval --
     (r'base64\s+(-d|--decode)\s*\|',
      "base64_decode_pipe", "high", "obfuscation",
      "base64 decodes and pipes to execution"),
@@ -322,27 +322,27 @@ THREAT_PATTERNS = [
      "unicode_escape_chain", "medium", "obfuscation",
      "chain of unicode escapes (possible obfuscation)"),
 
-    # ── Process execution in scripts ──
+    # -- Process execution in scripts --
     (r'subprocess\.(run|call|Popen|check_output)\s*\(',
      "python_subprocess", "medium", "execution",
      "Python subprocess execution"),
     (r'os\.system\s*\(',
      "python_os_system", "high", "execution",
-     "os.system() �?unguarded shell execution"),
+     "os.system() â?unguarded shell execution"),
     (r'os\.popen\s*\(',
      "python_os_popen", "high", "execution",
-     "os.popen() �?shell pipe execution"),
+     "os.popen() â?shell pipe execution"),
     (r'child_process\.(exec|spawn|fork)\s*\(',
      "node_child_process", "high", "execution",
      "Node.js child_process execution"),
     (r'Runtime\.getRuntime\(\)\.exec\(',
      "java_runtime_exec", "high", "execution",
-     "Java Runtime.exec() �?shell execution"),
+     "Java Runtime.exec() â?shell execution"),
     (r'`[^`]*\$\([^)]+\)[^`]*`',
      "backtick_subshell", "medium", "execution",
      "backtick string with command substitution"),
 
-    # ── Path traversal ──
+    # -- Path traversal --
     (r'\.\./\.\./\.\.',
      "path_traversal_deep", "high", "traversal",
      "deep relative path traversal (3+ levels up)"),
@@ -359,7 +359,7 @@ THREAT_PATTERNS = [
      "dev_shm", "medium", "traversal",
      "references shared memory (common staging area)"),
 
-    # ── Crypto mining ──
+    # -- Crypto mining --
     (r'xmrig|stratum\+tcp|monero|coinhive|cryptonight',
      "crypto_mining", "critical", "mining",
      "cryptocurrency mining reference"),
@@ -367,7 +367,7 @@ THREAT_PATTERNS = [
      "mining_indicators", "medium", "mining",
      "possible cryptocurrency mining indicators"),
 
-    # ── Supply chain: curl/wget pipe to shell ──
+    # -- Supply chain: curl/wget pipe to shell --
     (r'curl\s+[^\n]*\|\s*(ba)?sh',
      "curl_pipe_shell", "critical", "supply_chain",
      "curl piped to shell (download-and-execute)"),
@@ -378,7 +378,7 @@ THREAT_PATTERNS = [
      "curl_pipe_python", "critical", "supply_chain",
      "curl piped to Python interpreter"),
 
-    # ── Supply chain: unpinned/deferred dependencies ──
+    # -- Supply chain: unpinned/deferred dependencies --
     (r'#\s*///\s*script.*dependencies',
      "pep723_inline_deps", "medium", "supply_chain",
      "PEP 723 inline script metadata with dependencies (verify pinning)"),
@@ -392,7 +392,7 @@ THREAT_PATTERNS = [
      "uv_run", "medium", "supply_chain",
      "uv run (may auto-install unpinned dependencies)"),
 
-    # ── Supply chain: remote resource fetching ──
+    # -- Supply chain: remote resource fetching --
     (r'(curl|wget|httpx?\.get|requests\.get|fetch)\s*[\(]?\s*["\']https?://',
      "remote_fetch", "medium", "supply_chain",
      "fetches remote resource at runtime"),
@@ -403,7 +403,7 @@ THREAT_PATTERNS = [
      "docker_pull", "medium", "supply_chain",
      "pulls a Docker image at runtime"),
 
-    # ── Privilege escalation ──
+    # -- Privilege escalation --
     (r'^allowed-tools\s*:',
      "allowed_tools_field", "high", "privilege_escalation",
      "skill declares allowed-tools (pre-approves tool access)"),
@@ -420,7 +420,7 @@ THREAT_PATTERNS = [
      "suid_bit", "critical", "privilege_escalation",
      "sets SUID/SGID bit on a file"),
 
-    # ── Agent config persistence ──
+    # -- Agent config persistence --
     (r'AGENTS\.md|CLAUDE\.md|\.cursorrules|\.clinerules',
      "agent_config_mod", "critical", "persistence",
      "references agent config files (could persist malicious instructions across sessions)"),
@@ -431,7 +431,7 @@ THREAT_PATTERNS = [
      "other_agent_config", "high", "persistence",
      "references other agent configuration files"),
 
-    # ── Hardcoded secrets (credentials embedded in the skill itself) ──
+    # -- Hardcoded secrets (credentials embedded in the skill itself) --
     (r'(?:api[_-]?key|token|secret|password)\s*[=:]\s*["\'][A-Za-z0-9+/=_-]{20,}',
      "hardcoded_secret", "critical", "credential_exposure",
      "possible hardcoded API key, token, or secret"),
@@ -451,7 +451,7 @@ THREAT_PATTERNS = [
      "aws_access_key_leaked", "critical", "credential_exposure",
      "AWS access key ID in skill content"),
 
-    # ── Additional prompt injection: jailbreak patterns ──
+    # -- Additional prompt injection: jailbreak patterns --
     (r'\bDAN\s+mode\b|Do\s+Anything\s+Now',
      "jailbreak_dan", "critical", "injection",
      "DAN (Do Anything Now) jailbreak attempt"),
@@ -474,7 +474,7 @@ THREAT_PATTERNS = [
      "fake_policy", "medium", "injection",
      "claims new policy/guidelines (may be social engineering)"),
 
-    # ── Context window exfiltration ──
+    # -- Context window exfiltration --
     (r'(include|output|print|send|share)\s+(?:\w+\s+)*(conversation|chat\s+history|previous\s+messages|context)',
      "context_exfil", "high", "exfiltration",
      "instructs agent to output/share conversation history"),
@@ -488,7 +488,7 @@ MAX_FILE_COUNT = 50       # skills shouldn't have 50+ files
 MAX_TOTAL_SIZE_KB = 1024  # 1MB total is suspicious for a skill
 MAX_SINGLE_FILE_KB = 256  # individual file > 256KB is suspicious
 
-# File extensions to scan (text files only �?skip binary)
+# File extensions to scan (text files only â?skip binary)
 SCANNABLE_EXTENSIONS = {
     '.md', '.txt', '.py', '.sh', '.bash', '.js', '.ts', '.rb',
     '.yaml', '.yml', '.json', '.toml', '.cfg', '.ini', '.conf',
@@ -707,7 +707,7 @@ def format_scan_report(result: ScanResult) -> str:
         status = "NEEDS CONFIRMATION"
     else:
         status = "BLOCKED"
-    lines.append(f"Decision: {status} �?{reason}")
+    lines.append(f"Decision: {status} â?{reason}")
 
     return "\n".join(lines)
 
@@ -751,7 +751,7 @@ def _check_structure(skill_dir: Path) -> List[Finding]:
         rel = str(f.relative_to(skill_dir))
         file_count += 1
 
-        # Symlink check �?must resolve within the skill directory
+        # Symlink check â?must resolve within the skill directory
         if f.is_symlink():
             try:
                 resolved = f.resolve()
@@ -925,4 +925,4 @@ def _build_summary(name: str, source: str, trust: str, verdict: str, findings: L
         return f"{name}: clean scan, no threats detected"
 
     categories = set(f.category for f in findings)
-    return f"{name}: {verdict} �?{len(findings)} finding(s) in {', '.join(sorted(categories))}"
+    return f"{name}: {verdict} â?{len(findings)} finding(s) in {', '.join(sorted(categories))}"

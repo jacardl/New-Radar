@@ -1,7 +1,7 @@
 """Integration tests for gateway AIAgent caching.
 
 Verifies that the agent cache correctly:
-- Reuses agents across messages (same config �?same instance)
+- Reuses agents across messages (same config é«?same instance)
 - Rebuilds agents when config changes (model, provider, toolsets)
 - Updates reasoning_config in-place without rebuilding
 - Evicts on session reset
@@ -92,7 +92,7 @@ class TestAgentConfigSignature:
         from gateway.run import GatewayRunner
 
         runtime = {"api_key": "sk-test12345678", "base_url": "https://openrouter.ai/api/v1", "provider": "openrouter"}
-        # Same config �?signature should be identical regardless of what
+        # Same config é¥?signature should be identical regardless of what
         # reasoning_config the caller might have (it's not passed in)
         sig1 = GatewayRunner._agent_config_signature("claude-sonnet-4", runtime, ["hermes-telegram"], "")
         sig2 = GatewayRunner._agent_config_signature("claude-sonnet-4", runtime, ["hermes-telegram"], "")
@@ -112,7 +112,7 @@ class TestAgentCacheLifecycle:
                     "provider": "openrouter", "api_mode": "chat_completions"}
         sig = runner._agent_config_signature("anthropic/claude-sonnet-4", runtime, ["hermes-telegram"], "")
 
-        # First message �?create and cache
+        # First message é¥?create and cache
         agent1 = AIAgent(
             model="anthropic/claude-sonnet-4", api_key="test",
             base_url="https://openrouter.ai/api/v1", provider="openrouter",
@@ -122,7 +122,7 @@ class TestAgentCacheLifecycle:
         with runner._agent_cache_lock:
             runner._agent_cache[session_key] = (agent1, sig)
 
-        # Second message �?cache hit
+        # Second message é¥?cache hit
         with runner._agent_cache_lock:
             cached = runner._agent_cache.get(session_key)
         assert cached is not None
@@ -130,7 +130,7 @@ class TestAgentCacheLifecycle:
         assert cached[0] is agent1  # same instance
 
     def test_cache_miss_on_model_change(self):
-        """Model change produces different signature �?cache miss."""
+        """Model change produces different signature é«?cache miss."""
         from run_agent import AIAgent
 
         runner = _make_runner()
@@ -148,13 +148,13 @@ class TestAgentCacheLifecycle:
         with runner._agent_cache_lock:
             runner._agent_cache[session_key] = (agent1, old_sig)
 
-        # New model �?different signature
+        # New model é«?different signature
         new_sig = runner._agent_config_signature("anthropic/claude-opus-4.6", runtime, ["hermes-telegram"], "")
         assert new_sig != old_sig
 
         with runner._agent_cache_lock:
             cached = runner._agent_cache.get(session_key)
-        assert cached[1] != new_sig  # signature mismatch �?would create new agent
+        assert cached[1] != new_sig  # signature mismatch é«?would create new agent
 
     def test_evict_on_session_reset(self):
         """_evict_cached_agent removes the entry."""
@@ -211,7 +211,7 @@ class TestAgentCacheLifecycle:
         agent._cached_system_prompt = prompt1  # simulate run_conversation caching
         agent.reasoning_config = {"enabled": True, "effort": "low"}
         prompt2 = agent._cached_system_prompt
-        assert prompt1 is prompt2  # same object �?not invalidated by reasoning change
+        assert prompt1 is prompt2  # same object é¥?not invalidated by reasoning change
 
     def test_system_prompt_frozen_across_cache_reuse(self):
         """The cached agent's system prompt stays identical across turns."""
@@ -228,7 +228,7 @@ class TestAgentCacheLifecycle:
         prompt1 = agent._build_system_prompt()
         agent._cached_system_prompt = prompt1
 
-        # Simulate second turn �?prompt should be frozen
+        # Simulate second turn é¥?prompt should be frozen
         prompt2 = agent._cached_system_prompt
         assert prompt1 is prompt2  # same object, not rebuilt
 

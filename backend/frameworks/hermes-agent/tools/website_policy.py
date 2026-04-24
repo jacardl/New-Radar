@@ -68,7 +68,7 @@ def _iter_blocklist_file_rules(path: Path) -> List[str]:
     """Load rules from a shared blocklist file.
 
     Missing or unreadable files log a warning and return an empty list
-    rather than raising �?a bad file path should not disable all web tools.
+    rather than raising é¥?a bad file path should not disable all web tools.
     """
     try:
         raw = path.read_text(encoding="utf-8")
@@ -98,7 +98,7 @@ def _load_policy_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
     try:
         import yaml
     except ImportError:
-        logger.debug("PyYAML not installed �?website blocklist disabled")
+        logger.debug("PyYAML not installed é¥?website blocklist disabled")
         return dict(_DEFAULT_WEBSITE_BLOCKLIST)
 
     try:
@@ -189,7 +189,7 @@ def load_website_blocklist(config_path: Optional[Path] = None) -> Dict[str, Any]
 
     result = {"enabled": enabled, "rules": rules}
 
-    # Cache the result (only for the default path �?explicit paths are tests)
+    # Cache the result (only for the default path é¥?explicit paths are tests)
     if config_path == _get_default_config_path():
         with _cache_lock:
             _cached_policy = result
@@ -235,7 +235,7 @@ def check_website_access(url: str, config_path: Optional[Path] = None) -> Option
     Returns ``None`` if access is allowed, or a dict with block metadata
     (``host``, ``rule``, ``source``, ``message``) if blocked.
 
-    Never raises on policy errors �?logs a warning and returns ``None``
+    Never raises on policy errors é¥?logs a warning and returns ``None``
     (fail-open) so a config typo doesn't break all web tools.  Pass
     ``config_path`` explicitly (tests) to get strict error propagation.
     """
@@ -254,7 +254,7 @@ def check_website_access(url: str, config_path: Optional[Path] = None) -> Option
         policy = load_website_blocklist(config_path)
     except WebsitePolicyError as exc:
         if config_path is not None:
-            raise  # Tests pass explicit paths �?let errors propagate
+            raise  # Tests pass explicit paths é¥?let errors propagate
         logger.warning("Website policy config error (failing open): %s", exc)
         return None
     except Exception as exc:
@@ -267,7 +267,7 @@ def check_website_access(url: str, config_path: Optional[Path] = None) -> Option
     for rule in policy.get("rules", []):
         pattern = rule.get("pattern", "")
         if _match_host_against_rule(host, pattern):
-            logger.info("Blocked URL %s �?matched rule '%s' from %s",
+            logger.info("Blocked URL %s é¥?matched rule '%s' from %s",
                         url, pattern, rule.get("source", "config"))
             return {
                 "url": url,

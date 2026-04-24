@@ -78,7 +78,7 @@ class FileSyncManager:
     and a file-source callable.  The manager handles mtime-based change
     detection, deletion tracking, rate limiting, and transactional state.
 
-    Not used by bind-mount backends (Docker, Singularity) �?those get
+    Not used by bind-mount backends (Docker, Singularity) é¥?those get
     live host FS views and don't need file sync.
     """
 

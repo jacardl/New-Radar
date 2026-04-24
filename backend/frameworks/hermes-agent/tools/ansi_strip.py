@@ -2,7 +2,7 @@
 
 Used by terminal_tool, code_execution_tool, and process_registry to clean
 command output before returning it to the model.  This prevents ANSI codes
-from entering the model's context �?which is the root cause of models
+from entering the model's context é¥?which is the root cause of models
 copying escape sequences into file writes.
 
 Covers the full ECMA-48 spec: CSI (including private-mode ``?`` prefix,
@@ -28,7 +28,7 @@ _ANSI_ESCAPE_RE = re.compile(
     re.DOTALL,
 )
 
-# Fast-path check �?skip full regex when no escape-like bytes are present.
+# Fast-path check é¥?skip full regex when no escape-like bytes are present.
 _HAS_ESCAPE = re.compile(r"[\x1b\x80-\x9f]")
 
 
@@ -36,7 +36,7 @@ def strip_ansi(text: str) -> str:
     """Remove ANSI escape sequences from text.
 
     Returns the input unchanged (fast path) when no ESC or C1 bytes are
-    present.  Safe to call on any string �?clean text passes through
+    present.  Safe to call on any string é¥?clean text passes through
     with negligible overhead.
     """
     if not text or not _HAS_ESCAPE.search(text):

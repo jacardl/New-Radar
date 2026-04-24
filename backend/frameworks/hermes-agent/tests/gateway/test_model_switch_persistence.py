@@ -140,12 +140,12 @@ class TestApplySessionModelOverride:
 
         assert model == "gpt-5.4"
         assert rt["provider"] == "openai"
-        assert rt["api_key"] == "ant-key"  # preserved �?None didn't overwrite
+        assert rt["api_key"] == "ant-key"  # preserved é¥?None didn't overwrite
         assert rt["base_url"] == "https://api.anthropic.com"  # preserved
         assert rt["api_mode"] == "chat_completions"  # overwritten (not None)
 
     def test_empty_string_overwrites(self):
-        """Empty string is not None �?it should overwrite the config value."""
+        """Empty string is not None é¥?it should overwrite the config value."""
         runner = _make_runner()
         sk = build_session_key(_make_source())
 
@@ -184,7 +184,7 @@ class TestApplySessionModelOverride:
             {"provider": "anthropic", "api_key": "ant-key", "base_url": "url", "api_mode": "anthropic_messages"},
         )
 
-        assert model == "anthropic/claude-sonnet-4"  # unchanged �?wrong session key
+        assert model == "anthropic/claude-sonnet-4"  # unchanged é¥?wrong session key
 
 
 # ---------------------------------------------------------------------------

@@ -88,7 +88,7 @@ async def test_registers_native_thread_slash_command(adapter):
 
 
 # ------------------------------------------------------------------
-# _handle_thread_create_slash �?success, session dispatch, failure
+# _handle_thread_create_slash é¥?success, session dispatch, failure
 # ------------------------------------------------------------------
 
 
@@ -212,7 +212,7 @@ async def test_handle_thread_create_slash_reports_failure(adapter):
 
 
 # ------------------------------------------------------------------
-# _dispatch_thread_session �?builds correct event and routes it
+# _dispatch_thread_session é¥?builds correct event and routes it
 # ------------------------------------------------------------------
 
 
@@ -243,7 +243,7 @@ async def test_dispatch_thread_session_builds_thread_event(adapter):
 
 
 # ------------------------------------------------------------------
-# _build_slash_event �?preserve thread context for native slash commands
+# _build_slash_event é¥?preserve thread context for native slash commands
 # ------------------------------------------------------------------
 
 
@@ -333,7 +333,7 @@ async def test_auto_create_thread_returns_none_on_failure(adapter):
 # ------------------------------------------------------------------
 
 
-import discord as _discord_mod  # noqa: E402 �?mock or real, used below
+import discord as _discord_mod  # noqa: E402 é¥?mock or real, used below
 
 
 class _FakeTextChannel:
@@ -347,10 +347,10 @@ class _FakeTextChannel:
 
 
 class _FakeThreadChannel(_discord_mod.Thread):
-    """isinstance(ch, discord.Thread) �?True."""
+    """isinstance(ch, discord.Thread) é«?True."""
 
     def __init__(self, channel_id=200, name="existing-thread", guild_name="TestGuild", parent_id=100):
-        # Don't call super().__init__ �?mock Thread is just an empty type
+        # Don't call super().__init__ é¥?mock Thread is just an empty type
         self.id = channel_id
         self.name = name
         self.guild = SimpleNamespace(name=guild_name, id=1)

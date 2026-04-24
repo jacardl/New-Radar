@@ -1,4 +1,4 @@
-"""Tests for hermes_cli/webhook.py �?webhook subscription CLI."""
+"""Tests for hermes_cli/webhook.py é¥?webhook subscription CLI."""
 
 import json
 import os

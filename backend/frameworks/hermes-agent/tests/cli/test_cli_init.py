@@ -250,7 +250,7 @@ class TestRootLevelProviderOverride:
     """Root-level provider/base_url in config.yaml must NOT override model.provider."""
 
     def test_model_provider_wins_over_root_provider(self, tmp_path, monkeypatch):
-        """model.provider takes priority �?root-level provider is only a fallback."""
+        """model.provider takes priority é¥?root-level provider is only a fallback."""
         import yaml
 
         hermes_home = tmp_path / ".hermes"
@@ -285,7 +285,7 @@ class TestRootLevelProviderOverride:
             "provider": "opencode-go",  # stale root key
             "model": {
                 "default": "google/gemini-3-flash-preview",
-                # no explicit model.provider �?defaults provide "auto"
+                # no explicit model.provider é¥?defaults provide "auto"
             },
         }))
 

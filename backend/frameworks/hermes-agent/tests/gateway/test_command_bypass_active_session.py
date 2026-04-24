@@ -4,9 +4,9 @@ When an agent is running, the base adapter's Level 1 guard in
 handle_message() intercepts all incoming messages and queues them as
 pending.  Certain commands (/stop, /new, /reset, /approve, /deny,
 /status) must bypass this guard and be dispatched directly to the gateway
-runner �?otherwise they are queued as user text and either:
+runner é¥?otherwise they are queued as user text and either:
   - leak into the conversation as agent input (/stop, /new), or
-  - deadlock (/approve, /deny �?agent blocks on Event.wait)
+  - deadlock (/approve, /deny é¥?agent blocks on Event.wait)
 
 These tests verify that the bypass works at the adapter level and that
 the safety net in _run_agent discards leaked command text.
@@ -195,7 +195,7 @@ class TestNonBypassStillQueued:
         await adapter.handle_message(_make_event("hello world"))
 
         assert sk in adapter._pending_messages, (
-            "Regular text was not queued �?it should be pending"
+            "Regular text was not queued é¥?it should be pending"
         )
         assert len(adapter.sent_responses) == 0, (
             "Regular text should not produce a direct response"
@@ -227,7 +227,7 @@ class TestNonBypassStillQueued:
 
 
 # ---------------------------------------------------------------------------
-# Tests: no active session �?commands go through normally
+# Tests: no active session é¥?commands go through normally
 # ---------------------------------------------------------------------------
 
 
@@ -241,7 +241,7 @@ class TestNoActiveSessionNormalDispatch:
         adapter = _make_adapter()
         sk = _session_key()
 
-        # No active session �?_active_sessions is empty
+        # No active session é¥?_active_sessions is empty
         assert sk not in adapter._active_sessions
 
         await adapter.handle_message(_make_event("/stop"))

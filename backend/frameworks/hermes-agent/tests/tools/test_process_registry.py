@@ -1,4 +1,4 @@
-"""Tests for tools/process_registry.py �?ProcessRegistry query methods, pruning, checkpoint."""
+"""Tests for tools/process_registry.py é¥?ProcessRegistry query methods, pruning, checkpoint."""
 
 import json
 import os
@@ -459,7 +459,7 @@ class TestCheckpoint:
         checkpoint.write_text(json.dumps([{
             "session_id": "proc_live",
             "command": "sleep 999",
-            "pid": os.getpid(),  # current process �?guaranteed alive
+            "pid": os.getpid(),  # current process é¥?guaranteed alive
             "task_id": "t1",
             "session_key": "sk1",
             "watcher_platform": "telegram",

@@ -56,12 +56,12 @@ class TestDynamicRouteLoading:
         adapter._reload_dynamic_routes()
         assert "v1" in adapter._dynamic_routes
 
-        # Same mtime �?no reload
+        # Same mtime é¥?no reload
         adapter._dynamic_routes["injected"] = True
         adapter._reload_dynamic_routes()
         assert "injected" in adapter._dynamic_routes
 
-        # New write �?reloads
+        # New write é¥?reloads
         time.sleep(0.05)
         path.write_text(json.dumps({"v2": {"secret": "s"}}))
         adapter._reload_dynamic_routes()

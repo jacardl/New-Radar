@@ -1,4 +1,4 @@
-"""Tests for tools/mcp_oauth.py �?OAuth 2.1 PKCE support for MCP servers."""
+"""Tests for tools/mcp_oauth.py é¥?OAuth 2.1 PKCE support for MCP servers."""
 
 import json
 import os
@@ -364,7 +364,7 @@ class TestIsInteractive:
 
 
 class TestWaitForCallbackNoBlocking:
-    """_wait_for_callback() must never call input() �?it raises instead."""
+    """_wait_for_callback() must never call input() é¥?it raises instead."""
 
     def test_raises_on_timeout_instead_of_input(self):
         """When no auth code arrives, raises OAuthNonInteractiveError."""

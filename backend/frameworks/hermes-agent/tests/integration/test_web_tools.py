@@ -60,29 +60,29 @@ def print_header(text: str):
 
 def print_section(text: str):
     """Print a formatted section header"""
-    print(f"\n{Colors.CYAN}{Colors.BOLD}📌 {text}{Colors.ENDC}")
+    print(f"\n{Colors.CYAN}{Colors.BOLD}é¦æ¶ {text}{Colors.ENDC}")
     print(f"{Colors.CYAN}{'-'*50}{Colors.ENDC}")
 
 
 def print_success(text: str):
     """Print success message"""
-    print(f"{Colors.GREEN}�?{text}{Colors.ENDC}")
+    print(f"{Colors.GREEN}é?{text}{Colors.ENDC}")
 
 
 def print_error(text: str):
     """Print error message"""
-    print(f"{Colors.FAIL}�?{text}{Colors.ENDC}")
+    print(f"{Colors.FAIL}é?{text}{Colors.ENDC}")
 
 
 def print_warning(text: str):
     """Print warning message"""
-    print(f"{Colors.WARNING}⚠️  {text}{Colors.ENDC}")
+    print(f"{Colors.WARNING}é¿çç¬  {text}{Colors.ENDC}")
 
 
 def print_info(text: str, indent: int = 0):
     """Print info message"""
     indent_str = "  " * indent
-    print(f"{indent_str}{Colors.BLUE}ℹ️  {text}{Colors.ENDC}")
+    print(f"{indent_str}{Colors.BLUE}é©ç¸ç¬  {text}{Colors.ENDC}")
 
 
 class WebToolsTester:
@@ -204,13 +204,13 @@ class WebToolsTester:
                             extracted_urls.append(result["url"])
                         
                         if self.verbose:
-                            print(f"    Result {i+1}: �?{result['title'][:50]}...")
+                            print(f"    Result {i+1}: é?{result['title'][:50]}...")
                             print(f"      URL: {result['url'][:60]}...")
                     else:
                         missing = [f for f in required_fields if f not in result]
                         missing_fields.append(f"Result {i+1} missing: {missing}")
                         if self.verbose:
-                            print(f"    Result {i+1}: �?Missing fields: {missing}")
+                            print(f"    Result {i+1}: é?Missing fields: {missing}")
                 
                 # Log results
                 if valid_results == len(web_results):
@@ -306,19 +306,19 @@ class WebToolsTester:
                         failed_results += 1
                         extraction_details.append(f"Page {i+1}: ERROR - {error}")
                         if self.verbose:
-                            print(f"    Page {i+1}: �?Error - {error}")
+                            print(f"    Page {i+1}: é?Error - {error}")
                     elif content:
                         content_len = len(content)
                         total_content_length += content_len
                         valid_results += 1
                         extraction_details.append(f"Page {i+1}: {title[:40]}... ({content_len} chars)")
                         if self.verbose:
-                            print(f"    Page {i+1}: �?{title[:50]}... - {content_len} characters")
+                            print(f"    Page {i+1}: é?{title[:50]}... - {content_len} characters")
                             print(f"      First 100 chars: {content[:100]}...")
                     else:
                         extraction_details.append(f"Page {i+1}: {title[:40]}... (EMPTY)")
                         if self.verbose:
-                            print(f"    Page {i+1}: �?{title[:50]}... - Empty content")
+                            print(f"    Page {i+1}: é¿?{title[:50]}... - Empty content")
                 
                 # Log results
                 if valid_results > 0:

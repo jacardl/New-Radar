@@ -1,4 +1,4 @@
-"""Tests for gateway /usage command �?agent cache lookup and output fields."""
+"""Tests for gateway /usage command é¥?agent cache lookup and output fields."""
 
 import asyncio
 import threading
@@ -128,7 +128,7 @@ class TestUsageCachedAgent:
 
     @pytest.mark.asyncio
     async def test_no_agent_anywhere_falls_to_history(self):
-        """No running or cached agent �?rough estimate from transcript."""
+        """No running or cached agent é«?rough estimate from transcript."""
         runner = _make_runner(SK)
         event = MagicMock()
 

@@ -611,7 +611,7 @@ class TestToolsetInjection:
 
         fake_toolsets = {
             "hermes-cli": {"tools": ["terminal"], "description": "CLI", "includes": []},
-            # Built-in toolset named "terminal" �?must not be overwritten
+            # Built-in toolset named "terminal" é¥?must not be overwritten
             "terminal": {"tools": ["terminal"], "description": "Terminal tools", "includes": []},
         }
         fake_config = {"terminal": {"command": "npx", "args": []}}
@@ -624,7 +624,7 @@ class TestToolsetInjection:
             from tools.mcp_tool import discover_mcp_tools
             discover_mcp_tools()
 
-        # Built-in toolset preserved �?description unchanged
+        # Built-in toolset preserved é¥?description unchanged
         assert fake_toolsets["terminal"]["description"] == "Terminal tools"
 
     def test_server_connection_failure_skipped(self):
@@ -2881,7 +2881,7 @@ class TestMCPBuiltinCollisionGuard:
         mock_registry = ToolRegistry()
 
         # Pre-register a "built-in" tool with the name that the MCP tool would produce.
-        # Server "abc", tool "search" �?mcp_abc_search
+        # Server "abc", tool "search" é«?mcp_abc_search
         builtin_schema = {
             "name": "mcp_abc_search",
             "description": "A hypothetical built-in",
@@ -2907,7 +2907,7 @@ class TestMCPBuiltinCollisionGuard:
                 _discover_and_register_server("abc", {"command": "test", "args": []})
             )
 
-        # The MCP tool should have been skipped �?built-in preserved.
+        # The MCP tool should have been skipped é¥?built-in preserved.
         assert "mcp_abc_search" not in registered
         assert mock_registry.get_toolset_for_tool("mcp_abc_search") == "web"
 
@@ -2972,7 +2972,7 @@ class TestMCPBuiltinCollisionGuard:
                 _discover_and_register_server("srv", {"command": "test", "args": []})
             )
 
-        # MCP-to-MCP collision is allowed �?the new server wins.
+        # MCP-to-MCP collision is allowed é¥?the new server wins.
         assert "mcp_srv_do_thing" in registered
         assert mock_registry.get_toolset_for_tool("mcp_srv_do_thing") == "mcp-srv"
 

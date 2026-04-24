@@ -105,7 +105,7 @@ def test_enabling_all_clears_filters(capsys):
     }
     tools = [("create_issue", "Create"), ("delete_repo", "Delete")]
 
-    # User checks all tools �?pre_selected would be {0} (include mode),
+    # User checks all tools é¥?pre_selected would be {0} (include mode),
     # so returning {0, 1} is a change
     with patch(_PROBE, return_value={"github": tools}), \
          patch(_CHECKLIST, return_value={0, 1}), \

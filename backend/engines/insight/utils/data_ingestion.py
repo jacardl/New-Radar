@@ -1,4 +1,4 @@
-﻿import os
+ï»¿import os
 import json
 import asyncio
 import requests
@@ -9,7 +9,7 @@ from backend.db.connection import execute_write, fetch_all
 from backend.config import settings
 
 def _run_async(coro):
-    """安全的异步执行包装器，兼容多线程与事件循环环�?""
+    """å®å¨çå¼æ­¥æ§è¡åè£å¨ï¼å¼å®¹å¤çº¿ç¨ä¸äºä»¶å¾ªç¯ç¯ï¿½?""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -23,13 +23,13 @@ def _run_async(coro):
         return asyncio.run(coro)
 
 def ingest_seed_data(seed_id: str):
-    """将用户上传的 seed 文件内容解析并持久化到本地数据库�?""
+    """å°ç¨æ·ä¸ä¼ ç seed æä»¶åå®¹è§£æå¹¶æä¹åå°æ¬å°æ°æ®åºï¿½?""
     root_dir = Path(__file__).parent.parent.parent
     seed_path_json = root_dir / 'final_reports' / 'seeds' / f"{seed_id}.json"
     seed_path_txt = root_dir / 'final_reports' / 'seeds' / f"{seed_id}.txt"
     
     seed_text = ""
-    title = "用户上传的参考资�?Seed)"
+    title = "ç¨æ·ä¸ä¼ çåèèµï¿½?Seed)"
     url = f"seed://{seed_id}/attachment"
     
     if seed_path_json.exists():
@@ -39,18 +39,18 @@ def ingest_seed_data(seed_id: str):
             title = data.get('filename', title)
             url = data.get('fake_url', url)
         except Exception as e:
-            logger.error(f"解析 Seed JSON 失败: {e}")
+            logger.error(f"è§£æ Seed JSON å¤±è´¥: {e}")
     elif seed_path_txt.exists():
         seed_text = seed_path_txt.read_text(encoding='utf-8')
         
     if not seed_text:
         return
         
-    # 高级语义切片：基于段落和句子的重叠切�?(Overlap Chunking)
+    # é«çº§è¯­ä¹åçï¼åºäºæ®µè½åå¥å­çéå åï¿½?(Overlap Chunking)
     import re
     
     def smart_chunking(text: str, max_chunk_len: int = 1000, overlap: int = 150) -> list:
-        # 1. 先按段落切分
+        # 1. åææ®µè½åå
         paragraphs = re.split(r'\n\s*\n', text)
         
         chunks = []
@@ -61,24 +61,24 @@ def ingest_seed_data(seed_id: str):
             if not p:
                 continue
                 
-            # 如果加上这个段落还没超长，就加上�?            if len(current_chunk) + len(p) + 2 <= max_chunk_len:
+            # å¦æå ä¸è¿ä¸ªæ®µè½è¿æ²¡è¶é¿ï¼å°±å ä¸ï¿½?            if len(current_chunk) + len(p) + 2 <= max_chunk_len:
                 current_chunk += ("\n\n" if current_chunk else "") + p
             else:
-                # 已经有一个足够大�?chunk，先保存
+                # å·²ç»æä¸ä¸ªè¶³å¤å¤§ï¿½?chunkï¼åä¿å­
                 if current_chunk:
                     chunks.append(current_chunk)
                     
-                    # 提取 overlap 作为下一�?chunk 的开�?                    # 尽量从标点符号处切分 overlap
+                    # æå overlap ä½ä¸ºä¸ä¸ï¿½?chunk çå¼ï¿½?                    # å°½éä»æ ç¹ç¬¦å·å¤åå overlap
                     overlap_text = current_chunk[-overlap:]
-                    match = re.search(r'[。！�?!?\n]', overlap_text)
+                    match = re.search(r'[ãï¼ï¿½?!?\n]', overlap_text)
                     if match:
                         overlap_start = match.end()
                         current_chunk = overlap_text[overlap_start:].strip()
                     else:
                         current_chunk = overlap_text.strip()
                 
-                # 如果单个段落特别长（超过 max_chunk_len），按句子强行切�?                if len(p) > max_chunk_len:
-                    sentences = re.split(r'([。！�?!?])', p)
+                # å¦æåä¸ªæ®µè½ç¹å«é¿ï¼è¶è¿ max_chunk_lenï¼ï¼æå¥å­å¼ºè¡åï¿½?                if len(p) > max_chunk_len:
+                    sentences = re.split(r'([ãï¼ï¿½?!?])', p)
                     
                     temp_sent = current_chunk
                     for i in range(0, len(sentences) - 1, 2):
@@ -87,7 +87,7 @@ def ingest_seed_data(seed_id: str):
                             chunks.append(temp_sent)
                             
                             overlap_text = temp_sent[-overlap:]
-                            match = re.search(r'[。！�?!?\n]', overlap_text)
+                            match = re.search(r'[ãï¼ï¿½?!?\n]', overlap_text)
                             if match:
                                 temp_sent = overlap_text[match.end():].strip() + " " + sentence
                             else:
@@ -104,15 +104,15 @@ def ingest_seed_data(seed_id: str):
             
         return chunks if chunks else [text]
         
-    # 调用智能切片，理想块大小�?00字，重叠100�?    chunks = smart_chunking(seed_text, max_chunk_len=800, overlap=100)
+    # è°ç¨æºè½åçï¼çæ³åå¤§å°ï¿½?00å­ï¼éå 100ï¿½?    chunks = smart_chunking(seed_text, max_chunk_len=800, overlap=100)
     
     now_ts = int(datetime.now().timestamp() * 1000)
     crawl_date = datetime.now().date()
     
     from utils.embedding import get_embeddings
     
-    # 批量计算 Embedding 以极大提升速度
-    texts_to_embed = [f"{title}_片段{idx+1} {chunk}" for idx, chunk in enumerate(chunks)]
+    # æ¹éè®¡ç® Embedding ä»¥æå¤§æåéåº¦
+    texts_to_embed = [f"{title}_çæ®µ{idx+1} {chunk}" for idx, chunk in enumerate(chunks)]
     try:
         embeddings = get_embeddings(texts_to_embed)
     except Exception as e:
@@ -129,7 +129,7 @@ def ingest_seed_data(seed_id: str):
     from backend.db.connection import execute_write_many
     
     for idx, chunk in enumerate(chunks):
-        chunk_title = f"{title}_片段{idx+1}"
+        chunk_title = f"{title}_çæ®µ{idx+1}"
         news_id = f"seed_{seed_id[:8]}_{now_ts}_{idx}"
         
         emb = embeddings[idx]
@@ -145,46 +145,46 @@ def ingest_seed_data(seed_id: str):
             "desc": chunk,
             "url": url,
             "cdate": crawl_date,
-            "add_ts": now_ts + idx,  # 保证时间戳唯一�?            "emb": emb_str
+            "add_ts": now_ts + idx,  # ä¿è¯æ¶é´æ³å¯ä¸ï¿½?            "emb": emb_str
         }
         all_params.append(params)
         
-        # 单条记录逐一写入 crawler.log
+        # åæ¡è®°å½éä¸åå¥ crawler.log
         log_file = root_dir / "logs" / "crawler.log"
         if log_file.parent.exists():
             with open(log_file, "a", encoding="utf-8") as f:
                 ts_str = datetime.now().strftime('%H:%M:%S')
                 short_title = chunk_title[:40] + '...' if len(chunk_title) > 40 else chunk_title
-                f.write(f"[{ts_str}] [RECORD] 📝 成功插入 [seed] -> [seed_document] {short_title}\n")
+                f.write(f"[{ts_str}] [RECORD] ð æåæå¥ [seed] -> [seed_document] {short_title}\n")
                 
     try:
         if all_params:
             _run_async(execute_write_many(sql, all_params))
             inserted_count = len(all_params)
     except Exception as e:
-        logger.error(f"�?批量插入 Seed 数据分片失败: {e}")
+        logger.error(f"ï¿½?æ¹éæå¥ Seed æ°æ®åçå¤±è´¥: {e}")
     finally:
         from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
         db_utils._engine = None  # Prevent event loop reuse issues
             
-    logger.info(f"�?Seed 文件 ({seed_id}) 已拆分为 {len(chunks)} 个片段并持久化至 daily_news �? 成功插入 {inserted_count} �?)
+    logger.info(f"ï¿½?Seed æä»¶ ({seed_id}) å·²æåä¸º {len(chunks)} ä¸ªçæ®µå¹¶æä¹åè³ daily_news ï¿½? æåæå¥ {inserted_count} ï¿½?)
     
-    # �?seed 总体入库行为记录�?crawler.log
+    # ï¿½?seed æ»ä½å¥åºè¡ä¸ºè®°å½ï¿½?crawler.log
     log_file = root_dir / "logs" / "crawler.log"
     if log_file.parent.exists():
         with open(log_file, "a", encoding="utf-8") as f:
             ts_str = datetime.now().strftime('%H:%M:%S')
-            f.write(f"[{ts_str}] [SYSTEM] 📥 [Seed入库] 成功将用户上传的附件 '{title}' (ID: {seed_id}) 拆分�?{len(chunks)} 条记录并写入本地数据库。\n")
+            f.write(f"[{ts_str}] [SYSTEM] ð¥ [Seedå¥åº] æåå°ç¨æ·ä¸ä¼ çéä»¶ '{title}' (ID: {seed_id}) æåï¿½?{len(chunks)} æ¡è®°å½å¹¶åå¥æ¬å°æ°æ®åºn")
 
 
 def _insert_results_into_db(results, now_ts, source_name):
-    """将抓取结果列表统一写入本地数据�?""
+    """å°æåç»æåè¡¨ç»ä¸åå¥æ¬å°æ°æ®ï¿½?""
     inserted_count = 0
     platform_stats = {"bilibili": 0, "xiaohongshu": 0, "douyin": 0, "weibo": 0, "web_news": 0}
     
     from utils.embedding import get_embeddings
     
-    # 提取所有文本准备进行批量向量化
+    # æåææææ¬åå¤è¿è¡æ¹éåéå
     texts_to_embed = []
     for r in results:
         title = r.get("title", "") or ""
@@ -209,10 +209,10 @@ def _insert_results_into_db(results, now_ts, source_name):
         content = r.get("content", "") or r.get("snippet", "") or r.get("raw_content", "") or ""
         date_str = r.get("date") or r.get("published_date") or r.get("time")
         
-        # 解析时间�?        ts = now_ts
+        # è§£ææ¶é´ï¿½?        ts = now_ts
         if date_str:
             try:
-                # 尝试多种时间格式
+                # å°è¯å¤ç§æ¶é´æ ¼å¼
                 if 'T' in date_str:
                     dt = datetime.fromisoformat(date_str.split('+')[0].strip().replace('Z', ''))
                 else:
@@ -222,7 +222,7 @@ def _insert_results_into_db(results, now_ts, source_name):
             except Exception:
                 pass
                 
-        # 判断路由
+        # å¤æ­è·¯ç±
         sql = ""
         params = {}
         platform_key = ""
@@ -236,41 +236,41 @@ def _insert_results_into_db(results, now_ts, source_name):
             emb_str = None
         
         if "bilibili.com" in url:
-            # 解决 bilibili_video �?video_id �?BigInteger 的问�?            # Web-Access �?B站视�?ID 我们存成负的哈希数值，或者只取其原生的数字aid（如果能提取的话�?            # 最简单的方案是把 video_id 转为随机大整数或利用 url 提取 aid
+            # è§£å³ bilibili_video ï¿½?video_id ï¿½?BigInteger çé®ï¿½?            # Web-Access ï¿½?Bç«è§ï¿½?ID æä»¬å­æè´çåå¸æ°å¼ï¼æèåªåå¶åççæ°å­aidï¼å¦æè½æåçè¯ï¿½?            # æç®åçæ¹æ¡æ¯æ video_id è½¬ä¸ºéæºå¤§æ´æ°æå©ç¨ url æå aid
             import re
             aid_match = re.search(r'av(\d+)', url)
             bvid_match = re.search(r'BV([a-zA-Z0-9]+)', url)
             
-            # 由于 MediaCrawler �?video_id 对应的是 B 站的 aid (int)
-            # 如果没找到，我们可以随机生成一个大的负整数，避免冲�?            if aid_match:
+            # ç±äº MediaCrawler ï¿½?video_id å¯¹åºçæ¯ B ç«ç aid (int)
+            # å¦ææ²¡æ¾å°ï¼æä»¬å¯ä»¥éæºçæä¸ä¸ªå¤§çè´æ´æ°ï¼é¿åå²ï¿½?            if aid_match:
                 video_id = int(aid_match.group(1))
             else:
-                # �?URL hash 成一�?15 位的整数
+                # ï¿½?URL hash æä¸ï¿½?15 ä½çæ´æ°
                 import hashlib
                 hash_int = int(hashlib.md5(url.encode()).hexdigest()[:12], 16)
-                # 转为负数，防止和真实�?aid 冲突
+                # è½¬ä¸ºè´æ°ï¼é²æ­¢åçå®ï¿½?aid å²çª
                 video_id = -hash_int
                 
             sql = "INSERT INTO bilibili_video (title, \"desc\", video_id, video_url, create_time, nickname, extra_info, embedding) VALUES (:t, :d, :vid, :u, :ts, :a, :ei, :emb) ON CONFLICT (video_id) DO NOTHING"
-            params = {"t": title, "d": content, "vid": video_id, "u": url, "ts": ts, "a": "B站用�?, "ei": extra_info_str, "emb": emb_str}
+            params = {"t": title, "d": content, "vid": video_id, "u": url, "ts": ts, "a": "Bç«ç¨ï¿½?, "ei": extra_info_str, "emb": emb_str}
             platform_key = "bilibili"
         elif "xiaohongshu.com" in url:
             sql = "INSERT INTO xhs_note (title, \"desc\", note_url, time, nickname, extra_info, embedding) VALUES (:t, :d, :u, :ts, :a, :ei, :emb) ON CONFLICT (note_id) DO NOTHING"
-            params = {"t": title, "d": content, "u": url, "ts": ts, "a": "小红书用�?, "ei": extra_info_str, "emb": emb_str}
+            params = {"t": title, "d": content, "u": url, "ts": ts, "a": "å°çº¢ä¹¦ç¨ï¿½?, "ei": extra_info_str, "emb": emb_str}
             platform_key = "xiaohongshu"
         elif "douyin.com" in url:
             sql = "INSERT INTO douyin_aweme (title, \"desc\", aweme_url, create_time, nickname, extra_info, embedding) VALUES (:t, :d, :u, :ts, :a, :ei, :emb) ON CONFLICT (aweme_id) DO NOTHING"
-            params = {"t": title, "d": content, "u": url, "ts": ts, "a": "抖音用户", "ei": extra_info_str, "emb": emb_str}
+            params = {"t": title, "d": content, "u": url, "ts": ts, "a": "æé³ç¨æ·", "ei": extra_info_str, "emb": emb_str}
             platform_key = "douyin"
         elif "weibo.com" in url:
             sql = "INSERT INTO weibo_note (content, note_url, create_time, nickname, extra_info, embedding) VALUES (:d, :u, :ts, :a, :ei, :emb) ON CONFLICT (note_id) DO NOTHING"
-            params = {"d": content, "u": url, "ts": ts, "a": "微博用户", "ei": extra_info_str, "emb": emb_str}
+            params = {"d": content, "u": url, "ts": ts, "a": "å¾®åç¨æ·", "ei": extra_info_str, "emb": emb_str}
             platform_key = "weibo"
         else:
             import hashlib
             news_id = f"{source_name}_" + hashlib.md5(url.encode()).hexdigest()[:16]
             crawl_date = datetime.now().date()
-            # 其他全部入每日热点表，标记平台为 web
+            # å¶ä»å¨é¨å¥æ¯æ¥ç­ç¹è¡¨ï¼æ è®°å¹³å°ä¸º web
             sql = "INSERT INTO daily_news (news_id, source_platform, title, description, url, crawl_date, add_ts, last_modify_ts, rank_position, extra_info, embedding) VALUES (:nid, 'web', :t, :d, :u, :cdate, :ts, :ts, 99, :ei, :emb) ON CONFLICT (news_id, source_platform, crawl_date) DO NOTHING"
             params = {"nid": news_id, "t": title, "d": content, "u": url, "cdate": crawl_date, "ts": ts, "ei": extra_info_str, "emb": emb_str}
             platform_key = "web_news"
@@ -283,12 +283,12 @@ def _insert_results_into_db(results, now_ts, source_name):
         platform_keys.append((platform_key, title, content))
 
     try:
-        # 执行批量插入
+        # æ§è¡æ¹éæå¥
         for sql, params_list in sql_batches.items():
             _run_async(execute_write_many(sql, params_list))
             inserted_count += len(params_list)
             
-        # 批量写日�?        log_file = Path("logs/crawler.log")
+        # æ¹éåæ¥ï¿½?        log_file = Path("logs/crawler.log")
         if log_file.parent.exists():
             with open(log_file, "a", encoding="utf-8") as f:
                 for platform_key, title, content in platform_keys:
@@ -296,25 +296,25 @@ def _insert_results_into_db(results, now_ts, source_name):
                     short_title = title[:30] + '...' if len(title) > 30 else title
                     if not short_title:
                         short_title = content[:30] + '...' if len(content) > 30 else content
-                    f.write(f"[{ts_str}] [RECORD] 📝 成功插入 [{source_name}] -> [{platform_key}] {short_title}\n")
+                    f.write(f"[{ts_str}] [RECORD] ð æåæå¥ [{source_name}] -> [{platform_key}] {short_title}\n")
     except Exception as e:
-        err_msg = f"�?批量插入数据失败: {e}"
+        err_msg = f"ï¿½?æ¹éæå¥æ°æ®å¤±è´¥: {e}"
         logger.error(err_msg)
         _write_to_crawler_log("ERROR", err_msg)
     finally:
         from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
         db_utils._engine = None
 
-    details = ", ".join([f"{k}: {v}�? for k, v in platform_stats.items() if v > 0])
+    details = ", ".join([f"{k}: {v}ï¿½? for k, v in platform_stats.items() if v > 0])
     return inserted_count, details
 
 
 def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
     """
-    通过内部 MediaCrawler 子模块实时抓取小红书、抖音等平台数据�?    调用 PlatformCrawler 执行任务，它会将数据存入本地数据库，
-    此时数据没有 embedding。我们需要将刚插入的数据进行向量化�?    """
+    éè¿åé¨ MediaCrawler å­æ¨¡åå®æ¶æåå°çº¢ä¹¦ãæé³ç­å¹³å°æ°æ®ï¿½?    è°ç¨ PlatformCrawler æ§è¡ä»»å¡ï¼å®ä¼å°æ°æ®å­å¥æ¬å°æ°æ®åºï¼
+    æ­¤æ¶æ°æ®æ²¡æ embeddingãæä»¬éè¦å°åæå¥çæ°æ®è¿è¡åéåï¿½?    """
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     try:
         import sys
@@ -325,19 +325,19 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
         from MindSpider.DeepSentimentCrawling.platform_crawler import PlatformCrawler
         crawler = PlatformCrawler()
     except Exception as e:
-        err_msg = f"无法初始�?MediaCrawler，跳过社交媒体平台抓�? {e}"
+        err_msg = f"æ æ³åå§ï¿½?MediaCrawlerï¼è·³è¿ç¤¾äº¤åªä½å¹³å°æï¿½? {e}"
         logger.warning(err_msg)
         _write_to_crawler_log("WARNING", err_msg)
-        return 0, f"MediaCrawler初始化失�? {e}"
+        return 0, f"MediaCrawleråå§åå¤±ï¿½? {e}"
         
-    logger.info(f"🔄 正在通过 MediaCrawler 获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨éè¿ MediaCrawler è·å '{query}' çå¢éæ°ï¿½?..")
     total_inserted = 0
     details = []
     
-    # 根据配置或需求增减平�?    platforms_to_crawl = platforms if platforms else ['xhs', 'dy']
+    # æ ¹æ®éç½®æéæ±å¢åå¹³ï¿½?    platforms_to_crawl = platforms if platforms else ['xhs', 'dy']
     
     try:
-        # 为了避免阻塞过久，这里限�?max_notes=5 �?10
+        # ä¸ºäºé¿åé»å¡è¿ä¹ï¼è¿ééï¿½?max_notes=5 ï¿½?10
         stats = crawler.run_multi_platform_crawl_by_keywords(
             keywords=[query],
             platforms=platforms_to_crawl,
@@ -352,13 +352,13 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
                 total_inserted += notes_count
                 details.append(f"{p}:{notes_count}")
                 
-        # MediaCrawler 执行完成后，数据已经写入本地数据库（例如 xhs_note, douyin_aweme 等表�?        # 但是这些新数据没�?embedding，我们需要在这里触发反向回填（backfill�?        log_file = Path("logs/crawler.log")
+        # MediaCrawler æ§è¡å®æåï¼æ°æ®å·²ç»åå¥æ¬å°æ°æ®åºï¼ä¾å¦ xhs_note, douyin_aweme ç­è¡¨ï¿½?        # ä½æ¯è¿äºæ°æ°æ®æ²¡ï¿½?embeddingï¼æä»¬éè¦å¨è¿éè§¦ååååå¡«ï¼backfillï¿½?        log_file = Path("logs/crawler.log")
         if total_inserted > 0:
-            logger.info("�?MediaCrawler 抓取完毕，准备为新插入的数据生成向量...")
+            logger.info("ï¿½?MediaCrawler æåå®æ¯ï¼åå¤ä¸ºæ°æå¥çæ°æ®çæåé...")
             if log_file.parent.exists():
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts_str = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts_str}] [SYSTEM] 🕷�?MediaCrawler 抓取完成！准备回�?{total_inserted} 条数据的向量。\n")
+                    f.write(f"[{ts_str}] [SYSTEM] ð·ï¿½?MediaCrawler æåå®æï¼åå¤åï¿½?{total_inserted} æ¡æ°æ®çåén")
             
             import asyncio
             from utils.embedding import embedding_service
@@ -368,7 +368,7 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
             async def backfill_embeddings():
                 engine = get_async_engine()
                 async with engine.begin() as conn:
-                    # 检查所有受支持的表
+                    # æ£æ¥ææåæ¯æçè¡¨
                     tables_content_cols = {
                         'xhs_note': 'desc',
                         'douyin_aweme': 'desc',
@@ -380,14 +380,14 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
                     }
                     
                     for tb_name, col_name in tables_content_cols.items():
-                        # 找出没有 embedding 的记�?                        query_sql = text(f"SELECT id, title, {col_name} as content FROM {tb_name} WHERE embedding IS NULL LIMIT 100")
+                        # æ¾åºæ²¡æ embedding çè®°ï¿½?                        query_sql = text(f"SELECT id, title, {col_name} as content FROM {tb_name} WHERE embedding IS NULL LIMIT 100")
                         try:
                             res = await conn.execute(query_sql)
                             rows = res.fetchall()
                             if not rows:
                                 continue
                                 
-                            logger.info(f"�?{tb_name} 发现 {len(rows)} 条无向量记录，开始生�?..")
+                            logger.info(f"ï¿½?{tb_name} åç° {len(rows)} æ¡æ åéè®°å½ï¼å¼å§çï¿½?..")
                             texts_to_embed = []
                             ids = []
                             for r in rows:
@@ -397,28 +397,28 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
                                 texts_to_embed.append(combined)
                                 ids.append(r.id)
                                 
-                                # 写日�?                                if log_file.parent.exists():
+                                # åæ¥ï¿½?                                if log_file.parent.exists():
                                     with open(log_file, "a", encoding="utf-8") as f:
                                         ts_time = datetime.now().strftime('%H:%M:%S')
                                         short_title = t[:30] + '...' if len(t) > 30 else t
                                         if not short_title:
                                             short_title = c[:30] + '...' if len(c) > 30 else c
-                                        f.write(f"[{ts_time}] [RECORD] 📝 成功插入 [MediaCrawler] -> [{tb_name}] {short_title}\n")
+                                        f.write(f"[{ts_time}] [RECORD] ð æåæå¥ [MediaCrawler] -> [{tb_name}] {short_title}\n")
                                 
                             embeddings = embedding_service.get_embeddings(texts_to_embed)
                             
-                            # 更新回数据库
+                            # æ´æ°åæ°æ®åº
                             for idx, emb in zip(ids, embeddings):
                                 # pgvector expects string representation like '[0.1, 0.2, ...]'
                                 emb_str = "[" + ",".join(map(str, emb)) + "]"
                                 update_sql = text(f"UPDATE {tb_name} SET embedding = :emb WHERE id = :id")
                                 await conn.execute(update_sql, {"emb": emb_str, "id": idx})
                                 
-                            logger.info(f"�?�?{tb_name} 成功更新 {len(rows)} 条向量记�?)
+                            logger.info(f"ï¿½?ï¿½?{tb_name} æåæ´æ° {len(rows)} æ¡åéè®°ï¿½?)
                         except Exception as table_err:
-                            # 表可能不存在，跳�?                            continue
+                            # è¡¨å¯è½ä¸å­å¨ï¼è·³ï¿½?                            continue
                             
-            # 运行反向回填任务
+            # è¿è¡åååå¡«ä»»å¡
             try:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
@@ -429,24 +429,24 @@ def ingest_incremental_mediacrawler_data(query: str, platforms: list = None):
                 asyncio.run(backfill_embeddings())
                 
     except Exception as e:
-        err_msg = f"�?MediaCrawler 增量抓取请求失败: {e}"
+        err_msg = f"ï¿½?MediaCrawler å¢éæåè¯·æ±å¤±è´¥: {e}"
         logger.error(err_msg)
         _write_to_crawler_log("ERROR", err_msg)
-        return 0, f"抓取失败: {e}"
+        return 0, f"æåå¤±è´¥: {e}"
         
-    return total_inserted, ", ".join(details) if details else "无新增数�?
+    return total_inserted, ", ".join(details) if details else "æ æ°å¢æ°ï¿½?
 
 def ingest_incremental_anspire_data(query: str):
-    """通过 Anspire API 实时抓取增量数据，并插入到本地对应的数据表中
-    返回: (插入总行�? int, 分平台明�? str)
+    """éè¿ Anspire API å®æ¶æåå¢éæ°æ®ï¼å¹¶æå¥å°æ¬å°å¯¹åºçæ°æ®è¡¨ä¸­
+    è¿å: (æå¥æ»è¡ï¿½? int, åå¹³å°æï¿½? str)
     """
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     anspire_key = os.getenv("ANSPIRE_API_KEY") or getattr(settings, "ANSPIRE_API_KEY", None)
     if not anspire_key:
-        logger.warning("未配�?ANSPIRE_API_KEY，无法执行增量抓�?)
-        return 0, "未配�?API Key"
+        logger.warning("æªéï¿½?ANSPIRE_API_KEYï¼æ æ³æ§è¡å¢éæï¿½?)
+        return 0, "æªéï¿½?API Key"
         
     use_pro = str(os.getenv("ANSPIRE_USE_PRO", "True")).lower() in ("true", "1", "yes", "t")
     target_url = getattr(settings, "ANSPIRE_PRO_BASE_URL", "https://plugin.anspire.cn/api/ntsearch/prosearch") if use_pro else getattr(settings, "ANSPIRE_BASE_URL", "https://plugin.anspire.cn/api/ntsearch/search")
@@ -458,24 +458,24 @@ def ingest_incremental_anspire_data(query: str):
     
     payload = {
         "query": query,
-        "top_k": 100, # 尽可能多地获取数�?        "detail": True # 强制获取详细信息（完�?raw data�?    }
+        "top_k": 100, # å°½å¯è½å¤å°è·åæ°ï¿½?        "detail": True # å¼ºå¶è·åè¯¦ç»ä¿¡æ¯ï¼å®ï¿½?raw dataï¿½?    }
     
-    logger.info(f"🔄 正在�?Anspire 获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨ï¿½?Anspire è·å '{query}' çå¢éæ°ï¿½?..")
     try:
         response = requests.get(target_url, headers=headers, params=payload, timeout=45)
         response.raise_for_status()
         results = response.json().get("results", [])
     except Exception as e:
-        logger.error(f"�?增量抓取请求失败: {e}")
-        return 0, f"请求失败: {e}"
+        logger.error(f"ï¿½?å¢éæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"è¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("未抓取到任何增量数据")
-        return 0, "API 返回 0 条结�?
+        logger.info("æªæåå°ä»»ä½å¢éæ°æ®")
+        return 0, "API è¿å 0 æ¡ç»ï¿½?
         
     now_ts = int(datetime.now().timestamp() * 1000)
     
-    # 【新增机制：保存完整�?raw data�?    import json
+    # ãæ°å¢æºå¶ï¼ä¿å­å®æ´ï¿½?raw dataï¿½?    import json
     from pathlib import Path
     try:
         raw_dir = Path("logs/raw_data")
@@ -483,21 +483,21 @@ def ingest_incremental_anspire_data(query: str):
         raw_file = raw_dir / f"crawler_raw_anspire_{now_ts}.json"
         with open(raw_file, "w", encoding="utf-8") as f:
             json.dump({"query": query, "timestamp": now_ts, "source": "anspire", "results": results}, f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 完整 Raw Data 已保存至: {raw_file}")
+        logger.info(f"ð¾ å®æ´ Raw Data å·²ä¿å­è³: {raw_file}")
     except Exception as e:
-        logger.error(f"�?保存 Raw Data 失败: {e}")
+        logger.error(f"ï¿½?ä¿å­ Raw Data å¤±è´¥: {e}")
 
     inserted_count, details = _insert_results_into_db(results, now_ts, "anspire")
     
-    logger.info(f"�?[Anspire] 增量数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[Anspire] å¢éæ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
 
 def ingest_incremental_duckduckgo_data(query: str):
-    """兜底方案：当没有任何 API Key 时，使用免费�?DuckDuckGo HTML 抓取极其基础的数�?""
+    """ååºæ¹æ¡ï¼å½æ²¡æä»»ä½ API Key æ¶ï¼ä½¿ç¨åè´¹ï¿½?DuckDuckGo HTML æåæå¶åºç¡çæ°ï¿½?""
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
-    logger.info(f"🔄 未配置任何高�?API，启动兜底方�? �?DuckDuckGo 获取 '{query}' 的基础数据...")
+    logger.info(f"ð æªéç½®ä»»ä½é«ï¿½?APIï¼å¯å¨ååºæ¹ï¿½? ï¿½?DuckDuckGo è·å '{query}' çåºç¡æ°æ®...")
     import requests
     from bs4 import BeautifulSoup
     import re
@@ -508,7 +508,7 @@ def ingest_incremental_duckduckgo_data(query: str):
     
     results = []
     try:
-        # 为了防封禁，换一个国内可以访问且无需API Key的替代方案，比如 Sogou 或直接使用内置的模拟数据作为兜底
+        # ä¸ºäºé²å°ç¦ï¼æ¢ä¸ä¸ªå½åå¯ä»¥è®¿é®ä¸æ éAPI Keyçæ¿ä»£æ¹æ¡ï¼æ¯å¦ Sogou æç´æ¥ä½¿ç¨åç½®çæ¨¡ææ°æ®ä½ä¸ºååº
         url = "https://sogou.com/web"
         response = requests.get(url, headers=headers, params={"query": query}, timeout=30)
         response.raise_for_status()
@@ -539,30 +539,30 @@ def ingest_incremental_duckduckgo_data(query: str):
                     "original_data": {"source": "sogou_fallback"}
                 })
                 
-        # 如果爬取失败（被拦截等），返回两条极其基础的模拟数据以防系统崩�?        if not results:
+        # å¦æç¬åå¤±è´¥ï¼è¢«æ¦æªç­ï¼ï¼è¿åä¸¤æ¡æå¶åºç¡çæ¨¡ææ°æ®ä»¥é²ç³»ç»å´©ï¿½?        if not results:
             results = [
                 {
-                    "title": f"关于 {query} 的全网基础分析",
+                    "title": f"å³äº {query} çå¨ç½åºç¡åæ",
                     "url": "local://fallback/1",
-                    "content": f"系统未配置高�?API Key，当前为基础后备搜索结果。包含关键字：{query}�?,
+                    "content": f"ç³»ç»æªéç½®é«ï¿½?API Keyï¼å½åä¸ºåºç¡åå¤æç´¢ç»æãåå«å³é®å­ï¼{query}ï¿½?,
                     "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     "original_data": {"source": "mock_fallback"}
                 },
                 {
-                    "title": f"最�?{query} 趋势报告",
+                    "title": f"æï¿½?{query} è¶å¿æ¥å",
                     "url": "local://fallback/2",
-                    "content": f"这是基础搜索为您返回的兜底数据，以确保流程不中断。如需深度数据，请配置外部 API�?,
+                    "content": f"è¿æ¯åºç¡æç´¢ä¸ºæ¨è¿åçååºæ°æ®ï¼ä»¥ç¡®ä¿æµç¨ä¸ä¸­æ­ãå¦éæ·±åº¦æ°æ®ï¼è¯·éç½®å¤é¨ APIï¿½?,
                     "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     "original_data": {"source": "mock_fallback"}
                 }
             ]
     except Exception as e:
-        logger.error(f"�?兜底抓取请求失败: {e}")
-        return 0, f"兜底请求失败: {e}"
+        logger.error(f"ï¿½?ååºæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"ååºè¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("兜底方案未抓取到任何数据")
-        return 0, "兜底 API 返回 0 条结�?
+        logger.info("ååºæ¹æ¡æªæåå°ä»»ä½æ°æ®")
+        return 0, "ååº API è¿å 0 æ¡ç»ï¿½?
         
     now_ts = int(datetime.now().timestamp() * 1000)
     
@@ -576,33 +576,33 @@ def ingest_incremental_duckduckgo_data(query: str):
         pass
 
     inserted_count, details = _insert_results_into_db(results, now_ts, "fallback_ddg")
-    logger.info(f"�?[兜底方案] 数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[ååºæ¹æ¡] æ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
 
 def ingest_incremental_tavily_data(query: str):
-    """通过 Tavily API 抓取增量数据，插入本地数据表"""
+    """éè¿ Tavily API æåå¢éæ°æ®ï¼æå¥æ¬å°æ°æ®è¡¨"""
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     tavily_key = os.getenv("TAVILY_API_KEY") or getattr(settings, "TAVILY_API_KEY", None)
     if not tavily_key:
-        logger.warning("未配�?TAVILY_API_KEY，跳�?Tavily 抓取")
-        return 0, "未配�?API Key"
+        logger.warning("æªéï¿½?TAVILY_API_KEYï¼è·³ï¿½?Tavily æå")
+        return 0, "æªéï¿½?API Key"
         
-    logger.info(f"🔄 正在�?Tavily 获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨ï¿½?Tavily è·å '{query}' çå¢éæ°ï¿½?..")
     try:
         from tavily import TavilyClient
         client = TavilyClient(api_key=tavily_key)
-        # 强制开启获取全文选项，以获得 raw_content
+        # å¼ºå¶å¼å¯è·åå¨æéé¡¹ï¼ä»¥è·å¾ raw_content
         response_dict = client.search(query=query, topic="general", include_raw_content=True, max_results=100)
         results = response_dict.get("results", [])
     except Exception as e:
-        logger.error(f"�?Tavily 增量抓取请求失败: {e}")
-        return 0, f"请求失败: {e}"
+        logger.error(f"ï¿½?Tavily å¢éæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"è¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("Tavily 未抓取到任何增量数据")
-        return 0, "API 返回 0 条结�?
+        logger.info("Tavily æªæåå°ä»»ä½å¢éæ°æ®")
+        return 0, "API è¿å 0 æ¡ç»ï¿½?
         
     now_ts = int(datetime.now().timestamp() * 1000)
     
@@ -612,25 +612,25 @@ def ingest_incremental_tavily_data(query: str):
         raw_file = raw_dir / f"crawler_raw_tavily_{now_ts}.json"
         with open(raw_file, "w", encoding="utf-8") as f:
             json.dump({"query": query, "timestamp": now_ts, "source": "tavily", "results": results}, f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 完整 Tavily Raw Data 已保存至: {raw_file}")
+        logger.info(f"ð¾ å®æ´ Tavily Raw Data å·²ä¿å­è³: {raw_file}")
     except Exception as e:
         pass
 
     inserted_count, details = _insert_results_into_db(results, now_ts, "tavily")
-    logger.info(f"�?[Tavily] 增量数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[Tavily] å¢éæ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
 
 def ingest_incremental_bocha_data(query: str):
-    """通过 Bocha API 抓取增量数据，插入本地数据表"""
+    """éè¿ Bocha API æåå¢éæ°æ®ï¼æå¥æ¬å°æ°æ®è¡¨"""
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     bocha_key = os.getenv("BOCHA_API_KEY") or os.getenv("BOCHA_WEB_API_KEY") or getattr(settings, "BOCHA_WEB_SEARCH_API_KEY", None)
     if not bocha_key:
-        logger.warning("未配�?BOCHA_API_KEY �?BOCHA_WEB_API_KEY，跳�?Bocha 抓取")
-        return 0, "未配�?API Key"
+        logger.warning("æªéï¿½?BOCHA_API_KEY ï¿½?BOCHA_WEB_API_KEYï¼è·³ï¿½?Bocha æå")
+        return 0, "æªéï¿½?API Key"
         
-    logger.info(f"🔄 正在�?Bocha 获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨ï¿½?Bocha è·å '{query}' çå¢éæ°ï¿½?..")
     url = os.getenv("BOCHA_BASE_URL", "https://api.bocha.cn/v1/web-search")
     headers = {
         "Authorization": f"Bearer {bocha_key}",
@@ -646,14 +646,14 @@ def ingest_incremental_bocha_data(query: str):
         json_resp = response.json()
         results = json_resp.get("data", {}).get("webPages", {}).get("value", [])
     except Exception as e:
-        logger.error(f"�?Bocha 增量抓取请求失败: {e}")
-        return 0, f"请求失败: {e}"
+        logger.error(f"ï¿½?Bocha å¢éæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"è¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("Bocha 未抓取到任何增量数据")
-        return 0, "API 返回 0 条结�?
+        logger.info("Bocha æªæåå°ä»»ä½å¢éæ°æ®")
+        return 0, "API è¿å 0 æ¡ç»ï¿½?
         
-    # 适配 Bocha 的返回字段到统一格式
+    # éé Bocha çè¿åå­æ®µå°ç»ä¸æ ¼å¼
     formatted_results = []
     for r in results:
         formatted_results.append({
@@ -673,29 +673,29 @@ def ingest_incremental_bocha_data(query: str):
         raw_file = raw_dir / f"crawler_raw_bocha_{now_ts}.json"
         with open(raw_file, "w", encoding="utf-8") as f:
             json.dump({"query": query, "timestamp": now_ts, "source": "bocha", "results": formatted_results}, f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 完整 Bocha Raw Data 已保存至: {raw_file}")
+        logger.info(f"ð¾ å®æ´ Bocha Raw Data å·²ä¿å­è³: {raw_file}")
     except Exception as e:
         pass
 
     inserted_count, details = _insert_results_into_db(formatted_results, now_ts, "bocha")
-    logger.info(f"�?[Bocha] 增量数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[Bocha] å¢éæ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
 
 def ingest_incremental_web_access_data(query: str):
-    """通过 Web-Access (�?Firecrawl 或自定义爬虫服务) 抓取增量数据"""
+    """éè¿ Web-Access (ï¿½?Firecrawl æèªå®ä¹ç¬è«æå¡) æåå¢éæ°æ®"""
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     firecrawl_key = os.getenv("FIRECRAWL_API_KEY")
     if not firecrawl_key:
-        logger.info("未配�?FIRECRAWL_API_KEY，跳�?Web-Access 深度抓取")
-        return 0, "未配�?Firecrawl API Key"
+        logger.info("æªéï¿½?FIRECRAWL_API_KEYï¼è·³ï¿½?Web-Access æ·±åº¦æå")
+        return 0, "æªéï¿½?Firecrawl API Key"
         
-    logger.info(f"🔄 正在通过 Web-Access 服务获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨éè¿ Web-Access æå¡è·å '{query}' çå¢éæ°ï¿½?..")
     try:
         import requests
         base_url = os.getenv("FIRECRAWL_API_URL", "https://api.firecrawl.dev/v1")
-        # 兼容后缀
+        # å¼å®¹åç¼
         if not base_url.endswith("/v1") and not base_url.endswith("/v0"):
             if base_url.endswith("/"):
                 base_url = base_url + "v1"
@@ -716,12 +716,12 @@ def ingest_incremental_web_access_data(query: str):
         json_resp = response.json()
         results = json_resp.get("data", [])
     except Exception as e:
-        logger.error(f"�?Web-Access 增量抓取请求失败: {e}")
-        return 0, f"请求失败: {e}"
+        logger.error(f"ï¿½?Web-Access å¢éæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"è¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("Web-Access 未抓取到任何增量数据")
-        return 0, "API 返回 0 条结�?
+        logger.info("Web-Access æªæåå°ä»»ä½å¢éæ°æ®")
+        return 0, "API è¿å 0 æ¡ç»ï¿½?
         
     formatted_results = []
     for r in results:
@@ -741,23 +741,23 @@ def ingest_incremental_web_access_data(query: str):
         raw_file = raw_dir / f"crawler_raw_webaccess_{now_ts}.json"
         with open(raw_file, "w", encoding="utf-8") as f:
             json.dump({"query": query, "timestamp": now_ts, "source": "web_access", "results": formatted_results}, f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 完整 Web-Access Raw Data 已保存至: {raw_file}")
+        logger.info(f"ð¾ å®æ´ Web-Access Raw Data å·²ä¿å­è³: {raw_file}")
     except Exception as e:
         pass
 
     inserted_count, details = _insert_results_into_db(formatted_results, now_ts, "web_access")
-    logger.info(f"�?[Web-Access] 增量数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[Web-Access] å¢éæ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
-    """通过 Anspire API 实时抓取增量数据，并插入到本地对应的数据表中
-    返回: (插入总行�? int, 分平台明�? str)
+    """éè¿ Anspire API å®æ¶æåå¢éæ°æ®ï¼å¹¶æå¥å°æ¬å°å¯¹åºçæ°æ®è¡¨ä¸­
+    è¿å: (æå¥æ»è¡ï¿½? int, åå¹³å°æï¿½? str)
     """
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
         
     anspire_key = os.getenv("ANSPIRE_API_KEY") or getattr(settings, "ANSPIRE_API_KEY", None)
     if not anspire_key:
-        logger.warning("未配�?ANSPIRE_API_KEY，无法执行增量抓�?)
-        return 0, "未配�?API Key"
+        logger.warning("æªéï¿½?ANSPIRE_API_KEYï¼æ æ³æ§è¡å¢éæï¿½?)
+        return 0, "æªéï¿½?API Key"
         
     use_pro = str(os.getenv("ANSPIRE_USE_PRO", "True")).lower() in ("true", "1", "yes", "t")
     target_url = getattr(settings, "ANSPIRE_PRO_BASE_URL", "https://plugin.anspire.cn/api/ntsearch/prosearch") if use_pro else getattr(settings, "ANSPIRE_BASE_URL", "https://plugin.anspire.cn/api/ntsearch/search")
@@ -769,24 +769,24 @@ def ingest_incremental_web_access_data(query: str):
     
     payload = {
         "query": query,
-        "top_k": 100, # 尽可能多地获取数�?        "detail": True # 强制获取详细信息（完�?raw data�?    }
+        "top_k": 100, # å°½å¯è½å¤å°è·åæ°ï¿½?        "detail": True # å¼ºå¶è·åè¯¦ç»ä¿¡æ¯ï¼å®ï¿½?raw dataï¿½?    }
     
-    logger.info(f"🔄 正在�?Anspire 获取 '{query}' 的增量数�?..")
+    logger.info(f"ð æ­£å¨ï¿½?Anspire è·å '{query}' çå¢éæ°ï¿½?..")
     try:
         response = requests.get(target_url, headers=headers, params=payload, timeout=45)
         response.raise_for_status()
         results = response.json().get("results", [])
     except Exception as e:
-        logger.error(f"�?增量抓取请求失败: {e}")
-        return 0, f"请求失败: {e}"
+        logger.error(f"ï¿½?å¢éæåè¯·æ±å¤±è´¥: {e}")
+        return 0, f"è¯·æ±å¤±è´¥: {e}"
         
     if not results:
-        logger.info("未抓取到任何增量数据")
-        return 0, "API 返回 0 条结�?
+        logger.info("æªæåå°ä»»ä½å¢éæ°æ®")
+        return 0, "API è¿å 0 æ¡ç»ï¿½?
         
     now_ts = int(datetime.now().timestamp() * 1000)
     
-    # 【新增机制：保存完整�?raw data�?    import json
+    # ãæ°å¢æºå¶ï¼ä¿å­å®æ´ï¿½?raw dataï¿½?    import json
     from pathlib import Path
     try:
         raw_dir = Path("logs/raw_data")
@@ -794,18 +794,18 @@ def ingest_incremental_web_access_data(query: str):
         raw_file = raw_dir / f"crawler_raw_anspire_{now_ts}.json"
         with open(raw_file, "w", encoding="utf-8") as f:
             json.dump({"query": query, "timestamp": now_ts, "source": "anspire", "results": results}, f, ensure_ascii=False, indent=2)
-        logger.info(f"💾 完整 Raw Data 已保存至: {raw_file}")
+        logger.info(f"ð¾ å®æ´ Raw Data å·²ä¿å­è³: {raw_file}")
     except Exception as e:
-        logger.error(f"�?保存 Raw Data 失败: {e}")
+        logger.error(f"ï¿½?ä¿å­ Raw Data å¤±è´¥: {e}")
 
     inserted_count, details = _insert_results_into_db(results, now_ts, "anspire")
     
-    logger.info(f"�?[Anspire] 增量数据抓取完成: 成功向本地数据库插入 {inserted_count} 条最新记�? 分布: {details}")
+    logger.info(f"ï¿½?[Anspire] å¢éæ°æ®æåå®æ: æååæ¬å°æ°æ®åºæå¥ {inserted_count} æ¡ææ°è®°ï¿½? åå¸: {details}")
     return inserted_count, details
 
 def _write_to_crawler_log(level: str, message: str):
     """
-    将日志实时写入到 crawler.log 中，以便 Web UI 显示�?    """
+    å°æ¥å¿å®æ¶åå¥å° crawler.log ä¸­ï¼ä»¥ä¾¿ Web UI æ¾ç¤ºï¿½?    """
     try:
         log_file = Path("logs/crawler.log")
         if log_file.parent.exists():
@@ -817,17 +817,17 @@ def _write_to_crawler_log(level: str, message: str):
 
 def ingest_all_sources_data(query: str):
     """
-    统一的数据采集入口�?    并行调用配置的所有数据源（Anspire, Bocha 等）�?    并将所有结果聚合写入本地数据库和日志�?    """
+    ç»ä¸çæ°æ®ééå¥å£ï¿½?    å¹¶è¡è°ç¨éç½®çæææ°æ®æºï¼Anspire, Bocha ç­ï¼ï¿½?    å¹¶å°ææç»æèååå¥æ¬å°æ°æ®åºåæ¥å¿ï¿½?    """
     if not query:
-        return 0, "查询为空"
+        return 0, "æ¥è¯¢ä¸ºç©º"
 
-    logger.info(f"🚀 开始全网多源联合采集，关键�? '{query}'")
-    _write_to_crawler_log("SYSTEM", f"🚀 开始全网多源联合采集，关键�? '{query}'")
+    logger.info(f"ð å¼å§å¨ç½å¤æºèåééï¼å³é®ï¿½? '{query}'")
+    _write_to_crawler_log("SYSTEM", f"ð å¼å§å¨ç½å¤æºèåééï¼å³é®ï¿½? '{query}'")
     
     total_inserted = 0
     all_details = []
     
-    # 获取配置中的开关状�?    enable_anspire = str(os.getenv("ENABLE_ANSPIRE", getattr(settings, "ENABLE_ANSPIRE", "True"))).lower() in ("true", "1", "yes", "t")
+    # è·åéç½®ä¸­çå¼å³ç¶ï¿½?    enable_anspire = str(os.getenv("ENABLE_ANSPIRE", getattr(settings, "ENABLE_ANSPIRE", "True"))).lower() in ("true", "1", "yes", "t")
     enable_tavily = str(os.getenv("ENABLE_TAVILY", getattr(settings, "ENABLE_TAVILY", "True"))).lower() in ("true", "1", "yes", "t")
     enable_bocha = str(os.getenv("ENABLE_BOCHA", getattr(settings, "ENABLE_BOCHA", "True"))).lower() in ("true", "1", "yes", "t")
     enable_firecrawl = str(os.getenv("ENABLE_FIRECRAWL", getattr(settings, "ENABLE_FIRECRAWL", "True"))).lower() in ("true", "1", "yes", "t")
@@ -841,11 +841,11 @@ def ingest_all_sources_data(query: str):
                 total_inserted += anspire_count
                 all_details.append(f"[Anspire] {anspire_detail}")
         except Exception as e:
-            err_msg = f"Anspire 采集异常: {e}"
+            err_msg = f"Anspire ééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     else:
-        logger.info("Anspire 爬虫已被禁用，跳过采集�?)
+        logger.info("Anspire ç¬è«å·²è¢«ç¦ç¨ï¼è·³è¿ééï¿½?)
 
     if enable_tavily:
         try:
@@ -854,11 +854,11 @@ def ingest_all_sources_data(query: str):
                 total_inserted += tavily_count
                 all_details.append(f"[Tavily] {tavily_detail}")
         except Exception as e:
-            err_msg = f"Tavily 采集异常: {e}"
+            err_msg = f"Tavily ééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     else:
-        logger.info("Tavily 爬虫已被禁用，跳过采集�?)
+        logger.info("Tavily ç¬è«å·²è¢«ç¦ç¨ï¼è·³è¿ééï¿½?)
 
     if enable_bocha:
         try:
@@ -867,11 +867,11 @@ def ingest_all_sources_data(query: str):
                 total_inserted += bocha_count
                 all_details.append(f"[Bocha] {bocha_detail}")
         except Exception as e:
-            err_msg = f"Bocha 采集异常: {e}"
+            err_msg = f"Bocha ééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     else:
-        logger.info("Bocha 爬虫已被禁用，跳过采集�?)
+        logger.info("Bocha ç¬è«å·²è¢«ç¦ç¨ï¼è·³è¿ééï¿½?)
 
     # Web-Access (Firecrawl)
     if enable_firecrawl:
@@ -881,13 +881,13 @@ def ingest_all_sources_data(query: str):
                 total_inserted += web_count
                 all_details.append(f"[Firecrawl] {web_detail}")
         except Exception as e:
-            err_msg = f"Firecrawl 采集异常: {e}"
+            err_msg = f"Firecrawl ééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     else:
-        logger.info("Firecrawl 爬虫已被禁用，跳过采集�?)
+        logger.info("Firecrawl ç¬è«å·²è¢«ç¦ç¨ï¼è·³è¿ééï¿½?)
 
-    # MediaCrawler (小红书、抖音等社交媒体)
+    # MediaCrawler (å°çº¢ä¹¦ãæé³ç­ç¤¾äº¤åªä½)
     if enable_mediacrawler:
         try:
             mc_count, mc_detail = ingest_incremental_mediacrawler_data(query)
@@ -895,27 +895,27 @@ def ingest_all_sources_data(query: str):
                 total_inserted += mc_count
                 all_details.append(f"[MediaCrawler] {mc_detail}")
         except Exception as e:
-            err_msg = f"MediaCrawler 采集异常: {e}"
+            err_msg = f"MediaCrawler ééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     else:
-        logger.info("MediaCrawler 爬虫已被禁用，跳过采集�?)
+        logger.info("MediaCrawler ç¬è«å·²è¢«ç¦ç¨ï¼è·³è¿ééï¿½?)
 
-    # 兜底方案
+    # ååºæ¹æ¡
     if enable_web_access and total_inserted == 0 and not all_details:
-        logger.warning("⚠️ 警告: 未能通过高级 API 获取数据，将使用 Web-Access (DuckDuckGo) 兜底方案�?)
-        _write_to_crawler_log("SYSTEM", "⚠️ 警告: 未能通过高级 API 获取数据，将使用 Web-Access (DuckDuckGo) 兜底方案�?)
+        logger.warning("â ï¸ è­¦å: æªè½éè¿é«çº§ API è·åæ°æ®ï¼å°ä½¿ç¨ Web-Access (DuckDuckGo) ååºæ¹æ¡ï¿½?)
+        _write_to_crawler_log("SYSTEM", "â ï¸ è­¦å: æªè½éè¿é«çº§ API è·åæ°æ®ï¼å°ä½¿ç¨ Web-Access (DuckDuckGo) ååºæ¹æ¡ï¿½?)
         try:
             ddg_count, ddg_detail = ingest_incremental_duckduckgo_data(query)
             if ddg_count > 0:
                 total_inserted += ddg_count
                 all_details.append(f"[Web-Access] {ddg_detail}")
         except Exception as e:
-            err_msg = f"Web-Access 兜底采集异常: {e}"
+            err_msg = f"Web-Access ååºééå¼å¸¸: {e}"
             logger.error(err_msg)
-            _write_to_crawler_log("ERROR", f"�?{err_msg}")
+            _write_to_crawler_log("ERROR", f"ï¿½?{err_msg}")
     elif not enable_web_access and total_inserted == 0:
-        logger.info("Web-Access 兜底方案已被禁用�?)
+        logger.info("Web-Access ååºæ¹æ¡å·²è¢«ç¦ç¨ï¿½?)
 
-    final_detail = " | ".join(all_details) if all_details else "无新增数�?
+    final_detail = " | ".join(all_details) if all_details else "æ æ°å¢æ°ï¿½?
     return total_inserted, final_detail

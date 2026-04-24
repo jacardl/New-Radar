@@ -1,4 +1,4 @@
-"""Tests for _ThreadedProcessHandle �?the adapter for SDK backends."""
+"""Tests for _ThreadedProcessHandle é¥?the adapter for SDK backends."""
 
 import threading
 import time
@@ -134,11 +134,11 @@ class TestStdoutPipe:
 
     def test_unicode_output(self):
         def exec_fn():
-            return ("hello 世界 🌍\n", 0)
+            return ("hello æ¶æ «æ« é¦å¯¦\n", 0)
 
         handle = _ThreadedProcessHandle(exec_fn)
         handle.wait(timeout=5)
 
         output = handle.stdout.read()
-        assert "世界" in output
-        assert "🌍" in output
+        assert "æ¶æ «æ«" in output
+        assert "é¦å¯¦" in output

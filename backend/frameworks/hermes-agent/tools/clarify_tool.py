@@ -52,7 +52,7 @@ def clarify_tool(
         if len(choices) > MAX_CHOICES:
             choices = choices[:MAX_CHOICES]
         if not choices:
-            choices = None  # empty list ‚Ü?open-ended
+            choices = None  # empty list √©¬´?open-ended
 
     if callback is None:
         return json.dumps(
@@ -89,9 +89,9 @@ CLARIFY_SCHEMA = {
     "description": (
         "Ask the user a question when you need clarification, feedback, or a "
         "decision before proceeding. Supports two modes:\n\n"
-        "1. **Multiple choice** ‚Ä?provide up to 4 choices. The user picks one "
+        "1. **Multiple choice** √©¬•?provide up to 4 choices. The user picks one "
         "or types their own answer via a 5th 'Other' option.\n"
-        "2. **Open-ended** ‚Ä?omit choices entirely. The user types a free-form "
+        "2. **Open-ended** √©¬•?omit choices entirely. The user types a free-form "
         "response.\n\n"
         "Use this tool when:\n"
         "- The task is ambiguous and you need the user to choose an approach\n"
@@ -137,5 +137,5 @@ registry.register(
         choices=args.get("choices"),
         callback=kw.get("callback")),
     check_fn=check_clarify_requirements,
-    emoji="‚ù?,
+    emoji="√©?,
 )

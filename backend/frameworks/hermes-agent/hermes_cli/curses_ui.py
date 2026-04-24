@@ -16,7 +16,7 @@ def flush_stdin() -> None:
     Must be called after ``curses.wrapper()`` (or any terminal-mode library
     like simple_term_menu) returns, **before** the next ``input()`` /
     ``getpass.getpass()`` call.  ``curses.endwin()`` restores the terminal
-    but does NOT drain the OS input buffer �?leftover escape-sequence bytes
+    but does NOT drain the OS input buffer é¥?leftover escape-sequence bytes
     (from arrow keys, terminal mode-switch responses, or rapid keypresses)
     remain buffered and silently get consumed by the next ``input()`` call,
     corrupting user data (e.g. writing ``^[^[`` into .env files).
@@ -90,7 +90,7 @@ def curses_checklist(
                     stdscr.addnstr(0, 0, title, max_x - 1, hattr)
                     stdscr.addnstr(
                         1, 0,
-                        "  ↑↓ navigate  SPACE toggle  ENTER confirm  ESC cancel",
+                        "  é«æå navigate  SPACE toggle  ENTER confirm  ESC cancel",
                         max_x - 1, curses.A_DIM,
                     )
                 except curses.error:
@@ -109,8 +109,8 @@ def curses_checklist(
                     y = draw_i + 3
                     if y >= max_y - 1 - footer_rows:
                         break
-                    check = "�? if i in chosen else " "
-                    arrow = "�? if i == cursor else " "
+                    check = "é? if i in chosen else " "
+                    arrow = "é«? if i == cursor else " "
                     line = f" {arrow} [{check}] {items[i]}"
                     attr = curses.A_NORMAL
                     if i == cursor:
@@ -330,7 +330,7 @@ def curses_single_select(
                     stdscr.addnstr(0, 0, title, max_x - 1, hattr)
                     stdscr.addnstr(
                         1, 0,
-                        "  ↑↓ navigate  ENTER confirm  ESC/q cancel",
+                        "  é«æå navigate  ENTER confirm  ESC/q cancel",
                         max_x - 1, curses.A_DIM,
                     )
                 except curses.error:
@@ -348,7 +348,7 @@ def curses_single_select(
                     y = draw_i + 3
                     if y >= max_y - 1:
                         break
-                    arrow = "�? if i == cursor else " "
+                    arrow = "é«? if i == cursor else " "
                     line = f" {arrow} {all_items[i]}"
                     attr = curses.A_NORMAL
                     if i == cursor:
@@ -424,7 +424,7 @@ def _numbered_fallback(
 
     while True:
         for i, label in enumerate(items):
-            marker = color("[✓]", Colors.GREEN) if i in chosen else "[ ]"
+            marker = color("[éæ®", Colors.GREEN) if i in chosen else "[ ]"
             print(f"  {marker} {i + 1:>2}. {label}")
         if status_fn:
             status_text = status_fn(chosen)

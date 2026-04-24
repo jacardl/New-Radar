@@ -1,4 +1,4 @@
-"""hermes webhook �?manage dynamic webhook subscriptions from the CLI.
+"""hermes webhook é¥?manage dynamic webhook subscriptions from the CLI.
 
 Usage:
     hermes webhook subscribe <name> [options]
@@ -193,7 +193,7 @@ def _cmd_list(args):
         events = ", ".join(route.get("events", [])) or "(all)"
         deliver = route.get("deliver", "log")
         desc = route.get("description", "")
-        print(f"  �?{name}")
+        print(f"  é¼?{name}")
         if desc:
             print(f"    {desc}")
         print(f"    URL:     {base_url}/webhooks/{name}")

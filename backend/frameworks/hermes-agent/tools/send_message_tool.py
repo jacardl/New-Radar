@@ -446,7 +446,7 @@ async def _send_to_platform(platform, pconfig, chat_id, message, thread_id=None,
 async def _send_telegram(token, chat_id, message, media_files=None, thread_id=None):
     """Send via Telegram Bot API (one-shot, no polling needed).
 
-    Applies markdown→MarkdownV2 formatting (same as the gateway adapter)
+    Applies markdowné«æ¢arkdownV2 formatting (same as the gateway adapter)
     so that bold, links, and headers render correctly.  If the message
     already contains HTML tags, it is sent with ``parse_mode='HTML'``
     instead, bypassing MarkdownV2 conversion.
@@ -455,15 +455,15 @@ async def _send_telegram(token, chat_id, message, media_files=None, thread_id=No
         from telegram import Bot
         from telegram.constants import ParseMode
 
-        # Auto-detect HTML tags �?if present, skip MarkdownV2 and send as HTML.
-        # Inspired by github.com/ashaney �?PR #1568.
+        # Auto-detect HTML tags é¥?if present, skip MarkdownV2 and send as HTML.
+        # Inspired by github.com/ashaney é¥?PR #1568.
         _has_html = bool(re.search(r'<[a-zA-Z/][^>]*>', message))
 
         if _has_html:
             formatted = message
             send_parse_mode = ParseMode.HTML
         else:
-            # Reuse the gateway adapter's format_message for markdown→MarkdownV2
+            # Reuse the gateway adapter's format_message for markdowné«æ¢arkdownV2
             try:
                 from gateway.platforms.telegram import TelegramAdapter
                 _adapter = TelegramAdapter.__new__(TelegramAdapter)
@@ -738,7 +738,7 @@ async def _send_sms(auth_token, chat_id, message):
     if not account_sid or not auth_token or not from_number:
         return {"error": "SMS not configured (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER required)"}
 
-    # Strip markdown �?SMS renders it as literal characters
+    # Strip markdown é¥?SMS renders it as literal characters
     message = re.sub(r"\*\*(.+?)\*\*", r"\1", message, flags=re.DOTALL)
     message = re.sub(r"\*(.+?)\*", r"\1", message, flags=re.DOTALL)
     message = re.sub(r"__(.+?)__", r"\1", message, flags=re.DOTALL)
@@ -1102,5 +1102,5 @@ registry.register(
     schema=SEND_MESSAGE_SCHEMA,
     handler=send_message_tool,
     check_fn=_check_send_message,
-    emoji="📨",
+    emoji="é¦æ ",
 )

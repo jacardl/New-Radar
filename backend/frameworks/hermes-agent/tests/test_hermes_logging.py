@@ -1,4 +1,4 @@
-"""Tests for hermes_logging �?centralized logging setup."""
+"""Tests for hermes_logging é¥?centralized logging setup."""
 
 import logging
 import os
@@ -25,7 +25,7 @@ def _reset_logging_state():
     """
     hermes_logging._logging_initialized = False
     root = logging.getLogger()
-    # Strip ALL RotatingFileHandlers �?not just the ones we added �?so that
+    # Strip ALL RotatingFileHandlers é¥?not just the ones we added é¥?so that
     # handlers leaked from other test modules in the same xdist worker don't
     # pollute our counts.
     pre_existing = []
@@ -38,7 +38,7 @@ def _reset_logging_state():
     # Ensure the record factory is installed (it's idempotent).
     hermes_logging._install_session_record_factory()
     yield
-    # Restore �?remove any handlers added during the test.
+    # Restore é¥?remove any handlers added during the test.
     for h in list(root.handlers):
         if h not in pre_existing:
             root.removeHandler(h)
@@ -92,7 +92,7 @@ class TestSetupLogging:
 
     def test_idempotent_no_duplicate_handlers(self, hermes_home):
         hermes_logging.setup_logging(hermes_home=hermes_home)
-        hermes_logging.setup_logging(hermes_home=hermes_home)  # second call �?should be no-op
+        hermes_logging.setup_logging(hermes_home=hermes_home)  # second call é¥?should be no-op
 
         root = logging.getLogger()
         agent_handlers = [
@@ -375,7 +375,7 @@ class TestSessionContext:
         assert "[xyz789]" not in content
 
     def test_session_context_thread_isolated(self, hermes_home):
-        """Session context is per-thread �?one thread's context doesn't leak."""
+        """Session context is per-thread é¥?one thread's context doesn't leak."""
         hermes_logging.setup_logging(hermes_home=hermes_home)
 
         results = {}
@@ -639,7 +639,7 @@ class TestAddRotatingHandler:
 
         handlers = [h for h in logger.handlers if isinstance(h, RotatingFileHandler)]
         assert len(handlers) == 1
-        # No _SessionFilter on the handler �?record factory handles it
+        # No _SessionFilter on the handler é¥?record factory handles it
         assert len(handlers[0].filters) == 0
 
         # But session_tag still works (via record factory)

@@ -262,7 +262,7 @@ class TestCamofoxEvalFix:
         """_camofox_eval should pass task_id string to _ensure_tab, not a session dict."""
         import tools.browser_tool as bt
         src = inspect.getsource(bt._camofox_eval)
-        # Should NOT call _get_session at all �?_ensure_tab handles it
+        # Should NOT call _get_session at all é¥?_ensure_tab handles it
         assert "_get_session" not in src, \
             "_camofox_eval should not call _get_session (removed unused import)"
         # Should use body= not json_data=

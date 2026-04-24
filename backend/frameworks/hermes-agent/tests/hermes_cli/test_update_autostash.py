@@ -459,7 +459,7 @@ def test_cmd_update_no_reset_when_ff_only_succeeds(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Non-main branch �?auto-checkout main
+# Non-main branch é«?auto-checkout main
 # ---------------------------------------------------------------------------
 
 def test_cmd_update_switches_to_main_from_feature_branch(monkeypatch, tmp_path, capsys):
@@ -546,7 +546,7 @@ def test_cmd_update_no_checkout_when_already_on_main(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Fetch failure �?friendly error messages
+# Fetch failure é¥?friendly error messages
 # ---------------------------------------------------------------------------
 
 def test_cmd_update_network_error_shows_friendly_message(monkeypatch, tmp_path, capsys):
@@ -584,7 +584,7 @@ def test_cmd_update_auth_error_shows_friendly_message(monkeypatch, tmp_path, cap
 
 
 # ---------------------------------------------------------------------------
-# reset --hard failure �?don't attempt stash restore
+# reset --hard failure é¥?don't attempt stash restore
 # ---------------------------------------------------------------------------
 
 def test_cmd_update_skips_stash_restore_when_reset_fails(monkeypatch, tmp_path, capsys):

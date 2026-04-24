@@ -221,7 +221,7 @@ class TestHonchoUserIdScoping:
         mock_cfg.enabled = True
         mock_cfg.api_key = "test-key"
         mock_cfg.base_url = None
-        mock_cfg.peer_name = ""  # No explicit peer_name �?user_id should fill it
+        mock_cfg.peer_name = ""  # No explicit peer_name é¥?user_id should fill it
         mock_cfg.recall_mode = "tools"  # Use tools mode to defer session init
 
         with patch(

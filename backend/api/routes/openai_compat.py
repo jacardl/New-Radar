@@ -3,9 +3,9 @@
 OpenAI-compatible API Blueprint for New Radar.
 
 Exposes:
-- POST /v1/chat/completions  — OpenAI Chat Completions API
-- GET  /v1/models            — List available models
-- GET  /health               — Health check
+- POST /v1/chat/completions  - OpenAI Chat Completions API
+- GET  /v1/models            - List available models
+- GET  /health               - Health check
 
 Supports streaming (text/event-stream) and non-streaming responses.
 Designed for integration with Open WebUI, LobeChat, and other OpenAI-compatible frontends.
@@ -162,7 +162,7 @@ def chat_completions():
             content = dispatcher.analyze(user_message)
         except Exception as e:
             logger.exception("Non-streaming chat completion failed")
-            content = f"分析失败: {str(e)}"
+            content = f"åæå¤±è´¥: {str(e)}"
 
         response = dispatcher._build_non_stream_response(completion_id, model, created, content)
         return jsonify(response)
@@ -216,7 +216,7 @@ def sentiment_analysis():
 
     POST /v1/sentiment
     Body (JSON):
-        - texts: str or List[str] — text(s) to analyze
+        - texts: str or List[str] - text(s) to analyze
     """
     api_key_error = _check_api_key()
     if api_key_error:

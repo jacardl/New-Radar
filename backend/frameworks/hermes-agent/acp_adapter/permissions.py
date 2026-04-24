@@ -1,4 +1,4 @@
-"""ACP permission bridging �?maps ACP approval requests to hermes approval callbacks."""
+"""ACP permission bridging é¥?maps ACP approval requests to hermes approval callbacks."""
 
 from __future__ import annotations
 

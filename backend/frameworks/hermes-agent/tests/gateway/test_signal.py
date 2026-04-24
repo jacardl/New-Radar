@@ -235,7 +235,7 @@ class TestSignalAttachmentFetch:
         call = captured[0]
         assert call["method"] == "getAttachment"
         assert call["params"]["id"] == "attachment-123"
-        assert "attachmentId" not in call["params"], "Must NOT use 'attachmentId' �?causes NullPointerException in signal-cli"
+        assert "attachmentId" not in call["params"], "Must NOT use 'attachmentId' é¥?causes NullPointerException in signal-cli"
         assert call["params"]["account"] == "+15551234567"
 
     @pytest.mark.asyncio
@@ -352,7 +352,7 @@ class TestSignalAuthorization:
         source.platform = Platform.SIGNAL
         source.user_id = "+15559999999"
 
-        # No allowlists set �?should check GATEWAY_ALLOW_ALL_USERS
+        # No allowlists set é¥?should check GATEWAY_ALLOW_ALL_USERS
         with patch.dict("os.environ", {}, clear=True):
             result = gw._is_user_authorized(source)
             assert result is False
@@ -395,7 +395,7 @@ class TestSignalSendImageFile:
         assert captured[0]["params"]["account"] == adapter.account
         assert captured[0]["params"]["recipient"] == ["+155****4567"]
         assert captured[0]["params"]["attachments"] == [str(img_path)]
-        assert captured[0]["params"]["message"] == ""  # caption=None �?""
+        assert captured[0]["params"]["message"] == ""  # caption=None é«?""
         # Typing indicator must be stopped before sending
         adapter._stop_typing_indicator.assert_awaited_once_with("+155****4567")
         # Timestamp must be tracked for echo-back prevention
@@ -489,7 +489,7 @@ class TestSignalSendVoice:
         assert result.success is True
         assert captured[0]["method"] == "send"
         assert captured[0]["params"]["attachments"] == [str(audio_path)]
-        assert captured[0]["params"]["message"] == ""  # caption=None �?""
+        assert captured[0]["params"]["message"] == ""  # caption=None é«?""
         adapter._stop_typing_indicator.assert_awaited_once_with("+155****4567")
         assert 1234567890 in adapter._recent_sent_timestamps
 
@@ -578,7 +578,7 @@ class TestSignalSendVideo:
         assert result.success is True
         assert captured[0]["method"] == "send"
         assert captured[0]["params"]["attachments"] == [str(vid_path)]
-        assert captured[0]["params"]["message"] == ""  # caption=None �?""
+        assert captured[0]["params"]["message"] == ""  # caption=None é«?""
         adapter._stop_typing_indicator.assert_awaited_once_with("+155****4567")
         assert 1234567890 in adapter._recent_sent_timestamps
 
@@ -635,7 +635,7 @@ class TestSignalSendVideo:
 # ---------------------------------------------------------------------------
 
 class TestSignalMediaExtraction:
-    """Verify the full pipeline: MEDIA: tag �?extract �?send_image_file/send_voice."""
+    """Verify the full pipeline: MEDIA: tag é«?extract é«?send_image_file/send_voice."""
 
     def test_extract_media_finds_image_tag(self):
         """BasePlatformAdapter.extract_media should find MEDIA: image paths."""
@@ -715,7 +715,7 @@ class TestSignalSendDocumentViaHelper:
 
 class TestSignalSendReturnsMessageId:
     """Signal send() must return a timestamp-based message_id so the stream
-    consumer can follow its edit→fallback path correctly."""
+    consumer can follow its edité«æallback path correctly."""
 
     @pytest.mark.asyncio
     async def test_send_returns_timestamp_as_message_id(self, monkeypatch):

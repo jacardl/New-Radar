@@ -155,11 +155,11 @@ def test_check_gateway_service_linger_skips_when_service_not_installed(monkeypat
     assert issues == []
 
 
-# ── Memory provider section (doctor should only check the *active* provider) ──
+# -- Memory provider section (doctor should only check the *active* provider) --
 
 
 class TestDoctorMemoryProviderSection:
-    """The �?Memory Provider section should respect memory.provider config."""
+    """The â?Memory Provider section should respect memory.provider config."""
 
     def _make_hermes_home(self, tmp_path, provider=""):
         """Create a minimal HERMES_HOME with config.yaml."""
@@ -287,7 +287,7 @@ def test_run_doctor_termux_does_not_mark_browser_available_without_agent_browser
         doctor_mod.run_doctor(Namespace(fix=False))
     out = buf.getvalue()
 
-    assert "�?browser" not in out
+    assert "â?browser" not in out
     assert "browser" in out
     assert "system dependency not met" in out
     assert "agent-browser is not installed (expected in the tested Termux path)" in out

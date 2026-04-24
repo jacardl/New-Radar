@@ -4,10 +4,10 @@ Hermes Plugin System
 
 Discovers, loads, and manages plugins from three sources:
 
-1. **User plugins**   �?``~/.hermes/plugins/<name>/``
-2. **Project plugins** �?``./.hermes/plugins/<name>/`` (opt-in via
+1. **User plugins**   é¥?``~/.hermes/plugins/<name>/``
+2. **Project plugins** é¥?``./.hermes/plugins/<name>/`` (opt-in via
    ``HERMES_ENABLE_PROJECT_PLUGINS``)
-3. **Pip plugins**     �?packages that expose the ``hermes_agent.plugins``
+3. **Pip plugins**     é¥?packages that expose the ``hermes_agent.plugins``
    entry-point group.
 
 Each directory plugin must contain a ``plugin.yaml`` manifest **and** an
@@ -42,7 +42,7 @@ from utils import env_var_enabled
 
 try:
     import yaml
-except ImportError:  # pragma: no cover �?yaml is optional at import time
+except ImportError:  # pragma: no cover é¥?yaml is optional at import time
     yaml = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class LoadedPlugin:
 
 
 # ---------------------------------------------------------------------------
-# PluginContext  �?handed to each plugin's ``register()`` function
+# PluginContext  é¥?handed to each plugin's ``register()`` function
 # ---------------------------------------------------------------------------
 
 class PluginContext:
@@ -179,10 +179,10 @@ class PluginContext:
         msg = content if role == "user" else f"[{role}] {content}"
 
         if getattr(cli, "_agent_running", False):
-            # Agent is mid-turn �?interrupt with the message
+            # Agent is mid-turn é¥?interrupt with the message
             cli._interrupt_queue.put(msg)
         else:
-            # Agent is idle �?queue as next input
+            # Agent is idle é¥?queue as next input
             cli._pending_input.put(msg)
         return True
 
@@ -343,7 +343,7 @@ class PluginManager:
 
             try:
                 if yaml is None:
-                    logger.warning("PyYAML not installed �?cannot load %s", manifest_file)
+                    logger.warning("PyYAML not installed é¥?cannot load %s", manifest_file)
                     continue
                 data = yaml.safe_load(manifest_file.read_text()) or {}
                 manifest = PluginManifest(
@@ -511,9 +511,9 @@ class PluginManager:
             "recalled text..."          # plain string, equivalent
 
         Context is ALWAYS injected into the user message, never the
-        system prompt.  This preserves the prompt cache prefix �?the
+        system prompt.  This preserves the prompt cache prefix é¥?the
         system prompt stays identical across turns so cached tokens
-        are reused.  All injected context is ephemeral �?never
+        are reused.  All injected context is ephemeral é¥?never
         persisted to session DB.
         """
         callbacks = self._hooks.get(hook_name, [])
@@ -663,7 +663,7 @@ def get_plugin_toolsets() -> List[tuple]:
     result = []
     for ts_key in sorted(toolset_tools):
         plugin = toolset_plugin.get(ts_key)
-        label = f"🔌 {ts_key.replace('_', ' ').title()}"
+        label = f"é¦æ² {ts_key.replace('_', ' ').title()}"
         if plugin and plugin.manifest.description:
             desc = plugin.manifest.description
         else:

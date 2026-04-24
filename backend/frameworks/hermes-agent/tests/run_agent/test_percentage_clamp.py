@@ -8,7 +8,7 @@ memory tool output.
 """
 
 class TestMemoryToolPercentClamp:
-    """tools/memory_tool.py �?_success_response and _render_block pct"""
+    """tools/memory_tool.py é¥?_success_response and _render_block pct"""
 
     def test_over_limit_clamped_at_100(self):
         """Percentage should be capped at 100 even if current > limit."""
@@ -32,7 +32,7 @@ class TestMemoryToolPercentClamp:
 
 
 class TestCLIStatsPercentClamp:
-    """cli.py �?/stats command percentage"""
+    """cli.py é¥?/stats command percentage"""
 
     def test_over_context_clamped_at_100(self):
         """Tokens exceeding context_length should show max 100%."""
@@ -55,7 +55,7 @@ class TestCLIStatsPercentClamp:
 
 
 class TestGatewayStatsPercentClamp:
-    """gateway/run.py �?_format_usage_stats percentage"""
+    """gateway/run.py é¥?_format_usage_stats percentage"""
 
     def test_over_context_clamped_at_100(self):
         last_prompt_tokens = 210_000

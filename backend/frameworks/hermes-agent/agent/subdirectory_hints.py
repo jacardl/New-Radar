@@ -100,7 +100,7 @@ class SubdirectoryHintTracker:
             if isinstance(val, str) and val.strip():
                 self._add_path_candidate(val, candidates)
 
-        # Shell commands �?extract path-like tokens
+        # Shell commands é¥?extract path-like tokens
         if tool_name in _COMMAND_TOOLS:
             cmd = args.get("command", "")
             if isinstance(cmd, str):
@@ -125,7 +125,7 @@ class SubdirectoryHintTracker:
             # Use parent if it's a file path (has extension or doesn't exist as dir)
             if p.suffix or (p.exists() and p.is_file()):
                 p = p.parent
-            # Walk up ancestors �?stop at already-loaded or root
+            # Walk up ancestors é¥?stop at already-loaded or root
             for _ in range(_MAX_ANCESTOR_WALK):
                 if p in self._loaded_dirs:
                     break

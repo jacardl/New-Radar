@@ -23,6 +23,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    command: python backend/app.py
 
   db:
     image: pgvector/pgvector:pg15
@@ -54,5 +55,22 @@ services:
       db:
         condition: service_healthy
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: radar-open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - OAI_API_BASE=http://radar:5000/v1
+      - WEBUI_SECRET_KEY=${OPEN_WEBUI_SECRET:-your-secret-key}
+    volumes:
+      - open_webui_data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - radar
+
 volumes:
   radar_db_data:
+  open_webui_data:

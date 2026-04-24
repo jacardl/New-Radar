@@ -1,4 +1,4 @@
-"""Tests for parent→subparser flag propagation.
+"""Tests for parenté«æ¯ubparser flag propagation.
 
 When flags like --yolo, -w, -s exist on both the parent parser and the 'chat'
 subparser, placing the flag BEFORE the subcommand (e.g. 'hermes --yolo chat')
@@ -139,7 +139,7 @@ class TestNoSubcommandDefaults:
 class TestYoloEnvVar:
     """Verify --yolo sets HERMES_YOLO_MODE regardless of flag position.
 
-    This tests the actual cmd_chat logic pattern (getattr �?os.environ).
+    This tests the actual cmd_chat logic pattern (getattr é«?os.environ).
     """
 
     @pytest.fixture(autouse=True)

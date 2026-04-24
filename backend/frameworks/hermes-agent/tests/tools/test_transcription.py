@@ -1,4 +1,4 @@
-"""Tests for transcription_tools.py �?local (faster-whisper) and OpenAI providers.
+"""Tests for transcription_tools.py é¥?local (faster-whisper) and OpenAI providers.
 
 Tests cover provider selection, config loading, validation, and transcription
 dispatch.  All external dependencies (faster_whisper, openai) are mocked.
@@ -54,7 +54,7 @@ class TestGetProvider:
             assert _get_provider({"provider": "openai"}) == "openai"
 
     def test_explicit_openai_no_key_returns_none(self, monkeypatch):
-        """Explicit openai without key returns none �?no cross-provider fallback."""
+        """Explicit openai without key returns none é¥?no cross-provider fallback."""
         monkeypatch.delenv("VOICE_TOOLS_OPENAI_KEY", raising=False)
         with patch("tools.transcription_tools._HAS_FASTER_WHISPER", True), \
              patch("tools.transcription_tools._HAS_OPENAI", True):

@@ -24,7 +24,7 @@ from hermes_cli.plugins import (
 )
 
 
-# ── Helpers ────────────────────────────────────────────────────────────────
+# -- Helpers ----------------------------------------------------------------
 
 
 def _make_plugin_dir(base: Path, name: str, *, register_body: str = "pass",
@@ -44,7 +44,7 @@ def _make_plugin_dir(base: Path, name: str, *, register_body: str = "pass",
     return plugin_dir
 
 
-# ── TestPluginDiscovery ────────────────────────────────────────────────────
+# -- TestPluginDiscovery ----------------------------------------------------
 
 
 class TestPluginDiscovery:
@@ -138,7 +138,7 @@ class TestPluginDiscovery:
         assert "ep_plugin" in mgr._plugins
 
 
-# ── TestPluginLoading ──────────────────────────────────────────────────────
+# -- TestPluginLoading ------------------------------------------------------
 
 
 class TestPluginLoading:
@@ -190,7 +190,7 @@ class TestPluginLoading:
         assert "hermes_plugins.ns_plugin" in sys.modules
 
 
-# ── TestPluginHooks ────────────────────────────────────────────────────────
+# -- TestPluginHooks --------------------------------------------------------
 
 
 class TestPluginHooks:
@@ -355,7 +355,7 @@ class TestPreToolCallBlocking:
         assert get_pre_tool_call_block_message("terminal", {}) == "first blocker"
 
 
-# ── TestPluginContext ──────────────────────────────────────────────────────
+# -- TestPluginContext ------------------------------------------------------
 
 
 class TestPluginContext:
@@ -387,7 +387,7 @@ class TestPluginContext:
         assert "plugin_echo" in registry._tools
 
 
-# ── TestPluginToolVisibility ───────────────────────────────────────────────
+# -- TestPluginToolVisibility -----------------------------------------------
 
 
 class TestPluginToolVisibility:
@@ -434,7 +434,7 @@ class TestPluginToolVisibility:
         assert "vis_tool" in tool_names3
 
 
-# ── TestPluginManagerList ──────────────────────────────────────────────────
+# -- TestPluginManagerList --------------------------------------------------
 
 
 class TestPluginManagerList:
@@ -564,7 +564,7 @@ class TestPreLlmCallTargetRouting:
     def test_routing_logic_all_to_user_message(self, tmp_path, monkeypatch):
         """Simulate the routing logic from run_agent.py.
 
-        All plugin context �?dicts and plain strings �?ends up in a single
+        All plugin context â?dicts and plain strings â?ends up in a single
         user message context string. There is no system_prompt target.
         """
         plugins_dir = tmp_path / "hermes_test" / "plugins"
@@ -590,7 +590,7 @@ class TestPreLlmCallTargetRouting:
             conversation_history=[], is_first_turn=True, model="test",
         )
 
-        # Replicate run_agent.py routing logic �?everything goes to user msg
+        # Replicate run_agent.py routing logic â?everything goes to user msg
         _ctx_parts = []
         for r in results:
             if isinstance(r, dict) and r.get("context"):
@@ -605,7 +605,7 @@ class TestPreLlmCallTargetRouting:
         assert "plain text C" in _plugin_user_context
 
 
-# NOTE: TestPluginCommands removed �?register_command() was never implemented
+# NOTE: TestPluginCommands removed â?register_command() was never implemented
 # in PluginContext (hermes_cli/plugins.py).  The tests referenced _plugin_commands,
 # commands_registered, get_plugin_command_handler, and GATEWAY_KNOWN_COMMANDS
-# integration �?all of which are unimplemented features.
+# integration â?all of which are unimplemented features.

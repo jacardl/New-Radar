@@ -14,7 +14,7 @@ def _make_cli(enabled_toolsets=None):
     return cli_obj
 
 
-# ── /tools (no subcommand) ──────────────────────────────────────────────────
+# -- /tools (no subcommand) --------------------------------------------------
 
 
 class TestToolsSlashNoSubcommand:
@@ -32,7 +32,7 @@ class TestToolsSlashNoSubcommand:
         mock_show.assert_called_once()
 
 
-# ── /tools list ─────────────────────────────────────────────────────────────
+# -- /tools list -------------------------------------------------------------
 
 
 class TestToolsSlashList:
@@ -47,7 +47,7 @@ class TestToolsSlashList:
         assert "web" in out
 
     def test_list_does_not_modify_enabled_toolsets(self):
-        """List is read-only �?self.enabled_toolsets must not change."""
+        """List is read-only â?self.enabled_toolsets must not change."""
         cli_obj = _make_cli(["web", "memory"])
         with patch("hermes_cli.tools_config.load_config",
                    return_value={"platform_toolsets": {"cli": ["web"]}}):
@@ -55,7 +55,7 @@ class TestToolsSlashList:
         assert cli_obj.enabled_toolsets == {"web", "memory"}
 
 
-# ── /tools disable (session reset) ──────────────────────────────────────────
+# -- /tools disable (session reset) ------------------------------------------
 
 
 class TestToolsSlashDisableWithReset:
@@ -74,7 +74,7 @@ class TestToolsSlashDisableWithReset:
         assert "web" not in cli_obj.enabled_toolsets
 
     def test_disable_does_not_prompt_for_confirmation(self):
-        """Disable no longer uses input() �?it applies directly."""
+        """Disable no longer uses input() â?it applies directly."""
         cli_obj = _make_cli(["web", "memory"])
         with patch("hermes_cli.tools_config.load_config",
                    return_value={"platform_toolsets": {"cli": ["web", "memory"]}}), \
@@ -105,7 +105,7 @@ class TestToolsSlashDisableWithReset:
         assert "Usage" in out
 
 
-# ── /tools enable (session reset) ───────────────────────────────────────────
+# -- /tools enable (session reset) -------------------------------------------
 
 
 class TestToolsSlashEnableWithReset:

@@ -1,13 +1,13 @@
-"""Tests for agent/model_metadata.py �?token estimation, context lengths,
+"""Tests for agent/model_metadata.py é¥?token estimation, context lengths,
 probing, caching, and error parsing.
 
 Coverage levels:
-  Token estimation       �?concrete value assertions, edge cases
-  Context length lookup  �?resolution order, fuzzy match, cache priority
-  API metadata fetch     �?caching, TTL, canonical slugs, stale fallback
-  Probe tiers            �?descending, boundaries, extreme inputs
-  Error parsing          �?OpenAI, Ollama, Anthropic, edge cases
-  Persistent cache       �?save/load, corruption, update, provider isolation
+  Token estimation       é¥?concrete value assertions, edge cases
+  Context length lookup  é¥?resolution order, fuzzy match, cache priority
+  API metadata fetch     é¥?caching, TTL, canonical slugs, stale fallback
+  Probe tiers            é¥?descending, boundaries, extreme inputs
+  Error parsing          é¥?OpenAI, Ollama, Anthropic, edge cases
+  Persistent cache       é¥?save/load, corruption, update, provider isolation
 """
 
 import os
@@ -50,7 +50,7 @@ class TestEstimateTokensRough:
         assert estimate_tokens_rough("a" * 400) == 100
 
     def test_short_text(self):
-        # "hello" = 5 chars �?ceil(5/4) = 2
+        # "hello" = 5 chars é«?ceil(5/4) = 2
         assert estimate_tokens_rough("hello") == 2
 
     def test_proportional(self):
@@ -59,8 +59,8 @@ class TestEstimateTokensRough:
         assert long > short
 
     def test_unicode_multibyte(self):
-        """Unicode chars are still 1 Python char each �?4 chars/token holds."""
-        text = "你好世界"  # 4 CJK characters
+        """Unicode chars are still 1 Python char each é¥?4 chars/token holds."""
+        text = "æµ£ç²ã½æ¶æ «æ«"  # 4 CJK characters
         assert estimate_tokens_rough(text) == 1
 
 
@@ -199,7 +199,7 @@ class TestDefaultContextLengths:
 
 
 # =========================================================================
-# get_model_context_length �?resolution order
+# get_model_context_length é¥?resolution order
 # =========================================================================
 
 class TestGetModelContextLength:
@@ -245,7 +245,7 @@ class TestGetModelContextLength:
 
     @patch("agent.model_metadata.fetch_model_metadata")
     def test_api_missing_context_length_key(self, mock_fetch):
-        """Model in API but without context_length �?defaults to 128000."""
+        """Model in API but without context_length é«?defaults to 128000."""
         mock_fetch.return_value = {"test/model": {"name": "Test"}}
         assert get_model_context_length("test/model") == 128000
 
@@ -266,7 +266,7 @@ class TestGetModelContextLength:
         cache_file = tmp_path / "cache.yaml"
         with patch("agent.model_metadata._get_context_cache_path", return_value=cache_file):
             save_context_length("custom/model", "http://local", 32768)
-            # No base_url �?cache skipped �?falls to probe tier
+            # No base_url é«?cache skipped é«?falls to probe tier
             result = get_model_context_length("custom/model")
             assert result == CONTEXT_PROBE_TIERS[0]
 
@@ -375,7 +375,7 @@ class TestGetModelContextLength:
 
 
 # =========================================================================
-# _strip_provider_prefix �?Ollama model:tag vs provider:model
+# _strip_provider_prefix é¥?Ollama model:tag vs provider:model
 # =========================================================================
 
 class TestStripProviderPrefix:
@@ -403,7 +403,7 @@ class TestStripProviderPrefix:
     def test_ollama_model_tag_not_mangled_in_context_lookup(self, mock_fetch):
         """Ensure 'qwen3.5:27b' is NOT reduced to '27b' during context length lookup.
 
-        We mock a custom endpoint that knows 'qwen3.5:27b' �?the full name
+        We mock a custom endpoint that knows 'qwen3.5:27b' é¥?the full name
         must reach the endpoint metadata lookup intact.
         """
         mock_fetch.return_value = {}
@@ -418,7 +418,7 @@ class TestStripProviderPrefix:
 
 
 # =========================================================================
-# fetch_model_metadata �?caching, TTL, slugs, failures
+# fetch_model_metadata é¥?caching, TTL, slugs, failures
 # =========================================================================
 
 class TestFetchModelMetadata:
@@ -528,7 +528,7 @@ class TestFetchModelMetadata:
 
     @patch("agent.model_metadata.requests.get")
     def test_malformed_json_no_data_key(self, mock_get):
-        """API returns JSON without 'data' key �?empty cache, no crash."""
+        """API returns JSON without 'data' key é¥?empty cache, no crash."""
         self._reset_cache()
         mock_response = MagicMock()
         mock_response.json.return_value = {"error": "something"}

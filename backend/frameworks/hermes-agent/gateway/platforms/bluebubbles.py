@@ -247,7 +247,7 @@ class BlueBubblesAdapter(BasePlatformAdapter):
 
         webhook_url = self._webhook_url
 
-        # Crash resilience �?reuse an existing registration if present
+        # Crash resilience é¥?reuse an existing registration if present
         existing = await self._find_registered_webhooks(webhook_url)
         if existing:
             logger.info(

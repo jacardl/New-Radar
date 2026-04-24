@@ -206,7 +206,7 @@ def test_save_platform_tools_does_not_preserve_platform_default_toolsets():
         }
     }
 
-    # User unchecks image_gen, homeassistant, moa �?keeps the rest
+    # User unchecks image_gen, homeassistant, moa â?keeps the rest
     new_selection = {
         "browser", "clarify", "code_execution", "cronjob",
         "delegation", "file", "memory", "session_search",
@@ -218,7 +218,7 @@ def test_save_platform_tools_does_not_preserve_platform_default_toolsets():
 
     saved = config["platform_toolsets"]["cli"]
 
-    # hermes-cli must NOT survive �?it's a platform default, not an MCP server
+    # hermes-cli must NOT survive â?it's a platform default, not an MCP server
     assert "hermes-cli" not in saved
 
     # The individual toolset keys the user selected must be present
@@ -233,7 +233,7 @@ def test_save_platform_tools_does_not_preserve_platform_default_toolsets():
 
 
 def test_save_platform_tools_does_not_preserve_hermes_telegram():
-    """Same bug for Telegram �?hermes-telegram must not be preserved."""
+    """Same bug for Telegram â?hermes-telegram must not be preserved."""
     config = {
         "platform_toolsets": {
             "telegram": [
@@ -379,7 +379,7 @@ def test_first_install_nous_auto_configures_managed_defaults(monkeypatch):
     assert config["browser"]["cloud_provider"] == "browser-use"
     assert configured == []
 
-# ── Platform / toolset consistency ────────────────────────────────────────────
+# -- Platform / toolset consistency --------------------------------------------
 
 
 class TestPlatformToolsetConsistency:
@@ -447,7 +447,7 @@ def test_numeric_mcp_server_name_does_not_crash_sorted():
 
     enabled = _get_platform_tools(config, "cli")
 
-    # All names must be str �?no int leaking through
+    # All names must be str â?no int leaking through
     assert all(isinstance(name, str) for name in enabled), (
         f"Non-string toolset names found: {enabled}"
     )

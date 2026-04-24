@@ -1,4 +1,4 @@
-"""Tests for tools.transcription_tools �?three-provider STT pipeline.
+"""Tests for tools.transcription_tools é¥?three-provider STT pipeline.
 
 Covers the full provider matrix (local, groq, openai), fallback chains,
 model auto-correction, config loading, validation edge cases, and
@@ -54,7 +54,7 @@ def clean_env(monkeypatch):
 
 
 # ============================================================================
-# _get_provider �?full permutation matrix
+# _get_provider é¥?full permutation matrix
 # ============================================================================
 
 class TestGetProviderGroq:
@@ -68,7 +68,7 @@ class TestGetProviderGroq:
             assert _get_provider({"provider": "groq"}) == "groq"
 
     def test_groq_explicit_no_fallback(self, monkeypatch):
-        """Explicit groq with no key returns none �?no cross-provider fallback."""
+        """Explicit groq with no key returns none é¥?no cross-provider fallback."""
         monkeypatch.delenv("GROQ_API_KEY", raising=False)
         with patch("tools.transcription_tools._HAS_FASTER_WHISPER", True):
             from tools.transcription_tools import _get_provider
@@ -103,7 +103,7 @@ class TestGetProviderFallbackPriority:
             assert _get_provider({}) == "groq"
 
     def test_explicit_openai_no_key_returns_none(self, monkeypatch):
-        """Explicit openai with no key returns none �?no cross-provider fallback."""
+        """Explicit openai with no key returns none é¥?no cross-provider fallback."""
         monkeypatch.delenv("VOICE_TOOLS_OPENAI_KEY", raising=False)
         monkeypatch.delenv("GROQ_API_KEY", raising=False)
         with patch("tools.transcription_tools._HAS_FASTER_WHISPER", False), \
@@ -151,7 +151,7 @@ class TestExplicitProviderRespected:
             assert result == "none"
 
     def test_explicit_local_uses_local_command_fallback(self, monkeypatch):
-        """Local-to-local_command fallback is fine �?both are local."""
+        """Local-to-local_command fallback is fine é¥?both are local."""
         monkeypatch.setenv(
             "HERMES_LOCAL_STT_COMMAND",
             "whisper {input_path} --output_dir {output_dir} --language {language}",
@@ -297,7 +297,7 @@ class TestTranscribeGroq:
 
 
 # ============================================================================
-# _transcribe_openai �?additional tests
+# _transcribe_openai é¥?additional tests
 # ============================================================================
 
 class TestTranscribeOpenAIExtended:
@@ -411,7 +411,7 @@ class TestTranscribeLocalCommand:
 
 
 # ============================================================================
-# _transcribe_local �?additional tests
+# _transcribe_local é¥?additional tests
 # ============================================================================
 
 class TestTranscribeLocalExtended:
@@ -645,7 +645,7 @@ class TestLoadSttConfig:
 
 
 # ============================================================================
-# _validate_audio_file �?edge cases
+# _validate_audio_file é¥?edge cases
 # ============================================================================
 
 class TestValidateAudioFileEdgeCases:
@@ -694,7 +694,7 @@ class TestValidateAudioFileEdgeCases:
 
 
 # ============================================================================
-# transcribe_audio �?end-to-end dispatch
+# transcribe_audio é¥?end-to-end dispatch
 # ============================================================================
 
 class TestTranscribeAudioDispatch:
@@ -882,7 +882,7 @@ class TestTranscribeMistral:
 
 
 # ============================================================================
-# _get_provider �?Mistral
+# _get_provider é¥?Mistral
 # ============================================================================
 
 class TestGetProviderMistral:
@@ -895,7 +895,7 @@ class TestGetProviderMistral:
             assert _get_provider({"provider": "mistral"}) == "mistral"
 
     def test_mistral_explicit_no_key_returns_none(self, monkeypatch):
-        """Explicit mistral with no key returns none �?no cross-provider fallback."""
+        """Explicit mistral with no key returns none é¥?no cross-provider fallback."""
         monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
         with patch("tools.transcription_tools._HAS_MISTRAL", True):
             from tools.transcription_tools import _get_provider
@@ -959,7 +959,7 @@ class TestGetProviderMistral:
 
 
 # ============================================================================
-# transcribe_audio �?Mistral dispatch
+# transcribe_audio é¥?Mistral dispatch
 # ============================================================================
 
 class TestTranscribeAudioMistralDispatch:

@@ -1,4 +1,4 @@
-"""Tests for gateway/sticker_cache.py �?sticker description cache."""
+"""Tests for gateway/sticker_cache.py é¥?sticker description cache."""
 
 import json
 import time
@@ -45,12 +45,12 @@ class TestCacheSticker:
     def test_cache_and_retrieve(self, tmp_path):
         cache_file = tmp_path / "cache.json"
         with patch("gateway.sticker_cache.CACHE_PATH", cache_file):
-            cache_sticker_description("uid_1", "A happy dog", emoji="🐕", set_name="Dogs")
+            cache_sticker_description("uid_1", "A happy dog", emoji="é¦æ¤", set_name="Dogs")
             result = get_cached_description("uid_1")
 
         assert result is not None
         assert result["description"] == "A happy dog"
-        assert result["emoji"] == "🐕"
+        assert result["emoji"] == "é¦æ¤"
         assert result["set_name"] == "Dogs"
         assert "cached_at" in result
 
@@ -87,15 +87,15 @@ class TestBuildStickerInjection:
         assert result == '[The user sent a sticker~ It shows: "A cat waving" (=^.w.^=)]'
 
     def test_exact_format_emoji_only(self):
-        result = build_sticker_injection("A cat", emoji="😀")
-        assert result == '[The user sent a sticker 😀~ It shows: "A cat" (=^.w.^=)]'
+        result = build_sticker_injection("A cat", emoji="é¦æ¦¾")
+        assert result == '[The user sent a sticker é¦æ¦¾~ It shows: "A cat" (=^.w.^=)]'
 
     def test_exact_format_emoji_and_set_name(self):
-        result = build_sticker_injection("A cat", emoji="😀", set_name="MyPack")
-        assert result == '[The user sent a sticker 😀 from "MyPack"~ It shows: "A cat" (=^.w.^=)]'
+        result = build_sticker_injection("A cat", emoji="é¦æ¦¾", set_name="MyPack")
+        assert result == '[The user sent a sticker é¦æ¦¾ from "MyPack"~ It shows: "A cat" (=^.w.^=)]'
 
     def test_set_name_without_emoji_ignored(self):
-        """set_name alone (no emoji) produces no context �?only emoji+set_name triggers 'from' clause."""
+        """set_name alone (no emoji) produces no context é¥?only emoji+set_name triggers 'from' clause."""
         result = build_sticker_injection("A cat", set_name="MyPack")
         assert result == '[The user sent a sticker~ It shows: "A cat" (=^.w.^=)]'
         assert "MyPack" not in result
@@ -112,10 +112,10 @@ class TestBuildStickerInjection:
 
 class TestBuildAnimatedStickerInjection:
     def test_exact_format_with_emoji(self):
-        result = build_animated_sticker_injection(emoji="🎉")
+        result = build_animated_sticker_injection(emoji="é¦å¸")
         assert result == (
-            "[The user sent an animated sticker 🎉~ "
-            "I can't see animated ones yet, but the emoji suggests: 🎉]"
+            "[The user sent an animated sticker é¦å¸~ "
+            "I can't see animated ones yet, but the emoji suggests: é¦å¸]"
         )
 
     def test_exact_format_without_emoji(self):

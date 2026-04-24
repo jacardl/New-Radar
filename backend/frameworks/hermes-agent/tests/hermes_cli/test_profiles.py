@@ -300,7 +300,7 @@ class TestGetActiveProfileName:
         custom = tmp_path / "some" / "other" / "path"
         custom.mkdir(parents=True)
         monkeypatch.setenv("HERMES_HOME", str(custom))
-        # With Docker-aware roots, a custom HERMES_HOME is the default �?
+        # With Docker-aware roots, a custom HERMES_HOME is the default é¥?
         # not "custom".  The user is on the default profile of their
         # custom deployment.
         assert get_active_profile_name() == "default"
@@ -620,7 +620,7 @@ class TestExportImport:
             import_profile(str(archive), name="default")
 
     def test_import_default_export_with_new_name_roundtrip(self, profile_env, tmp_path):
-        """Export default �?import under a different name �?data preserved."""
+        """Export default é«?import under a different name é«?data preserved."""
         default_dir = get_profile_dir("default")
         (default_dir / "config.yaml").write_text("model: opus")
         mem_dir = default_dir / "memories"

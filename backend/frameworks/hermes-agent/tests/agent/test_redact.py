@@ -83,31 +83,31 @@ class TestEnvAssignments:
         assert result == text
 
     def test_lowercase_python_variable_token_unchanged(self):
-        # Regression: #4367 �?lowercase 'token' assignment must not be redacted
+        # Regression: #4367 é¥?lowercase 'token' assignment must not be redacted
         text = "before_tokens = response.usage.prompt_tokens"
         result = redact_sensitive_text(text)
         assert result == text
 
     def test_lowercase_python_variable_api_key_unchanged(self):
-        # Regression: #4367 �?lowercase 'api_key' must not be redacted
+        # Regression: #4367 é¥?lowercase 'api_key' must not be redacted
         text = "api_key = config.get('api_key')"
         result = redact_sensitive_text(text)
         assert result == text
 
     def test_typescript_await_token_unchanged(self):
-        # Regression: #4367 �?'await' keyword must not be redacted as a secret value
+        # Regression: #4367 é¥?'await' keyword must not be redacted as a secret value
         text = "const token = await getToken();"
         result = redact_sensitive_text(text)
         assert result == text
 
     def test_typescript_await_secret_unchanged(self):
-        # Regression: #4367 �?similar pattern with 'secret' variable
+        # Regression: #4367 é¥?similar pattern with 'secret' variable
         text = "const secret = await fetchSecret();"
         result = redact_sensitive_text(text)
         assert result == text
 
     def test_export_whitespace_preserved(self):
-        # Regression: #4367 �?whitespace before uppercase env var must be preserved
+        # Regression: #4367 é¥?whitespace before uppercase env var must be preserved
         text = "export SECRET_TOKEN=mypassword"
         result = redact_sensitive_text(text)
         assert result.startswith("export ")

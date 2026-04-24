@@ -284,7 +284,7 @@ def _process_single_prompt(
                             "metadata": {"batch_num": batch_num, "timestamp": datetime.now().isoformat()},
                         }
             except FileNotFoundError:
-                pass  # Docker CLI not installed â€?skip check (e.g., Modal backend)
+                pass  # Docker CLI not installed ÃÂ¢?skip check (e.g., Modal backend)
             except Exception as img_err:
                 if config.get("verbose"):
                     print(f"   Prompt {prompt_index}: Docker image check failed: {img_err}", flush=True)
@@ -367,7 +367,7 @@ def _process_single_prompt(
         }
     
     except Exception as e:
-        print(f"â?Error processing prompt {prompt_index}: {e}")
+        print(f"ÃÂ¢?Error processing prompt {prompt_index}: {e}")
         if config.get("verbose"):
             traceback.print_exc()
         
@@ -398,7 +398,7 @@ def _process_batch_worker(args: Tuple) -> Dict[str, Any]:
     batch_num, batch_data, output_dir, completed_prompts_set, config = args
     
     output_dir = Path(output_dir)
-    print(f"\nğŸ”„ Batch {batch_num}: Starting ({len(batch_data)} prompts)")
+    print(f"\nÃÂ° Batch {batch_num}: Starting ({len(batch_data)} prompts)")
     
     # Output file for this batch
     batch_output_file = output_dir / f"batch_{batch_num}.jsonl"
@@ -410,7 +410,7 @@ def _process_batch_worker(args: Tuple) -> Dict[str, Any]:
     ]
     
     if not prompts_to_process:
-        print(f"âœ?Batch {batch_num}: Already completed (skipping)")
+        print(f"ÃÂ¢?Batch {batch_num}: Already completed (skipping)")
         return {
             "batch_num": batch_num,
             "processed": 0,
@@ -442,7 +442,7 @@ def _process_batch_worker(args: Tuple) -> Dict[str, Any]:
             # Discard samples with zero reasoning across all turns
             reasoning = result.get("reasoning_stats", {})
             if not reasoning.get("has_any_reasoning", True):
-                print(f"   ğŸš« Prompt {prompt_index} discarded (no reasoning in any turn)")
+                print(f"   ÃÂ°ÃÂ« Prompt {prompt_index} discarded (no reasoning in any turn)")
                 discarded_no_reasoning += 1
                 continue
             
@@ -493,12 +493,12 @@ def _process_batch_worker(args: Tuple) -> Dict[str, Any]:
         # Only mark as completed if successfully saved (failed prompts can be retried on resume)
         if result["success"] and result["trajectory"]:
             completed_in_batch.append(prompt_index)
-            status = "âš ï¸  partial" if result.get("partial") else "âœ?
+            status = "ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  partial" if result.get("partial") else "ÃÂ¢?
             print(f"   {status} Prompt {prompt_index} completed")
         else:
-            print(f"   â?Prompt {prompt_index} failed (will retry on resume)")
+            print(f"   ÃÂ¢?Prompt {prompt_index} failed (will retry on resume)")
     
-    print(f"âœ?Batch {batch_num}: Completed ({len(prompts_to_process)} prompts processed)")
+    print(f"ÃÂ¢?Batch {batch_num}: Completed ({len(prompts_to_process)} prompts processed)")
     
     return {
         "batch_num": batch_num,
@@ -604,12 +604,12 @@ class BatchRunner:
         if self.max_samples and self.max_samples < len(self.dataset):
             full_count = len(self.dataset)
             self.dataset = self.dataset[:self.max_samples]
-            print(f"âœ‚ï¸  Truncated dataset from {full_count} to {self.max_samples} samples (--max_samples)")
+            print(f"ÃÂ¢ÃÂ¯ÃÂ¸  Truncated dataset from {full_count} to {self.max_samples} samples (--max_samples)")
         
         # Create batches
         self.batches = self._create_batches()
         
-        print("ğŸ“Š Batch Runner Initialized")
+        print("ÃÂ° Batch Runner Initialized")
         print(f"   Dataset: {self.dataset_file} ({len(self.dataset)} prompts)")
         print(f"   Batch size: {self.batch_size}")
         print(f"   Total batches: {len(self.batches)}")
@@ -619,7 +619,7 @@ class BatchRunner:
         print(f"   Workers: {self.num_workers}")
         if self.ephemeral_system_prompt:
             prompt_preview = self.ephemeral_system_prompt[:60] + "..." if len(self.ephemeral_system_prompt) > 60 else self.ephemeral_system_prompt
-            print(f"   ğŸ”’ Ephemeral system prompt: '{prompt_preview}'")
+            print(f"   ÃÂ° Ephemeral system prompt: '{prompt_preview}'")
     
     def _load_dataset(self) -> List[Dict[str, Any]]:
         """
@@ -641,11 +641,11 @@ class BatchRunner:
                 try:
                     entry = json.loads(line)
                     if 'prompt' not in entry:
-                        print(f"âš ï¸  Warning: Line {line_num} missing 'prompt' field, skipping")
+                        print(f"ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Warning: Line {line_num} missing 'prompt' field, skipping")
                         continue
                     dataset.append(entry)
                 except json.JSONDecodeError as e:
-                    print(f"âš ï¸  Warning: Invalid JSON on line {line_num}: {e}")
+                    print(f"ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Warning: Invalid JSON on line {line_num}: {e}")
                     continue
         
         if not dataset:
@@ -686,7 +686,7 @@ class BatchRunner:
             with open(self.checkpoint_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"âš ï¸  Warning: Failed to load checkpoint: {e}")
+            print(f"ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Warning: Failed to load checkpoint: {e}")
             return {
                 "run_name": self.run_name,
                 "completed_prompts": [],
@@ -727,7 +727,7 @@ class BatchRunner:
         if not batch_files:
             return completed_prompts
         
-        print(f"ğŸ“‚ Scanning {len(batch_files)} batch files for completed prompts...")
+        print(f"ÃÂ° Scanning {len(batch_files)} batch files for completed prompts...")
         
         for batch_file in batch_files:
             try:
@@ -751,7 +751,7 @@ class BatchRunner:
                         except json.JSONDecodeError:
                             continue
             except Exception as e:
-                print(f"  âš ï¸  Warning: Error reading {batch_file.name}: {e}")
+                print(f"  ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Warning: Error reading {batch_file.name}: {e}")
         
         return completed_prompts
     
@@ -797,7 +797,7 @@ class BatchRunner:
             resume (bool): Whether to resume from checkpoint
         """
         print("\n" + "=" * 70)
-        print("ğŸš€ Starting Batch Processing")
+        print("ÃÂ° Starting Batch Processing")
         print("=" * 70)
         
         # Smart resume: scan batch files by content to find completed prompts
@@ -812,7 +812,7 @@ class BatchRunner:
             filtered_entries, skipped_indices = self._filter_dataset_by_completed(completed_prompt_texts)
             
             if not filtered_entries:
-                print("\nâœ?All prompts have already been processed!")
+                print("\nÃÂ¢?All prompts have already been processed!")
                 return
             
             # Recreate batches from filtered entries (keeping original indices for tracking)
@@ -825,12 +825,12 @@ class BatchRunner:
             
             # Print prominent resume summary
             print("\n" + "=" * 70)
-            print("ğŸ“Š RESUME SUMMARY")
+            print("ÃÂ° RESUME SUMMARY")
             print("=" * 70)
             print(f"   Original dataset size:     {len(self.dataset):,} prompts")
             print(f"   Already completed:         {len(skipped_indices):,} prompts")
-            print("   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")
-            print(f"   ğŸ¯ RESUMING WITH:          {len(filtered_entries):,} prompts")
+            print("   -----------------------------------------")
+            print(f"   ÃÂ°ÃÂ¯ RESUMING WITH:          {len(filtered_entries):,} prompts")
             print(f"   New batches created:       {len(batches_to_process)}")
             print("=" * 70 + "\n")
         
@@ -871,7 +871,7 @@ class BatchRunner:
         
         start_time = time.time()
         
-        print(f"\nğŸ”§ Initializing {self.num_workers} worker processes...")
+        print(f"\nÃÂ°ÃÂ§ Initializing {self.num_workers} worker processes...")
         
         # Checkpoint writes happen in the parent process; keep a lock for safety.
         checkpoint_lock = Lock()
@@ -890,8 +890,8 @@ class BatchRunner:
                 for batch_num, batch_data in enumerate(self.batches)
             ]
             
-            print(f"âœ?Created {len(tasks)} batch tasks")
-            print("ğŸš€ Starting parallel batch processing...\n")
+            print(f"ÃÂ¢?Created {len(tasks)} batch tasks")
+            print("ÃÂ° Starting parallel batch processing...\n")
             
             # Use rich Progress for better visual tracking with persistent bottom bar
             # redirect_stdout/stderr lets rich manage all output so progress bar stays clean
@@ -899,10 +899,10 @@ class BatchRunner:
             console = Console(force_terminal=True)
             with Progress(
                 SpinnerColumn(),
-                TextColumn("[bold blue]ğŸ“¦ Batches"),
+                TextColumn("[bold blue]ÃÂ°ÃÂ¦ Batches"),
                 BarColumn(bar_width=40),
                 MofNCompleteColumn(),
-                TextColumn("â€?),
+                TextColumn("ÃÂ¢?),
                 TimeRemainingColumn(),
                 console=console,
                 refresh_per_second=2,
@@ -939,7 +939,7 @@ class BatchRunner:
                             self._save_checkpoint(checkpoint_data, lock=checkpoint_lock)
                         except Exception as ckpt_err:
                             # Don't fail the run if checkpoint write fails
-                            print(f"âš ï¸  Warning: Failed to save incremental checkpoint: {ckpt_err}")
+                            print(f"ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Warning: Failed to save incremental checkpoint: {ckpt_err}")
                 except Exception as e:
                     logger.error("Batch worker failed: %s", e, exc_info=True)
                     raise
@@ -976,7 +976,7 @@ class BatchRunner:
             checkpoint_data["completed_prompts"] = all_completed_prompts
             self._save_checkpoint(checkpoint_data, lock=checkpoint_lock)
         except Exception as ckpt_err:
-            print(f"Ã¢Å¡Â Ã¯Â¸Â  Warning: Failed to save final checkpoint: {ckpt_err}")
+            print(f"ÃÃÂ¢ÃÃÂ¡ÃÃÂ ÃÃÂ¯ÃÃÂ¸Ã  Warning: Failed to save final checkpoint: {ckpt_err}")
         
         # Calculate success rates
         for tool_name in total_tool_stats:
@@ -993,9 +993,9 @@ class BatchRunner:
         # This includes both old batches (from previous runs) and new batches (from resume)
         # Also filter out corrupted entries (where model generated invalid tool names)
         combined_file = self.output_dir / "trajectories.jsonl"
-        print(f"\nğŸ“¦ Combining ALL batch files into {combined_file.name}...")
+        print(f"\nÃÂ°ÃÂ¦ Combining ALL batch files into {combined_file.name}...")
         
-        # Valid tools auto-derived from model_tools.py â€?no manual updates needed
+        # Valid tools auto-derived from model_tools.py ÃÂ¢?no manual updates needed
         VALID_TOOLS = ALL_POSSIBLE_TOOLS
         
         total_entries = 0
@@ -1023,17 +1023,17 @@ class BatchRunner:
                             if invalid_tools:
                                 filtered_entries += 1
                                 invalid_preview = invalid_tools[0][:50] + "..." if len(invalid_tools[0]) > 50 else invalid_tools[0]
-                                print(f"   âš ï¸  Filtering corrupted entry (batch {batch_num}): invalid tool '{invalid_preview}'")
+                                print(f"   ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Filtering corrupted entry (batch {batch_num}): invalid tool '{invalid_preview}'")
                                 continue
                             
                             outfile.write(line)
                         except json.JSONDecodeError:
                             filtered_entries += 1
-                            print(f"   âš ï¸  Filtering invalid JSON entry (batch {batch_num})")
+                            print(f"   ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Filtering invalid JSON entry (batch {batch_num})")
         
         if filtered_entries > 0:
-            print(f"âš ï¸  Filtered {filtered_entries} corrupted entries out of {total_entries} total")
-        print(f"âœ?Combined {batch_files_found} batch files into trajectories.jsonl ({total_entries - filtered_entries} entries)")
+            print(f"ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸  Filtered {filtered_entries} corrupted entries out of {total_entries} total")
+        print(f"ÃÂ¢?Combined {batch_files_found} batch files into trajectories.jsonl ({total_entries - filtered_entries} entries)")
         
         # Save final statistics
         final_stats = {
@@ -1054,13 +1054,13 @@ class BatchRunner:
         
         # Print summary
         print("\n" + "=" * 70)
-        print("ğŸ“Š BATCH PROCESSING COMPLETE")
+        print("ÃÂ° BATCH PROCESSING COMPLETE")
         print("=" * 70)
-        print(f"âœ?Prompts processed this run: {sum(r.get('processed', 0) for r in results)}")
-        print(f"âœ?Total trajectories in merged file: {total_entries - filtered_entries}")
-        print(f"âœ?Total batch files merged: {batch_files_found}")
-        print(f"â±ï¸  Total duration: {round(time.time() - start_time, 2)}s")
-        print("\nğŸ“ˆ Tool Usage Statistics:")
+        print(f"ÃÂ¢?Prompts processed this run: {sum(r.get('processed', 0) for r in results)}")
+        print(f"ÃÂ¢?Total trajectories in merged file: {total_entries - filtered_entries}")
+        print(f"ÃÂ¢?Total batch files merged: {batch_files_found}")
+        print(f"ÃÂ¢ÃÂ±ÃÂ¯ÃÂ¸  Total duration: {round(time.time() - start_time, 2)}s")
+        print("\nÃÂ° Tool Usage Statistics:")
         print("-" * 70)
         
         if total_tool_stats:
@@ -1087,7 +1087,7 @@ class BatchRunner:
         # Print reasoning coverage stats
         total_discarded = sum(r.get("discarded_no_reasoning", 0) for r in results)
         
-        print("\nğŸ§  Reasoning Coverage:")
+        print("\nÃÂ°ÃÂ§ÃÂ  Reasoning Coverage:")
         print("-" * 70)
         total_turns = total_reasoning_stats["total_assistant_turns"]
         with_reasoning = total_reasoning_stats["turns_with_reasoning"]
@@ -1101,9 +1101,9 @@ class BatchRunner:
         else:
             print("   No assistant turns recorded.")
         if total_discarded > 0:
-            print(f"   ğŸš« Samples discarded (zero reasoning): {total_discarded:,}")
+            print(f"   ÃÂ°ÃÂ« Samples discarded (zero reasoning): {total_discarded:,}")
         
-        print(f"\nğŸ’¾ Results saved to: {self.output_dir}")
+        print(f"\nÃÂ°ÃÂ¾ Results saved to: {self.output_dir}")
         print("   - Trajectories: trajectories.jsonl (combined)")
         print("   - Individual batches: batch_*.jsonl (for debugging)")
         print(f"   - Statistics: {self.stats_file.name}")
@@ -1188,29 +1188,29 @@ def main(
     if list_distributions:
         from toolset_distributions import list_distributions as get_all_dists, print_distribution_info
         
-        print("ğŸ“Š Available Toolset Distributions")
+        print("ÃÂ° Available Toolset Distributions")
         print("=" * 70)
         
         all_dists = get_all_dists()
         for dist_name in sorted(all_dists.keys()):
             print_distribution_info(dist_name)
         
-        print("\nğŸ’¡ Usage:")
+        print("\nÃÂ°ÃÂ¡ Usage:")
         print("  python batch_runner.py --dataset_file=data.jsonl --batch_size=10 \\")
         print("                         --run_name=my_run --distribution=<name>")
         return
     
     # Validate required arguments
     if not dataset_file:
-        print("â?Error: --dataset_file is required")
+        print("ÃÂ¢?Error: --dataset_file is required")
         return
     
     if not batch_size or batch_size < 1:
-        print("â?Error: --batch_size must be a positive integer")
+        print("ÃÂ¢?Error: --batch_size must be a positive integer")
         return
     
     if not run_name:
-        print("â?Error: --run_name is required")
+        print("ÃÂ¢?Error: --run_name is required")
         return
     
     # Parse provider preferences (comma-separated strings to lists)
@@ -1224,15 +1224,15 @@ def main(
     if reasoning_disabled:
         # Completely disable reasoning/thinking tokens
         reasoning_config = {"effort": "none"}
-        print("ğŸ§  Reasoning: DISABLED (effort=none)")
+        print("ÃÂ°ÃÂ§ÃÂ  Reasoning: DISABLED (effort=none)")
     elif reasoning_effort:
         # Use specified effort level
         valid_efforts = ["none", "minimal", "low", "medium", "high", "xhigh"]
         if reasoning_effort not in valid_efforts:
-            print(f"â?Error: --reasoning_effort must be one of: {', '.join(valid_efforts)}")
+            print(f"ÃÂ¢?Error: --reasoning_effort must be one of: {', '.join(valid_efforts)}")
             return
         reasoning_config = {"enabled": True, "effort": reasoning_effort}
-        print(f"ğŸ§  Reasoning effort: {reasoning_effort}")
+        print(f"ÃÂ°ÃÂ§ÃÂ  Reasoning effort: {reasoning_effort}")
     
     # Load prefill messages from JSON file if provided
     prefill_messages = None
@@ -1241,11 +1241,11 @@ def main(
             with open(prefill_messages_file, 'r', encoding='utf-8') as f:
                 prefill_messages = json.load(f)
             if not isinstance(prefill_messages, list):
-                print("â?Error: prefill_messages_file must contain a JSON array of messages")
+                print("ÃÂ¢?Error: prefill_messages_file must contain a JSON array of messages")
                 return
-            print(f"ğŸ’¬ Loaded {len(prefill_messages)} prefill messages from {prefill_messages_file}")
+            print(f"ÃÂ°ÃÂ¬ Loaded {len(prefill_messages)} prefill messages from {prefill_messages_file}")
         except Exception as e:
-            print(f"â?Error loading prefill messages: {e}")
+            print(f"ÃÂ¢?Error loading prefill messages: {e}")
             return
     
     # Initialize and run batch runner
@@ -1276,7 +1276,7 @@ def main(
         runner.run(resume=resume)
     
     except Exception as e:
-        print(f"\nâ?Fatal error: {e}")
+        print(f"\nÃÂ¢?Fatal error: {e}")
         if verbose:
             traceback.print_exc()
         return 1

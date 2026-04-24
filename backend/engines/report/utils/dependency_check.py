@@ -1,6 +1,6 @@
 """
-检测系统依赖工�?
-用于检�?PDF 生成所需的系统依�?
+æ£æµç³»ç»ä¾èµå·¥å?
+ç¨äºæ£æµ?PDF çææéçç³»ç»ä¾èµ?
 """
 import os
 import sys
@@ -14,92 +14,92 @@ BOX_CONTENT_WIDTH = 62
 
 def _box_line(text: str = "") -> str:
     """Render a single line inside the 66-char help box."""
-    return f"�? {text:<{BOX_CONTENT_WIDTH}}║\n"
+    return f"â? {text:<{BOX_CONTENT_WIDTH}}â\n"
 
 
 def _get_platform_specific_instructions():
     """
-    获取针对当前平台的安装说�?
+    è·åéå¯¹å½åå¹³å°çå®è£è¯´æ?
 
     Returns:
-        str: 平台特定的安装说�?
+        str: å¹³å°ç¹å®çå®è£è¯´æ?
     """
     system = platform.system()
 
     def _box_lines(lines):
-        """批量将多行文本包装成带边框的提示�?""
+        """æ¹éå°å¤è¡ææ¬åè£æå¸¦è¾¹æ¡çæç¤ºå?""
         return "".join(_box_line(line) for line in lines)
 
     if system == "Darwin":  # macOS
         return _box_lines(
             [
-                "🍎 macOS 系统解决方案�?,
+                "ð macOS ç³»ç»è§£å³æ¹æ¡ï¼?,
                 "",
-                "步骤 1: 安装依赖（宿主机执行�?,
+                "æ­¥éª¤ 1: å®è£ä¾èµï¼å®¿ä¸»æºæ§è¡ï¼?,
                 "  brew install pango gdk-pixbuf libffi",
                 "",
-                "步骤 2: 设置 DYLD_LIBRARY_PATH（必做）",
+                "æ­¥éª¤ 2: è®¾ç½® DYLD_LIBRARY_PATHï¼å¿åï¼",
                 "  Apple Silicon:",
                 " export DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH",
                 "  Intel:",
                 " export DYLD_LIBRARY_PATH=/usr/local/lib:$DYLD_LIBRARY_PATH",
                 "",
-                "步骤 3: 永久生效（推荐）",
-                "  �?export DYLD_LIBRARY_PATH=... 追加�?~/.zshrc",
-                "  Apple �?/opt/homebrew/lib，Intel �?/usr/local/lib",
-                "  执行 source ~/.zshrc 后再打开新终�?,
+                "æ­¥éª¤ 3: æ°¸ä¹çæï¼æ¨èï¼",
+                "  å°?export DYLD_LIBRARY_PATH=... è¿½å å?~/.zshrc",
+                "  Apple ç?/opt/homebrew/libï¼Intel ç?/usr/local/lib",
+                "  æ§è¡ source ~/.zshrc ååæå¼æ°ç»ç«?,
                 "",
-                "步骤 4: 新开终端执行验证",
+                "æ­¥éª¤ 4: æ°å¼ç»ç«¯æ§è¡éªè¯",
                 "  python -m ReportEngine.utils.dependency_check",
-                "  输出�?“✓ Pango 依赖检测通过�?即配置正�?,
+                "  è¾åºå?"â Pango ä¾èµæ£æµéè¿â?å³éç½®æ­£ç¡?,
             ]
         )
     elif system == "Linux":
         return _box_lines(
             [
-                "🐧 Linux 系统解决方案�?,
+                "ð§ Linux ç³»ç»è§£å³æ¹æ¡ï¼?,
                 "",
-                "Ubuntu/Debian（宿主机执行）：",
+                "Ubuntu/Debianï¼å®¿ä¸»æºæ§è¡ï¼ï¼",
                 "  sudo apt-get update",
                 "  sudo apt-get install -y \\",
                 "    libpango-1.0-0 libpangoft2-1.0-0 libffi-dev libcairo2",
-                "    libgdk-pixbuf-2.0-0（缺失时改为 libgdk-pixbuf2.0-0�?,
+                "    libgdk-pixbuf-2.0-0ï¼ç¼ºå¤±æ¶æ¹ä¸º libgdk-pixbuf2.0-0ï¼?,
                 "",
-                "CentOS/RHEL�?,
+                "CentOS/RHELï¼?,
                 "  sudo yum install -y pango gdk-pixbuf2 libffi-devel cairo",
                 "",
-                "Docker 部署无需额外安装，镜像已包含依赖",
+                "Docker é¨ç½²æ éé¢å¤å®è£ï¼éåå·²åå«ä¾èµ",
             ]
         )
     elif system == "Windows":
         return _box_lines(
             [
-                "🪟 Windows 系统解决方案�?,
+                "ðª Windows ç³»ç»è§£å³æ¹æ¡ï¼?,
                 "",
-                "步骤 1: 安装 GTK3 Runtime（宿主机执行�?,
-                "  下载�? README 中的 GTK3 Runtime 链接（建议默认路径）",
+                "æ­¥éª¤ 1: å®è£ GTK3 Runtimeï¼å®¿ä¸»æºæ§è¡ï¼?,
+                "  ä¸è½½é¡? README ä¸­ç GTK3 Runtime é¾æ¥ï¼å»ºè®®é»è®¤è·¯å¾ï¼",
                 "",
-                "步骤 2: �?GTK 安装目录下的 bin 加入 PATH（需新终端）",
+                "æ­¥éª¤ 2: å°?GTK å®è£ç®å½ä¸ç bin å å¥ PATHï¼éæ°ç»ç«¯ï¼",
                 "  set PATH=C:\\Program Files\\GTK3-Runtime Win64\\bin;%PATH%",
-                "  自定义路径请替换，或设置环境变量 GTK_BIN_PATH",
-                "  可�? 永久添加 PATH 示例:",
+                "  èªå®ä¹è·¯å¾è¯·æ¿æ¢ï¼æè®¾ç½®ç¯å¢åé GTK_BIN_PATH",
+                "  å¯é? æ°¸ä¹æ·»å  PATH ç¤ºä¾:",
                 "    setx PATH \"C:\\Program Files\\GTK3-Runtime Win64\\bin;%PATH%\"",
                 "",
-                "步骤 3: 验证（新终端执行�?,
+                "æ­¥éª¤ 3: éªè¯ï¼æ°ç»ç«¯æ§è¡ï¼?,
                 "  python -m ReportEngine.utils.dependency_check",
-                "  输出�?“✓ Pango 依赖检测通过�?即配置正�?,
+                "  è¾åºå?"â Pango ä¾èµæ£æµéè¿â?å³éç½®æ­£ç¡?,
             ]
         )
     else:
-        return _box_lines(["请查�?PDF 导出 README 了解您系统的安装方法"])
+        return _box_lines(["è¯·æ¥ç?PDF å¯¼åº README äºè§£æ¨ç³»ç»çå®è£æ¹æ³"])
 
 
 def _ensure_windows_gtk_paths():
     """
-    �?Windows 自动补充 GTK/Pango 运行时搜索路径，解决 DLL 未找到问题�?
+    ä¸?Windows èªå¨è¡¥å GTK/Pango è¿è¡æ¶æç´¢è·¯å¾ï¼è§£å³ DLL æªæ¾å°é®é¢
 
     Returns:
-        str | None: 成功添加的路径（没有命中则为 None�?
+        str | None: æåæ·»å çè·¯å¾ï¼æ²¡æå½ä¸­åä¸º Noneï¼?
     """
     if platform.system() != "Windows":
         return None
@@ -108,11 +108,11 @@ def _ensure_windows_gtk_paths():
     seen = set()
 
     def _add_candidate(path_like):
-        """收集可能的GTK安装路径，避免重复并兼容用户自定义目�?""
+        """æ¶éå¯è½çGTKå®è£è·¯å¾ï¼é¿åéå¤å¹¶å¼å®¹ç¨æ·èªå®ä¹ç®å½?""
         if not path_like:
             return
         p = Path(path_like)
-        # 如果传入的是安装根目录，尝试拼接 bin
+        # å¦æä¼ å¥çæ¯å®è£æ ¹ç®å½ï¼å°è¯æ¼æ¥ bin
         if p.is_dir() and p.name.lower() == "bin":
             key = str(p.resolve()).lower()
             if key not in seen:
@@ -125,7 +125,7 @@ def _ensure_windows_gtk_paths():
                     seen.add(key)
                     candidates.append(maybe)
 
-    # 用户自定义提示优�?
+    # ç¨æ·èªå®ä¹æç¤ºä¼å?
     for env_var in ("GTK3_RUNTIME_PATH", "GTK_RUNTIME_PATH", "GTK_BIN_PATH", "GTK_BIN_DIR", "GTK_PATH"):
         _add_candidate(os.environ.get(env_var))
 
@@ -140,22 +140,22 @@ def _ensure_windows_gtk_paths():
         Path(program_files_x86) / "GTK3-Runtime",
     ]
 
-    # 常见自定义安装位置（其他盘符 / DevelopSoftware 目录�?
+    # å¸¸è§èªå®ä¹å®è£ä½ç½®ï¼å¶ä»çç¬¦ / DevelopSoftware ç®å½ï¼?
     common_drives = ["C", "D", "E", "F"]
     common_names = ["GTK3-Runtime Win64", "GTK3-Runtime Win32", "GTK3-Runtime"]
     for drive in common_drives:
         root = Path(f"{drive}:/")
-        # 检测路径是否存在并可访�?
+        # æ£æµè·¯å¾æ¯å¦å­å¨å¹¶å¯è®¿é?
         try:
             if root.exists():
                 for name in common_names:
                     default_dirs.append(root / name)
                     default_dirs.append(root / "DevelopSoftware" / name)
         except OSError as e:
-            # print(f'盘{drive}不存在或被加密，已跳�?)
+            # print(f'ç{drive}ä¸å­å¨æè¢«å å¯ï¼å·²è·³è¿?)
             pass
 
-    # 扫描 Program Files 下所有以 GTK 开头的目录，适配自定义安装目录名
+    # æ«æ Program Files ä¸ææä»¥ GTK å¼å¤´çç®å½ï¼ééèªå®ä¹å®è£ç®å½å
     for root in (program_files, program_files_x86):
         root_path = Path(root)
         if root_path.exists():
@@ -165,12 +165,12 @@ def _ensure_windows_gtk_paths():
     for d in default_dirs:
         _add_candidate(d)
 
-    # 如果用户已把自定义路径加�?PATH，也尝试识别
+    # å¦æç¨æ·å·²æèªå®ä¹è·¯å¾å å?PATHï¼ä¹å°è¯è¯å«
     path_entries = os.environ.get("PATH", "").split(os.pathsep)
     for entry in path_entries:
         if not entry:
             continue
-        # 粗筛包含 gtk �?pango 的目�?
+        # ç²ç­åå« gtk æ?pango çç®å½?
         if "gtk" in entry.lower() or "pango" in entry.lower():
             _add_candidate(entry)
 
@@ -184,7 +184,7 @@ def _ensure_windows_gtk_paths():
             if hasattr(os, "add_dll_directory"):
                 os.add_dll_directory(str(path))
         except Exception:
-            # 如果添加失败，继续尝�?PATH 方式
+            # å¦ææ·»å å¤±è´¥ï¼ç»§ç»­å°è¯?PATH æ¹å¼
             pass
 
         current_path = os.environ.get("PATH", "")
@@ -198,16 +198,16 @@ def _ensure_windows_gtk_paths():
 
 def prepare_pango_environment():
     """
-    初始化运行所需的本地依赖搜索路径（当前主要针对 Windows �?macOS）�?
+    åå§åè¿è¡æéçæ¬å°ä¾èµæç´¢è·¯å¾ï¼å½åä¸»è¦éå¯¹ Windows å?macOSï¼
 
     Returns:
-        str | None: 成功添加的路径（没有命中则为 None�?
+        str | None: æåæ·»å çè·¯å¾ï¼æ²¡æå½ä¸­åä¸º Noneï¼?
     """
     system = platform.system()
     if system == "Windows":
         return _ensure_windows_gtk_paths()
     if system == "Darwin":
-        # 自动补全 DYLD_LIBRARY_PATH，兼�?Apple Silicon �?Intel
+        # èªå¨è¡¥å¨ DYLD_LIBRARY_PATHï¼å¼å®?Apple Silicon ä¸?Intel
         candidates = [Path("/opt/homebrew/lib"), Path("/usr/local/lib")]
         current = os.environ.get("DYLD_LIBRARY_PATH", "")
         added = []
@@ -222,10 +222,10 @@ def prepare_pango_environment():
 
 def _probe_native_libs():
     """
-    使用 ctypes 查找关键原生库，帮助定位缺失组件�?
+    ä½¿ç¨ ctypes æ¥æ¾å³é®åçåºï¼å¸®å©å®ä½ç¼ºå¤±ç»ä»¶
 
     Returns:
-        list[str]: 未找到的库标�?
+        list[str]: æªæ¾å°çåºæ è¯?
     """
     system = platform.system()
     targets = []
@@ -255,7 +255,7 @@ def _probe_native_libs():
 
 def check_pango_available():
     """
-    检�?Pango 库是否可�?
+    æ£æµ?Pango åºæ¯å¦å¯ç?
 
     Returns:
         tuple: (is_available: bool, message: str)
@@ -264,67 +264,67 @@ def check_pango_available():
     missing_native = _probe_native_libs()
 
     try:
-        # 尝试导入 weasyprint 并初始化 Pango
+        # å°è¯å¯¼å¥ weasyprint å¹¶åå§å Pango
         from weasyprint import HTML
         from weasyprint.text.ffi import ffi, pango
 
-        # 尝试调用 Pango 函数来确认库可用
+        # å°è¯è°ç¨ Pango å½æ°æ¥ç¡®è®¤åºå¯ç¨
         pango.pango_version()
 
-        return True, "�?Pango 依赖检测通过，PDF 导出功能可用"
+        return True, "â?Pango ä¾èµæ£æµéè¿ï¼PDF å¯¼åºåè½å¯ç¨"
     except OSError as e:
-        # Pango 库未安装或无法加�?
+        # Pango åºæªå®è£ææ æ³å è½?
         error_msg = str(e)
         platform_instructions = _get_platform_specific_instructions()
         windows_hint = ""
         if platform.system() == "Windows":
-            prefix = "已尝试自动添�?GTK 路径: "
+            prefix = "å·²å°è¯èªå¨æ·»å?GTK è·¯å¾: "
             max_path_len = BOX_CONTENT_WIDTH - len(prefix)
-            path_display = added_path or "未找到默认路�?
+            path_display = added_path or "æªæ¾å°é»è®¤è·¯å¾?
             if len(path_display) > max_path_len:
                 path_display = path_display[: max_path_len - 3] + "..."
             windows_hint = _box_line(prefix + path_display)
-            arch_note = _box_line("🔍 若已安装仍报错：确认 Python �?GTK 位数一致后重开终端")
+            arch_note = _box_line("ð è¥å·²å®è£ä»æ¥éï¼ç¡®è®¤ Python ä¸?GTK ä½æ°ä¸è´åéå¼ç»ç«¯")
         else:
             arch_note = ""
 
         missing_note = ""
         if missing_native:
             missing_str = ", ".join(missing_native)
-            missing_note = _box_line(f"未识别到的依�? {missing_str}")
+            missing_note = _box_line(f"æªè¯å«å°çä¾èµ? {missing_str}")
 
         if 'gobject' in error_msg.lower() or 'pango' in error_msg.lower() or 'gdk' in error_msg.lower():
-            box_top = "�? + "�? * 64 + "╗\n"
-            box_bottom = "�? + "�? * 64 + "�?
+            box_top = "â? + "â? * 64 + "â\n"
+            box_bottom = "â? + "â? * 64 + "â?
             return False, (
                 box_top
-                + _box_line("⚠️  PDF 导出依赖缺失")
+                + _box_line("â ï¸  PDF å¯¼åºä¾èµç¼ºå¤±")
                 + _box_line()
-                + _box_line("📄 PDF 导出功能将不可用（其他功能不受影响）")
+                + _box_line("ð PDF å¯¼åºåè½å°ä¸å¯ç¨ï¼å¶ä»åè½ä¸åå½±åï¼")
                 + _box_line()
                 + windows_hint
                 + arch_note
                 + missing_note
                 + platform_instructions
                 + _box_line()
-                + _box_line("📖 文档：static/Partial README for PDF Exporting/README.md")
+                + _box_line("ð ææ¡£ï¼static/Partial README for PDF Exporting/README.md")
                 + box_bottom
             )
-        return False, f"�?PDF 依赖加载失败: {error_msg}；缺�?未识�? {', '.join(missing_native) if missing_native else '未知'}"
+        return False, f"â?PDF ä¾èµå è½½å¤±è´¥: {error_msg}ï¼ç¼ºå¤?æªè¯å? {', '.join(missing_native) if missing_native else 'æªç¥'}"
     except ImportError as e:
-        # weasyprint 未安�?
+        # weasyprint æªå®è£?
         return False, (
-            "�?WeasyPrint 未安装\n"
-            "解决方法: pip install weasyprint"
+            "â?WeasyPrint æªå®è£\n"
+            "è§£å³æ¹æ³: pip install weasyprint"
         )
     except Exception as e:
-        # 其他未知错误
-        return False, f"�?PDF 依赖检测失�? {e}"
+        # å¶ä»æªç¥éè¯¯
+        return False, f"â?PDF ä¾èµæ£æµå¤±è´? {e}"
 
 
 def log_dependency_status():
     """
-    记录系统依赖状态到日志
+    è®°å½ç³»ç»ä¾èµç¶æå°æ¥å¿
     """
     is_available, message = check_pango_available()
 
@@ -332,14 +332,14 @@ def log_dependency_status():
         logger.success(message)
     else:
         logger.warning(message)
-        logger.info("💡 提示：PDF 导出功能需�?Pango 库支持，但不影响系统其他功能的正常使�?)
-        logger.info("📚 安装说明请参考：static/Partial README for PDF Exporting/README.md")
+        logger.info("ð¡ æç¤ºï¼PDF å¯¼åºåè½éè¦?Pango åºæ¯æï¼ä½ä¸å½±åç³»ç»å¶ä»åè½çæ­£å¸¸ä½¿ç?)
+        logger.info("ð å®è£è¯´æè¯·åèï¼static/Partial README for PDF Exporting/README.md")
 
     return is_available
 
 
 if __name__ == "__main__":
-    # 用于独立测试
+    # ç¨äºç¬ç«æµè¯
     is_available, message = check_pango_available()
     print(message)
     sys.exit(0 if is_available else 1)

@@ -1,4 +1,4 @@
-"""Tests for the config.yaml �?env var bridge logic in gateway/run.py.
+"""Tests for the config.yaml é«?env var bridge logic in gateway/run.py.
 
 Specifically tests that top-level `cwd:` and `backend:` in config.yaml
 are correctly bridged to TERMINAL_CWD / TERMINAL_ENV env vars as
@@ -115,7 +115,7 @@ class TestTopLevelCwdAlias:
         # "." is stripped but truthy, so it gets set as TERMINAL_CWD
         # Then the MESSAGING_CWD fallback does NOT trigger since TERMINAL_CWD
         # is set and not in (".", "auto", "cwd").
-        # Wait �?"." IS in the fallback list! So this should fall through.
+        # Wait é¥?"." IS in the fallback list! So this should fall through.
         # Actually the alias sets it to ".", then the messaging fallback
         # checks if it's in (".", "auto", "cwd") and overrides.
         assert result["TERMINAL_CWD"] == "/home/hermes"

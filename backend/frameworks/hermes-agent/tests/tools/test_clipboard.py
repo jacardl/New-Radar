@@ -1,9 +1,9 @@
-"""Tests for clipboard image paste �?clipboard extraction, multimodal conversion,
+"""Tests for clipboard image paste �¢?clipboard extraction, multimodal conversion,
 and CLI integration.
 
 Coverage:
-  hermes_cli/clipboard.py  �?platform-specific image extraction (macOS, WSL, Wayland, X11)
-  cli.py                   �?_try_attach_clipboard_image, _build_multimodal_content,
+  hermes_cli/clipboard.py  �¢?platform-specific image extraction (macOS, WSL, Wayland, X11)
+  cli.py                   �¢?_try_attach_clipboard_image, _build_multimodal_content,
                               image attachment state, queue tuple routing
 """
 
@@ -41,9 +41,9 @@ FAKE_PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
 FAKE_BMP = b"BM" + b"\x00" * 100
 
 
-# ════════════════════════════════════════════════════════════════════════�?
-# Level 1: Clipboard module �?platform dispatch + tool interactions
-# ════════════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
+# Level 1: Clipboard module �¢?platform dispatch + tool interactions
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 class TestSaveClipboardImage:
     def test_dispatches_to_macos_on_darwin(self, tmp_path):
@@ -79,7 +79,7 @@ class TestSaveClipboardImage:
         assert dest.parent.exists()
 
 
-# ── macOS ────────────────────────────────────────────────────────────────
+# -- macOS ----------------------------------------------------------------
 
 class TestMacosPngpaste:
     def test_success_writes_file(self, tmp_path):
@@ -121,21 +121,21 @@ class TestMacosHasImage:
     def test_png_detected(self):
         with patch("hermes_cli.clipboard.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(
-                stdout="«class PNGf», «class ut16»", returncode=0
+                stdout="��«class PNGf��», ��«class ut16��»", returncode=0
             )
             assert _macos_has_image() is True
 
     def test_tiff_detected(self):
         with patch("hermes_cli.clipboard.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(
-                stdout="«class TIFF»", returncode=0
+                stdout="��«class TIFF��»", returncode=0
             )
             assert _macos_has_image() is True
 
     def test_text_only(self):
         with patch("hermes_cli.clipboard.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(
-                stdout="«class ut16», «class utf8»", returncode=0
+                stdout="��«class ut16��», ��«class utf8��»", returncode=0
             )
             assert _macos_has_image() is False
 
@@ -144,7 +144,7 @@ class TestMacosOsascript:
     def test_no_image_type_in_clipboard(self, tmp_path):
         with patch("hermes_cli.clipboard.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(
-                stdout="«class ut16», «class utf8»", returncode=0
+                stdout="��«class ut16��», ��«class utf8��»", returncode=0
             )
             assert _macos_osascript(tmp_path / "out.png") is False
 
@@ -158,7 +158,7 @@ class TestMacosOsascript:
         def fake_run(cmd, **kw):
             calls.append(cmd)
             if len(calls) == 1:
-                return MagicMock(stdout="«class PNGf», «class ut16»", returncode=0)
+                return MagicMock(stdout="��«class PNGf��», ��«class ut16��»", returncode=0)
             dest.write_bytes(FAKE_PNG)
             return MagicMock(stdout="", returncode=0)
         with patch("hermes_cli.clipboard.subprocess.run", side_effect=fake_run):
@@ -171,7 +171,7 @@ class TestMacosOsascript:
         def fake_run(cmd, **kw):
             calls.append(cmd)
             if len(calls) == 1:
-                return MagicMock(stdout="«class TIFF»", returncode=0)
+                return MagicMock(stdout="��«class TIFF��»", returncode=0)
             dest.write_bytes(FAKE_PNG)
             return MagicMock(stdout="", returncode=0)
         with patch("hermes_cli.clipboard.subprocess.run", side_effect=fake_run):
@@ -183,7 +183,7 @@ class TestMacosOsascript:
         def fake_run(cmd, **kw):
             calls.append(cmd)
             if len(calls) == 1:
-                return MagicMock(stdout="«class PNGf»", returncode=0)
+                return MagicMock(stdout="��«class PNGf��»", returncode=0)
             return MagicMock(stdout="fail", returncode=0)
         with patch("hermes_cli.clipboard.subprocess.run", side_effect=fake_run):
             assert _macos_osascript(dest) is False
@@ -194,18 +194,18 @@ class TestMacosOsascript:
         def fake_run(cmd, **kw):
             calls.append(cmd)
             if len(calls) == 1:
-                return MagicMock(stdout="«class PNGf»", returncode=0)
+                return MagicMock(stdout="��«class PNGf��»", returncode=0)
             dest.write_bytes(b"")
             return MagicMock(stdout="", returncode=0)
         with patch("hermes_cli.clipboard.subprocess.run", side_effect=fake_run):
             assert _macos_osascript(dest) is False
 
 
-# ── WSL detection ────────────────────────────────────────────────────────
+# -- WSL detection --------------------------------------------------------
 
 class TestIsWsl:
     def setup_method(self):
-        # _is_wsl is now hermes_constants.is_wsl �?reset its cache
+        # _is_wsl is now hermes_constants.is_wsl �¢?reset its cache
         import hermes_constants
         hermes_constants._wsl_detected = None
 
@@ -237,7 +237,7 @@ class TestIsWsl:
             m.assert_called_once()  # only read once
 
 
-# ── WSL (powershell.exe) ────────────────────────────────────────────────
+# -- WSL (powershell.exe) ------------------------------------------------
 
 class TestWslHasImage:
     def test_clipboard_has_image(self):
@@ -300,7 +300,7 @@ class TestWslSave:
             assert _wsl_save(dest) is False
 
 
-# ── Wayland (wl-paste) ──────────────────────────────────────────────────
+# -- Wayland (wl-paste) --------------------------------------------------
 
 class TestWaylandHasImage:
     def test_has_png(self):
@@ -337,7 +337,7 @@ class TestWaylandSave:
             calls.append(cmd)
             if "--list-types" in cmd:
                 return MagicMock(stdout="image/png\ntext/plain\n", returncode=0)
-            # Extract call �?write fake data to stdout file
+            # Extract call �¢?write fake data to stdout file
             if "stdout" in kw and hasattr(kw["stdout"], "write"):
                 kw["stdout"].write(FAKE_PNG)
             return MagicMock(returncode=0)
@@ -398,7 +398,7 @@ class TestWaylandSave:
         assert "image/png" in extract_cmd
 
 
-# ── X11 (xclip) ─────────────────────────────────────────────────────────
+# -- X11 (xclip) ---------------------------------------------------------
 
 class TestXclipHasImage:
     def test_has_image(self):
@@ -458,10 +458,10 @@ class TestXclipSave:
             assert _xclip_save(tmp_path / "out.png") is False
 
 
-# ── Linux dispatch ──────────────────────────────────────────────────────
+# -- Linux dispatch ------------------------------------------------------
 
 class TestLinuxSave:
-    """Test that _linux_save dispatches correctly to WSL �?Wayland �?X11."""
+    """Test that _linux_save dispatches correctly to WSL �¢?Wayland �¢?X11."""
 
     def setup_method(self):
         import hermes_cli.clipboard as cb
@@ -509,7 +509,7 @@ class TestLinuxSave:
                     m.assert_called_once_with(dest)
 
 
-# ── Native Windows (PowerShell) ─────────────────────────────────────────
+# -- Native Windows (PowerShell) -----------------------------------------
 
 class TestWindowsHasImage:
     def setup_method(self):
@@ -605,7 +605,7 @@ class TestHasClipboardImageWin32:
                 m.assert_called_once()
 
 
-# ── BMP conversion ──────────────────────────────────────────────────────
+# -- BMP conversion ------------------------------------------------------
 
 class TestConvertToPng:
     def test_pillow_conversion(self, tmp_path):
@@ -662,7 +662,7 @@ class TestConvertToPng:
         with patch.dict(sys.modules, {"PIL": None, "PIL.Image": None}):
             with patch("hermes_cli.clipboard.subprocess.run", side_effect=FileNotFoundError):
                 result = _convert_to_png(dest)
-                # Raw BMP is better than nothing �?function should return True
+                # Raw BMP is better than nothing �¢?function should return True
                 assert result is True
                 assert dest.exists() and dest.stat().st_size > 0
 
@@ -712,7 +712,7 @@ class TestConvertToPng:
         assert dest.read_bytes() == original_data
 
 
-# ── has_clipboard_image dispatch ─────────────────────────────────────────
+# -- has_clipboard_image dispatch -----------------------------------------
 
 class TestHasClipboardImage:
     def setup_method(self):
@@ -753,9 +753,9 @@ class TestHasClipboardImage:
                         m.assert_called_once()
 
 
-# ════════════════════════════════════════════════════════════════════════�?
-# Level 2: _preprocess_images_with_vision �?image �?text via vision tool
-# ════════════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
+# Level 2: _preprocess_images_with_vision �¢?image �¢?text via vision tool
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 class TestPreprocessImagesWithVision:
     """Test vision-based image pre-processing for the CLI."""
@@ -866,12 +866,12 @@ class TestPreprocessImagesWithVision:
         assert str(img) in result  # path still included for retry
 
 
-# ════════════════════════════════════════════════════════════════════════�?
-# Level 3: _try_attach_clipboard_image �?state management
-# ════════════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
+# Level 3: _try_attach_clipboard_image �¢?state management
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 class TestTryAttachClipboardImage:
-    """Test the clipboard �?state flow."""
+    """Test the clipboard �¢?state flow."""
 
     @pytest.fixture
     def cli(self):
@@ -963,9 +963,9 @@ class TestVoiceSubmission:
         assert cli._pending_input.get_nowait() == "hello"
 
 
-# ════════════════════════════════════════════════════════════════════════�?
-# Level 4: Queue routing �?tuple unpacking in process_loop
-# ════════════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
+# Level 4: Queue routing �¢?tuple unpacking in process_loop
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 class TestQueueRouting:
     """Test that (text, images) tuples are correctly unpacked and routed."""
@@ -993,7 +993,7 @@ class TestQueueRouting:
         assert submit_images[0] == img
 
     def test_empty_text_with_images(self, tmp_path):
-        """Images without text �?text should be empty string."""
+        """Images without text �¢?text should be empty string."""
         img = tmp_path / "test.png"
         img.write_bytes(FAKE_PNG)
         user_input = ("", [img])

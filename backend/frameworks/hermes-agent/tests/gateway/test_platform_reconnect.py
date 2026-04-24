@@ -388,7 +388,7 @@ class TestRuntimeDisconnectQueuing:
 
         await runner._handle_adapter_fatal_error(adapter)
 
-        # stop() SHOULD be called �?gateway exits for systemd restart
+        # stop() SHOULD be called é¥?gateway exits for systemd restart
         runner.stop.assert_called_once()
         assert runner._exit_with_failure is True
         assert Platform.TELEGRAM in runner._failed_platforms
@@ -409,7 +409,7 @@ class TestRuntimeDisconnectQueuing:
 
         await runner._handle_adapter_fatal_error(failing_adapter)
 
-        # stop() should NOT have been called �?Discord is still up
+        # stop() should NOT have been called é¥?Discord is still up
         runner.stop.assert_not_called()
         assert Platform.TELEGRAM in runner._failed_platforms
 

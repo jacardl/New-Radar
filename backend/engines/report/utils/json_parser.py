@@ -1,12 +1,12 @@
 """
-统一的JSON解析和修复工具�?
+ç»ä¸çJSONè§£æåä¿®å¤å·¥å·
 
-提供鲁棒的JSON解析能力，支持：
-1. 自动清理markdown代码块标记和思考内�?
-2. 本地语法修复（括号平衡、逗号补全、控制字符转义等�?
-3. 使用json_repair库进行高级修�?
-4. LLM辅助修复（可选）
-5. 详细的错误日志和调试信息
+æä¾é²æ£çJSONè§£æè½åï¼æ¯æï¼
+1. èªå¨æ¸çmarkdownä»£ç åæ è®°åæèåå®?
+2. æ¬å°è¯­æ³ä¿®å¤ï¼æ¬å·å¹³è¡¡ãéå·è¡¥å¨ãæ§å¶å­ç¬¦è½¬ä¹ç­ï¼?
+3. ä½¿ç¨json_repairåºè¿è¡é«çº§ä¿®å¤?
+4. LLMè¾å©ä¿®å¤ï¼å¯éï¼
+5. è¯¦ç»çéè¯¯æ¥å¿åè°è¯ä¿¡æ¯
 """
 
 from __future__ import annotations
@@ -23,15 +23,15 @@ except ImportError:
 
 
 class JSONParseError(ValueError):
-    """JSON解析失败时抛出的异常，附带原始文本方便排查�?""
+    """JSONè§£æå¤±è´¥æ¶æåºçå¼å¸¸ï¼éå¸¦åå§ææ¬æ¹ä¾¿ææ¥""
 
     def __init__(self, message: str, raw_text: Optional[str] = None):
         """
-        构造异常并附加原始输出，便于日志中定位�?
+        æé å¼å¸¸å¹¶éå åå§è¾åºï¼ä¾¿äºæ¥å¿ä¸­å®ä½
 
         Args:
-            message: 人类可读的错误描述�?
-            raw_text: 触发异常的完整LLM输出�?
+            message: äººç±»å¯è¯»çéè¯¯æè¿°
+            raw_text: è§¦åå¼å¸¸çå®æ´LLMè¾åº
         """
         super().__init__(message)
         self.raw_text = raw_text
@@ -39,27 +39,27 @@ class JSONParseError(ValueError):
 
 class RobustJSONParser:
     """
-    鲁棒的JSON解析器�?
+    é²æ£çJSONè§£æå¨
 
-    集成多种修复策略，确保LLM返回的内容能够被正确解析�?
-    - 清理markdown包裹、思考内容等额外信息
-    - 修复常见语法错误（缺少逗号、括号不平衡等）
-    - 转义未转义的控制字符
-    - 使用第三方库进行高级修复
-    - 可选的LLM辅助修复
+    éæå¤ç§ä¿®å¤ç­ç¥ï¼ç¡®ä¿LLMè¿åçåå®¹è½å¤è¢«æ­£ç¡®è§£æï¼?
+    - æ¸çmarkdownåè£¹ãæèåå®¹ç­é¢å¤ä¿¡æ¯
+    - ä¿®å¤å¸¸è§è¯­æ³éè¯¯ï¼ç¼ºå°éå·ãæ¬å·ä¸å¹³è¡¡ç­ï¼
+    - è½¬ä¹æªè½¬ä¹çæ§å¶å­ç¬¦
+    - ä½¿ç¨ç¬¬ä¸æ¹åºè¿è¡é«çº§ä¿®å¤
+    - å¯éçLLMè¾å©ä¿®å¤
     """
 
-    # 常见的LLM思考内容模�?
+    # å¸¸è§çLLMæèåå®¹æ¨¡å¼?
     _THINKING_PATTERNS = [
         r"^\s*<thinking>.*?</thinking>\s*",
         r"^\s*<thought>.*?</thought>\s*",
-        r"^\s*让我想想.*?(?=\{|\[|$)",
-        r"^\s*首先.*?(?=\{|\[|$)",
-        r"^\s*分析.*?(?=\{|\[|$)",
-        r"^\s*根据.*?(?=\{|\[|$)",
+        r"^\s*è®©ææ³æ³.*?(?=\{|\[|$)",
+        r"^\s*é¦å.*?(?=\{|\[|$)",
+        r"^\s*åæ.*?(?=\{|\[|$)",
+        r"^\s*æ ¹æ®.*?(?=\{|\[|$)",
     ]
 
-    # 冒号等号模式（LLM常见错误�?
+    # åå·ç­å·æ¨¡å¼ï¼LLMå¸¸è§éè¯¯ï¼?
     _COLON_EQUALS_PATTERN = re.compile(r'(":\s*)=')
 
     def __init__(
@@ -70,13 +70,13 @@ class RobustJSONParser:
         max_repair_attempts: int = 3,
     ):
         """
-        初始化JSON解析器�?
+        åå§åJSONè§£æå¨
 
         Args:
-            llm_repair_fn: 可选的LLM修复函数，接�?原始JSON, 错误信息)返回修复后的JSON
-            enable_json_repair: 是否启用json_repair�?
-            enable_llm_repair: 是否启用LLM辅助修复
-            max_repair_attempts: 最大修复尝试次�?
+            llm_repair_fn: å¯éçLLMä¿®å¤å½æ°ï¼æ¥æ?åå§JSON, éè¯¯ä¿¡æ¯)è¿åä¿®å¤åçJSON
+            enable_json_repair: æ¯å¦å¯ç¨json_repairåº?
+            enable_llm_repair: æ¯å¦å¯ç¨LLMè¾å©ä¿®å¤
+            max_repair_attempts: æå¤§ä¿®å¤å°è¯æ¬¡æ?
         """
         self.llm_repair_fn = llm_repair_fn
         self.enable_json_repair = enable_json_repair and _json_repair_fn is not None
@@ -91,84 +91,84 @@ class RobustJSONParser:
         extract_wrapper_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        解析LLM返回的JSON文本�?
+        è§£æLLMè¿åçJSONææ¬
 
-        参数:
-            raw_text: LLM原始输出（可能包含```包裹、思考内容等�?
-            context_name: 上下文名称，用于错误信息
-            expected_keys: 期望的键列表，用于验�?
-            extract_wrapper_key: 如果JSON被包裹在某个键中，指定该键名进行提取
+        åæ°:
+            raw_text: LLMåå§è¾åºï¼å¯è½åå«```åè£¹ãæèåå®¹ç­ï¼?
+            context_name: ä¸ä¸æåç§°ï¼ç¨äºéè¯¯ä¿¡æ¯
+            expected_keys: ææçé®åè¡¨ï¼ç¨äºéªè¯?
+            extract_wrapper_key: å¦æJSONè¢«åè£¹å¨æä¸ªé®ä¸­ï¼æå®è¯¥é®åè¿è¡æå
 
-        返回:
-            dict: 解析后的JSON对象
+        è¿å:
+            dict: è§£æåçJSONå¯¹è±¡
 
-        异常:
-            JSONParseError: 多种修复策略仍无法解析合法JSON
+        å¼å¸¸:
+            JSONParseError: å¤ç§ä¿®å¤ç­ç¥ä»æ æ³è§£æåæ³JSON
         """
         if not raw_text or not raw_text.strip():
-            raise JSONParseError(f"{context_name}返回空内�?)
+            raise JSONParseError(f"{context_name}è¿åç©ºåå®?)
 
-        # 原始文本用于后续日志
+        # åå§ææ¬ç¨äºåç»­æ¥å¿
         original_text = raw_text
 
-        # 步骤1: 构造候选集，包含不同清理策�?
+        # æ­¥éª¤1: æé åééï¼åå«ä¸åæ¸çç­ç?
         candidates = self._build_candidate_payloads(raw_text, context_name)
 
-        # 步骤2: 尝试解析所有候�?
+        # æ­¥éª¤2: å°è¯è§£æææåé?
         last_error: Optional[json.JSONDecodeError] = None
         for i, candidate in enumerate(candidates):
             try:
                 data = json.loads(candidate)
-                logger.debug(f"{context_name} JSON解析成功（候选{i + 1}/{len(candidates)}�?)
+                logger.debug(f"{context_name} JSONè§£ææåï¼åé{i + 1}/{len(candidates)}ï¼?)
                 return self._extract_and_validate(
                     data, expected_keys, extract_wrapper_key, context_name
                 )
             except json.JSONDecodeError as exc:
                 last_error = exc
-                logger.debug(f"{context_name} 候选{i + 1}解析失败: {exc}")
+                logger.debug(f"{context_name} åé{i + 1}è§£æå¤±è´¥: {exc}")
 
         cleaned = candidates[0] if candidates else original_text
 
-        # 步骤3: 使用json_repair�?
+        # æ­¥éª¤3: ä½¿ç¨json_repairåº?
         if self.enable_json_repair:
             repaired = self._attempt_json_repair(cleaned, context_name)
             if repaired:
                 try:
                     data = json.loads(repaired)
-                    logger.info(f"{context_name} JSON通过json_repair库修复成�?)
+                    logger.info(f"{context_name} JSONéè¿json_repairåºä¿®å¤æå?)
                     return self._extract_and_validate(
                         data, expected_keys, extract_wrapper_key, context_name
                     )
                 except json.JSONDecodeError as exc:
                     last_error = exc
-                    logger.debug(f"{context_name} json_repair修复后仍无法解析: {exc}")
+                    logger.debug(f"{context_name} json_repairä¿®å¤åä»æ æ³è§£æ: {exc}")
 
-        # 步骤4: 使用LLM修复（如果启用）
+        # æ­¥éª¤4: ä½¿ç¨LLMä¿®å¤ï¼å¦æå¯ç¨ï¼
         if self.enable_llm_repair and self.llm_repair_fn:
             llm_repaired = self._attempt_llm_repair(cleaned, str(last_error), context_name)
             if llm_repaired:
                 try:
                     data = json.loads(llm_repaired)
-                    logger.info(f"{context_name} JSON通过LLM修复成功")
+                    logger.info(f"{context_name} JSONéè¿LLMä¿®å¤æå")
                     return self._extract_and_validate(
                         data, expected_keys, extract_wrapper_key, context_name
                     )
                 except json.JSONDecodeError as exc:
                     last_error = exc
-                    logger.warning(f"{context_name} LLM修复后仍无法解析: {exc}")
+                    logger.warning(f"{context_name} LLMä¿®å¤åä»æ æ³è§£æ: {exc}")
 
-        # 所有策略都失败�?
-        error_msg = f"{context_name} JSON解析失败: {last_error}"
+        # ææç­ç¥é½å¤±è´¥äº?
+        error_msg = f"{context_name} JSONè§£æå¤±è´¥: {last_error}"
         logger.error(error_msg)
-        logger.debug(f"原始文本�?00字符: {original_text[:500]}")
+        logger.debug(f"åå§ææ¬å?00å­ç¬¦: {original_text[:500]}")
         raise JSONParseError(error_msg, raw_text=original_text) from last_error
 
     def _build_candidate_payloads(self, raw_text: str, context_name: str) -> List[str]:
         """
-        针对原始文本构造多个候选JSON字符串，覆盖不同的清理策略�?
+        éå¯¹åå§ææ¬æé å¤ä¸ªåéJSONå­ç¬¦ä¸²ï¼è¦çä¸åçæ¸çç­ç¥
 
-        返回:
-            List[str]: 候选JSON文本列表
+        è¿å:
+            List[str]: åéJSONææ¬åè¡¨
         """
         cleaned = self._clean_response(raw_text)
         candidates = [cleaned]
@@ -177,7 +177,7 @@ class RobustJSONParser:
         if local_repaired != cleaned:
             candidates.append(local_repaired)
 
-        # 对含有三层列表结构的内容强制拉平一�?
+        # å¯¹å«æä¸å±åè¡¨ç»æçåå®¹å¼ºå¶æå¹³ä¸æ¬?
         flattened = self._flatten_nested_arrays(local_repaired)
         if flattened not in candidates:
             candidates.append(flattened)
@@ -186,26 +186,26 @@ class RobustJSONParser:
 
     def _clean_response(self, raw: str) -> str:
         """
-        清理LLM响应，去除markdown标记和思考内容�?
+        æ¸çLLMååºï¼å»é¤markdownæ è®°åæèåå®¹
 
-        参数:
-            raw: LLM原始输出
+        åæ°:
+            raw: LLMåå§è¾åº
 
-        返回:
-            str: 清理后的文本
+        è¿å:
+            str: æ¸çåçææ¬
         """
         cleaned = raw.strip()
 
-        # 移除思考内容（多语言支持�?
+        # ç§»é¤æèåå®¹ï¼å¤è¯­è¨æ¯æï¼?
         for pattern in self._THINKING_PATTERNS:
             cleaned = re.sub(pattern, "", cleaned, flags=re.DOTALL | re.IGNORECASE)
 
-        # 优先提取任意位置的```json```包裹内容
+        # ä¼åæåä»»æä½ç½®ç```json```åè£¹åå®¹
         fenced_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", cleaned)
         if fenced_match:
             cleaned = fenced_match.group(1).strip()
         else:
-            # 如果没有找到完整代码块，再尝试移除前后缀
+            # å¦ææ²¡ææ¾å°å®æ´ä»£ç åï¼åå°è¯ç§»é¤ååç¼
             if cleaned.startswith("```json"):
                 cleaned = cleaned[7:]
             elif cleaned.startswith("```"):
@@ -216,31 +216,31 @@ class RobustJSONParser:
 
             cleaned = cleaned.strip()
 
-        # 尝试提取第一个完整的JSON对象或数�?
+        # å°è¯æåç¬¬ä¸ä¸ªå®æ´çJSONå¯¹è±¡ææ°ç»?
         cleaned = self._extract_first_json_structure(cleaned)
 
         return cleaned
 
     def _extract_first_json_structure(self, text: str) -> str:
         """
-        从文本中提取第一个完整的JSON对象或数组�?
+        ä»ææ¬ä¸­æåç¬¬ä¸ä¸ªå®æ´çJSONå¯¹è±¡ææ°ç»
 
-        这对于处理LLM在JSON前后添加说明文字的情况很有用�?
+        è¿å¯¹äºå¤çLLMå¨JSONååæ·»å è¯´ææå­çæåµå¾æç¨
 
-        参数:
-            text: 可能包含JSON的文�?
+        åæ°:
+            text: å¯è½åå«JSONçææ?
 
-        返回:
-            str: 提取的JSON文本，如果找不到则返回原文本
+        è¿å:
+            str: æåçJSONææ¬ï¼å¦ææ¾ä¸å°åè¿ååææ¬
         """
-        # 查找第一�?{ �?[
+        # æ¥æ¾ç¬¬ä¸ä¸?{ æ?[
         start_brace = text.find("{")
         start_bracket = text.find("[")
 
         if start_brace == -1 and start_bracket == -1:
             return text
 
-        # 确定起始位置
+        # ç¡®å®èµ·å§ä½ç½®
         if start_brace == -1:
             start = start_bracket
             opener = "["
@@ -254,7 +254,7 @@ class RobustJSONParser:
             opener = text[start]
             closer = "}" if opener == "{" else "]"
 
-        # 查找对应的结束位�?
+        # æ¥æ¾å¯¹åºçç»æä½ç½?
         depth = 0
         in_string = False
         escaped = False
@@ -284,70 +284,70 @@ class RobustJSONParser:
                 if depth == 0:
                     return text[start : i + 1]
 
-        # 如果没找到完整的结构，返回从起始位置到结�?
+        # å¦ææ²¡æ¾å°å®æ´çç»æï¼è¿åä»èµ·å§ä½ç½®å°ç»å°?
         return text[start:] if start < len(text) else text
 
     def _apply_local_repairs(self, text: str) -> str:
         """
-        应用本地修复策略�?
+        åºç¨æ¬å°ä¿®å¤ç­ç¥
 
-        参数:
-            text: 原始JSON文本
+        åæ°:
+            text: åå§JSONææ¬
 
-        返回:
-            str: 修复后的文本
+        è¿å:
+            str: ä¿®å¤åçææ¬
         """
         repaired = text
         mutated = False
 
-        # 修复 ":=" 错误
+        # ä¿®å¤ ":=" éè¯¯
         new_text = self._COLON_EQUALS_PATTERN.sub(r"\1", repaired)
         if new_text != repaired:
-            logger.warning("检测到\":=\"字符，已自动移除多余�?='�?)
+            logger.warning("æ£æµå°\":=\"å­ç¬¦ï¼å·²èªå¨ç§»é¤å¤ä½ç?='å?)
             repaired = new_text
             mutated = True
 
-        # 转义控制字符
+        # è½¬ä¹æ§å¶å­ç¬¦
         repaired, escaped = self._escape_control_characters(repaired)
         if escaped:
-            logger.warning("检测到未转义的控制字符，已自动转换为转义序�?)
+            logger.warning("æ£æµå°æªè½¬ä¹çæ§å¶å­ç¬¦ï¼å·²èªå¨è½¬æ¢ä¸ºè½¬ä¹åºå?)
             mutated = True
 
-        # 修复缺少的逗号
+        # ä¿®å¤ç¼ºå°çéå·
         repaired, commas_fixed = self._fix_missing_commas(repaired)
         if commas_fixed:
-            logger.warning("检测到对象/数组之间缺少逗号，已自动补齐")
+            logger.warning("æ£æµå°å¯¹è±¡/æ°ç»ä¹é´ç¼ºå°éå·ï¼å·²èªå¨è¡¥é½")
             mutated = True
 
-        # 合并多余的方括号（LLM常见把二维列表层级写成三层）
+        # åå¹¶å¤ä½çæ¹æ¬å·ï¼LLMå¸¸è§æäºç»´åè¡¨å±çº§åæä¸å±ï¼
         repaired, brackets_collapsed = self._collapse_redundant_brackets(repaired)
         if brackets_collapsed:
-            logger.warning("检测到连续的方括号嵌套，已尝试折叠为二维结�?)
+            logger.warning("æ£æµå°è¿ç»­çæ¹æ¬å·åµå¥ï¼å·²å°è¯æå ä¸ºäºç»´ç»æ?)
             mutated = True
 
-        # 平衡括号
+        # å¹³è¡¡æ¬å·
         repaired, balanced = self._balance_brackets(repaired)
         if balanced:
-            logger.warning("检测到括号不平衡，已自动补�?剔除异常括号")
+            logger.warning("æ£æµå°æ¬å·ä¸å¹³è¡¡ï¼å·²èªå¨è¡¥é½?åé¤å¼å¸¸æ¬å·")
             mutated = True
 
-        # 移除尾随逗号
+        # ç§»é¤å°¾ééå·
         repaired, trailing_removed = self._remove_trailing_commas(repaired)
         if trailing_removed:
-            logger.warning("检测到尾随逗号，已自动移除")
+            logger.warning("æ£æµå°å°¾ééå·ï¼å·²èªå¨ç§»é¤")
             mutated = True
 
         return repaired if mutated else text
 
     def _escape_control_characters(self, text: str) -> Tuple[str, bool]:
         """
-        将字符串字面量中的裸换行/制表�?控制字符替换为JSON合法的转义序列�?
+        å°å­ç¬¦ä¸²å­é¢éä¸­çè£¸æ¢è¡/å¶è¡¨ç¬?æ§å¶å­ç¬¦æ¿æ¢ä¸ºJSONåæ³çè½¬ä¹åºå
 
-        参数:
-            text: 原始JSON文本
+        åæ°:
+            text: åå§JSONææ¬
 
-        返回:
-            Tuple[str, bool]: (修复后的文本, 是否有修�?
+        è¿å:
+            Tuple[str, bool]: (ä¿®å¤åçææ¬, æ¯å¦æä¿®æ?
         """
         if not text:
             return text, False
@@ -390,13 +390,13 @@ class RobustJSONParser:
 
     def _fix_missing_commas(self, text: str) -> Tuple[str, bool]:
         """
-        在对�?数组元素之间自动补逗号�?
+        å¨å¯¹è±?æ°ç»åç´ ä¹é´èªå¨è¡¥éå·
 
-        参数:
-            text: 原始JSON文本
+        åæ°:
+            text: åå§JSONææ¬
 
-        返回:
-            Tuple[str, bool]: (修复后的文本, 是否有修�?
+        è¿å:
+            Tuple[str, bool]: (ä¿®å¤åçææ¬, æ¯å¦æä¿®æ?
         """
         if not text:
             return text, False
@@ -423,18 +423,18 @@ class RobustJSONParser:
                 continue
 
             if ch == '"':
-                # 如果我们正在退出字符串，检查后面是否需要逗号
+                # å¦ææä»¬æ­£å¨éåºå­ç¬¦ä¸²ï¼æ£æ¥åé¢æ¯å¦éè¦éå·
                 if in_string:
-                    # 查找下一个非空白字符
+                    # æ¥æ¾ä¸ä¸ä¸ªéç©ºç½å­ç¬¦
                     j = i + 1
                     while j < length and text[j] in " \t\r\n":
                         j += 1
-                    # 如果下一个字符是 " { [ 或数字，可能需要逗号
+                    # å¦æä¸ä¸ä¸ªå­ç¬¦æ¯ " { [ ææ°å­ï¼å¯è½éè¦éå·
                     if j < length:
                         next_ch = text[j]
                         if next_ch in "\"[{" or next_ch.isdigit():
-                            # 检查是否已经在对象或数组中
-                            # 通过检查前面是否有未闭合的 { �?[
+                            # æ£æ¥æ¯å¦å·²ç»å¨å¯¹è±¡ææ°ç»ä¸­
+                            # éè¿æ£æ¥åé¢æ¯å¦ææªé­åç { æ?[
                             has_opener = False
                             for k in range(len(chars) - 1, -1, -1):
                                 if chars[k] in "{[":
@@ -451,13 +451,13 @@ class RobustJSONParser:
                 i += 1
                 continue
 
-            # �?} �?] 后面检查是否需要逗号
+            # å?} æ?] åé¢æ£æ¥æ¯å¦éè¦éå·
             if not in_string and ch in "}]":
                 j = i + 1
-                # 跳过空白
+                # è·³è¿ç©ºç½
                 while j < length and text[j] in " \t\r\n":
                     j += 1
-                # 如果下一个非空白字符�?{ [ " 或数字，添加逗号
+                # å¦æä¸ä¸ä¸ªéç©ºç½å­ç¬¦æ?{ [ " ææ°å­ï¼æ·»å éå·
                 if j < length:
                     next_ch = text[j]
                     if next_ch in "{[\"" or next_ch.isdigit():
@@ -470,10 +470,10 @@ class RobustJSONParser:
 
     def _collapse_redundant_brackets(self, text: str) -> Tuple[str, bool]:
         """
-        针对LLM生成的三层或更多层数组（如]]], [[ / [[[）进行折叠，避免表格/列表写出额外维度�?
+        éå¯¹LLMçæçä¸å±ææ´å¤å±æ°ç»ï¼å¦]]], [[ / [[[ï¼è¿è¡æå ï¼é¿åè¡¨æ ¼/åè¡¨ååºé¢å¤ç»´åº¦
 
-        返回:
-            Tuple[str, bool]: (修复后的文本, 是否有修�?
+        è¿å:
+            Tuple[str, bool]: (ä¿®å¤åçææ¬, æ¯å¦æä¿®æ?
         """
         if not text:
             return text, False
@@ -481,11 +481,11 @@ class RobustJSONParser:
         mutated = False
 
         patterns = [
-            # 典型错误: "]]], [[{...}" -> "]], [{...}"
+            # å¸åéè¯¯: "]]], [[{...}" -> "]], [{...}"
             (re.compile(r"\]\s*\]\s*\]\s*,\s*\[\s*\["), "]],["),
-            # 极端情况: 连续三层开�?"[[[" -> "[["
+            # æç«¯æåµ: è¿ç»­ä¸å±å¼å¤?"[[[" -> "[["
             (re.compile(r"\[\s*\[\s*\["), "[["),
-            # 极端情况: 结尾 "]]]" -> "]]"
+            # æç«¯æåµ: ç»å°¾ "]]]" -> "]]"
             (re.compile(r"\]\s*\]\s*\]"), "]]"),
         ]
 
@@ -500,7 +500,7 @@ class RobustJSONParser:
 
     def _flatten_nested_arrays(self, text: str) -> str:
         """
-        对明显多余的一层列表进行折叠，例如 [[[x]]] -> [[x]]�?
+        å¯¹ææ¾å¤ä½çä¸å±åè¡¨è¿è¡æå ï¼ä¾å¦ [[[x]]] -> [[x]]
         """
         if not text:
             return text
@@ -510,13 +510,13 @@ class RobustJSONParser:
 
     def _balance_brackets(self, text: str) -> Tuple[str, bool]:
         """
-        尝试修复因LLM多写/少写括号导致的不平衡结构�?
+        å°è¯ä¿®å¤å LLMå¤å/å°åæ¬å·å¯¼è´çä¸å¹³è¡¡ç»æ
 
-        参数:
-            text: 原始JSON文本
+        åæ°:
+            text: åå§JSONææ¬
 
-        返回:
-            Tuple[str, bool]: (修复后的文本, 是否有修�?
+        è¿å:
+            Tuple[str, bool]: (ä¿®å¤åçææ¬, æ¯å¦æä¿®æ?
         """
         if not text:
             return text, False
@@ -561,13 +561,13 @@ class RobustJSONParser:
                     stack.pop()
                     result.append(ch)
                 else:
-                    # 不匹配的闭括号，忽略
+                    # ä¸å¹éçé­æ¬å·ï¼å¿½ç¥
                     mutated = True
                 continue
 
             result.append(ch)
 
-        # 补齐未闭合的括号
+        # è¡¥é½æªé­åçæ¬å·
         while stack:
             opener = stack.pop()
             result.append(opener_map[opener])
@@ -577,19 +577,19 @@ class RobustJSONParser:
 
     def _remove_trailing_commas(self, text: str) -> Tuple[str, bool]:
         """
-        移除JSON对象和数组中的尾随逗号�?
+        ç§»é¤JSONå¯¹è±¡åæ°ç»ä¸­çå°¾ééå·
 
-        参数:
-            text: 原始JSON文本
+        åæ°:
+            text: åå§JSONææ¬
 
-        返回:
-            Tuple[str, bool]: (修复后的文本, 是否有修�?
+        è¿å:
+            Tuple[str, bool]: (ä¿®å¤åçææ¬, æ¯å¦æä¿®æ?
         """
         if not text:
             return text, False
 
-        # 使用正则表达式移除尾随逗号
-        # 匹配 , 后面跟着空白�?} �?] 的情�?
+        # ä½¿ç¨æ­£åè¡¨è¾¾å¼ç§»é¤å°¾ééå·
+        # å¹é , åé¢è·çç©ºç½å?} æ?] çæå?
         pattern = r",(\s*[}\]])"
         new_text = re.sub(pattern, r"\1", text)
 
@@ -597,14 +597,14 @@ class RobustJSONParser:
 
     def _attempt_json_repair(self, text: str, context_name: str) -> Optional[str]:
         """
-        使用json_repair库进行高级修复�?
+        ä½¿ç¨json_repairåºè¿è¡é«çº§ä¿®å¤
 
-        参数:
-            text: 原始JSON文本
-            context_name: 上下文名�?
+        åæ°:
+            text: åå§JSONææ¬
+            context_name: ä¸ä¸æåç§?
 
-        返回:
-            Optional[str]: 修复后的JSON文本，失败返回None
+        è¿å:
+            Optional[str]: ä¿®å¤åçJSONææ¬ï¼å¤±è´¥è¿åNone
         """
         if not _json_repair_fn:
             return None
@@ -612,10 +612,10 @@ class RobustJSONParser:
         try:
             fixed = _json_repair_fn(text)
             if fixed and fixed != text:
-                logger.info(f"{context_name} 使用json_repair库自动修复JSON")
+                logger.info(f"{context_name} ä½¿ç¨json_repairåºèªå¨ä¿®å¤JSON")
                 return fixed
         except Exception as exc:
-            logger.debug(f"{context_name} json_repair修复失败: {exc}")
+            logger.debug(f"{context_name} json_repairä¿®å¤å¤±è´¥: {exc}")
 
         return None
 
@@ -623,26 +623,26 @@ class RobustJSONParser:
         self, text: str, error_msg: str, context_name: str
     ) -> Optional[str]:
         """
-        使用LLM进行JSON修复�?
+        ä½¿ç¨LLMè¿è¡JSONä¿®å¤
 
-        参数:
-            text: 原始JSON文本
-            error_msg: 解析错误信息
-            context_name: 上下文名�?
+        åæ°:
+            text: åå§JSONææ¬
+            error_msg: è§£æéè¯¯ä¿¡æ¯
+            context_name: ä¸ä¸æåç§?
 
-        返回:
-            Optional[str]: 修复后的JSON文本，失败返回None
+        è¿å:
+            Optional[str]: ä¿®å¤åçJSONææ¬ï¼å¤±è´¥è¿åNone
         """
         if not self.llm_repair_fn:
             return None
 
         try:
-            logger.info(f"{context_name} 尝试使用LLM修复JSON")
+            logger.info(f"{context_name} å°è¯ä½¿ç¨LLMä¿®å¤JSON")
             repaired = self.llm_repair_fn(text, error_msg)
             if repaired and repaired != text:
                 return repaired
         except Exception as exc:
-            logger.warning(f"{context_name} LLM修复失败: {exc}")
+            logger.warning(f"{context_name} LLMä¿®å¤å¤±è´¥: {exc}")
 
         return None
 
@@ -654,41 +654,41 @@ class RobustJSONParser:
         context_name: str,
     ) -> Dict[str, Any]:
         """
-        提取并验证JSON数据�?
+        æåå¹¶éªè¯JSONæ°æ®
 
-        参数:
-            data: 解析后的数据
-            expected_keys: 期望的键列表
-            extract_wrapper_key: 包裹键名
-            context_name: 上下文名�?
+        åæ°:
+            data: è§£æåçæ°æ®
+            expected_keys: ææçé®åè¡¨
+            extract_wrapper_key: åè£¹é®å
+            context_name: ä¸ä¸æåç§?
 
-        返回:
-            Dict[str, Any]: 提取并验证后的数�?
+        è¿å:
+            Dict[str, Any]: æåå¹¶éªè¯åçæ°æ?
 
-        异常:
-            JSONParseError: 如果数据格式不符合预�?
+        å¼å¸¸:
+            JSONParseError: å¦ææ°æ®æ ¼å¼ä¸ç¬¦åé¢æ?
         """
-        # 提取包裹的数�?
+        # æååè£¹çæ°æ?
         if extract_wrapper_key and isinstance(data, dict):
             if extract_wrapper_key in data:
                 data = data[extract_wrapper_key]
             else:
                 logger.warning(
-                    f"{context_name} 未找到包裹键'{extract_wrapper_key}'，使用原始数�?
+                    f"{context_name} æªæ¾å°åè£¹é®'{extract_wrapper_key}'ï¼ä½¿ç¨åå§æ°æ?
                 )
 
-        # 验证数据类型
+        # éªè¯æ°æ®ç±»å
         if not isinstance(data, dict):
             if isinstance(data, list):
                 if len(data) > 0:
-                    # 尝试找到最符合期望的元�?
+                    # å°è¯æ¾å°æç¬¦åææçåç´?
                     best_match = None
                     max_match_count = 0
 
                     for item in data:
                         if isinstance(item, dict):
                             if expected_keys:
-                                # 计算匹配的键数量
+                                # è®¡ç®å¹éçé®æ°é
                                 match_count = sum(1 for key in expected_keys if key in item)
                                 if match_count > max_match_count:
                                     max_match_count = match_count
@@ -698,28 +698,28 @@ class RobustJSONParser:
 
                     if best_match:
                         logger.warning(
-                            f"{context_name} 返回数组，自动提取最佳匹配元素（匹配{max_match_count}/{len(expected_keys or [])}个键�?
+                            f"{context_name} è¿åæ°ç»ï¼èªå¨æåæä½³å¹éåç´ ï¼å¹é{max_match_count}/{len(expected_keys or [])}ä¸ªé®ï¼?
                         )
                         data = best_match
                     else:
                         raise JSONParseError(
-                            f"{context_name} 返回的数组中没有有效的对�?
+                            f"{context_name} è¿åçæ°ç»ä¸­æ²¡æææçå¯¹è±?
                         )
                 else:
-                    raise JSONParseError(f"{context_name} 返回空数�?)
+                    raise JSONParseError(f"{context_name} è¿åç©ºæ°ç»?)
             else:
                 raise JSONParseError(
-                    f"{context_name} 返回的不是JSON对象: {type(data).__name__}"
+                    f"{context_name} è¿åçä¸æ¯JSONå¯¹è±¡: {type(data).__name__}"
                 )
 
-        # 验证必需的键
+        # éªè¯å¿éçé®
         if expected_keys:
             missing_keys = [key for key in expected_keys if key not in data]
             if missing_keys:
                 logger.warning(
-                    f"{context_name} 缺少预期的键: {', '.join(missing_keys)}"
+                    f"{context_name} ç¼ºå°é¢æçé®: {', '.join(missing_keys)}"
                 )
-                # 尝试修复常见的键名变�?
+                # å°è¯ä¿®å¤å¸¸è§çé®ååä½?
                 data = self._try_recover_missing_keys(data, missing_keys, context_name)
 
         return data
@@ -728,17 +728,17 @@ class RobustJSONParser:
         self, data: Dict[str, Any], missing_keys: List[str], context_name: str
     ) -> Dict[str, Any]:
         """
-        尝试从数据中恢复缺失的键，通过查找相似的键名�?
+        å°è¯ä»æ°æ®ä¸­æ¢å¤ç¼ºå¤±çé®ï¼éè¿æ¥æ¾ç¸ä¼¼çé®å
 
-        参数:
-            data: 原始数据
-            missing_keys: 缺失的键列表
-            context_name: 上下文名�?
+        åæ°:
+            data: åå§æ°æ®
+            missing_keys: ç¼ºå¤±çé®åè¡¨
+            context_name: ä¸ä¸æåç§?
 
-        返回:
-            Dict[str, Any]: 修复后的数据
+        è¿å:
+            Dict[str, Any]: ä¿®å¤åçæ°æ®
         """
-        # 常见的键名映�?
+        # å¸¸è§çé®åæ å°?
         key_aliases = {
             "template_name": ["templateName", "name", "template"],
             "selection_reason": ["selectionReason", "reason", "explanation"],
@@ -752,7 +752,7 @@ class RobustJSONParser:
                 for alias in key_aliases[missing_key]:
                     if alias in data:
                         logger.info(
-                            f"{context_name} 找到�?{missing_key}'的别�?{alias}'，自动映�?
+                            f"{context_name} æ¾å°é?{missing_key}'çå«å?{alias}'ï¼èªå¨æ å°?
                         )
                         data[missing_key] = data[alias]
                         break

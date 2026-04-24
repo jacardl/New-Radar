@@ -875,7 +875,7 @@ class TestTaskSpecificOverrides:
         monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")
         with patch("agent.auxiliary_client.OpenAI"):
             client, model = get_text_auxiliary_client("compression")
-        assert model == "google/gemini-3-flash-preview"  # auto �?OpenRouter
+        assert model == "google/gemini-3-flash-preview"  # auto â?OpenRouter
 
     def test_resolve_auto_prefers_live_main_runtime_over_persisted_config(self, monkeypatch, tmp_path):
         """Session-only live model switches should override persisted config for auto routing."""
@@ -1004,7 +1004,7 @@ class TestAuxiliaryMaxTokensParam:
         assert result == {"max_tokens": 1024}
 
 
-# ── Payment / credit exhaustion fallback ─────────────────────────────────
+# -- Payment / credit exhaustion fallback ---------------------------------
 
 
 class TestIsPaymentError:
@@ -1487,7 +1487,7 @@ class TestStaleBaseUrlWarning:
         assert mod._stale_base_url_warned is True
 
     def test_no_warning_when_provider_is_custom(self, monkeypatch, caplog):
-        """No warning when the provider is 'custom' �?OPENAI_BASE_URL is expected."""
+        """No warning when the provider is 'custom' â?OPENAI_BASE_URL is expected."""
         import agent.auxiliary_client as mod
         monkeypatch.setattr(mod, "_stale_base_url_warned", False)
         monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:11434/v1")
@@ -1506,7 +1506,7 @@ class TestStaleBaseUrlWarning:
             "Should NOT warn when provider is 'custom'"
 
     def test_no_warning_when_provider_is_named_custom(self, monkeypatch, caplog):
-        """No warning when the provider is 'custom:myname' �?base_url comes from config."""
+        """No warning when the provider is 'custom:myname' â?base_url comes from config."""
         import agent.auxiliary_client as mod
         monkeypatch.setattr(mod, "_stale_base_url_warned", False)
         monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:11434/v1")

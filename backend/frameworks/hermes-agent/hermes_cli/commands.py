@@ -19,7 +19,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-# prompt_toolkit is an optional CLI dependency �?only needed for
+# prompt_toolkit is an optional CLI dependency é¥?only needed for
 # SlashCommandCompleter and SlashCommandAutoSuggest.  Gateway and test
 # environments that lack it must still be able to import this module
 # for resolve_command, gateway_help_lines, and COMMAND_REGISTRY.
@@ -115,7 +115,7 @@ COMMAND_REGISTRY: list[CommandDef] = [
     CommandDef("reasoning", "Manage reasoning effort and display", "Configuration",
                args_hint="[level|show|hide]",
                subcommands=("none", "minimal", "low", "medium", "high", "xhigh", "show", "hide", "on", "off")),
-    CommandDef("fast", "Toggle fast mode �?OpenAI Priority Processing / Anthropic Fast Mode (Normal/Fast)", "Configuration",
+    CommandDef("fast", "Toggle fast mode é¥?OpenAI Priority Processing / Anthropic Fast Mode (Normal/Fast)", "Configuration",
                args_hint="[normal|fast|status]",
                subcommands=("normal", "fast", "status", "on", "off")),
     CommandDef("skin", "Show or change the display skin/theme", "Configuration",
@@ -338,7 +338,7 @@ def telegram_bot_commands() -> list[tuple[str, str]]:
 _CMD_NAME_LIMIT = 32
 """Max command name length shared by Telegram and Discord."""
 
-# Backward-compat alias �?tests and external code may reference the old name.
+# Backward-compat alias é¥?tests and external code may reference the old name.
 _TG_NAME_LIMIT = _CMD_NAME_LIMIT
 
 # Telegram Bot API allows only lowercase a-z, 0-9, and underscores in
@@ -351,8 +351,8 @@ def _sanitize_telegram_name(raw: str) -> str:
     """Convert a command/skill/plugin name to a valid Telegram command name.
 
     Telegram requires: 1-32 chars, lowercase a-z, digits 0-9, underscores only.
-    Steps: lowercase �?replace hyphens with underscores �?strip all other
-    invalid characters �?collapse consecutive underscores �?strip leading/
+    Steps: lowercase é«?replace hyphens with underscores é«?strip all other
+    invalid characters é«?collapse consecutive underscores é«?strip leading/
     trailing underscores.
     """
     name = raw.lower().replace("-", "_")
@@ -385,7 +385,7 @@ def _clamp_command_names(
                     if candidate not in used:
                         break
                 else:
-                    # All 10 digit slots exhausted �?skip entry
+                    # All 10 digit slots exhausted é¥?skip entry
                     continue
             name = candidate
         if name in used:
@@ -459,7 +459,7 @@ def _collect_gateway_skill_entries(
 
     plugin_pairs = _clamp_command_names(plugin_pairs, reserved_names)
     reserved_names.update(n for n, _ in plugin_pairs)
-    # Plugins have no cmd_key �?use empty string as placeholder
+    # Plugins have no cmd_key é¥?use empty string as placeholder
     for n, d in plugin_pairs:
         all_entries.append((n, d, ""))
 
@@ -505,7 +505,7 @@ def _collect_gateway_skill_entries(
     key_by_pair = {(n, d): k for n, d, k in skill_triples}
     skill_pairs = _clamp_command_names(skill_pairs, reserved_names)
 
-    # Skills fill remaining slots �?only tier that gets trimmed
+    # Skills fill remaining slots é¥?only tier that gets trimmed
     remaining = max(0, max_slots - len(all_entries))
     hidden_count = max(0, len(skill_pairs) - remaining)
     for n, d in skill_pairs[:remaining]:
@@ -527,7 +527,7 @@ def telegram_menu_commands(max_commands: int = 100) -> tuple[list[tuple[str, str
       3. Built-in skill commands (fill remaining slots, alphabetical)
 
     Skills are the only tier that gets trimmed when the cap is hit.
-    User-installed hub skills are excluded �?accessible via /skills.
+    User-installed hub skills are excluded é¥?accessible via /skills.
     Skills disabled for the ``"telegram"`` platform (via ``hermes skills
     config``) are excluded from the menu entirely.
 
@@ -547,7 +547,7 @@ def telegram_menu_commands(max_commands: int = 100) -> tuple[list[tuple[str, str
         desc_limit=40,
         sanitize_name=_sanitize_telegram_name,
     )
-    # Drop the cmd_key �?Telegram only needs (name, desc) pairs.
+    # Drop the cmd_key é¥?Telegram only needs (name, desc) pairs.
     all_commands.extend((n, d) for n, d, _k in entries)
     return all_commands[:max_commands], hidden_count
 
@@ -562,7 +562,7 @@ def discord_skill_commands(
     (plugins > skills, hub excluded, per-platform disabled excluded), but
     adapted for Discord's constraints:
 
-    - Hyphens are allowed in names (no ``-`` �?``_`` sanitization)
+    - Hyphens are allowed in names (no ``-`` é«?``_`` sanitization)
     - Descriptions capped at 100 chars (Discord's per-field max)
 
     Args:
@@ -577,7 +577,7 @@ def discord_skill_commands(
     return _collect_gateway_skill_entries(
         platform="discord",
         max_slots=max_slots,
-        reserved_names=set(reserved_names),  # copy �?don't mutate caller's set
+        reserved_names=set(reserved_names),  # copy é¥?don't mutate caller's set
         desc_limit=100,
     )
 
@@ -801,7 +801,7 @@ class SlashCommandCompleter(Completer):
                     count += 1
                 return
 
-        # Bare @ or @partial �?fuzzy project-wide file search
+        # Bare @ or @partial é¥?fuzzy project-wide file search
         query = word[1:]  # strip the @
         yield from self._fuzzy_file_completions(word, query, limit)
 
@@ -896,7 +896,7 @@ class SlashCommandCompleter(Completer):
         files = self._get_project_files()
 
         if not query:
-            # No query �?show recently modified files (already sorted by mtime)
+            # No query é¥?show recently modified files (already sorted by mtime)
             for fp in files[:limit]:
                 is_dir = fp.endswith("/")
                 filename = os.path.basename(fp)
@@ -937,7 +937,7 @@ class SlashCommandCompleter(Completer):
     def _model_completions(self, sub_text: str, sub_lower: str):
         """Yield completions for /model from config aliases + built-in aliases."""
         seen = set()
-        # Config-based direct aliases (preferred �?include provider info)
+        # Config-based direct aliases (preferred é¥?include provider info)
         try:
             from hermes_cli.model_switch import (
                 _ensure_direct_aliases, DIRECT_ALIASES, MODEL_ALIASES,
@@ -1027,7 +1027,7 @@ class SlashCommandCompleter(Completer):
                     self._completion_text(cmd_name, word),
                     start_position=-len(word),
                     display=cmd,
-                    display_meta=f"�?{short_desc}",
+                    display_meta=f"é¿?{short_desc}",
                 )
 
 
@@ -1064,7 +1064,7 @@ class SlashCommandAutoSuggest(AutoSuggest):
         base_cmd = parts[0].lower()
 
         if len(parts) == 1 and not text.endswith(" "):
-            # Still typing the command name: /upd �?suggest "ate"
+            # Still typing the command name: /upd é«?suggest "ate"
             word = text[1:].lower()
             for cmd in COMMANDS:
                 if self._completer is not None and not self._completer._command_allowed(cmd):
@@ -1074,7 +1074,7 @@ class SlashCommandAutoSuggest(AutoSuggest):
                     return Suggestion(cmd_name[len(word):])
             return None
 
-        # Command is complete �?suggest subcommands or model names
+        # Command is complete é¥?suggest subcommands or model names
         sub_text = parts[1] if len(parts) > 1 else ""
         sub_lower = sub_text.lower()
 

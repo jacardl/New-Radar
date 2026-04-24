@@ -24,7 +24,7 @@ from tools.tool_result_storage import (
 )
 
 
-# ── generate_preview ──────────────────────────────────────────────────
+# -- generate_preview --------------------------------------------------
 
 class TestGeneratePreview:
     def test_short_content_unchanged(self):
@@ -65,7 +65,7 @@ class TestGeneratePreview:
         assert has_more is False
 
 
-# ── _heredoc_marker ───────────────────────────────────────────────────
+# -- _heredoc_marker ---------------------------------------------------
 
 class TestHeredocMarker:
     def test_default_marker_when_no_collision(self):
@@ -79,7 +79,7 @@ class TestHeredocMarker:
         assert marker not in content
 
 
-# ── _write_to_sandbox ─────────────────────────────────────────────────
+# -- _write_to_sandbox -------------------------------------------------
 
 class TestWriteToSandbox:
     def test_success(self):
@@ -140,7 +140,7 @@ class TestWriteToSandbox:
         malicious_path = "/tmp/hermes-results/$(whoami).txt"
         _write_to_sandbox("content", malicious_path, env)
         cmd = env.execute.call_args[0][0]
-        # The $() must not appear unquoted �?shlex.quote wraps it
+        # The $() must not appear unquoted â?shlex.quote wraps it
         assert "'/tmp/hermes-results/$(whoami).txt'" in cmd
 
     def test_semicolon_injection_neutralized(self):
@@ -163,7 +163,7 @@ class TestResolveStorageDir:
         assert _resolve_storage_dir(env) == "/data/data/com.termux/files/usr/tmp/hermes-results"
 
 
-# ── _build_persisted_message ──────────────────────────────────────────
+# -- _build_persisted_message ------------------------------------------
 
 class TestBuildPersistedMessage:
     def test_structure(self):
@@ -202,7 +202,7 @@ class TestBuildPersistedMessage:
         assert "MB" in msg
 
 
-# ── maybe_persist_tool_result ─────────────────────────────────────────
+# -- maybe_persist_tool_result -----------------------------------------
 
 class TestMaybePersistToolResult:
     def test_below_threshold_returns_unchanged(self):
@@ -233,7 +233,7 @@ class TestMaybePersistToolResult:
         env.execute.assert_called_once()
 
     def test_persists_full_content_as_is(self):
-        """Content is persisted verbatim �?no JSON extraction."""
+        """Content is persisted verbatim â?no JSON extraction."""
         import json
         env = MagicMock()
         env.execute.return_value = {"output": "", "returncode": 0}
@@ -328,7 +328,7 @@ class TestMaybePersistToolResult:
     def test_unicode_content_survives(self):
         env = MagicMock()
         env.execute.return_value = {"output": "", "returncode": 0}
-        content = "日本語テスト " * 10_000  # ~60K chars of unicode
+        content = "æ¥æ¬èªãã¹ã " * 10_000  # ~60K chars of unicode
         result = maybe_persist_tool_result(
             content=content,
             tool_name="terminal",
@@ -338,7 +338,7 @@ class TestMaybePersistToolResult:
         )
         assert PERSISTED_OUTPUT_TAG in result
         # Preview should contain unicode
-        assert "日本語テスト" in result
+        assert "æ¥æ¬èªãã¹ã" in result
 
     def test_empty_content_returns_unchanged(self):
         result = maybe_persist_tool_result(
@@ -419,7 +419,7 @@ class TestMaybePersistToolResult:
         assert PERSISTED_OUTPUT_TAG in result
 
 
-# ── enforce_turn_budget ───────────────────────────────────────────────
+# -- enforce_turn_budget -----------------------------------------------
 
 class TestEnforceTurnBudget:
     def test_under_budget_no_changes(self):
@@ -458,7 +458,7 @@ class TestEnforceTurnBudget:
         assert PERSISTED_OUTPUT_TAG in msgs[1]["content"]
 
     def test_medium_result_regression(self):
-        """6 results of 42K chars each (252K total) �?each under 100K default
+        """6 results of 42K chars each (252K total) â?each under 100K default
         threshold but aggregate exceeds 200K budget. L3 should persist."""
         env = MagicMock()
         env.execute.return_value = {"output": "", "returncode": 0}
@@ -491,7 +491,7 @@ class TestEnforceTurnBudget:
         assert result == []
 
 
-# ── Per-tool threshold integration ────────────────────────────────────
+# -- Per-tool threshold integration ------------------------------------
 
 class TestPerToolThresholds:
     """Verify registry wiring for per-tool thresholds."""

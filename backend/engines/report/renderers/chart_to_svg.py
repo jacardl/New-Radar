@@ -1,14 +1,14 @@
 """
-图表到SVG转换�?- 将Chart.js数据转换为矢量SVG图形
+å¾è¡¨å°SVGè½¬æ¢å?- å°Chart.jsæ°æ®è½¬æ¢ä¸ºç¢éSVGå¾å½¢
 
-支持的图表类�?
-- line: 折线�?
-- bar: 柱状�?
-- pie: 饼图
-- doughnut: 圆环�?
-- radar: 雷达�?
-- polarArea: 极地区域�?
-- scatter: 散点�?
+æ¯æçå¾è¡¨ç±»å?
+- line: æçº¿å?
+- bar: æ±ç¶å?
+- pie: é¥¼å¾
+- doughnut: åç¯å?
+- radar: é·è¾¾å?
+- polarArea: æå°åºåå?
+- scatter: æ£ç¹å?
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from loguru import logger
 
 try:
     import matplotlib
-    matplotlib.use('Agg')  # 使用非GUI后端
+    matplotlib.use('Agg')  # ä½¿ç¨éGUIåç«¯
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     import matplotlib.font_manager as fm
@@ -31,43 +31,43 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    logger.warning("Matplotlib未安装，PDF图表矢量渲染功能将不可用")
+    logger.warning("Matplotlibæªå®è£ï¼PDFå¾è¡¨ç¢éæ¸²æåè½å°ä¸å¯ç¨")
 
-# 可选依赖：scipy用于曲线平滑
+# å¯éä¾èµï¼scipyç¨äºæ²çº¿å¹³æ»
 try:
     from scipy.interpolate import make_interp_spline
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    logger.info("Scipy未安装，折线图将不支持曲线平滑功能（不影响基本渲染）")
+    logger.info("Scipyæªå®è£ï¼æçº¿å¾å°ä¸æ¯ææ²çº¿å¹³æ»åè½ï¼ä¸å½±ååºæ¬æ¸²æï¼")
 
 
 class ChartToSVGConverter:
     """
-    将Chart.js图表数据转换为SVG矢量图形
+    å°Chart.jså¾è¡¨æ°æ®è½¬æ¢ä¸ºSVGç¢éå¾å½¢
     """
 
-    # 默认颜色调色板（优化版：明亮且易区分�?
+    # é»è®¤é¢è²è°è²æ¿ï¼ä¼åçï¼æäº®ä¸æåºåï¼?
     DEFAULT_COLORS = [
-        '#4A90E2', '#E85D75', '#50C878', '#FFB347',  # 明亮蓝、珊瑚红、翠绿、橙�?
-        '#9B59B6', '#3498DB', '#E67E22', '#16A085',  # 紫色、天蓝、橙色、青�?
-        '#F39C12', '#D35400', '#27AE60', '#8E44AD'   # 金色、深橙、绿色、紫罗兰
+        '#4A90E2', '#E85D75', '#50C878', '#FFB347',  # æäº®èãçççº¢ãç¿ ç»¿ãæ©é»?
+        '#9B59B6', '#3498DB', '#E67E22', '#16A085',  # ç´«è²ãå¤©èãæ©è²ãéè?
+        '#F39C12', '#D35400', '#27AE60', '#8E44AD'   # éè²ãæ·±æ©ãç»¿è²ãç´«ç½å°
     ]
 
-    # CSS变量到颜色的映射表（优化版：使用更明亮、更浅的颜色�?
+    # CSSåéå°é¢è²çæ å°è¡¨ï¼ä¼åçï¼ä½¿ç¨æ´æäº®ãæ´æµçé¢è²ï¼?
     CSS_VAR_COLOR_MAP = {
-        'var(--color-accent)': '#4A90E2',        # 明亮蓝色（从#007AFF改为更浅�?
-        'var(--re-accent-color)': '#4A90E2',     # 明亮蓝色
-        'var(--re-accent-color-translucent)': (0.29, 0.565, 0.886, 0.08),  # 蓝色极浅透明 rgba(74, 144, 226, 0.08)
-        'var(--color-kpi-down)': '#E85D75',      # 珊瑚红色（从#DC3545改为更柔和）
-        'var(--re-danger-color)': '#E85D75',     # 珊瑚红色
-        'var(--re-danger-color-translucent)': (0.91, 0.365, 0.459, 0.08),  # 红色极浅透明 rgba(232, 93, 117, 0.08)
-        'var(--color-warning)': '#FFB347',       # 柔和橙黄色（�?FFC107改为更浅�?
-        'var(--re-warning-color)': '#FFB347',    # 柔和橙黄�?
-        'var(--re-warning-color-translucent)': (1.0, 0.702, 0.278, 0.08),  # 黄色极浅透明 rgba(255, 179, 71, 0.08)
-        'var(--color-success)': '#50C878',       # 翠绿色（�?28A745改为更明亮）
-        'var(--re-success-color)': '#50C878',    # 翠绿�?
-        'var(--re-success-color-translucent)': (0.314, 0.784, 0.471, 0.08),  # 绿色极浅透明 rgba(80, 200, 120, 0.08)
+        'var(--color-accent)': '#4A90E2',        # æäº®èè²ï¼ä»#007AFFæ¹ä¸ºæ´æµï¼?
+        'var(--re-accent-color)': '#4A90E2',     # æäº®èè²
+        'var(--re-accent-color-translucent)': (0.29, 0.565, 0.886, 0.08),  # èè²ææµéæ rgba(74, 144, 226, 0.08)
+        'var(--color-kpi-down)': '#E85D75',      # çççº¢è²ï¼ä»#DC3545æ¹ä¸ºæ´æåï¼
+        'var(--re-danger-color)': '#E85D75',     # çççº¢è²
+        'var(--re-danger-color-translucent)': (0.91, 0.365, 0.459, 0.08),  # çº¢è²ææµéæ rgba(232, 93, 117, 0.08)
+        'var(--color-warning)': '#FFB347',       # æåæ©é»è²ï¼ä»?FFC107æ¹ä¸ºæ´æµï¼?
+        'var(--re-warning-color)': '#FFB347',    # æåæ©é»è?
+        'var(--re-warning-color-translucent)': (1.0, 0.702, 0.278, 0.08),  # é»è²ææµéæ rgba(255, 179, 71, 0.08)
+        'var(--color-success)': '#50C878',       # ç¿ ç»¿è²ï¼ä»?28A745æ¹ä¸ºæ´æäº®ï¼
+        'var(--re-success-color)': '#50C878',    # ç¿ ç»¿è?
+        'var(--re-success-color-translucent)': (0.314, 0.784, 0.471, 0.08),  # ç»¿è²ææµéæ rgba(80, 200, 120, 0.08)
         'var(--color-accent-positive)': '#50C878',
         'var(--color-accent-negative)': '#E85D75',
         'var(--color-text-secondary)': '#6B7280',
@@ -79,11 +79,11 @@ class ChartToSVGConverter:
         'var(--sentiment-positive)': '#28A745',
         'var(--sentiment-negative)': '#E53E3E',
         'var(--sentiment-neutral)': '#FFC107',
-        'var(--color-primary)': '#3498DB',       # 天蓝�?
-        'var(--color-secondary)': '#95A5A6',     # 浅灰�?
+        'var(--color-primary)': '#3498DB',       # å¤©èè?
+        'var(--color-secondary)': '#95A5A6',     # æµç°è?
     }
 
-    # 支持解析 rgba(var(--color-primary-rgb), 0.5) 这类格式的兜底映�?
+    # æ¯æè§£æ rgba(var(--color-primary-rgb), 0.5) è¿ç±»æ ¼å¼çååºæ å°?
     CSS_VAR_RGB_MAP = {
         'color-primary-rgb': (52, 152, 219),
         'color-tone-up-rgb': (80, 200, 120),
@@ -94,37 +94,37 @@ class ChartToSVGConverter:
 
     def __init__(self, font_path: Optional[str] = None):
         """
-        初始化转换器
+        åå§åè½¬æ¢å¨
 
-        参数:
-            font_path: 中文字体路径（可选）
+        åæ°:
+            font_path: ä¸­æå­ä½è·¯å¾ï¼å¯éï¼
         """
         if not MATPLOTLIB_AVAILABLE:
-            raise RuntimeError("Matplotlib未安装，请运�? pip install matplotlib")
+            raise RuntimeError("Matplotlibæªå®è£ï¼è¯·è¿è¡? pip install matplotlib")
 
         self.font_path = font_path
         self._setup_chinese_font()
 
     def _setup_chinese_font(self):
-        """配置中文字体"""
+        """éç½®ä¸­æå­ä½"""
         if self.font_path:
             try:
-                # 添加自定义字�?
+                # æ·»å èªå®ä¹å­ä½?
                 fm.fontManager.addfont(self.font_path)
-                # 设置默认字体
+                # è®¾ç½®é»è®¤å­ä½
                 font_prop = fm.FontProperties(fname=self.font_path)
                 plt.rcParams['font.family'] = font_prop.get_name()
-                plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
-                logger.info(f"已加载中文字�? {self.font_path}")
+                plt.rcParams['axes.unicode_minus'] = False  # è§£å³è´å·æ¾ç¤ºé®é¢
+                logger.info(f"å·²å è½½ä¸­æå­ä½? {self.font_path}")
             except Exception as e:
-                logger.warning(f"加载中文字体失败: {e}，将使用系统默认字体")
+                logger.warning(f"å è½½ä¸­æå­ä½å¤±è´¥: {e}ï¼å°ä½¿ç¨ç³»ç»é»è®¤å­ä½")
         else:
-            # 尝试使用系统中文字体
+            # å°è¯ä½¿ç¨ç³»ç»ä¸­æå­ä½
             try:
                 plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
                 plt.rcParams['axes.unicode_minus'] = False
             except Exception as e:
-                logger.warning(f"配置中文字体失败: {e}")
+                logger.warning(f"éç½®ä¸­æå­ä½å¤±è´¥: {e}")
 
     def convert_widget_to_svg(
         self,
@@ -134,58 +134,58 @@ class ChartToSVGConverter:
         dpi: int = 100
     ) -> Optional[str]:
         """
-        将widget数据转换为SVG字符�?
+        å°widgetæ°æ®è½¬æ¢ä¸ºSVGå­ç¬¦ä¸?
 
-        参数:
-            widget_data: widget块数据（包含widgetType、data、props�?
-            width: 图表宽度（像素）
-            height: 图表高度（像素）
-            dpi: DPI设置
+        åæ°:
+            widget_data: widgetåæ°æ®ï¼åå«widgetTypeataropsï¼?
+            width: å¾è¡¨å®½åº¦ï¼åç´ ï¼
+            height: å¾è¡¨é«åº¦ï¼åç´ ï¼
+            dpi: DPIè®¾ç½®
 
-        返回:
-            str: SVG字符串，失败返回None
+        è¿å:
+            str: SVGå­ç¬¦ä¸²ï¼å¤±è´¥è¿åNone
         """
         try:
-            # 提取图表类型
+            # æåå¾è¡¨ç±»å
             widget_type = widget_data.get('widgetType', '')
             if not widget_type or not widget_type.startswith('chart.js'):
-                logger.warning(f"不支持的widget类型: {widget_type}")
+                logger.warning(f"ä¸æ¯æçwidgetç±»å: {widget_type}")
                 return None
 
-            # 从widgetType中提取图表类型，例如 "chart.js/line" -> "line"
+            # ä»widgetTypeä¸­æåå¾è¡¨ç±»åï¼ä¾å¦ "chart.js/line" -> "line"
             chart_type = widget_type.split('/')[-1] if '/' in widget_type else 'bar'
 
-            # 也检查props中的type
+            # ä¹æ£æ¥propsä¸­çtype
             props = widget_data.get('props', {})
             if props.get('type'):
                 chart_type = props['type']
 
-            # Chart.js v4已移除horizontalBar类型，这里自动降级为bar并设置横向坐�?
+            # Chart.js v4å·²ç§»é¤horizontalBarç±»åï¼è¿éèªå¨éçº§ä¸ºbarå¹¶è®¾ç½®æ¨ªååæ ?
             horizontal_bar = False
             if chart_type and str(chart_type).lower() == 'horizontalbar':
                 chart_type = 'bar'
                 horizontal_bar = True
 
-            # 支持通过indexAxis: 'y' 强制横向柱状�?
+            # æ¯æéè¿indexAxis: 'y' å¼ºå¶æ¨ªåæ±ç¶å?
             if isinstance(props, dict):
                 options = props.get('options') or {}
                 index_axis = (options.get('indexAxis') or props.get('indexAxis') or '').lower()
                 if index_axis == 'y':
                     horizontal_bar = True
 
-            # 提取数据
+            # æåæ°æ®
             data = widget_data.get('data', {})
             if not data:
-                logger.warning("图表数据为空")
+                logger.warning("å¾è¡¨æ°æ®ä¸ºç©º")
                 return None
 
-            # 根据图表类型调用相应的渲染方�?
+            # æ ¹æ®å¾è¡¨ç±»åè°ç¨ç¸åºçæ¸²ææ¹æ³?
             if 'wordcloud' in str(chart_type).lower():
-                # 词云由专用渲染逻辑处理，这里跳过SVG转换以避免告�?
-                logger.debug("检测到词云图表，跳过chart_to_svg转换")
+                # è¯äºç±ä¸ç¨æ¸²æé»è¾å¤çï¼è¿éè·³è¿SVGè½¬æ¢ä»¥é¿ååè­?
+                logger.debug("æ£æµå°è¯äºå¾è¡¨ï¼è·³è¿chart_to_svgè½¬æ¢")
                 return None
 
-            # 分派渲染方法，特殊处理横向柱状图
+            # åæ´¾æ¸²ææ¹æ³ï¼ç¹æ®å¤çæ¨ªåæ±ç¶å¾
             if chart_type == 'bar':
                 return self._render_bar(data, props, width, height, dpi, horizontal=horizontal_bar)
             elif chart_type == 'bubble':
@@ -193,14 +193,14 @@ class ChartToSVGConverter:
             else:
                 render_method = getattr(self, f'_render_{chart_type}', None)
                 if not render_method:
-                    logger.warning(f"不支持的图表类型: {chart_type}")
+                    logger.warning(f"ä¸æ¯æçå¾è¡¨ç±»å: {chart_type}")
                     return None
 
-            # 创建图表并转换为SVG
+            # åå»ºå¾è¡¨å¹¶è½¬æ¢ä¸ºSVG
             return render_method(data, props, width, height, dpi)
 
         except Exception as e:
-            logger.error(f"转换图表为SVG失败: {e}", exc_info=True)
+            logger.error(f"è½¬æ¢å¾è¡¨ä¸ºSVGå¤±è´¥: {e}", exc_info=True)
             return None
 
     def _create_figure(
@@ -211,9 +211,9 @@ class ChartToSVGConverter:
         title: Optional[str] = None
     ) -> Tuple[Any, Any]:
         """
-        创建matplotlib图表
+        åå»ºmatplotlibå¾è¡¨
 
-        返回:
+        è¿å:
             tuple: (fig, ax)
         """
         fig, ax = plt.subplots(figsize=(width/dpi, height/dpi), dpi=dpi)
@@ -225,32 +225,32 @@ class ChartToSVGConverter:
 
     def _parse_color(self, color: Any) -> Any:
         """
-        解析颜色值，将CSS格式转换为matplotlib支持的格�?
+        è§£æé¢è²å¼ï¼å°CSSæ ¼å¼è½¬æ¢ä¸ºmatplotlibæ¯æçæ ¼å¼?
 
-        参数:
-            color: 颜色值（可能是CSS格式如rgba()或十六进制或CSS变量�?
+        åæ°:
+            color: é¢è²å¼ï¼å¯è½æ¯CSSæ ¼å¼å¦rgba()æåå­è¿å¶æCSSåéï¼?
 
-        返回:
-            matplotlib支持的颜色格式（hex字符串或RGB(A)元组�?
+        è¿å:
+            matplotlibæ¯æçé¢è²æ ¼å¼ï¼hexå­ç¬¦ä¸²æRGB(A)åç»ï¼?
         """
         if color is None:
             return None
 
-        # 处理numpy数组，统一转为原生列表
+        # å¤çnumpyæ°ç»ï¼ç»ä¸è½¬ä¸ºåçåè¡¨
         _np = globals().get("np")
         if _np is not None and hasattr(_np, "ndarray") and isinstance(color, _np.ndarray):
             color = color.tolist()
 
-        # 直接透传已经是序列的颜色（如 (r,g,b,a)），避免被转成字符串后失�?
+        # ç´æ¥éä¼ å·²ç»æ¯åºåçé¢è²ï¼å¦ (r,g,b,a)ï¼ï¼é¿åè¢«è½¬æå­ç¬¦ä¸²åå¤±æ?
         if isinstance(color, (list, tuple)):
             if len(color) in (3, 4) and all(isinstance(c, (int, float)) for c in color):
                 normalized = []
                 for idx, channel in enumerate(color):
-                    # Matplotlib接受0-1之间的浮点数，若�?1则按0-255来源归一�?
+                    # Matplotlibæ¥å0-1ä¹é´çæµ®ç¹æ°ï¼è¥å?1åæ0-255æ¥æºå½ä¸å?
                     value = float(channel)
                     if value > 1:
                         value = value / 255.0
-                    # 只对RGB通道做强制裁剪，alpha�?-1裁剪
+                    # åªå¯¹RGBééåå¼ºå¶è£åªï¼alphaæ?-1è£åª
                     if idx < 3:
                         value = max(0.0, min(value, 1.0))
                     else:
@@ -263,20 +263,20 @@ class ChartToSVGConverter:
             except Exception:
                 return color
 
-        # 其余非字符串类型保持原有字符串回退策略
+        # å¶ä½éå­ç¬¦ä¸²ç±»åä¿æåæå­ç¬¦ä¸²åéç­ç¥
         if not isinstance(color, str):
             return str(color)
 
         color = color.strip()
 
-        # 处理 rgba(var(--color-primary-rgb), 0.5) / rgb(var(--color-primary-rgb))
+        # å¤ç rgba(var(--color-primary-rgb), 0.5) / rgb(var(--color-primary-rgb))
         var_rgba_pattern = r'rgba?\(var\(--([\w-]+)\)\s*(?:,\s*([\d.]+))?\)'
         match = re.match(var_rgba_pattern, color)
         if match:
             var_name, alpha_str = match.groups()
             rgb_tuple = self.CSS_VAR_RGB_MAP.get(var_name)
 
-            # 兼容缺少 -rgb 后缀的写�?
+            # å¼å®¹ç¼ºå° -rgb åç¼çåæ³?
             if not rgb_tuple:
                 if var_name.endswith('-rgb'):
                     rgb_tuple = self.CSS_VAR_RGB_MAP.get(var_name[:-4])
@@ -288,54 +288,54 @@ class ChartToSVGConverter:
                 alpha = float(alpha_str) if alpha_str is not None else 1.0
                 return (r / 255, g / 255, b / 255, alpha)
 
-        # 【增强】处理CSS变量，例�?var(--color-accent)
-        # 使用预定义的颜色映射表替代CSS变量，确保不同变量有不同的颜�?
+        # ãå¢å¼ºãå¤çCSSåéï¼ä¾å¦?var(--color-accent)
+        # ä½¿ç¨é¢å®ä¹çé¢è²æ å°è¡¨æ¿ä»£CSSåéï¼ç¡®ä¿ä¸ååéæä¸åçé¢è?
         if color.startswith('var('):
-            # 解析 var(--token, fallback) 形式
+            # è§£æ var(--token, fallback) å½¢å¼
             fb_match = re.match(r'^var\(\s*--[^,)+]+,\s*([^)]+)\)', color)
             if fb_match:
                 fb_raw = fb_match.group(1).strip()
                 fb_color = self._parse_color(fb_raw)
                 if fb_color:
                     return fb_color
-            # 尝试从映射表中查找对应的颜色
+            # å°è¯ä»æ å°è¡¨ä¸­æ¥æ¾å¯¹åºçé¢è²
             mapped_color = self.CSS_VAR_COLOR_MAP.get(color)
             if mapped_color:
                 return mapped_color
-            # 如果映射表中没有，尝试从变量名推断颜色类�?
+            # å¦ææ å°è¡¨ä¸­æ²¡æï¼å°è¯ä»åéåæ¨æ­é¢è²ç±»å?
             if 'accent' in color or 'primary' in color:
-                return '#007AFF'  # 蓝色
+                return '#007AFF'  # èè²
             elif 'danger' in color or 'down' in color or 'error' in color:
-                return '#DC3545'  # 红色
+                return '#DC3545'  # çº¢è²
             elif 'warning' in color:
-                return '#FFC107'  # 黄色
+                return '#FFC107'  # é»è²
             elif 'success' in color or 'up' in color:
-                return '#28A745'  # 绿色
-            # 默认返回蓝色
+                return '#28A745'  # ç»¿è²
+            # é»è®¤è¿åèè²
             return '#36A2EB'
 
-        # 处理rgba(r, g, b, a)格式
+        # å¤çrgba(r, g, b, a)æ ¼å¼
         rgba_pattern = r'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)'
         match = re.match(rgba_pattern, color)
         if match:
             r, g, b, a = match.groups()
-            # 转换为matplotlib格式 (r/255, g/255, b/255, a)
+            # è½¬æ¢ä¸ºmatplotlibæ ¼å¼ (r/255, g/255, b/255, a)
             return (int(r)/255, int(g)/255, int(b)/255, float(a))
 
-        # 处理rgb(r, g, b)格式
+        # å¤çrgb(r, g, b)æ ¼å¼
         rgb_pattern = r'rgb\((\d+),\s*(\d+),\s*(\d+)\)'
         match = re.match(rgb_pattern, color)
         if match:
             r, g, b = match.groups()
-            # 转换为matplotlib格式 (r/255, g/255, b/255)
+            # è½¬æ¢ä¸ºmatplotlibæ ¼å¼ (r/255, g/255, b/255)
             return (int(r)/255, int(g)/255, int(b)/255)
 
-        # 其他格式（十六进制、颜色名等）直接返回
+        # å¶ä»æ ¼å¼ï¼åå­è¿å¶ãé¢è²åç­ï¼ç´æ¥è¿å
         return color
 
     def _ensure_visible_color(self, color: Any, fallback: str, min_alpha: float = 0.6) -> Any:
         """
-        确保颜色在渲染时可见：避免透明值并提升过低的不透明�?
+        ç¡®ä¿é¢è²å¨æ¸²ææ¶å¯è§ï¼é¿åéæå¼å¹¶æåè¿ä½çä¸éæåº?
         """
         base_color = fallback if color in (None, "", "transparent") else color
         parsed = self._parse_color(base_color)
@@ -354,13 +354,13 @@ class ChartToSVGConverter:
 
     def _get_colors(self, datasets: List[Dict[str, Any]]) -> List[str]:
         """
-        获取图表颜色
+        è·åå¾è¡¨é¢è²
 
-        优先使用dataset中定义的颜色，否则使用默认调色板
+        ä¼åä½¿ç¨datasetä¸­å®ä¹çé¢è²ï¼å¦åä½¿ç¨é»è®¤è°è²æ¿
         """
         colors = []
         for i, dataset in enumerate(datasets):
-            # 尝试获取各种可能的颜色字�?
+            # å°è¯è·ååç§å¯è½çé¢è²å­æ®?
             color = (
                 dataset.get('backgroundColor') or
                 dataset.get('borderColor') or
@@ -368,11 +368,11 @@ class ChartToSVGConverter:
                 self.DEFAULT_COLORS[i % len(self.DEFAULT_COLORS)]
             )
 
-            # 如果是颜色数组，取第一�?
+            # å¦ææ¯é¢è²æ°ç»ï¼åç¬¬ä¸ä¸?
             if isinstance(color, list):
                 color = color[0] if color else self.DEFAULT_COLORS[i % len(self.DEFAULT_COLORS)]
 
-            # 解析颜色格式
+            # è§£æé¢è²æ ¼å¼
             color = self._parse_color(color)
 
             colors.append(color)
@@ -387,9 +387,9 @@ class ChartToSVGConverter:
         require_positive_sum: bool = False
     ) -> Tuple[List[str], List[float]]:
         """
-        对齐类别型图表的标签与数据长度，并清理非数值值�?
+        å¯¹é½ç±»å«åå¾è¡¨çæ ç­¾ä¸æ°æ®é¿åº¦ï¼å¹¶æ¸çéæ°å¼å¼
 
-        Matplotlib的饼�?圆环图要求labels与数据长度一致，否则会抛出错误�?
+        Matplotlibçé¥¼å?åç¯å¾è¦æ±labelsä¸æ°æ®é¿åº¦ä¸è´ï¼å¦åä¼æåºéè¯¯
         """
         original_label_len = len(labels) if isinstance(labels, list) else 0
         original_data_len = len(dataset_data) if isinstance(dataset_data, list) else 0
@@ -413,26 +413,26 @@ class ChartToSVGConverter:
 
         if len(aligned_labels) < target_len:
             start = len(aligned_labels)
-            aligned_labels.extend([f"未命名{start + idx + 1}" for idx in range(target_len - start)])
+            aligned_labels.extend([f"æªå½å{start + idx + 1}" for idx in range(target_len - start)])
 
         if len(cleaned_data) < target_len:
             cleaned_data.extend([0.0] * (target_len - len(cleaned_data)))
 
         if original_label_len != original_data_len:
             logger.warning(
-                f"{chart_type}图labels长度({original_label_len})与data长度({original_data_len})不一致，"
-                f"已对齐为{target_len}"
+                f"{chart_type}å¾labelsé¿åº¦({original_label_len})ä¸dataé¿åº¦({original_data_len})ä¸ä¸è´ï¼"
+                f"å·²å¯¹é½ä¸º{target_len}"
             )
 
         if require_positive_sum and not any(value > 0 for value in cleaned_data):
-            logger.warning(f"{chart_type}图数据为空，跳过渲染")
+            logger.warning(f"{chart_type}å¾æ°æ®ä¸ºç©ºï¼è·³è¿æ¸²æ")
             return [], []
 
         return aligned_labels[:target_len], cleaned_data[:target_len]
 
     def _figure_to_svg(self, fig: Any) -> str:
         """
-        将matplotlib图表转换为SVG字符�?
+        å°matplotlibå¾è¡¨è½¬æ¢ä¸ºSVGå­ç¬¦ä¸?
         """
         svg_buffer = io.BytesIO()
         fig.savefig(svg_buffer, format='svg', bbox_inches='tight', transparent=False, facecolor='white')
@@ -452,13 +452,13 @@ class ChartToSVGConverter:
         dpi: int
     ) -> Optional[str]:
         """
-        渲染折线图（增强版）
+        æ¸²ææçº¿å¾ï¼å¢å¼ºçï¼
 
-        支持特性：
-        - 多y轴（yAxisID: 'y', 'y1', 'y2', 'y3'...�?
-        - 填充区域（fill: true�?
-        - 透明度（backgroundColor中的alpha通道�?
-        - 线条样式（tension曲线平滑�?
+        æ¯æç¹æ§ï¼
+        - å¤yè½´ï¼yAxisID: 'y', 'y1', 'y2', 'y3'...ï¼?
+        - å¡«ååºåï¼fill: trueï¼?
+        - éæåº¦ï¼backgroundColorä¸­çalphaééï¼?
+        - çº¿æ¡æ ·å¼ï¼tensionæ²çº¿å¹³æ»ï¼?
         """
         try:
             labels = data.get('labels') or []
@@ -474,19 +474,19 @@ class ChartToSVGConverter:
             if (not datasets) or ((not labels) and not has_object_points):
                 return None
 
-            # 收集所有唯一的yAxisID
+            # æ¶éææå¯ä¸çyAxisID
             y_axis_ids = []
             for dataset in datasets:
                 y_axis_id = dataset.get('yAxisID', 'y')
                 if y_axis_id not in y_axis_ids:
                     y_axis_ids.append(y_axis_id)
 
-            # 确保'y'是第一个轴
+            # ç¡®ä¿'y'æ¯ç¬¬ä¸ä¸ªè½´
             if 'y' in y_axis_ids:
                 y_axis_ids.remove('y')
                 y_axis_ids.insert(0, 'y')
 
-            # 检查是否有多个y�?
+            # æ£æ¥æ¯å¦æå¤ä¸ªyè½?
             has_multiple_axes = len(y_axis_ids) > 1
 
             title = props.get('title')
@@ -494,67 +494,67 @@ class ChartToSVGConverter:
             scales = options.get('scales', {})
             x_tick_labels = list(labels) if isinstance(labels, list) else []
 
-            # 创建图表和多个y�?
+            # åå»ºå¾è¡¨åå¤ä¸ªyè½?
             fig, ax1 = plt.subplots(figsize=(width/dpi, height/dpi), dpi=dpi)
 
             if title:
                 ax1.set_title(title, fontsize=14, fontweight='bold', pad=20)
 
-            # 创建y轴映射字�?
+            # åå»ºyè½´æ å°å­å?
             axes = {'y': ax1}
 
             if has_multiple_axes:
-                # 统计每个位置(left/right)的轴数量,用于计算偏移
+                # ç»è®¡æ¯ä¸ªä½ç½®(left/right)çè½´æ°é,ç¨äºè®¡ç®åç§»
                 left_axes_count = 0
                 right_axes_count = 0
 
-                # 为每个额外的yAxisID创建新的y�?
+                # ä¸ºæ¯ä¸ªé¢å¤çyAxisIDåå»ºæ°çyè½?
                 for y_axis_id in y_axis_ids[1:]:
                     if y_axis_id == 'y':
                         continue
 
-                    # 创建新的y�?
+                    # åå»ºæ°çyè½?
                     new_ax = ax1.twinx()
                     axes[y_axis_id] = new_ax
 
-                    # 从scales配置中获取轴的位�?
+                    # ä»scaleséç½®ä¸­è·åè½´çä½ç½?
                     y_config = scales.get(y_axis_id, {})
                     position = y_config.get('position', 'right')
 
                     if position == 'left':
-                        # 左侧额外�?向左偏移
+                        # å·¦ä¾§é¢å¤è½?åå·¦åç§»
                         if left_axes_count > 0:
                             new_ax.spines['left'].set_position(('outward', 60 * left_axes_count))
                         new_ax.yaxis.set_label_position('left')
                         new_ax.yaxis.set_ticks_position('left')
                         left_axes_count += 1
                     else:
-                        # 右侧额外�?向右偏移
+                        # å³ä¾§é¢å¤è½?åå³åç§»
                         if right_axes_count > 0:
                             new_ax.spines['right'].set_position(('outward', 60 * right_axes_count))
                         right_axes_count += 1
 
             colors = self._get_colors(datasets)
 
-            # 收集每个y轴的线条和填充信息用于图�?
+            # æ¶éæ¯ä¸ªyè½´ççº¿æ¡åå¡«åä¿¡æ¯ç¨äºå¾ä¾?
             axis_lines = {axis_id: [] for axis_id in y_axis_ids}
-            legend_handles = []  # 图例句柄
-            legend_labels = []   # 图例标签
+            legend_handles = []  # å¾ä¾å¥æ
+            legend_labels = []   # å¾ä¾æ ç­¾
 
-            # 绘制每个数据系列
+            # ç»å¶æ¯ä¸ªæ°æ®ç³»å
             for i, dataset in enumerate(datasets):
                 dataset_data = dataset.get('data', [])
-                label = dataset.get('label', f'系列{i+1}')
+                label = dataset.get('label', f'ç³»å{i+1}')
                 color = colors[i]
 
-                # 获取配置
+                # è·åéç½®
                 y_axis_id = dataset.get('yAxisID', 'y')
-                fill = True  # 强制开启填充，便于对比
-                tension = dataset.get('tension', 0)  # 0表示直线�?.4表示平滑曲线
+                fill = True  # å¼ºå¶å¼å¯å¡«åï¼ä¾¿äºå¯¹æ¯
+                tension = dataset.get('tension', 0)  # 0è¡¨ç¤ºç´çº¿ï¼?.4è¡¨ç¤ºå¹³æ»æ²çº¿
                 border_color = self._parse_color(dataset.get('borderColor', color))
                 background_color = self._parse_color(dataset.get('backgroundColor', color))
 
-                # 选择对应的坐标轴
+                # éæ©å¯¹åºçåæ è½´
                 ax = axes.get(y_axis_id, ax1)
 
                 is_object_data = isinstance(dataset_data, list) and any(
@@ -571,7 +571,7 @@ class ChartToSVGConverter:
                         if not isinstance(point, dict):
                             continue
 
-                        label_text = str(point.get('x', f"点{idx + 1}"))
+                        label_text = str(point.get('x', f"ç¹{idx + 1}"))
                         if len(x_tick_labels) < len(dataset_data):
                             x_tick_labels.append(label_text)
 
@@ -606,24 +606,24 @@ class ChartToSVGConverter:
                                 rotation=20
                             )
                 else:
-                    # 绘制折线
+                    # ç»å¶æçº¿
                     x_data = range(len(labels))
 
-                    # 根据tension值决定是否平�?
+                    # æ ¹æ®tensionå¼å³å®æ¯å¦å¹³æ»?
                     if tension > 0 and SCIPY_AVAILABLE:
-                        # 使用样条插值平滑曲线（需要scipy�?
-                        if len(dataset_data) >= 4:  # 至少需�?个点才能平滑
+                        # ä½¿ç¨æ ·æ¡æå¼å¹³æ»æ²çº¿ï¼éè¦scipyï¼?
+                        if len(dataset_data) >= 4:  # è³å°éè¦?ä¸ªç¹æè½å¹³æ»
                             try:
                                 x_smooth = np.linspace(0, len(labels)-1, len(labels)*3)
                                 spl = make_interp_spline(x_data, dataset_data, k=min(3, len(dataset_data)-1))
                                 y_smooth = spl(x_smooth)
                                 line, = ax.plot(x_smooth, y_smooth, label=label, color=border_color, linewidth=2)
 
-                                # 如果需要填充（使用极低透明度避免遮挡）
+                                # å¦æéè¦å¡«åï¼ä½¿ç¨æä½éæåº¦é¿åé®æ¡ï¼
                                 if fill:
                                     ax.fill_between(x_smooth, y_smooth, alpha=0.2, color=background_color)
                             except:
-                                # 如果平滑失败，使用普通折�?
+                                # å¦æå¹³æ»å¤±è´¥ï¼ä½¿ç¨æ®éæçº?
                                 line, = ax.plot(x_data, dataset_data, marker='o', label=label,
                                               color=border_color, linewidth=2, markersize=6)
                                 if fill:
@@ -634,37 +634,37 @@ class ChartToSVGConverter:
                             if fill:
                                 ax.fill_between(x_data, dataset_data, alpha=0.2, color=background_color)
                     else:
-                        # 直线连接（tension=0或scipy不可用）
+                        # ç´çº¿è¿æ¥ï¼tension=0æscipyä¸å¯ç¨ï¼
                         line, = ax.plot(x_data, dataset_data, marker='o', label=label,
                                       color=border_color, linewidth=2, markersize=6)
 
-                        # 如果需要填充（使用极低透明度避免遮挡）
+                        # å¦æéè¦å¡«åï¼ä½¿ç¨æä½éæåº¦é¿åé®æ¡ï¼
                         if fill:
                             ax.fill_between(x_data, dataset_data, alpha=0.2, color=background_color)
 
-                # 记录这条线属于哪个轴
+                # è®°å½è¿æ¡çº¿å±äºåªä¸ªè½´
                 axis_lines[y_axis_id].append(line)
 
-                # 创建图例项：如果有填充，创建带填充背景的图例
+                # åå»ºå¾ä¾é¡¹ï¼å¦ææå¡«åï¼åå»ºå¸¦å¡«åèæ¯çå¾ä¾
                 if fill:
-                    # 创建一个矩形patch作为填充背景（使用稍高透明度以便在图例中可见）
+                    # åå»ºä¸ä¸ªç©å½¢patchä½ä¸ºå¡«åèæ¯ï¼ä½¿ç¨ç¨é«éæåº¦ä»¥ä¾¿å¨å¾ä¾ä¸­å¯è§ï¼
                     fill_patch = Rectangle((0, 0), 1, 1,
                                           facecolor=background_color,
                                           edgecolor='none',
                                           alpha=0.15)
-                    # 组合线条和填充patch
+                    # ç»åçº¿æ¡åå¡«åpatch
                     legend_handles.append((line, fill_patch))
                     legend_labels.append(label)
                 else:
                     legend_handles.append(line)
                     legend_labels.append(label)
 
-            # 设置x轴标�?
+            # è®¾ç½®xè½´æ ç­?
             if x_tick_labels:
                 ax1.set_xticks(range(len(x_tick_labels)))
                 ax1.set_xticklabels(x_tick_labels, rotation=45, ha='right')
 
-            # 设置y轴标签和标题
+            # è®¾ç½®yè½´æ ç­¾åæ é¢
             for y_axis_id, ax in axes.items():
                 y_config = scales.get(y_axis_id, {})
                 y_title = y_config.get('title', {}).get('text', '')
@@ -672,21 +672,21 @@ class ChartToSVGConverter:
                 if y_title:
                     ax.set_ylabel(y_title, fontsize=11)
 
-                # 设置y轴标签颜色（如果该轴只有一条线，使用该线的颜色�?
+                # è®¾ç½®yè½´æ ç­¾é¢è²ï¼å¦æè¯¥è½´åªæä¸æ¡çº¿ï¼ä½¿ç¨è¯¥çº¿çé¢è²ï¼?
                 if len(axis_lines[y_axis_id]) == 1:
                     line_color = axis_lines[y_axis_id][0].get_color()
                     ax.tick_params(axis='y', labelcolor=line_color)
                     ax.yaxis.label.set_color(line_color)
 
-            # 设置网格（只在主轴显示）
+            # è®¾ç½®ç½æ ¼ï¼åªå¨ä¸»è½´æ¾ç¤ºï¼
             ax1.grid(True, alpha=0.3, linestyle='--')
             for y_axis_id in y_axis_ids[1:]:
                 if y_axis_id in axes:
                     axes[y_axis_id].grid(False)
 
-            # 创建图例
+            # åå»ºå¾ä¾
             if has_multiple_axes or len(datasets) > 1:
-                # 使用自定义的legend_handles和legend_labels
+                # ä½¿ç¨èªå®ä¹çlegend_handlesålegend_labels
                 from matplotlib.legend_handler import HandlerTuple
 
                 ax1.legend(legend_handles, legend_labels,
@@ -697,7 +697,7 @@ class ChartToSVGConverter:
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染折线图失�? {e}", exc_info=True)
+            logger.error(f"æ¸²ææçº¿å¾å¤±è´? {e}", exc_info=True)
             return None
 
     def _render_bar(
@@ -709,7 +709,7 @@ class ChartToSVGConverter:
         dpi: int,
         horizontal: bool = False
     ) -> Optional[str]:
-        """渲染柱状图（支持横向barh�?""
+        """æ¸²ææ±ç¶å¾ï¼æ¯ææ¨ªåbarhï¼?""
         try:
             labels = data.get('labels', [])
             datasets = data.get('datasets', [])
@@ -722,14 +722,14 @@ class ChartToSVGConverter:
 
             colors = self._get_colors(datasets)
 
-            # 计算柱子位置
+            # è®¡ç®æ±å­ä½ç½®
             positions = np.arange(len(labels))
             width_bar = 0.8 / len(datasets) if len(datasets) > 1 else 0.6
 
-            # 横向/纵向绘制
+            # æ¨ªå/çºµåç»å¶
             for i, dataset in enumerate(datasets):
                 dataset_data = dataset.get('data', [])
-                label = dataset.get('label', f'系列{i+1}')
+                label = dataset.get('label', f'ç³»å{i+1}')
                 color = colors[i]
 
                 offset = (i - len(datasets)/2 + 0.5) * width_bar
@@ -757,25 +757,25 @@ class ChartToSVGConverter:
                         linewidth=0.5
                     )
 
-            # 轴标�?网格
+            # è½´æ ç­?ç½æ ¼
             if horizontal:
                 ax.set_yticks(positions)
                 ax.set_yticklabels(labels)
-                ax.invert_yaxis()  # 与Chart.js横向排列保持一�?
+                ax.invert_yaxis()  # ä¸Chart.jsæ¨ªåæåä¿æä¸è?
                 ax.grid(True, alpha=0.3, linestyle='--', axis='x')
             else:
                 ax.set_xticks(positions)
                 ax.set_xticklabels(labels, rotation=45, ha='right')
                 ax.grid(True, alpha=0.3, linestyle='--', axis='y')
 
-            # 显示图例
+            # æ¾ç¤ºå¾ä¾
             if len(datasets) > 1:
                 ax.legend(loc='best', framealpha=0.9)
 
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染柱状图失�? {e}")
+            logger.error(f"æ¸²ææ±ç¶å¾å¤±è´? {e}")
             return None
 
     def _render_bubble(
@@ -786,7 +786,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染气泡�?""
+        """æ¸²ææ°æ³¡å?""
         try:
             datasets = data.get('datasets', [])
             if not datasets:
@@ -797,7 +797,7 @@ class ChartToSVGConverter:
             colors = self._get_colors(datasets)
 
             def _safe_radius(raw) -> float:
-                """将输入半径安全转为浮点并设置最小阈值，避免气泡完全消失"""
+                """å°è¾å¥åå¾å®å¨è½¬ä¸ºæµ®ç¹å¹¶è®¾ç½®æå°éå¼ï¼é¿åæ°æ³¡å®å¨æ¶å¤±"""
                 try:
                     val = float(raw)
                     return max(val, 0.5)
@@ -810,7 +810,7 @@ class ChartToSVGConverter:
 
             for i, dataset in enumerate(datasets):
                 points = dataset.get('data', [])
-                label = dataset.get('label', f'系列{i+1}')
+                label = dataset.get('label', f'ç³»å{i+1}')
                 color = colors[i]
 
                 if points and isinstance(points[0], dict):
@@ -827,7 +827,7 @@ class ChartToSVGConverter:
                 if rs:
                     max_r = max(max_r, max(rs))
 
-                # 适度放大半径，近似Chart.js像素尺寸（动态尺度，避免过大遮挡�?
+                # éåº¦æ¾å¤§åå¾ï¼è¿ä¼¼Chart.jsåç´ å°ºå¯¸ï¼å¨æå°ºåº¦ï¼é¿åè¿å¤§é®æ¡ï¼?
                 size_scale = 8.0 if max_r <= 20 else 6.5
                 sizes = [(r * size_scale) ** 2 for r in rs]
 
@@ -845,7 +845,7 @@ class ChartToSVGConverter:
             if len(datasets) > 1:
                 ax.legend(loc='best', framealpha=0.9)
 
-            # 适度留白，避免大气泡被裁�?
+            # éåº¦çç½ï¼é¿åå¤§æ°æ³¡è¢«è£å?
             if all_x and all_y:
                 x_min, x_max = min(all_x), max(all_x)
                 y_min, y_max = min(all_y), max(all_y)
@@ -855,14 +855,14 @@ class ChartToSVGConverter:
                 pad_y = max(y_span * 0.12, max_r * 1.2)
                 ax.set_xlim(x_min - pad_x, x_max + pad_x)
                 ax.set_ylim(y_min - pad_y, y_max + pad_y)
-                # 额外安全边距
+                # é¢å¤å®å¨è¾¹è·
                 ax.margins(x=0.05, y=0.05)
 
             ax.grid(True, alpha=0.3, linestyle='--')
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染气泡图失�? {e}", exc_info=True)
+            logger.error(f"æ¸²ææ°æ³¡å¾å¤±è´? {e}", exc_info=True)
             return None
 
     def _render_pie(
@@ -873,7 +873,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染饼图"""
+        """æ¸²æé¥¼å¾"""
         try:
             labels = data.get('labels', [])
             datasets = data.get('datasets', [])
@@ -881,14 +881,14 @@ class ChartToSVGConverter:
             if not labels or not datasets:
                 return None
 
-            # 饼图只使用第一个数据集
+            # é¥¼å¾åªä½¿ç¨ç¬¬ä¸ä¸ªæ°æ®é
             dataset = datasets[0]
             dataset_data = dataset.get('data', [])
 
             labels, dataset_data = self._align_labels_and_data(
                 labels,
                 dataset_data,
-                chart_type="�?,
+                chart_type="é¥?,
                 require_positive_sum=True
             )
 
@@ -898,7 +898,7 @@ class ChartToSVGConverter:
             title = props.get('title')
             fig, ax = self._create_figure(width, height, dpi, title)
 
-            # 获取颜色
+            # è·åé¢è²
             raw_colors = dataset.get('backgroundColor', self.DEFAULT_COLORS[:len(labels)])
             if not isinstance(raw_colors, list):
                 raw_colors = self.DEFAULT_COLORS[:len(labels)]
@@ -911,7 +911,7 @@ class ChartToSVGConverter:
                 for i in range(len(labels))
             ]
 
-            # 绘制饼图
+            # ç»å¶é¥¼å¾
             wedges, texts, autotexts = ax.pie(
                 dataset_data,
                 labels=labels,
@@ -921,17 +921,17 @@ class ChartToSVGConverter:
                 textprops={'fontsize': 10}
             )
 
-            # 设置百分比文字为白色
+            # è®¾ç½®ç¾åæ¯æå­ä¸ºç½è²
             for autotext in autotexts:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
 
-            ax.axis('equal')  # 保持圆形
+            ax.axis('equal')  # ä¿æåå½¢
 
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染饼图失败: {e}")
+            logger.error(f"æ¸²æé¥¼å¾å¤±è´¥: {e}")
             return None
 
     def _render_doughnut(
@@ -942,7 +942,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染圆环�?""
+        """æ¸²æåç¯å?""
         try:
             labels = data.get('labels', [])
             datasets = data.get('datasets', [])
@@ -950,14 +950,14 @@ class ChartToSVGConverter:
             if not labels or not datasets:
                 return None
 
-            # 圆环图只使用第一个数据集
+            # åç¯å¾åªä½¿ç¨ç¬¬ä¸ä¸ªæ°æ®é
             dataset = datasets[0]
             dataset_data = dataset.get('data', [])
 
             labels, dataset_data = self._align_labels_and_data(
                 labels,
                 dataset_data,
-                chart_type="圆环",
+                chart_type="åç¯",
                 require_positive_sum=True
             )
 
@@ -967,7 +967,7 @@ class ChartToSVGConverter:
             title = props.get('title')
             fig, ax = self._create_figure(width, height, dpi, title)
 
-            # 获取颜色
+            # è·åé¢è²
             raw_colors = dataset.get('backgroundColor', self.DEFAULT_COLORS[:len(labels)])
             if not isinstance(raw_colors, list):
                 raw_colors = self.DEFAULT_COLORS[:len(labels)]
@@ -980,7 +980,7 @@ class ChartToSVGConverter:
                 for i in range(len(labels))
             ]
 
-            # 绘制圆环图（通过设置wedgeprops实现中空效果�?
+            # ç»å¶åç¯å¾ï¼éè¿è®¾ç½®wedgepropså®ç°ä¸­ç©ºææï¼?
             wedges, texts, autotexts = ax.pie(
                 dataset_data,
                 labels=labels,
@@ -991,7 +991,7 @@ class ChartToSVGConverter:
                 textprops={'fontsize': 10}
             )
 
-            # 设置百分比文�?
+            # è®¾ç½®ç¾åæ¯æå­?
             for autotext in autotexts:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
@@ -1001,7 +1001,7 @@ class ChartToSVGConverter:
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染圆环图失�? {e}")
+            logger.error(f"æ¸²æåç¯å¾å¤±è´? {e}")
             return None
 
     def _render_radar(
@@ -1012,7 +1012,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染雷达�?""
+        """æ¸²æé·è¾¾å?""
         try:
             labels = data.get('labels', [])
             datasets = data.get('datasets', [])
@@ -1023,7 +1023,7 @@ class ChartToSVGConverter:
             title = props.get('title')
             fig = plt.figure(figsize=(width/dpi, height/dpi), dpi=dpi)
 
-            # 创建极坐标子�?
+            # åå»ºæåæ å­å?
             ax = fig.add_subplot(111, projection='polar')
 
             if title:
@@ -1031,35 +1031,35 @@ class ChartToSVGConverter:
 
             colors = self._get_colors(datasets)
 
-            # 计算角度
+            # è®¡ç®è§åº¦
             angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-            angles += angles[:1]  # 闭合图形
+            angles += angles[:1]  # é­åå¾å½¢
 
-            # 绘制每个数据系列
+            # ç»å¶æ¯ä¸ªæ°æ®ç³»å
             for i, dataset in enumerate(datasets):
                 dataset_data = dataset.get('data', [])
-                label = dataset.get('label', f'系列{i+1}')
+                label = dataset.get('label', f'ç³»å{i+1}')
                 color = colors[i]
 
-                # 闭合数据
+                # é­åæ°æ®
                 values = dataset_data + dataset_data[:1]
 
-                # 绘制雷达�?
+                # ç»å¶é·è¾¾å?
                 ax.plot(angles, values, 'o-', linewidth=2, label=label, color=color)
                 ax.fill(angles, values, alpha=0.25, color=color)
 
-            # 设置标签
+            # è®¾ç½®æ ç­¾
             ax.set_xticks(angles[:-1])
             ax.set_xticklabels(labels)
 
-            # 显示图例
+            # æ¾ç¤ºå¾ä¾
             if len(datasets) > 1:
                 ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
 
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染雷达图失�? {e}")
+            logger.error(f"æ¸²æé·è¾¾å¾å¤±è´? {e}")
             return None
 
     def _render_scatter(
@@ -1070,7 +1070,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染散点�?""
+        """æ¸²ææ£ç¹å?""
         try:
             datasets = data.get('datasets', [])
 
@@ -1082,18 +1082,18 @@ class ChartToSVGConverter:
 
             colors = self._get_colors(datasets)
 
-            # 绘制每个数据系列
+            # ç»å¶æ¯ä¸ªæ°æ®ç³»å
             for i, dataset in enumerate(datasets):
                 dataset_data = dataset.get('data', [])
-                label = dataset.get('label', f'系列{i+1}')
+                label = dataset.get('label', f'ç³»å{i+1}')
                 color = colors[i]
 
-                # 提取x和y坐标
+                # æåxåyåæ 
                 if dataset_data and isinstance(dataset_data[0], dict):
                     x_values = [point.get('x', 0) for point in dataset_data]
                     y_values = [point.get('y', 0) for point in dataset_data]
                 else:
-                    # 如果不是{x,y}格式，使用索引作为x
+                    # å¦æä¸æ¯{x,y}æ ¼å¼ï¼ä½¿ç¨ç´¢å¼ä½ä¸ºx
                     x_values = range(len(dataset_data))
                     y_values = dataset_data
 
@@ -1108,17 +1108,17 @@ class ChartToSVGConverter:
                     linewidth=0.5
                 )
 
-            # 显示图例
+            # æ¾ç¤ºå¾ä¾
             if len(datasets) > 1:
                 ax.legend(loc='best', framealpha=0.9)
 
-            # 网格
+            # ç½æ ¼
             ax.grid(True, alpha=0.3, linestyle='--')
 
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染散点图失�? {e}")
+            logger.error(f"æ¸²ææ£ç¹å¾å¤±è´? {e}")
             return None
 
     def _render_polarArea(
@@ -1129,7 +1129,7 @@ class ChartToSVGConverter:
         height: int,
         dpi: int
     ) -> Optional[str]:
-        """渲染极地区域�?""
+        """æ¸²ææå°åºåå?""
         try:
             labels = data.get('labels', [])
             datasets = data.get('datasets', [])
@@ -1137,14 +1137,14 @@ class ChartToSVGConverter:
             if not labels or not datasets:
                 return None
 
-            # 只使用第一个数据集
+            # åªä½¿ç¨ç¬¬ä¸ä¸ªæ°æ®é
             dataset = datasets[0]
             dataset_data = dataset.get('data', [])
 
             labels, dataset_data = self._align_labels_and_data(
                 labels,
                 dataset_data,
-                chart_type="极地区域",
+                chart_type="æå°åºå",
                 require_positive_sum=False
             )
 
@@ -1158,7 +1158,7 @@ class ChartToSVGConverter:
             if title:
                 ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
 
-            # 获取颜色
+            # è·åé¢è²
             raw_colors = dataset.get('backgroundColor', self.DEFAULT_COLORS[:len(labels)])
             if not isinstance(raw_colors, list):
                 raw_colors = self.DEFAULT_COLORS[:len(labels)]
@@ -1171,11 +1171,11 @@ class ChartToSVGConverter:
                 for i in range(len(labels))
             ]
 
-            # 计算角度
+            # è®¡ç®è§åº¦
             theta = np.linspace(0, 2 * np.pi, len(labels), endpoint=False)
             width_bar = 2 * np.pi / len(labels)
 
-            # 绘制极地区域�?
+            # ç»å¶æå°åºåå?
             bars = ax.bar(
                 theta,
                 dataset_data,
@@ -1187,26 +1187,26 @@ class ChartToSVGConverter:
                 linewidth=1
             )
 
-            # 设置标签
+            # è®¾ç½®æ ç­¾
             ax.set_xticks(theta)
             ax.set_xticklabels(labels)
 
             return self._figure_to_svg(fig)
 
         except Exception as e:
-            logger.error(f"渲染极地区域图失�? {e}")
+            logger.error(f"æ¸²ææå°åºåå¾å¤±è´? {e}")
             return None
 
 
 def create_chart_converter(font_path: Optional[str] = None) -> ChartToSVGConverter:
     """
-    创建图表转换器实�?
+    åå»ºå¾è¡¨è½¬æ¢å¨å®ä¾?
 
-    参数:
-        font_path: 中文字体路径（可选）
+    åæ°:
+        font_path: ä¸­æå­ä½è·¯å¾ï¼å¯éï¼
 
-    返回:
-        ChartToSVGConverter: 转换器实�?
+    è¿å:
+        ChartToSVGConverter: è½¬æ¢å¨å®ä¾?
     """
     return ChartToSVGConverter(font_path=font_path)
 

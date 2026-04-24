@@ -38,7 +38,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-# aiohttp/websockets are independent optional deps �?import outside lark_oapi
+# aiohttp/websockets are independent optional deps é¥?import outside lark_oapi
 # so they remain available for tests and webhook mode even if lark_oapi is missing.
 try:
     import aiohttp
@@ -159,18 +159,18 @@ _DEFAULT_WEBHOOK_PATH = "/feishu/webhook"
 # TTL, rate-limit and webhook security constants
 # ---------------------------------------------------------------------------
 
-_FEISHU_DEDUP_TTL_SECONDS = 24 * 60 * 60          # 24 hours �?matches openclaw
+_FEISHU_DEDUP_TTL_SECONDS = 24 * 60 * 60          # 24 hours é¥?matches openclaw
 _FEISHU_SENDER_NAME_TTL_SECONDS = 10 * 60          # 10 minutes sender-name cache
 _FEISHU_WEBHOOK_MAX_BODY_BYTES = 1 * 1024 * 1024   # 1 MB body limit
 _FEISHU_WEBHOOK_RATE_WINDOW_SECONDS = 60            # sliding window for rate limiter
-_FEISHU_WEBHOOK_RATE_LIMIT_MAX = 120               # max requests per window per IP �?matches openclaw
+_FEISHU_WEBHOOK_RATE_LIMIT_MAX = 120               # max requests per window per IP é¥?matches openclaw
 _FEISHU_WEBHOOK_RATE_MAX_KEYS = 4096               # max tracked keys (prevents unbounded growth)
 _FEISHU_WEBHOOK_BODY_TIMEOUT_SECONDS = 30          # max seconds to read request body
 _FEISHU_WEBHOOK_ANOMALY_THRESHOLD = 25             # consecutive error responses before WARNING log
-_FEISHU_WEBHOOK_ANOMALY_TTL_SECONDS = 6 * 60 * 60  # anomaly tracker TTL (6 hours) �?matches openclaw
+_FEISHU_WEBHOOK_ANOMALY_TTL_SECONDS = 6 * 60 * 60  # anomaly tracker TTL (6 hours) é¥?matches openclaw
 _FEISHU_CARD_ACTION_DEDUP_TTL_SECONDS = 15 * 60    # card action token dedup window (15 min)
 _FEISHU_BOT_MSG_TRACK_SIZE = 512                   # LRU size for tracking sent message IDs
-_FEISHU_REPLY_FALLBACK_CODES = frozenset({230011, 231003})  # reply target withdrawn/missing �?create fallback
+_FEISHU_REPLY_FALLBACK_CODES = frozenset({230011, 231003})  # reply target withdrawn/missing é«?create fallback
 _FEISHU_ACK_EMOJI = "OK"
 
 # QR onboarding constants
@@ -1032,7 +1032,7 @@ class FeishuAdapter(BasePlatformAdapter):
     _SPLIT_THRESHOLD = 4000
 
     # =========================================================================
-    # Lifecycle �?init / settings / connect / disconnect
+    # Lifecycle é¥?init / settings / connect / disconnect
     # =========================================================================
 
     def __init__(self, config: PlatformConfig):
@@ -1048,16 +1048,16 @@ class FeishuAdapter(BasePlatformAdapter):
         self._webhook_runner: Optional[Any] = None
         self._webhook_site: Optional[Any] = None
         self._event_handler: Optional[Any] = None
-        self._seen_message_ids: Dict[str, float] = {}  # message_id �?seen_at (time.time())
+        self._seen_message_ids: Dict[str, float] = {}  # message_id é«?seen_at (time.time())
         self._seen_message_order: List[str] = []
         self._dedup_state_path = get_hermes_home() / "feishu_seen_message_ids.json"
         self._dedup_lock = threading.Lock()
-        self._sender_name_cache: Dict[str, tuple[str, float]] = {}  # sender_id �?(name, expire_at)
-        self._webhook_rate_counts: Dict[str, tuple[int, float]] = {}  # rate_key �?(count, window_start)
-        self._webhook_anomaly_counts: Dict[str, tuple[int, str, float]] = {}  # ip �?(count, last_status, first_seen)
-        self._card_action_tokens: Dict[str, float] = {}  # token �?first_seen_time
-        self._chat_locks: Dict[str, asyncio.Lock] = {}  # chat_id �?lock (per-chat serial processing)
-        self._sent_message_ids_to_chat: Dict[str, str] = {}  # message_id �?chat_id (for reaction routing)
+        self._sender_name_cache: Dict[str, tuple[str, float]] = {}  # sender_id é«?(name, expire_at)
+        self._webhook_rate_counts: Dict[str, tuple[int, float]] = {}  # rate_key é«?(count, window_start)
+        self._webhook_anomaly_counts: Dict[str, tuple[int, str, float]] = {}  # ip é«?(count, last_status, first_seen)
+        self._card_action_tokens: Dict[str, float] = {}  # token é«?first_seen_time
+        self._chat_locks: Dict[str, asyncio.Lock] = {}  # chat_id é«?lock (per-chat serial processing)
+        self._sent_message_ids_to_chat: Dict[str, str] = {}  # message_id é«?chat_id (for reaction routing)
         self._sent_message_id_order: List[str] = []  # LRU order for _sent_message_ids_to_chat
         self._chat_info_cache: Dict[str, Dict[str, Any]] = {}
         self._message_text_cache: Dict[str, Optional[str]] = {}
@@ -1069,7 +1069,7 @@ class FeishuAdapter(BasePlatformAdapter):
         self._media_batch_state = FeishuBatchState()
         self._pending_media_batches = self._media_batch_state.events
         self._pending_media_batch_tasks = self._media_batch_state.tasks
-        # Exec approval button state (approval_id �?{session_key, message_id, chat_id})
+        # Exec approval button state (approval_id é«?{session_key, message_id, chat_id})
         self._approval_state: Dict[int, Dict[str, str]] = {}
         self._approval_counter = itertools.count(1)
         self._load_seen_message_ids()
@@ -1328,7 +1328,7 @@ class FeishuAdapter(BasePlatformAdapter):
             self._webhook_site = None
 
     # =========================================================================
-    # Outbound �?send / edit / send_image / send_voice / �?
+    # Outbound é¥?send / edit / send_image / send_voice / é¥?
     # =========================================================================
 
     async def send(
@@ -1449,7 +1449,7 @@ class FeishuAdapter(BasePlatformAdapter):
             card = {
                 "config": {"wide_screen_mode": True},
                 "header": {
-                    "title": {"content": "⚠️ Command Approval Required", "tag": "plain_text"},
+                    "title": {"content": "é¿çç¬ Command Approval Required", "tag": "plain_text"},
                     "template": "orange",
                 },
                 "elements": [
@@ -1460,10 +1460,10 @@ class FeishuAdapter(BasePlatformAdapter):
                     {
                         "tag": "action",
                         "actions": [
-                            _btn("�?Allow Once", "approve_once", "primary"),
-                            _btn("�?Session", "approve_session"),
-                            _btn("�?Always", "approve_always"),
-                            _btn("�?Deny", "deny", "danger"),
+                            _btn("é?Allow Once", "approve_once", "primary"),
+                            _btn("é?Session", "approve_session"),
+                            _btn("é?Always", "approve_always"),
+                            _btn("é?Deny", "deny", "danger"),
                         ],
                     },
                 ],
@@ -1496,7 +1496,7 @@ class FeishuAdapter(BasePlatformAdapter):
         """Replace the approval card with a resolved status card."""
         if not self._client or not message_id:
             return
-        icon = "�? if choice == "deny" else "�?
+        icon = "é? if choice == "deny" else "é?
         card = {
             "config": {"wide_screen_mode": True},
             "header": {
@@ -1980,7 +1980,7 @@ class FeishuAdapter(BasePlatformAdapter):
             sender_profile = await self._resolve_sender_profile(sender_id)
             user_name = sender_profile.get("user_name") or open_id
 
-            # Resolve the approval �?unblocks the agent thread
+            # Resolve the approval é¥?unblocks the agent thread
             try:
                 from tools.approval import resolve_gateway_approval
                 count = resolve_gateway_approval(state["session_key"], choice)
@@ -2059,7 +2059,7 @@ class FeishuAdapter(BasePlatformAdapter):
         if not self._client or not message_id:
             return None
         try:
-            from lark_oapi.api.im.v1 import (  # lazy import �?keeps optional dep optional
+            from lark_oapi.api.im.v1 import (  # lazy import é¥?keeps optional dep optional
                 CreateMessageReactionRequest,
                 CreateMessageReactionRequestBody,
             )
@@ -2115,7 +2115,7 @@ class FeishuAdapter(BasePlatformAdapter):
                     )
                 self._webhook_anomaly_counts[remote_ip] = (count, status, first_seen)
                 return
-        # Either first occurrence or TTL expired �?start fresh.
+        # Either first occurrence or TTL expired é¥?start fresh.
         self._webhook_anomaly_counts[remote_ip] = (1, status, now)
 
     def _clear_webhook_anomaly(self, remote_ip: str) -> None:
@@ -2333,14 +2333,14 @@ class FeishuAdapter(BasePlatformAdapter):
     async def _handle_webhook_request(self, request: Any) -> Any:
         remote_ip = (getattr(request, "remote", None) or "unknown")
 
-        # Rate limiting �?composite key: app_id:path:remote_ip (matches openclaw key structure).
+        # Rate limiting é¥?composite key: app_id:path:remote_ip (matches openclaw key structure).
         rate_key = f"{self._app_id}:{self._webhook_path}:{remote_ip}"
         if not self._check_webhook_rate_limit(rate_key):
             logger.warning("[Feishu] Webhook rate limit exceeded for %s", remote_ip)
             self._record_webhook_anomaly(remote_ip, "429")
             return web.Response(status=429, text="Too Many Requests")
 
-        # Content-Type guard �?Feishu always sends application/json.
+        # Content-Type guard é¥?Feishu always sends application/json.
         headers = getattr(request, "headers", {}) or {}
         content_type = str(headers.get("Content-Type", "") or "").split(";")[0].strip().lower()
         if content_type and content_type != "application/json":
@@ -2348,7 +2348,7 @@ class FeishuAdapter(BasePlatformAdapter):
             self._record_webhook_anomaly(remote_ip, "415")
             return web.Response(status=415, text="Unsupported Media Type")
 
-        # Body size guard �?reject early via Content-Length when present.
+        # Body size guard é¥?reject early via Content-Length when present.
         content_length = getattr(request, "content_length", None)
         if content_length is not None and content_length > _FEISHU_WEBHOOK_MAX_BODY_BYTES:
             logger.warning("[Feishu] Webhook body too large (%d bytes) from %s", content_length, remote_ip)
@@ -2379,12 +2379,12 @@ class FeishuAdapter(BasePlatformAdapter):
             self._record_webhook_anomaly(remote_ip, "400")
             return web.json_response({"code": 400, "msg": "invalid json"}, status=400)
 
-        # URL verification challenge �?respond before other checks so that Feishu's
+        # URL verification challenge é¥?respond before other checks so that Feishu's
         # subscription setup works even before encrypt_key is wired.
         if payload.get("type") == "url_verification":
             return web.json_response({"challenge": payload.get("challenge", "")})
 
-        # Verification token check �?second layer of defence beyond signature (matches openclaw).
+        # Verification token check é¥?second layer of defence beyond signature (matches openclaw).
         if self._verification_token:
             header = payload.get("header") or {}
             incoming_token = str(header.get("token") or payload.get("token") or "")
@@ -2448,7 +2448,7 @@ class FeishuAdapter(BasePlatformAdapter):
     def _check_webhook_rate_limit(self, rate_key: str) -> bool:
         """Return False when the composite rate_key has exceeded _FEISHU_WEBHOOK_RATE_LIMIT_MAX.
 
-        The rate_key is composed as "{app_id}:{path}:{remote_ip}" �?matching openclaw's key
+        The rate_key is composed as "{app_id}:{path}:{remote_ip}" é¥?matching openclaw's key
         structure so the limit is scoped to a specific (account, endpoint, IP) triple rather
         than a bare IP, which causes fewer false-positive denials in multi-tenant setups.
 
@@ -2465,7 +2465,7 @@ class FeishuAdapter(BasePlatformAdapter):
                     return False
                 self._webhook_rate_counts[rate_key] = (count + 1, window_start)
                 return True
-        # New window for an existing key, or a brand-new key �?prune stale entries first.
+        # New window for an existing key, or a brand-new key é¥?prune stale entries first.
         if len(self._webhook_rate_counts) >= _FEISHU_WEBHOOK_RATE_MAX_KEYS:
             stale_keys = [
                 k for k, (_, ws) in self._webhook_rate_counts.items()
@@ -2568,7 +2568,7 @@ class FeishuAdapter(BasePlatformAdapter):
         current_task = asyncio.current_task()
         try:
             # Adaptive delay: if the latest chunk is near the split threshold,
-            # a continuation is almost certain �?wait longer.
+            # a continuation is almost certain é¥?wait longer.
             pending = self._pending_text_batches.get(key)
             last_len = getattr(pending, "_last_chunk_len", 0) if pending else 0
             if last_len >= self._SPLIT_THRESHOLD:
@@ -2806,7 +2806,7 @@ class FeishuAdapter(BasePlatformAdapter):
         return "", ""
 
     # =========================================================================
-    # Static helpers �?extension / media-type guessing
+    # Static helpers é¥?extension / media-type guessing
     # =========================================================================
 
     @staticmethod
@@ -2900,7 +2900,7 @@ class FeishuAdapter(BasePlatformAdapter):
     async def _resolve_sender_name_from_api(self, sender_id: Optional[str]) -> Optional[str]:
         """Fetch the sender's display name from the Feishu contact API with a 10-minute cache.
 
-        ID-type detection mirrors openclaw: ou_ �?open_id, on_ �?union_id, else user_id.
+        ID-type detection mirrors openclaw: ou_ é«?open_id, on_ é«?union_id, else user_id.
         Failures are silently suppressed; the message pipeline must not block on name resolution.
         """
         if not sender_id or not self._client:
@@ -3028,7 +3028,7 @@ class FeishuAdapter(BasePlatformAdapter):
         """Require an explicit @mention before group messages enter the agent."""
         if not self._allow_group_message(sender_id, chat_id):
             return False
-        # @_all is Feishu's @everyone placeholder �?always route to the bot.
+        # @_all is Feishu's @everyone placeholder é¥?always route to the bot.
         raw_content = getattr(message, "content", "") or ""
         if "@_all" in raw_content:
             return True
@@ -3095,7 +3095,7 @@ class FeishuAdapter(BasePlatformAdapter):
             logger.debug("[Feishu] Failed to hydrate bot identity", exc_info=True)
 
     # =========================================================================
-    # Deduplication �?seen message ID cache (persistent)
+    # Deduplication é¥?seen message ID cache (persistent)
     # =========================================================================
 
     def _load_seen_message_ids(self) -> None:
@@ -3290,7 +3290,7 @@ class FeishuAdapter(BasePlatformAdapter):
         )
 
     # =========================================================================
-    # Connection internals �?websocket / webhook setup
+    # Connection internals é¥?websocket / webhook setup
     # =========================================================================
 
     async def _connect_with_retry(self) -> None:
@@ -3396,7 +3396,7 @@ class FeishuAdapter(BasePlatformAdapter):
                     code = getattr(response, "code", None)
                     if code in _FEISHU_REPLY_FALLBACK_CODES:
                         logger.warning(
-                            "[Feishu] Reply to %s failed (code %s �?message withdrawn/missing); "
+                            "[Feishu] Reply to %s failed (code %s é¥?message withdrawn/missing); "
                             "falling back to new message in chat %s",
                             active_reply_to,
                             code,
@@ -3747,7 +3747,7 @@ def _poll_registration(
         if tenant_brand == "lark" and not domain_switched:
             current_domain = "lark"
             domain_switched = True
-            # Fall through �?server may return credentials in this same response.
+            # Fall through é¥?server may return credentials in this same response.
 
         # Success
         if res.get("client_id") and res.get("client_secret"):
@@ -3768,7 +3768,7 @@ def _poll_registration(
             logger.warning("[Feishu onboard] Registration %s", error)
             return None
 
-        # authorization_pending or unknown �?keep polling
+        # authorization_pending or unknown é¥?keep polling
         time.sleep(interval)
 
     if poll_count > 0:
@@ -3914,7 +3914,7 @@ def _qr_register_inner(
     initial_domain: str,
     timeout_seconds: int,
 ) -> Optional[dict]:
-    """Run init �?begin �?poll �?probe. Raises on network/protocol errors."""
+    """Run init é«?begin é«?poll é«?probe. Raises on network/protocol errors."""
     print("  Connecting to Feishu / Lark...", end="", flush=True)
     _init_registration(initial_domain)
     begin = _begin_registration(initial_domain)
@@ -3938,7 +3938,7 @@ def _qr_register_inner(
     if not result:
         return None
 
-    # Probe bot �?best-effort, don't fail the registration
+    # Probe bot é¥?best-effort, don't fail the registration
     bot_info = probe_bot(result["app_id"], result["app_secret"], result["domain"])
     if bot_info:
         result["bot_name"] = bot_info.get("bot_name")

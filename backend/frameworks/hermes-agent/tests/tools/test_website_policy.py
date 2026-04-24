@@ -342,7 +342,7 @@ def test_browser_navigate_allows_when_shared_file_missing(monkeypatch, tmp_path)
         encoding="utf-8",
     )
 
-    # check_website_access should return None (allow) �?missing file is skipped
+    # check_website_access should return None (allow) é¥?missing file is skipped
     result = check_website_access("https://allowed.test", config_path=config_path)
     assert result is None
 

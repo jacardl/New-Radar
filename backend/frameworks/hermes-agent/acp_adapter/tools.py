@@ -119,7 +119,7 @@ def build_tool_start(
             new = arguments.get("new_string", "")
             content = [acp.tool_diff_content(path=path, new_text=new, old_text=old)]
         else:
-            # Patch mode �?show the patch content as text
+            # Patch mode é¥?show the patch content as text
             patch_text = arguments.get("patch", "")
             content = [acp.tool_content(acp.text_block(patch_text))]
         return acp.start_tool_call(

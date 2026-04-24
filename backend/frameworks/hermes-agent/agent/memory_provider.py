@@ -5,29 +5,29 @@ external provider is active at a time alongside the always-on built-in
 memory (MEMORY.md / USER.md). The MemoryManager enforces this limit.
 
 Built-in memory is always active as the first provider and cannot be removed.
-External providers (Honcho, Hindsight, Mem0, etc.) are additive �?they never
+External providers (Honcho, Hindsight, Mem0, etc.) are additive é¥?they never
 disable the built-in store. Only one external provider runs at a time to
 prevent tool schema bloat and conflicting memory backends.
 
 Registration:
-  1. Built-in: BuiltinMemoryProvider �?always present, not removable.
+  1. Built-in: BuiltinMemoryProvider é¥?always present, not removable.
   2. Plugins: Ship in plugins/memory/<name>/, activated by memory.provider config.
 
 Lifecycle (called by MemoryManager, wired in run_agent.py):
-  initialize()          �?connect, create resources, warm up
-  system_prompt_block()  �?static text for the system prompt
-  prefetch(query)        �?background recall before each turn
-  sync_turn(user, asst)  �?async write after each turn
-  get_tool_schemas()     �?tool schemas to expose to the model
-  handle_tool_call()     �?dispatch a tool call
-  shutdown()             �?clean exit
+  initialize()          é¥?connect, create resources, warm up
+  system_prompt_block()  é¥?static text for the system prompt
+  prefetch(query)        é¥?background recall before each turn
+  sync_turn(user, asst)  é¥?async write after each turn
+  get_tool_schemas()     é¥?tool schemas to expose to the model
+  handle_tool_call()     é¥?dispatch a tool call
+  shutdown()             é¥?clean exit
 
 Optional hooks (override to opt in):
-  on_turn_start(turn, message, **kwargs) �?per-turn tick with runtime context
-  on_session_end(messages)               �?end-of-session extraction
-  on_pre_compress(messages) -> str       �?extract before context compression
-  on_memory_write(action, target, content) �?mirror built-in memory writes
-  on_delegation(task, result, **kwargs)  �?parent-side observation of subagent work
+  on_turn_start(turn, message, **kwargs) é¥?per-turn tick with runtime context
+  on_session_end(messages)               é¥?end-of-session extraction
+  on_pre_compress(messages) -> str       é¥?extract before context compression
+  on_memory_write(action, target, content) é¥?mirror built-in memory writes
+  on_delegation(task, result, **kwargs)  é¥?parent-side observation of subagent work
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ class MemoryProvider(ABC):
         """Return True if this provider is configured, has credentials, and is ready.
 
         Called during agent init to decide whether to activate the provider.
-        Should not make network calls �?just check config and installed deps.
+        Should not make network calls é¥?just check config and installed deps.
         """
 
     @abstractmethod
@@ -94,7 +94,7 @@ class MemoryProvider(ABC):
 
         Called before each API call. Return formatted text to inject as
         context, or empty string if nothing relevant. Implementations
-        should be fast �?use background threads for the actual recall
+        should be fast é¥?use background threads for the actual recall
         and return cached results here.
 
         session_id is provided for providers serving concurrent sessions
@@ -107,14 +107,14 @@ class MemoryProvider(ABC):
         """Queue a background recall for the NEXT turn.
 
         Called after each turn completes. The result will be consumed
-        by prefetch() on the next turn. Default is no-op �?providers
+        by prefetch() on the next turn. Default is no-op é¥?providers
         that do background prefetching should override this.
         """
 
     def sync_turn(self, user_content: str, assistant_content: str, *, session_id: str = "") -> None:
         """Persist a completed turn to the backend.
 
-        Called after each turn. Should be non-blocking �?queue for
+        Called after each turn. Should be non-blocking é¥?queue for
         background processing if the backend has latency.
         """
 
@@ -137,7 +137,7 @@ class MemoryProvider(ABC):
         raise NotImplementedError(f"Provider {self.name} does not handle tool {tool_name}")
 
     def shutdown(self) -> None:
-        """Clean shutdown �?flush queues, close connections."""
+        """Clean shutdown é¥?flush queues, close connections."""
 
     # -- Optional hooks (override to opt in) ---------------------------------
 
@@ -156,7 +156,7 @@ class MemoryProvider(ABC):
         Use for end-of-session fact extraction, summarization, etc.
         messages is the full conversation history.
 
-        NOT called after every turn �?only at actual session boundaries
+        NOT called after every turn é¥?only at actual session boundaries
         (CLI exit, /reset, gateway session expiry).
         """
 

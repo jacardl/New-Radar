@@ -49,7 +49,7 @@ class TestSuspendRecentlyActive:
         count = store.suspend_recently_active()
         assert count == 1
 
-        # Re-fetch �?should be suspended now
+        # Re-fetch é¥?should be suspended now
         refreshed = store.get_or_create_session(source)
         assert refreshed.was_auto_reset
 
@@ -78,7 +78,7 @@ class TestSuspendRecentlyActive:
         # Create a new session (the old one got reset on next access)
         entry2 = store.get_or_create_session(source)
 
-        # Suspend again �?the new session is recent but not yet suspended
+        # Suspend again é¥?the new session is recent but not yet suspended
         count2 = store.suspend_recently_active()
         assert count2 == 1
 

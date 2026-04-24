@@ -1,4 +1,4 @@
-"""ACP auth helpers �?detect the currently configured Hermes provider."""
+"""ACP auth helpers é¥?detect the currently configured Hermes provider."""
 
 from __future__ import annotations
 

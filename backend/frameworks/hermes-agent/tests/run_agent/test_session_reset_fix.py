@@ -28,7 +28,7 @@ def _make_minimal_agent() -> AIAgent:
     """Return an AIAgent constructed with the absolute minimum args.
 
     We pass dummy values that bypass network calls and filesystem access.
-    The object is never used to make API calls �?only its attributes and
+    The object is never used to make API calls é¥?only its attributes and
     reset_session_state() are exercised.
     """
     agent = AIAgent.__new__(AIAgent)  # skip __init__ entirely

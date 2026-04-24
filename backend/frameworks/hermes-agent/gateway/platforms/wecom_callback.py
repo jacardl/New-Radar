@@ -212,7 +212,7 @@ class WecomCallbackAdapter(BasePlatformAdapter):
         """Pick the app associated with *chat_id*, falling back sensibly."""
         app_name = self._user_app_map.get(chat_id)
         if not app_name and ":" not in chat_id:
-            # Legacy bare user_id �?try to find a unique match.
+            # Legacy bare user_id é¥?try to find a unique match.
             matching = [k for k in self._user_app_map if k.endswith(f":{chat_id}")]
             if len(matching) == 1:
                 app_name = self._user_app_map.get(matching[0])
@@ -230,7 +230,7 @@ class WecomCallbackAdapter(BasePlatformAdapter):
         return web.json_response({"status": "ok", "platform": "wecom_callback"})
 
     async def _handle_verify(self, request: web.Request) -> web.Response:
-        """GET endpoint �?WeCom URL verification handshake."""
+        """GET endpoint é¥?WeCom URL verification handshake."""
         msg_signature = request.query.get("msg_signature", "")
         timestamp = request.query.get("timestamp", "")
         nonce = request.query.get("nonce", "")
@@ -245,7 +245,7 @@ class WecomCallbackAdapter(BasePlatformAdapter):
         return web.Response(status=403, text="signature verification failed")
 
     async def _handle_callback(self, request: web.Request) -> web.Response:
-        """POST endpoint �?receive an encrypted message callback."""
+        """POST endpoint é¥?receive an encrypted message callback."""
         msg_signature = request.query.get("msg_signature", "")
         timestamp = request.query.get("timestamp", "")
         nonce = request.query.get("nonce", "")
@@ -265,7 +265,7 @@ class WecomCallbackAdapter(BasePlatformAdapter):
                         )
                         self._user_app_map[map_key] = app["name"]
                     await self._message_queue.put(event)
-                # Immediately acknowledge �?the agent's reply will arrive
+                # Immediately acknowledge é¥?the agent's reply will arrive
                 # later via the proactive message/send API.
                 return web.Response(text="success", content_type="text/plain")
             except WeComCryptoError:

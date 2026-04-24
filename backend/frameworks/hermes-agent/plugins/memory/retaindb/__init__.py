@@ -1,4 +1,4 @@
-"""RetainDB memory plugin �?MemoryProvider interface.
+"""RetainDB memory plugin â?MemoryProvider interface.
 
 Cross-session memory via RetainDB cloud API.
 
@@ -13,9 +13,9 @@ Features:
 - Explicit memory tools (profile, search, context, remember, forget)
 
 Config (env vars or hermes config.yaml under retaindb:):
-  RETAINDB_API_KEY     �?API key (required)
-  RETAINDB_BASE_URL    �?API endpoint (default: https://api.retaindb.com)
-  RETAINDB_PROJECT     �?Project identifier (optional �?defaults to "default")
+  RETAINDB_API_KEY     â?API key (required)
+  RETAINDB_BASE_URL    â?API endpoint (default: https://api.retaindb.com)
+  RETAINDB_PROJECT     â?Project identifier (optional â?defaults to "default")
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ _ASYNC_SHUTDOWN = object()
 
 PROFILE_SCHEMA = {
     "name": "retaindb_profile",
-    "description": "Get the user's stable profile �?preferences, facts, and patterns recalled from long-term memory.",
+    "description": "Get the user's stable profile â?preferences, facts, and patterns recalled from long-term memory.",
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
 
@@ -67,7 +67,7 @@ SEARCH_SCHEMA = {
 
 CONTEXT_SCHEMA = {
     "name": "retaindb_context",
-    "description": "Synthesized context block �?what matters most for the current task, pulled from long-term memory.",
+    "description": "Synthesized context block â?what matters most for the current task, pulled from long-term memory.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -214,7 +214,7 @@ class _Client:
             raise RuntimeError(f"RetainDB {method} {path} failed ({resp.status_code}): {msg or payload}")
         return payload
 
-    # ── Memory ────────────────────────────────────────────────────────────────
+    # -- Memory ----------------------------------------------------------------
 
     def query_context(self, user_id: str, session_id: str, query: str, max_tokens: int = 1200) -> dict:
         return self.request("POST", "/v1/context/query", json_body={
@@ -279,7 +279,7 @@ class _Client:
             "project": self.project, "content": content, "source": source,
         }, timeout=20.0)
 
-    # ── Files ─────────────────────────────────────────────────────────────────
+    # -- Files -----------------------------------------------------------------
 
     def upload_file(self, data: bytes, filename: str, remote_path: str, mime_type: str, scope: str, project_id: str | None) -> dict:
         import io
@@ -328,7 +328,7 @@ class _Client:
 # ---------------------------------------------------------------------------
 
 class _WriteQueue:
-    """SQLite-backed async write queue. Survives crashes �?pending rows replay on startup."""
+    """SQLite-backed async write queue. Survives crashes â?pending rows replay on startup."""
 
     def __init__(self, client: _Client, db_path: Path):
         self._client = client
@@ -336,7 +336,7 @@ class _WriteQueue:
         self._q: queue.Queue = queue.Queue()
         self._thread = threading.Thread(target=self._loop, name="retaindb-writer", daemon=True)
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
-        # Thread-local connection cache �?one connection per thread, reused.
+        # Thread-local connection cache â?one connection per thread, reused.
         self._local = threading.local()
         self._init_db()
         self._thread.start()
@@ -450,7 +450,7 @@ def _build_overlay(profile: dict, query_result: dict, local_entries: list[str] |
 # ---------------------------------------------------------------------------
 
 class RetainDBMemoryProvider(MemoryProvider):
-    """RetainDB cloud memory �?durable queue, semantic search, dialectic synthesis, shared files."""
+    """RetainDB cloud memory â?durable queue, semantic search, dialectic synthesis, shared files."""
 
     def __init__(self):
         self._client: _Client | None = None
@@ -465,10 +465,10 @@ class RetainDBMemoryProvider(MemoryProvider):
         self._dialectic_result = ""
         self._agent_model: dict = {}
 
-        # Prefetch thread tracking �?prevents accumulation on rapid calls
+        # Prefetch thread tracking â?prevents accumulation on rapid calls
         self._prefetch_threads: list[threading.Thread] = []
 
-    # ── Core identity ──────────────────────────────────────────────────────
+    # -- Core identity ------------------------------------------------------
 
     @property
     def name(self) -> str:
@@ -481,17 +481,17 @@ class RetainDBMemoryProvider(MemoryProvider):
         return [
             {"key": "api_key", "description": "RetainDB API key", "secret": True, "required": True, "env_var": "RETAINDB_API_KEY", "url": "https://retaindb.com"},
             {"key": "base_url", "description": "API endpoint", "default": _DEFAULT_BASE_URL},
-            {"key": "project", "description": "Project identifier (optional �?uses 'default' project if not set)", "default": ""},
+            {"key": "project", "description": "Project identifier (optional â?uses 'default' project if not set)", "default": ""},
         ]
 
-    # ── Lifecycle ──────────────────────────────────────────────────────────
+    # -- Lifecycle ----------------------------------------------------------
 
     def initialize(self, session_id: str, **kwargs) -> None:
         api_key = os.environ.get("RETAINDB_API_KEY", "")
         base_url = re.sub(r"/+$", "", os.environ.get("RETAINDB_BASE_URL", _DEFAULT_BASE_URL))
 
         # Project resolution: RETAINDB_PROJECT > hermes-<profile> > "default"
-        # If unset, the API auto-creates and uses the "default" project �?no config required.
+        # If unset, the API auto-creates and uses the "default" project â?no config required.
         explicit = os.environ.get("RETAINDB_PROJECT")
         if explicit:
             project = explicit
@@ -537,7 +537,7 @@ class RetainDBMemoryProvider(MemoryProvider):
             "retaindb_profile for a user overview, retaindb_context for current-task context."
         )
 
-    # ── Background prefetch (fires at turn-end, consumed next turn-start) ──
+    # -- Background prefetch (fires at turn-end, consumed next turn-start) --
 
     def queue_prefetch(self, query: str, *, session_id: str = "") -> None:
         """Fire context + dialectic + agent model prefetches in background."""
@@ -622,7 +622,7 @@ class RetainDBMemoryProvider(MemoryProvider):
 
         return "\n\n".join(parts)
 
-    # ── Turn sync ──────────────────────────────────────────────────────────
+    # -- Turn sync ----------------------------------------------------------
 
     def sync_turn(self, user_content: str, assistant_content: str, *, session_id: str = "") -> None:
         """Queue turn for async ingest. Returns immediately."""
@@ -638,7 +638,7 @@ class RetainDBMemoryProvider(MemoryProvider):
             ],
         )
 
-    # ── Tools ──────────────────────────────────────────────────────────────
+    # -- Tools --------------------------------------------------------------
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         return [
@@ -693,7 +693,7 @@ class RetainDBMemoryProvider(MemoryProvider):
                 return {"error": "memory_id is required"}
             return c.delete_memory(memory_id)
 
-        # ── File tools ──────────────────────────────────────────────────────
+        # -- File tools ------------------------------------------------------
 
         if tool_name == "retaindb_upload_file":
             local_path = args.get("local_path", "")
@@ -724,7 +724,7 @@ class RetainDBMemoryProvider(MemoryProvider):
             mime = (file_info.get("mime_type") or "").lower()
             raw = c.read_file_content(file_id)
             if not (mime.startswith("text/") or any(file_info.get("name", "").endswith(e) for e in (".txt", ".md", ".json", ".csv", ".yaml", ".yml", ".xml", ".html"))):
-                return {"file_id": file_id, "rdb_uri": file_info.get("rdb_uri"), "name": file_info.get("name"), "content": None, "note": "Binary file �?use retaindb_ingest_file to extract text into memory."}
+                return {"file_id": file_id, "rdb_uri": file_info.get("rdb_uri"), "name": file_info.get("name"), "content": None, "note": "Binary file â?use retaindb_ingest_file to extract text into memory."}
             text = raw.decode("utf-8", errors="replace")
             return {"file_id": file_id, "rdb_uri": file_info.get("rdb_uri"), "name": file_info.get("name"), "content": text[:32000], "truncated": len(text) > 32000}
 
@@ -742,7 +742,7 @@ class RetainDBMemoryProvider(MemoryProvider):
 
         return {"error": f"Unknown tool: {tool_name}"}
 
-    # ── Optional hooks ─────────────────────────────────────────────────────
+    # -- Optional hooks -----------------------------------------------------
 
     def on_memory_write(self, action: str, target: str, content: str) -> None:
         """Mirror built-in memory writes to RetainDB."""

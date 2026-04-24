@@ -1,11 +1,11 @@
-﻿#!/usr/bin/env python3
+ï»¿#!/usr/bin/env python3
 """
-PDF导出工具 - 使用Python直接生成PDF，无乱码
+PDFå¯¼åºå·¥å· - ä½¿ç¨Pythonç´æ¥çæPDFï¼æ ä¹±ç 
 
-用法:
-    python ReportEngine/scripts/export_to_pdf.py <报告IR JSON文件> [输出PDF路径]
+ç¨æ³:
+    python ReportEngine/scripts/export_to_pdf.py <æ¥åIR JSONæä»¶> [è¾åºPDFè·¯å¾]
 
-示例:
+ç¤ºä¾:
     python ReportEngine/scripts/export_to_pdf.py final_reports/ir/report_ir_xxx.json output.pdf
     python ReportEngine/scripts/export_to_pdf.py final_reports/ir/report_ir_xxx.json
 """
@@ -20,45 +20,45 @@ from backend.engines.report.renderers import PDFRenderer
 
 def export_to_pdf(ir_json_path: str, output_pdf_path: str = None):
     """
-    从IR JSON文件生成PDF
+    ä»IR JSONæä»¶çæPDF
 
-    参数:
-        ir_json_path: Document IR JSON文件路径
-        output_pdf_path: 输出PDF路径（可选，默认为同�?pdf�?
+    åæ°:
+        ir_json_path: Document IR JSONæä»¶è·¯å¾
+        output_pdf_path: è¾åºPDFè·¯å¾ï¼å¯éï¼é»è®¤ä¸ºåï¿½?pdfï¿½?
     """
     ir_path = Path(ir_json_path)
 
     if not ir_path.exists():
-        logger.error(f"文件不存�? {ir_path}")
+        logger.error(f"æä»¶ä¸å­ï¿½? {ir_path}")
         return False
 
-    # 读取IR数据
-    logger.info(f"读取报告: {ir_path}")
+    # è¯»åIRæ°æ®
+    logger.info(f"è¯»åæ¥å: {ir_path}")
     with open(ir_path, 'r', encoding='utf-8') as f:
         document_ir = json.load(f)
 
-    # 确定输出路径
+    # ç¡®å®è¾åºè·¯å¾
     if output_pdf_path is None:
         output_pdf_path = ir_path.parent / f"{ir_path.stem}.pdf"
     else:
         output_pdf_path = Path(output_pdf_path)
 
-    # 生成PDF
-    logger.info(f"开始生成PDF...")
+    # çæPDF
+    logger.info(f"å¼å§çæPDF...")
     renderer = PDFRenderer()
 
     try:
         renderer.render_to_pdf(document_ir, output_pdf_path)
-        logger.success(f"�?PDF已生�? {output_pdf_path}")
+        logger.success(f"ï¿½?PDFå·²çï¿½? {output_pdf_path}")
         return True
     except Exception as e:
-        logger.error(f"�?PDF生成失败: {e}")
-        logger.exception("详细错误信息:")
+        logger.error(f"ï¿½?PDFçæå¤±è´¥: {e}")
+        logger.exception("è¯¦ç»éè¯¯ä¿¡æ¯:")
         return False
 
 
 def main():
-    """主函�?""
+    """ä¸»å½ï¿½?""
     if len(sys.argv) < 2:
         print(__doc__)
         sys.exit(1)
@@ -66,10 +66,10 @@ def main():
     ir_json_path = sys.argv[1]
     output_pdf_path = sys.argv[2] if len(sys.argv) > 2 else None
 
-    # 检查环境变�?
+    # æ£æ¥ç¯å¢åï¿½?
     import os
     if 'DYLD_LIBRARY_PATH' not in os.environ:
-        logger.warning("未设置DYLD_LIBRARY_PATH，尝试自动设�?..")
+        logger.warning("æªè®¾ç½®DYLD_LIBRARY_PATHï¼å°è¯èªå¨è®¾ï¿½?..")
         os.environ['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib'
 
     success = export_to_pdf(ir_json_path, output_pdf_path)

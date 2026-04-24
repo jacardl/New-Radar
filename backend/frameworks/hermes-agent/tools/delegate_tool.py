@@ -169,7 +169,7 @@ def _build_child_progress_callback(task_index: int, parent_agent, task_count: in
     parent_cb = getattr(parent_agent, 'tool_progress_callback', None)
 
     if not spinner and not parent_cb:
-        return None  # No display �?no callback �?zero behavior change
+        return None  # No display é«?no callback é«?zero behavior change
 
     # Show 1-indexed prefix only in batch mode (multiple tasks)
     prefix = f"[{task_index + 1}] " if task_count > 1 else ""
@@ -188,22 +188,22 @@ def _build_child_progress_callback(task_index: int, parent_agent, task_count: in
             if spinner:
                 short = (text[:55] + "...") if len(text) > 55 else text
                 try:
-                    spinner.print_above(f" {prefix}├─ 💭 \"{short}\"")
+                    spinner.print_above(f" {prefix}é¹æº¾æ¢ é¦æ± \"{short}\"")
                 except Exception as e:
                     logger.debug("Spinner print_above failed: %s", e)
             # Don't relay thinking to gateway (too noisy for chat)
             return
 
-        # tool.completed �?no display needed here (spinner shows on started)
+        # tool.completed é¥?no display needed here (spinner shows on started)
         if event_type == "tool.completed":
             return
 
-        # tool.started �?display and batch for parent relay
+        # tool.started é¥?display and batch for parent relay
         if spinner:
             short = (preview[:35] + "...") if preview and len(preview) > 35 else (preview or "")
             from agent.display import get_tool_emoji
             emoji = get_tool_emoji(tool_name or "")
-            line = f" {prefix}├─ {emoji} {tool_name}"
+            line = f" {prefix}é¹æº¾æ¢ {emoji} {tool_name}"
             if short:
                 line += f"  \"{short}\""
             try:
@@ -216,7 +216,7 @@ def _build_child_progress_callback(task_index: int, parent_agent, task_count: in
             if len(_batch) >= _BATCH_SIZE:
                 summary = ", ".join(_batch)
                 try:
-                    parent_cb("subagent_progress", f"🔀 {prefix}{summary}")
+                    parent_cb("subagent_progress", f"é¦æ¢ {prefix}{summary}")
                 except Exception as e:
                     logger.debug("Parent callback failed: %s", e)
                 _batch.clear()
@@ -226,7 +226,7 @@ def _build_child_progress_callback(task_index: int, parent_agent, task_count: in
         if parent_cb and _batch:
             summary = ", ".join(_batch)
             try:
-                parent_cb("subagent_progress", f"🔀 {prefix}{summary}")
+                parent_cb("subagent_progress", f"é¦æ¢ {prefix}{summary}")
             except Exception as e:
                 logger.debug("Parent callback flush failed: %s", e)
             _batch.clear()
@@ -248,7 +248,7 @@ def _build_child_agent(
     override_base_url: Optional[str] = None,
     override_api_key: Optional[str] = None,
     override_api_mode: Optional[str] = None,
-    # ACP transport overrides �?lets a non-ACP parent spawn ACP child agents
+    # ACP transport overrides é¥?lets a non-ACP parent spawn ACP child agents
     override_acp_command: Optional[str] = None,
     override_acp_args: Optional[List[str]] = None,
 ):
@@ -271,7 +271,7 @@ def _build_child_agent(
     if parent_enabled is not None:
         parent_toolsets = set(parent_enabled)
     elif parent_agent and hasattr(parent_agent, "valid_tool_names"):
-        # enabled_toolsets is None (all tools) �?derive from loaded tool names
+        # enabled_toolsets is None (all tools) é¥?derive from loaded tool names
         import model_tools
         parent_toolsets = {
             ts for name in parent_agent.valid_tool_names
@@ -281,7 +281,7 @@ def _build_child_agent(
         parent_toolsets = set(DEFAULT_TOOLSETS)
 
     if toolsets:
-        # Intersect with parent �?subagent must not gain tools the parent lacks
+        # Intersect with parent é¥?subagent must not gain tools the parent lacks
         child_toolsets = _strip_blocked_tools([t for t in toolsets if t in parent_toolsets])
     elif parent_agent and parent_enabled is not None:
         child_toolsets = _strip_blocked_tools(parent_enabled)
@@ -771,7 +771,7 @@ def delegate_task(
                 label = task_labels[idx] if idx < len(task_labels) else f"Task {idx}"
                 dur = entry.get("duration_seconds", 0)
                 status = entry.get("status", "?")
-                icon = "�? if status == "completed" else "�?
+                icon = "é? if status == "completed" else "é?
                 remaining = n_tasks - completed_count
                 completion_line = f"{icon} [{idx+1}/{n_tasks}] {label}  ({dur}s)"
                 if spinner_ref:
@@ -785,7 +785,7 @@ def delegate_task(
                 # Update spinner text to show remaining count
                 if spinner_ref and remaining > 0:
                     try:
-                        spinner_ref.update_text(f"🔀 {remaining} task{'s' if remaining != 1 else ''} remaining")
+                        spinner_ref.update_text(f"é¦æ¢ {remaining} task{'s' if remaining != 1 else ''} remaining")
                     except Exception as e:
                         logger.debug("Spinner update_text failed: %s", e)
 
@@ -851,7 +851,7 @@ def _resolve_delegation_credentials(cfg: dict, parent_agent) -> dict:
     If ``delegation.base_url`` is configured, subagents use that direct
     OpenAI-compatible endpoint. Otherwise, if ``delegation.provider`` is
     configured, the full credential bundle (base_url, api_key, api_mode,
-    provider) is resolved via the runtime provider system �?the same path used
+    provider) is resolved via the runtime provider system é¥?the same path used
     by CLI/gateway startup. This lets subagents run on a completely different
     provider:model pair.
 
@@ -895,7 +895,7 @@ def _resolve_delegation_credentials(cfg: dict, parent_agent) -> dict:
         }
 
     if not configured_provider:
-        # No provider override �?child inherits everything from parent
+        # No provider override é¥?child inherits everything from parent
         return {
             "model": configured_model,
             "provider": None,
@@ -904,7 +904,7 @@ def _resolve_delegation_credentials(cfg: dict, parent_agent) -> dict:
             "api_mode": None,
         }
 
-    # Provider is configured �?resolve full credentials
+    # Provider is configured é¥?resolve full credentials
     try:
         from hermes_cli.runtime_provider import resolve_runtime_provider
         runtime = resolve_runtime_provider(requested=configured_provider)
@@ -1043,7 +1043,7 @@ DELEGATE_TASK_SCHEMA = {
                     },
                     "required": ["goal"],
                 },
-                # No maxItems �?the runtime limit is configurable via
+                # No maxItems é¥?the runtime limit is configurable via
                 # delegation.max_concurrent_children (default 3) and
                 # enforced with a clear error in delegate_task().
                 "description": (
@@ -1099,5 +1099,5 @@ registry.register(
         acp_args=args.get("acp_args"),
         parent_agent=kw.get("parent_agent")),
     check_fn=check_delegate_requirements,
-    emoji="🔀",
+    emoji="é¦æ¢",
 )

@@ -1,6 +1,6 @@
-﻿"""
-论坛主持人模�?
-使用硅基流动的Qwen3模型作为论坛主持人，引导多个agent进行讨论
+ï»¿"""
+è®ºåä¸»æäººæ¨¡ï¿½?
+ä½¿ç¨ç¡åºæµå¨çQwen3æ¨¡åä½ä¸ºè®ºåä¸»æäººï¼å¼å¯¼å¤ä¸ªagentè¿è¡è®¨è®º
 """
 
 from openai import OpenAI
@@ -10,11 +10,11 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import re
 
-# 添加项目根目录到Python路径以导入config
+# æ·»å é¡¹ç®æ ¹ç®å½å°Pythonè·¯å¾ä»¥å¯¼å¥config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.config import settings
 
-# 添加utils目录到Python路径
+# æ·»å utilsç®å½å°Pythonè·¯å¾
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 utils_dir = os.path.join(root_dir, 'utils')
@@ -26,22 +26,22 @@ from utils.retry_helper import with_graceful_retry, SEARCH_API_RETRY_CONFIG
 
 class ForumHost:
     """
-    论坛主持人类
-    使用Qwen3-235B模型作为智能主持�?
+    è®ºåä¸»æäººç±»
+    ä½¿ç¨Qwen3-235Bæ¨¡åä½ä¸ºæºè½ä¸»æï¿½?
     """
     
     def __init__(self, api_key: str = None, base_url: Optional[str] = None, model_name: Optional[str] = None):
         """
-        初始化论坛主持人
+        åå§åè®ºåä¸»æäºº
         
         Args:
-            api_key: 论坛主持�?LLM API 密钥，如果不提供则从配置文件读取
-            base_url: 论坛主持�?LLM API 接口基础地址，默认使用配置文件提供的SiliconFlow地址
+            api_key: è®ºåä¸»æï¿½?LLM API å¯é¥ï¼å¦æä¸æä¾åä»éç½®æä»¶è¯»å
+            base_url: è®ºåä¸»æï¿½?LLM API æ¥å£åºç¡å°åï¼é»è®¤ä½¿ç¨éç½®æä»¶æä¾çSiliconFlowå°å
         """
         self.api_key = api_key or settings.FORUM_HOST_API_KEY
 
         if not self.api_key:
-            raise ValueError("未找到论坛主持人API密钥，请在环境变量文件中设置FORUM_HOST_API_KEY")
+            raise ValueError("æªæ¾å°è®ºåä¸»æäººAPIå¯é¥ï¼è¯·å¨ç¯å¢åéæä»¶ä¸­è®¾ç½®FORUM_HOST_API_KEY")
 
         self.base_url = base_url or settings.FORUM_HOST_BASE_URL
 
@@ -60,48 +60,48 @@ class ForumHost:
     
     def generate_host_speech(self, forum_logs: List[str]) -> Optional[str]:
         """
-        生成主持人发言
+        çæä¸»æäººåè¨
         
         Args:
-            forum_logs: 论坛日志内容列表
+            forum_logs: è®ºåæ¥å¿åå®¹åè¡¨
             
         Returns:
-            主持人发言内容，如果生成失败返回None
+            ä¸»æäººåè¨åå®¹ï¼å¦æçæå¤±è´¥è¿åNone
         """
         try:
-            # 解析论坛日志，提取有效内�?
+            # è§£æè®ºåæ¥å¿ï¼æåææåï¿½?
             parsed_content = self._parse_forum_logs(forum_logs)
             
             if not parsed_content['agent_speeches']:
-                print("ForumHost: 没有找到有效的agent发言")
+                print("ForumHost: æ²¡ææ¾å°ææçagentåè¨")
                 return None
             
-            # 构建prompt
+            # æå»ºprompt
             system_prompt = self._build_system_prompt()
             user_prompt = self._build_user_prompt(parsed_content)
             
-            # 调用API生成发言
+            # è°ç¨APIçæåè¨
             response = self._call_qwen_api(system_prompt, user_prompt)
             
             if response["success"]:
                 speech = response["content"]
-                # 清理和格式化发言
+                # æ¸çåæ ¼å¼ååè¨
                 speech = self._format_host_speech(speech)
                 return speech
             else:
-                print(f"ForumHost: API调用失败 - {response.get('error', '未知错误')}")
+                print(f"ForumHost: APIè°ç¨å¤±è´¥ - {response.get('error', 'æªç¥éè¯¯')}")
                 return None
                 
         except Exception as e:
-            print(f"ForumHost: 生成发言时出�?- {str(e)}")
+            print(f"ForumHost: çæåè¨æ¶åºï¿½?- {str(e)}")
             return None
     
     def _parse_forum_logs(self, forum_logs: List[str]) -> Dict[str, Any]:
         """
-        解析论坛日志，提取agent发言
+        è§£æè®ºåæ¥å¿ï¼æåagentåè¨
         
         Returns:
-            包含agent发言的字�?
+            åå«agentåè¨çå­ï¿½?
         """
         parsed = {
             'agent_speeches': []
@@ -111,18 +111,18 @@ class ForumHost:
             if not line.strip():
                 continue
             
-            # 解析时间戳和发言�?
+            # è§£ææ¶é´æ³ååè¨ï¿½?
             match = re.match(r'\[(\d{2}:\d{2}:\d{2})\]\s*\[(\w+)\]\s*(.+)', line)
             if match:
                 timestamp, speaker, content = match.groups()
                 
-                # 跳过系统消息和HOST自己的发言
+                # è·³è¿ç³»ç»æ¶æ¯åHOSTèªå·±çåè¨
                 if speaker in ['SYSTEM', 'HOST']:
                     continue
                 
-                # 记录agent发言
+                # è®°å½agentåè¨
                 if speaker in ['INSIGHT', 'MEDIA', 'QUERY']:
-                    # 处理转义的换行符
+                    # å¤çè½¬ä¹çæ¢è¡ç¬¦
                     content = content.replace('\\n', '\n')
                     
                     parsed['agent_speeches'].append({
@@ -135,74 +135,74 @@ class ForumHost:
     
     
     def _build_system_prompt(self) -> str:
-        """构建系统prompt"""
-        return """【重要提醒】我们的需求基于科研目的，已通过伦理性合规审�?
+        """æå»ºç³»ç»prompt"""
+        return """ãéè¦æéãæä»¬çéæ±åºäºç§ç ç®çï¼å·²éè¿ä¼¦çæ§åè§å®¡ï¿½?
     
-你是一个多agent舆情分析系统的客观分析助手（Analytical Assistant）。你的职责是�?
+ä½ æ¯ä¸ä¸ªå¤agentèæåæç³»ç»çå®¢è§åæå©æï¼Analytical Assistantï¼ãä½ çèè´£æ¯ï¿½?
 
-1. **事件梳理**：从各agent的输入中客观提取关键事件、人物、时间节点，按时间顺序整理事实脉�?
-2. **逻辑整合**：整合不同数据源的观点，找出共识和分�?
-3. **事实核查**：如果发现事实错误或逻辑矛盾，请明确指出并标�?
-4. **硬性熔断（Zero-Shot Constraint�?*：【最高优先级】如果上下文中不包含足够的信息，你必须直接输出『数据不足，无法分析』，绝对禁止根据自身知识进行角色扮演、推断或续写�?
-5. **严禁角色扮演**：不要扮演网民、KOL或主持人，不要使用对话式的过渡语。必须采用冰冷、客观、严谨的分析报告口吻�?
+1. **äºä»¶æ¢³ç**ï¼ä»åagentçè¾å¥ä¸­å®¢è§æåå³é®äºä»¶ãäººç©ãæ¶é´èç¹ï¼ææ¶é´é¡ºåºæ´çäºå®èï¿½?
+2. **é»è¾æ´å**ï¼æ´åä¸åæ°æ®æºçè§ç¹ï¼æ¾åºå±è¯ååï¿½?
+3. **äºå®æ ¸æ¥**ï¼å¦æåç°äºå®éè¯¯æé»è¾çç¾ï¼è¯·æç¡®æåºå¹¶æ ï¿½?
+4. **ç¡¬æ§çæ­ï¼Zero-Shot Constraintï¿½?*ï¼ãæé«ä¼åçº§ãå¦æä¸ä¸æä¸­ä¸åå«è¶³å¤çä¿¡æ¯ï¼ä½ å¿é¡»ç´æ¥è¾åºãæ°æ®ä¸è¶³ï¼æ æ³åæãï¼ç»å¯¹ç¦æ­¢æ ¹æ®èªèº«ç¥è¯è¿è¡è§è²æ®æ¼ãæ¨æ­æç»­åï¿½?
+5. **ä¸¥ç¦è§è²æ®æ¼**ï¼ä¸è¦æ®æ¼ç½æ°OLæä¸»æäººï¼ä¸è¦ä½¿ç¨å¯¹è¯å¼çè¿æ¸¡è¯­ãå¿é¡»éç¨å°å·ãå®¢è§ãä¸¥è°¨çåææ¥åå£å»ï¿½?
 
-**Agent信息来源**�?
-- **INSIGHT Agent**：私有舆情数据库数据
-- **MEDIA Agent**：多模态内容数�?
-- **QUERY Agent**：网络搜索数�?
+**Agentä¿¡æ¯æ¥æº**ï¿½?
+- **INSIGHT Agent**ï¼ç§æèææ°æ®åºæ°æ®
+- **MEDIA Agent**ï¼å¤æ¨¡æåå®¹æ°ï¿½?
+- **QUERY Agent**ï¼ç½ç»æç´¢æ°ï¿½?
 
-**输出要求**�?
-1. **纯事实导�?*：仅基于提供的数据进行总结，绝对不附加任何主观情绪，绝不能凭空捏造数据、虚构网民评论�?
-2. **溯源要求**：所有事实观点必须注明是哪个Agent提供的数据�?
-3. **精简客观与通俗易懂**：每次分析控制在1000字以内，结构清晰�?*请务必使用通俗、易懂、接地气的语言，假设你的读者是一名刚刚大学毕业的学生或刚入行的普通职员�?*
-4. **禁止赛博考据与过度专业化**：绝对禁止使用极其晦涩的术语（如“结构性幻觉系统”、“Jaccard相似度”、“SHA-256/MD5哈希铁证”、“双盲验证”、“DOM审计”、“时间戳标准差”等），不要表现得像一个黑客或法医，请用普通人的大白话来解释数据的异常之处（例如：“这100多条内容几乎是在同一时间集中发出的，内容也高度重复，很可能是机器刷的”）�?
-5. **绝对防幻觉（Anti-Hallucination�?*：任何结论都必须来源于上文列出的 Agent 记录，不能发散思维进行长篇大论的“学术推演”或编造科幻概念�?
+**è¾åºè¦æ±**ï¿½?
+1. **çº¯äºå®å¯¼ï¿½?*ï¼ä»åºäºæä¾çæ°æ®è¿è¡æ»ç»ï¼ç»å¯¹ä¸éå ä»»ä½ä¸»è§æç»ªï¼ç»ä¸è½å­ç©ºæé æ°æ®ãèæç½æ°è¯è®ºï¿½?
+2. **æº¯æºè¦æ±**ï¼ææäºå®è§ç¹å¿é¡»æ³¨ææ¯åªä¸ªAgentæä¾çæ°æ®ï¿½?
+3. **ç²¾ç®å®¢è§ä¸éä¿ææ**ï¼æ¯æ¬¡åææ§å¶å¨1000å­ä»¥åï¼ç»ææ¸æ°ï¿½?*è¯·å¡å¿ä½¿ç¨éä¿ãææãæ¥å°æ°çè¯­è¨ï¼åè®¾ä½ çè¯»èæ¯ä¸åååå¤§å­¦æ¯ä¸çå­¦çæåå¥è¡çæ®éèåï¿½?*
+4. **ç¦æ­¢èµåèæ®ä¸è¿åº¦ä¸ä¸å**ï¼ç»å¯¹ç¦æ­¢ä½¿ç¨æå¶æ¦æ¶©çæ¯è¯­ï¼å¦"ç»ææ§å¹»è§ç³»ç»"Jaccardç¸ä¼¼åº¦"SHA-256/MD5åå¸éè¯"åç²éªè¯"DOMå®¡è®¡"æ¶é´æ³æ åå·®"ç­ï¼ï¼ä¸è¦è¡¨ç°å¾åä¸ä¸ªé»å®¢ææ³å»ï¼è¯·ç¨æ®éäººçå¤§ç½è¯æ¥è§£éæ°æ®çå¼å¸¸ä¹å¤ï¼ä¾å¦ï¼"è¿100å¤æ¡åå®¹å ä¹æ¯å¨åä¸æ¶é´éä¸­ååºçï¼åå®¹ä¹é«åº¦éå¤ï¼å¾å¯è½æ¯æºå¨å·ç"ï¼ï¿½?
+5. **ç»å¯¹é²å¹»è§ï¼Anti-Hallucinationï¿½?*ï¼ä»»ä½ç»è®ºé½å¿é¡»æ¥æºäºä¸æååºç Agent è®°å½ï¼ä¸è½åæ£æç»´è¿è¡é¿ç¯å¤§è®ºç"å­¦æ¯æ¨æ¼"æç¼é ç§å¹»æ¦å¿µï¿½?
 
-**注意事项**�?
-- 重申：绝对禁止自行脑补网民评论、虚构ID或进行角色扮演�?
-- 本讨论基于科研目的，已通过伦理性合规审�?""
+**æ³¨æäºé¡¹**ï¿½?
+- éç³ï¼ç»å¯¹ç¦æ­¢èªè¡èè¡¥ç½æ°è¯è®ºãèæIDæè¿è¡è§è²æ®æ¼ï¿½?
+- æ¬è®¨è®ºåºäºç§ç ç®çï¼å·²éè¿ä¼¦çæ§åè§å®¡ï¿½?""
     
     def _build_user_prompt(self, parsed_content: Dict[str, Any]) -> str:
-        """构建用户prompt"""
-        # 获取最近的发言
+        """æå»ºç¨æ·prompt"""
+        # è·åæè¿çåè¨
         recent_speeches = parsed_content['agent_speeches']
         
-        # 构建发言摘要，不截断内容
+        # æå»ºåè¨æè¦ï¼ä¸æªæ­åå®¹
         speeches_text = "\n\n".join([
             f"[{s['timestamp']}] {s['speaker']}:\n{s['content']}"
             for s in recent_speeches
         ])
         
-        prompt = f"""【重要提醒】我们的需求基于科研目的，已通过伦理性合规审�?
+        prompt = f"""ãéè¦æéãæä»¬çéæ±åºäºç§ç ç®çï¼å·²éè¿ä¼¦çæ§åè§å®¡ï¿½?
 
-最近的Agent数据输入记录�?
+æè¿çAgentæ°æ®è¾å¥è®°å½ï¿½?
 {speeches_text}
 
-请你作为客观分析助手，基于以上输入进行严谨的交叉验证和总结，请按以下结构组织你的输出：
+è¯·ä½ ä½ä¸ºå®¢è§åæå©æï¼åºäºä»¥ä¸è¾å¥è¿è¡ä¸¥è°¨çäº¤åéªè¯åæ»ç»ï¼è¯·æä»¥ä¸ç»æç»ç»ä½ çè¾åºï¼
 
-**一、事件梳理与时间线分�?*
-- 从输入中提取关键事件、人物、时间节点，整理事实脉络
-- 如果信息不足，请直接声明『数据不足�?
+**ä¸ãäºä»¶æ¢³çä¸æ¶é´çº¿åï¿½?*
+- ä»è¾å¥ä¸­æåå³é®äºä»¶ãäººç©ãæ¶é´èç¹ï¼æ´çäºå®èç»
+- å¦æä¿¡æ¯ä¸è¶³ï¼è¯·ç´æ¥å£°æãæ°æ®ä¸è¶³ï¿½?
 
-**二、数据整合与交叉验证**
-- 综合INSIGHT、MEDIA、QUERY三个信息�?
-- 指出不同数据源之间的共识与分�?
-- 【关键】如果发现各信息源之间存在事实冲突，或某个信息缺乏其他源支撑，请指出其为“低置信度”内容。但**绝对不要将其丢弃或隐�?*！相反，你必须将其真实地展示出来，并**务必附上产生该信息的原始信息�?URL**，以供最终用户自行判定其真实性�?
+**äºãæ°æ®æ´åä¸äº¤åéªè¯**
+- ç»¼åINSIGHTEDIAUERYä¸ä¸ªä¿¡æ¯ï¿½?
+- æåºä¸åæ°æ®æºä¹é´çå±è¯ä¸åï¿½?
+- ãå³é®ãå¦æåç°åä¿¡æ¯æºä¹é´å­å¨äºå®å²çªï¼ææä¸ªä¿¡æ¯ç¼ºä¹å¶ä»æºæ¯æï¼è¯·æåºå¶ä¸º"ä½ç½®ä¿¡åº¦"åå®¹ãä½**ç»å¯¹ä¸è¦å°å¶ä¸¢å¼æéï¿½?*ï¼ç¸åï¼ä½ å¿é¡»å°å¶çå®å°å±ç¤ºåºæ¥ï¼å¹¶**å¡å¿éä¸äº§çè¯¥ä¿¡æ¯çåå§ä¿¡æ¯ï¿½?URL**ï¼ä»¥ä¾æç»ç¨æ·èªè¡å¤å®å¶çå®æ§ï¿½?
 
-**三、深层事实挖�?*
-- 基于已有事实，提炼出核心结论
-- 严禁任何主观推测或角色扮演式的演�?
-- 必须罗列出支撑该结论的所有来源链接（URL）或平台依据
+**ä¸ãæ·±å±äºå®æï¿½?*
+- åºäºå·²æäºå®ï¼æç¼åºæ ¸å¿ç»è®º
+- ä¸¥ç¦ä»»ä½ä¸»è§æ¨æµæè§è²æ®æ¼å¼çæ¼ï¿½?
+- å¿é¡»ç½ååºæ¯æè¯¥ç»è®ºçæææ¥æºé¾æ¥ï¼URLï¼æå¹³å°ä¾æ®
 """
         
         return prompt
     
-    @with_graceful_retry(SEARCH_API_RETRY_CONFIG, default_return={"success": False, "error": "API服务暂时不可�?})
+    @with_graceful_retry(SEARCH_API_RETRY_CONFIG, default_return={"success": False, "error": "APIæå¡ææ¶ä¸å¯ï¿½?})
     def _call_qwen_api(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
-        """调用Qwen API"""
+        """è°ç¨Qwen API"""
         try:
-            current_time = datetime.now().strftime("%Y�?m�?d�?H�?M�?)
-            time_prefix = f"今天的实际时间是{current_time}"
+            current_time = datetime.now().strftime("%Yï¿½?mï¿½?dï¿½?Hï¿½?Mï¿½?)
+            time_prefix = f"ä»å¤©çå®éæ¶é´æ¯{current_time}"
             if user_prompt:
                 user_prompt = f"{time_prefix}\n{user_prompt}"
             else:
@@ -222,31 +222,31 @@ class ForumHost:
                 content = response.choices[0].message.content
                 return {"success": True, "content": content}
             else:
-                return {"success": False, "error": "API返回格式异常"}
+                return {"success": False, "error": "APIè¿åæ ¼å¼å¼å¸¸"}
         except Exception as e:
-            return {"success": False, "error": f"API调用异常: {str(e)}"}
+            return {"success": False, "error": f"APIè°ç¨å¼å¸¸: {str(e)}"}
     
     def _format_host_speech(self, speech: str) -> str:
-        """格式化主持人发言"""
-        # 移除多余的空�?
+        """æ ¼å¼åä¸»æäººåè¨"""
+        # ç§»é¤å¤ä½çç©ºï¿½?
         speech = re.sub(r'\n{3,}', '\n\n', speech)
         
-        # 移除可能的引�?
-        speech = speech.strip('"\'""‘�?)
+        # ç§»é¤å¯è½çå¼ï¿½?
+        speech = speech.strip('"\'""âï¿½?)
         
         return speech.strip()
 
 
-# 创建全局实例
+# åå»ºå¨å±å®ä¾
 _host_instance = None
 
 def get_forum_host() -> ForumHost:
-    """获取全局论坛主持人实�?""
+    """è·åå¨å±è®ºåä¸»æäººå®ï¿½?""
     global _host_instance
     if _host_instance is None:
         _host_instance = ForumHost()
     return _host_instance
 
 def generate_host_speech(forum_logs: List[str]) -> Optional[str]:
-    """生成主持人发言的便捷函�?""
+    """çæä¸»æäººåè¨çä¾¿æ·å½ï¿½?""
     return get_forum_host().generate_host_speech(forum_logs)

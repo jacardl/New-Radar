@@ -150,7 +150,7 @@ async def test_run_agent_progress_stays_in_originating_topic(monkeypatch, tmp_pa
     assert adapter.sent == [
         {
             "chat_id": "-1001",
-            "content": '💻 terminal: "pwd"',
+            "content": 'é¦æ terminal: "pwd"',
             "reply_to": None,
             "metadata": {"thread_id": "17585"},
         }
@@ -253,7 +253,7 @@ def _run_long_preview_helper(monkeypatch, tmp_path, preview_length=0):
 
     Returns (adapter, result) after running the agent with LongPreviewAgent.
     ``preview_length`` controls display.tool_preview_length in the config file
-    that _run_agent reads �?so the gateway picks it up the same way production does.
+    that _run_agent reads é¥?so the gateway picks it up the same way production does.
     """
     import asyncio
     import yaml
@@ -304,7 +304,7 @@ def test_all_mode_default_truncation_40_chars(monkeypatch, tmp_path):
     assert result["final_response"] == "done"
     assert adapter.sent
     content = adapter.sent[0]["content"]
-    # The long command should be truncated �?total preview <= 40 chars
+    # The long command should be truncated é¥?total preview <= 40 chars
     assert "..." in content
     # Extract the preview part between quotes
     import re
@@ -333,7 +333,7 @@ def test_all_mode_respects_custom_preview_length(monkeypatch, tmp_path):
 
 def test_all_mode_no_truncation_when_preview_fits(monkeypatch, tmp_path):
     """Short previews (under the cap) are not truncated."""
-    # Set a generous cap �?the LongPreviewAgent's command is ~165 chars
+    # Set a generous cap é¥?the LongPreviewAgent's command is ~165 chars
     adapter, result = _run_long_preview_helper(monkeypatch, tmp_path, preview_length=200)
     assert result["final_response"] == "done"
     assert adapter.sent
@@ -625,7 +625,7 @@ async def test_run_agent_matrix_streaming_omits_cursor(monkeypatch, tmp_path):
     assert result.get("already_sent") is True
     all_text = [call["content"] for call in adapter.sent] + [call["content"] for call in adapter.edits]
     assert all_text, "expected streamed Matrix content to be sent or edited"
-    assert all("�? not in text for text in all_text)
+    assert all("é»? not in text for text in all_text)
     assert any("Continuing to refine:" in text for text in all_text)
 
 
@@ -652,7 +652,7 @@ async def test_verbose_mode_does_not_truncate_args_by_default(monkeypatch, tmp_p
     """Verbose mode with default tool_preview_length (0) should NOT truncate args.
 
     Previously, verbose mode capped args at 200 chars when tool_preview_length
-    was 0 (default).  The user explicitly opted into verbose �?show full detail.
+    was 0 (default).  The user explicitly opted into verbose é¥?show full detail.
     """
     adapter, result = await _run_with_agent(
         monkeypatch,
@@ -683,7 +683,7 @@ async def test_verbose_mode_respects_explicit_tool_preview_length(monkeypatch, t
     assert result["final_response"] == "done"
     all_content = " ".join(call["content"] for call in adapter.sent)
     all_content += " ".join(call["content"] for call in adapter.edits)
-    # Should be truncated �?full 300-char string NOT present
+    # Should be truncated é¥?full 300-char string NOT present
     assert VerboseAgent.LONG_CODE not in all_content
     # But should still contain the truncated portion with "..."
     assert "..." in all_content

@@ -9,7 +9,7 @@ from tools.ansi_strip import strip_ansi
 
 
 class TestStripAnsiBasicSGR:
-    """Select Graphic Rendition �?the most common ANSI sequences."""
+    """Select Graphic Rendition é¥?the most common ANSI sequences."""
 
     def test_reset(self):
         assert strip_ansi("\x1b[0m") == ""
@@ -156,7 +156,7 @@ class TestStripAnsiPassthrough:
         assert strip_ansi("line1\nline2\ttab") == "line1\nline2\ttab"
 
     def test_unicode_safe(self):
-        assert strip_ansi("emoji 🎉 and ñ café") == "emoji 🎉 and ñ café"
+        assert strip_ansi("emoji é¦å¸ and å¸½ cafè") == "emoji é¦å¸ and å¸½ cafè"
 
     def test_backslash_in_code(self):
         code = "path = 'C:\\\\Users\\\\test'"

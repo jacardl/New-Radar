@@ -106,7 +106,7 @@ def detect_audio_environment() -> dict:
     if is_container():
         warnings.append("Running inside Docker container -- no audio devices")
 
-    # WSL detection â€?PulseAudio bridge makes audio work in WSL.
+    # WSL detection ÃÂ¢?PulseAudio bridge makes audio work in WSL.
     # Only block if PULSE_SERVER is not configured.
     try:
         with open('/proc/version', 'r') as f:
@@ -228,7 +228,7 @@ def play_beep(frequency: int = 880, duration: float = 0.12, count: int = 1) -> N
 
         audio = np.concatenate(parts)
         sd.play(audio, samplerate=SAMPLE_RATE)
-        # sd.wait() calls Event.wait() without timeout â€?hangs forever if the
+        # sd.wait() calls Event.wait() without timeout ÃÂ¢?hangs forever if the
         # audio device stalls.  Poll with a 2s ceiling and force-stop.
         deadline = time.monotonic() + 2.0
         while sd.get_stream() and sd.get_stream().active and time.monotonic() < deadline:
@@ -447,7 +447,7 @@ class AudioRecorder:
         def _callback(indata, frames, time_info, status):  # noqa: ARG001
             if status:
                 logger.debug("sounddevice status: %s", status)
-            # When not recording the stream is idle â€?discard audio.
+            # When not recording the stream is idle ÃÂ¢?discard audio.
             if not self._recording:
                 return
             self._frames.append(indata.copy())
@@ -482,7 +482,7 @@ class AudioRecorder:
                         # Brief dips below threshold are normal during speech,
                         # so we mirror the initial speech detection pattern:
                         # start tracking, tolerate short dips, confirm after 0.3s.
-                        self._resume_dip_start = 0.0  # Above threshold â€?no dip
+                        self._resume_dip_start = 0.0  # Above threshold ÃÂ¢?no dip
                         if self._resume_start == 0.0:
                             self._resume_start = now
                         elif now - self._resume_start >= self._min_speech_duration:
@@ -490,13 +490,13 @@ class AudioRecorder:
                             self._resume_start = 0.0
                 elif self._has_spoken:
                     # Below threshold after speech confirmed.
-                    # Use dip tolerance before resetting resume tracker â€?
+                    # Use dip tolerance before resetting resume tracker ÃÂ¢?
                     # natural speech has brief dips below threshold.
                     if self._resume_start > 0:
                         if self._resume_dip_start == 0.0:
                             self._resume_dip_start = now
                         elif now - self._resume_dip_start >= self._max_dip_tolerance:
-                            # Sustained dip â€?user actually stopped speaking
+                            # Sustained dip ÃÂ¢?user actually stopped speaking
                             self._resume_start = 0.0
                             self._resume_dip_start = 0.0
                 elif self._speech_start > 0:
@@ -540,7 +540,7 @@ class AudioRecorder:
                                 logger.error("Silence callback failed: %s", e, exc_info=True)
                         threading.Thread(target=_safe_cb, daemon=True).start()
 
-        # Create stream â€?may block on CoreAudio (first call only).
+        # Create stream ÃÂ¢?may block on CoreAudio (first call only).
         stream = None
         try:
             stream = sd.InputStream(
@@ -631,12 +631,12 @@ class AudioRecorder:
         while t.is_alive() and __import__("time").monotonic() < deadline:
             t.join(timeout=0.1)
         if t.is_alive():
-            logger.warning("Audio stream close timed out after %.1fs â€?forcing ahead", timeout)
+            logger.warning("Audio stream close timed out after %.1fs ÃÂ¢?forcing ahead", timeout)
 
     def stop(self) -> Optional[str]:
         """Stop recording and write captured audio to a WAV file.
 
-        The underlying stream is kept alive for reuse â€?only frame
+        The underlying stream is kept alive for reuse ÃÂ¢?only frame
         collection is stopped.
 
         Returns:
@@ -648,7 +648,7 @@ class AudioRecorder:
 
             self._recording = False
             self._current_rms = 0
-            # Stream stays alive â€?no close needed.
+            # Stream stays alive ÃÂ¢?no close needed.
 
             if not self._frames:
                 return None
@@ -751,15 +751,15 @@ WHISPER_HALLUCINATIONS = {
     "the end.",
     "the end",
     # Non-English hallucinations (common on silence)
-    "Ð¿Ñ€Ð¾Ð´Ð¾Ð»Ð¶ÐµÐ½Ð¸Ðµ ÑÐ»ÐµÐ´ÑƒÐµÑ‚",
-    "Ð¿Ñ€Ð¾Ð´Ð¾Ð»Ð¶ÐµÐ½Ð¸Ðµ ÑÐ»ÐµÐ´ÑƒÐµÑ‚...",
+    "ÃÃÂ¿ÃÃÃÂ¾ÃÃÂ´ÃÃÂ¾ÃÃÂ»ÃÃÂ¶ÃÃÂµÃÃÂ½ÃÃÂ¸ÃÃÂµ ÃÃÃÂ»ÃÃÂµÃÃÂ´ÃÃÃÂµÃ",
+    "ÃÃÂ¿ÃÃÃÂ¾ÃÃÂ´ÃÃÂ¾ÃÃÂ»ÃÃÂ¶ÃÃÂµÃÃÂ½ÃÃÂ¸ÃÃÂµ ÃÃÃÂ»ÃÃÂµÃÃÂ´ÃÃÃÂµÃ...",
     "sous-titres",
-    "sous-titres rÃ©alisÃ©s par la communautÃ© d'amara.org",
-    "sottotitoli creati dalla comunitÃ  amara.org",
+    "sous-titres rÃÃÂ©alisÃÃÂ©s par la communautÃÃÂ© d'amara.org",
+    "sottotitoli creati dalla comunitÃÃÂ  amara.org",
     "untertitel von stephanie geiges",
     "amara.org",
     "www.mooji.org",
-    "ã”è¦–è´ã‚ã‚ŠãŒã¨ã†ã”ã–ã„ã¾ã—ãŸ",
+    "ÃÂ£ÃÂ¨ÃÂ¦ÃÂ¨ÃÂ´ÃÂ£ÃÂ£ÃÂ£ÃÂ£ÃÂ¨ÃÂ£ÃÂ£ÃÂ£ÃÂ£ÃÂ£ÃÂ¾ÃÂ£ÃÂ£",
 }
 
 # Regex patterns for repetitive hallucinations (e.g. "Thank you. Thank you. Thank you.")
@@ -869,7 +869,7 @@ def play_audio_file(file_path: str) -> bool:
                 sample_rate = wf.getframerate()
 
             sd.play(audio_data, samplerate=sample_rate)
-            # sd.wait() calls Event.wait() without timeout â€?hangs forever if
+            # sd.wait() calls Event.wait() without timeout ÃÂ¢?hangs forever if
             # the audio device stalls.  Poll with a ceiling and force-stop.
             duration_secs = len(audio_data) / sample_rate
             deadline = time.monotonic() + duration_secs + 2.0

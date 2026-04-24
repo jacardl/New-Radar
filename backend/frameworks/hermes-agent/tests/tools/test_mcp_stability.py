@@ -1,4 +1,4 @@
-"""Tests for MCP stability fixes �?event loop handler, PID tracking, shutdown robustness."""
+"""Tests for MCP stability fixes é¥?event loop handler, PID tracking, shutdown robustness."""
 
 import asyncio
 import os
@@ -165,7 +165,7 @@ class TestMCPReloadTimeout:
             agent = None
 
             def _reload_mcp(self):
-                # Simulate a hang �?sleep longer than the timeout
+                # Simulate a hang é¥?sleep longer than the timeout
                 time.sleep(60)
 
             def _slow_command_status(self, cmd):
@@ -213,7 +213,7 @@ class TestMCPInitialConnectionRetry:
                 call_count += 1
                 if call_count == 1:
                     raise ConnectionError("DNS resolution failed")
-                # Second attempt: success �?set ready and "run" until shutdown
+                # Second attempt: success é¥?set ready and "run" until shutdown
                 self_inner._ready.set()
                 await self_inner._shutdown_event.wait()
 

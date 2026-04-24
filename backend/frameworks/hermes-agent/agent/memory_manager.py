@@ -1,11 +1,11 @@
-"""MemoryManager �?orchestrates the built-in memory provider plus at most
+"""MemoryManager é¥?orchestrates the built-in memory provider plus at most
 ONE external plugin memory provider.
 
 Single integration point in run_agent.py. Replaces scattered per-backend
 code with one manager that delegates to registered providers.
 
 The BuiltinMemoryProvider is always registered first and cannot be removed.
-Only ONE external (non-builtin) provider is allowed at a time �?attempting
+Only ONE external (non-builtin) provider is allowed at a time é¥?attempting
 to register a second external provider is rejected with a warning.  This
 prevents tool schema bloat and conflicting memory backends.
 
@@ -54,7 +54,7 @@ def build_memory_context_block(raw_context: str) -> str:
     """Wrap prefetched memory in a fenced block with system note.
 
     The fence prevents the model from treating recalled context as user
-    discourse.  Injected at API-call time only �?never persisted.
+    discourse.  Injected at API-call time only é¥?never persisted.
     """
     if not raw_context or not raw_context.strip():
         return ""
@@ -86,7 +86,7 @@ class MemoryManager:
         """Register a memory provider.
 
         Built-in provider (name ``"builtin"``) is always accepted.
-        Only **one** external (non-builtin) provider is allowed �?a second
+        Only **one** external (non-builtin) provider is allowed é¥?a second
         attempt is rejected with a warning.
         """
         is_builtin = provider.name == "builtin"
@@ -97,7 +97,7 @@ class MemoryManager:
                     (p.name for p in self._providers if p.name != "builtin"), "unknown"
                 )
                 logger.warning(
-                    "Rejected memory provider '%s' �?external provider '%s' is "
+                    "Rejected memory provider '%s' é¥?external provider '%s' is "
                     "already registered. Only one external memory provider is "
                     "allowed at a time. Configure which one via memory.provider "
                     "in config.yaml.",
@@ -108,7 +108,7 @@ class MemoryManager:
 
         self._providers.append(provider)
 
-        # Index tool names �?provider for routing
+        # Index tool names é«?provider for routing
         for schema in provider.get_tool_schemas():
             tool_name = schema.get("name", "")
             if tool_name and tool_name not in self._tool_to_provider:

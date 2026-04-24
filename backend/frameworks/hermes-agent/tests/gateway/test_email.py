@@ -335,7 +335,7 @@ class TestChannelDirectory(unittest.TestCase):
 
     def test_email_in_session_discovery(self):
         from gateway.config import Platform
-        # Verify email is a Platform enum member �?the dynamic loop in
+        # Verify email is a Platform enum member é¥?the dynamic loop in
         # build_channel_directory iterates all Platform members, so email
         # is included automatically as long as it's in the enum.
         email_values = [p.value for p in Platform]

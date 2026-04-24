@@ -339,7 +339,7 @@ class TrajectoryCompressor:
                 self.config.tokenizer_name,
                 trust_remote_code=self.config.trust_remote_code
             )
-            print(f"�?Loaded tokenizer: {self.config.tokenizer_name}")
+            print(f"â?Loaded tokenizer: {self.config.tokenizer_name}")
         except Exception as e:
             raise RuntimeError(f"Failed to load tokenizer '{self.config.tokenizer_name}': {e}")
     
@@ -367,7 +367,7 @@ class TrajectoryCompressor:
             self.client = None  # Not used directly
             self.async_client = None  # Not used directly
         else:
-            # Custom endpoint �?use config's raw base_url + api_key_env
+            # Custom endpoint â?use config's raw base_url + api_key_env
             self._use_call_llm = False
             api_key = os.getenv(self.config.api_key_env)
             if not api_key:
@@ -379,13 +379,13 @@ class TrajectoryCompressor:
             self.client = OpenAI(
                 api_key=api_key, base_url=_to_openai_base_url(self.config.base_url))
             # AsyncOpenAI is created lazily in _get_async_client() so it
-            # binds to the current event loop �?avoids "Event loop is closed"
+            # binds to the current event loop â?avoids "Event loop is closed"
             # when process_directory() is called multiple times (each call
             # creates a new loop via asyncio.run()).
             self.async_client = None
             self._async_client_api_key = api_key
 
-        print(f"�?Initialized summarizer client: {self.config.summarization_model}")
+        print(f"â?Initialized summarizer client: {self.config.summarization_model}")
         print(f"   Max concurrent requests: {self.config.max_concurrent_requests}")
 
     def _get_async_client(self):
@@ -423,7 +423,7 @@ class TrajectoryCompressor:
             return "minimax-cn"
         if "minimax.io" in url:
             return "minimax"
-        # Unknown base_url �?not a known provider
+        # Unknown base_url â?not a known provider
         return ""
     
     def count_tokens(self, text: str) -> int:
@@ -969,13 +969,13 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
         total_entries = len(all_entries)
         
         console.print(f"\n{'='*60}")
-        console.print(f"📂 Input: {input_dir}")
-        console.print(f"📂 Output: {output_dir}")
-        console.print(f"📄 Files to process: {len(jsonl_files)}")
-        console.print(f"📊 Total trajectories: {total_entries:,}")
-        console.print(f"🎯 Target max tokens: {self.config.target_max_tokens:,}")
-        console.print(f"📝 Summary target tokens: {self.config.summary_target_tokens}")
-        console.print(f"�?Max concurrent API calls: {self.config.max_concurrent_requests}")
+        console.print(f"ð Input: {input_dir}")
+        console.print(f"ð Output: {output_dir}")
+        console.print(f"ð Files to process: {len(jsonl_files)}")
+        console.print(f"ð Total trajectories: {total_entries:,}")
+        console.print(f"ð¯ Target max tokens: {self.config.target_max_tokens:,}")
+        console.print(f"ð Summary target tokens: {self.config.summary_target_tokens}")
+        console.print(f"â?Max concurrent API calls: {self.config.max_concurrent_requests}")
         console.print(f"{'='*60}\n")
         
         # Create semaphore for rate limiting
@@ -1029,7 +1029,7 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
                         progress.advance(main_task)
                         progress.update(
                             status_task,
-                            description=f"[dim]�?{compressed_count} compressed | ⏭️ {skipped_count} skipped | ⏱️ {timeout_count} timeout | 🔄 {api_calls} API calls | �?{in_flight} in-flight[/dim]"
+                            description=f"[dim]â?{compressed_count} compressed | â­ï¸ {skipped_count} skipped | â±ï¸ {timeout_count} timeout | ð {api_calls} API calls | â?{in_flight} in-flight[/dim]"
                         )
                 
                 except asyncio.TimeoutError:
@@ -1042,7 +1042,7 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
                         progress.advance(main_task)
                         progress.update(
                             status_task,
-                            description=f"[dim]�?{compressed_count} compressed | ⏭️ {skipped_count} skipped | ⏱️ {timeout_count} timeout | 🔄 {api_calls} API calls | �?{in_flight} in-flight[/dim]"
+                            description=f"[dim]â?{compressed_count} compressed | â­ï¸ {skipped_count} skipped | â±ï¸ {timeout_count} timeout | ð {api_calls} API calls | â?{in_flight} in-flight[/dim]"
                         )
                     
                     # Skip this entry entirely (don't include in output)
@@ -1065,9 +1065,9 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            TextColumn("�?),
+            TextColumn("â?),
             TimeElapsedColumn(),
-            TextColumn("�?),
+            TextColumn("â?),
             TimeRemainingColumn(),
             console=console,
             refresh_per_second=10  # Higher refresh for async
@@ -1127,7 +1127,7 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
             metrics_path = output_dir / self.config.metrics_output_file
             with open(metrics_path, 'w') as f:
                 json.dump(self.aggregate_metrics.to_dict(), f, indent=2)
-            console.print(f"\n💾 Metrics saved to {metrics_path}")
+            console.print(f"\nð¾ Metrics saved to {metrics_path}")
     
     def _print_summary(self):
         """Print comprehensive compression summary statistics."""
@@ -1151,64 +1151,64 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
         over_limit_pct = (over_limit / max(total, 1)) * 100
         
         print(f"\n")
-        print(f"╔{'�?*70}�?)
-        print(f"║{'TRAJECTORY COMPRESSION REPORT':^70}�?)
-        print(f"╠{'�?*70}�?)
+        print(f"â{'â?*70}â?)
+        print(f"â{'TRAJECTORY COMPRESSION REPORT':^70}â?)
+        print(f"â {'â?*70}â?)
         
         # Trajectories section
-        print(f"║{'':2}📁 TRAJECTORIES{' '*54}�?)
-        print(f"║{'─'*70}�?)
-        print(f"║{'':4}Total Processed:        {total:>10,}{' '*32}�?)
-        print(f"║{'':4}├─ Compressed:          {compressed:>10,}  ({compressed_pct:>5.1f}%){' '*18}�?)
-        print(f"║{'':4}├─ Skipped (under limit):{skipped:>9,}  ({skipped_pct:>5.1f}%){' '*18}�?)
-        print(f"║{'':4}├─ Still over limit:    {over_limit:>10,}  ({over_limit_pct:>5.1f}%){' '*18}�?)
-        print(f"║{'':4}└─ Failed:              {failed:>10,}{' '*32}�?)
+        print(f"â{'':2}ð TRAJECTORIES{' '*54}â?)
+        print(f"â{'-'*70}â?)
+        print(f"â{'':4}Total Processed:        {total:>10,}{' '*32}â?)
+        print(f"â{'':4}â- Compressed:          {compressed:>10,}  ({compressed_pct:>5.1f}%){' '*18}â?)
+        print(f"â{'':4}â- Skipped (under limit):{skipped:>9,}  ({skipped_pct:>5.1f}%){' '*18}â?)
+        print(f"â{'':4}â- Still over limit:    {over_limit:>10,}  ({over_limit_pct:>5.1f}%){' '*18}â?)
+        print(f"â{'':4}â- Failed:              {failed:>10,}{' '*32}â?)
         
-        print(f"╠{'�?*70}�?)
+        print(f"â {'â?*70}â?)
         
         # Tokens section
-        print(f"║{'':2}🔢 TOKENS{' '*60}�?)
-        print(f"║{'─'*70}�?)
-        print(f"║{'':4}Before Compression:     {tokens_before:>15,} tokens{' '*21}�?)
-        print(f"║{'':4}After Compression:      {tokens_after:>15,} tokens{' '*21}�?)
-        print(f"║{'':4}Total Saved:            {tokens_saved:>15,} tokens{' '*21}�?)
-        print(f"║{'':4}Overall Compression:    {m['tokens']['overall_compression_ratio']:>14.1%}{' '*28}�?)
+        print(f"â{'':2}ð¢ TOKENS{' '*60}â?)
+        print(f"â{'-'*70}â?)
+        print(f"â{'':4}Before Compression:     {tokens_before:>15,} tokens{' '*21}â?)
+        print(f"â{'':4}After Compression:      {tokens_after:>15,} tokens{' '*21}â?)
+        print(f"â{'':4}Total Saved:            {tokens_saved:>15,} tokens{' '*21}â?)
+        print(f"â{'':4}Overall Compression:    {m['tokens']['overall_compression_ratio']:>14.1%}{' '*28}â?)
         
         if tokens_before > 0:
             savings_pct = (tokens_saved / tokens_before) * 100
-            print(f"║{'':4}Space Savings:          {savings_pct:>14.1f}%{' '*28}�?)
+            print(f"â{'':4}Space Savings:          {savings_pct:>14.1f}%{' '*28}â?)
         
-        print(f"╠{'�?*70}�?)
+        print(f"â {'â?*70}â?)
         
         # Turns section
-        print(f"║{'':2}💬 CONVERSATION TURNS{' '*48}�?)
-        print(f"║{'─'*70}�?)
-        print(f"║{'':4}Before Compression:     {m['turns']['total_before']:>15,} turns{' '*22}�?)
-        print(f"║{'':4}After Compression:      {m['turns']['total_after']:>15,} turns{' '*22}�?)
-        print(f"║{'':4}Total Removed:          {m['turns']['total_removed']:>15,} turns{' '*22}�?)
+        print(f"â{'':2}ð¬ CONVERSATION TURNS{' '*48}â?)
+        print(f"â{'-'*70}â?)
+        print(f"â{'':4}Before Compression:     {m['turns']['total_before']:>15,} turns{' '*22}â?)
+        print(f"â{'':4}After Compression:      {m['turns']['total_after']:>15,} turns{' '*22}â?)
+        print(f"â{'':4}Total Removed:          {m['turns']['total_removed']:>15,} turns{' '*22}â?)
         
-        print(f"╠{'�?*70}�?)
+        print(f"â {'â?*70}â?)
         
         # Averages section (for compressed trajectories only)
-        print(f"║{'':2}📈 AVERAGES (Compressed Trajectories Only){' '*27}�?)
-        print(f"║{'─'*70}�?)
+        print(f"â{'':2}ð AVERAGES (Compressed Trajectories Only){' '*27}â?)
+        print(f"â{'-'*70}â?)
         if compressed > 0:
-            print(f"║{'':4}Avg Compression Ratio:  {m['averages']['avg_compression_ratio']:>14.1%}{' '*28}�?)
-            print(f"║{'':4}Avg Tokens Saved:       {m['averages']['avg_tokens_saved_per_compressed']:>14,.0f}{' '*28}�?)
-            print(f"║{'':4}Avg Turns Removed:      {m['averages']['avg_turns_removed_per_compressed']:>14.1f}{' '*28}�?)
+            print(f"â{'':4}Avg Compression Ratio:  {m['averages']['avg_compression_ratio']:>14.1%}{' '*28}â?)
+            print(f"â{'':4}Avg Tokens Saved:       {m['averages']['avg_tokens_saved_per_compressed']:>14,.0f}{' '*28}â?)
+            print(f"â{'':4}Avg Turns Removed:      {m['averages']['avg_turns_removed_per_compressed']:>14.1f}{' '*28}â?)
         else:
-            print(f"║{'':4}No trajectories were compressed{' '*38}�?)
+            print(f"â{'':4}No trajectories were compressed{' '*38}â?)
         
-        print(f"╠{'�?*70}�?)
+        print(f"â {'â?*70}â?)
         
         # Summarization API section
-        print(f"║{'':2}🤖 SUMMARIZATION API{' '*49}�?)
-        print(f"║{'─'*70}�?)
-        print(f"║{'':4}API Calls Made:         {m['summarization']['total_api_calls']:>15,}{' '*27}�?)
-        print(f"║{'':4}Errors:                 {m['summarization']['total_errors']:>15,}{' '*27}�?)
-        print(f"║{'':4}Success Rate:           {m['summarization']['success_rate']:>14.1%}{' '*28}�?)
+        print(f"â{'':2}ð¤ SUMMARIZATION API{' '*49}â?)
+        print(f"â{'-'*70}â?)
+        print(f"â{'':4}API Calls Made:         {m['summarization']['total_api_calls']:>15,}{' '*27}â?)
+        print(f"â{'':4}Errors:                 {m['summarization']['total_errors']:>15,}{' '*27}â?)
+        print(f"â{'':4}Success Rate:           {m['summarization']['success_rate']:>14.1%}{' '*28}â?)
         
-        print(f"╠{'�?*70}�?)
+        print(f"â {'â?*70}â?)
         
         # Processing time section
         duration = m['processing']['duration_seconds']
@@ -1219,21 +1219,21 @@ Write only the summary, starting with "[CONTEXT SUMMARY]:" prefix."""
         
         throughput = total / max(duration, 0.001)
         
-        print(f"║{'':2}⏱️  PROCESSING TIME{' '*51}�?)
-        print(f"║{'─'*70}�?)
-        print(f"║{'':4}Duration:               {time_str:>20}{' '*22}�?)
-        print(f"║{'':4}Throughput:             {throughput:>15.1f} traj/sec{' '*18}�?)
-        print(f"║{'':4}Started:                {m['processing']['start_time'][:19]:>20}{' '*22}�?)
-        print(f"║{'':4}Finished:               {m['processing']['end_time'][:19]:>20}{' '*22}�?)
+        print(f"â{'':2}â±ï¸  PROCESSING TIME{' '*51}â?)
+        print(f"â{'-'*70}â?)
+        print(f"â{'':4}Duration:               {time_str:>20}{' '*22}â?)
+        print(f"â{'':4}Throughput:             {throughput:>15.1f} traj/sec{' '*18}â?)
+        print(f"â{'':4}Started:                {m['processing']['start_time'][:19]:>20}{' '*22}â?)
+        print(f"â{'':4}Finished:               {m['processing']['end_time'][:19]:>20}{' '*22}â?)
         
-        print(f"╚{'�?*70}�?)
+        print(f"â{'â?*70}â?)
         
         # Distribution summary if we have data
         if self.aggregate_metrics.compression_ratios:
             ratios = self.aggregate_metrics.compression_ratios
             tokens_saved_list = self.aggregate_metrics.tokens_saved_list
             
-            print(f"\n📊 Distribution Summary:")
+            print(f"\nð Distribution Summary:")
             print(f"   Compression ratios: min={min(ratios):.2%}, max={max(ratios):.2%}, median={sorted(ratios)[len(ratios)//2]:.2%}")
             print(f"   Tokens saved:       min={min(tokens_saved_list):,}, max={max(tokens_saved_list):,}, median={sorted(tokens_saved_list)[len(tokens_saved_list)//2]:,}")
 
@@ -1282,16 +1282,16 @@ def main(
     import tempfile
     import shutil
     
-    print("🗜�? Trajectory Compressor")
+    print("ðï¸? Trajectory Compressor")
     print("=" * 60)
     
     # Load configuration
     config_path = Path(config)
     if config_path.exists():
-        print(f"📋 Loading config from {config}")
+        print(f"ð Loading config from {config}")
         compression_config = CompressionConfig.from_yaml(config)
     else:
-        print(f"⚠️  Config not found at {config}, using defaults")
+        print(f"â ï¸  Config not found at {config}, using defaults")
         compression_config = CompressionConfig()
     
     # Apply CLI overrides
@@ -1303,20 +1303,20 @@ def main(
     # Validate sample_percent
     if sample_percent is not None:
         if sample_percent <= 0 or sample_percent > 100:
-            print(f"�?sample_percent must be between 1 and 100, got {sample_percent}")
+            print(f"â?sample_percent must be between 1 and 100, got {sample_percent}")
             return
-        print(f"🎲 Will sample {sample_percent}% of trajectories (seed={seed})")
+        print(f"ð² Will sample {sample_percent}% of trajectories (seed={seed})")
     
     # Setup paths and determine input type
     input_path = Path(input)
     if not input_path.exists():
-        print(f"�?Input not found: {input}")
+        print(f"â?Input not found: {input}")
         return
     
     is_file_input = input_path.is_file()
     
     if is_file_input:
-        print(f"📄 Input mode: Single JSONL file")
+        print(f"ð Input mode: Single JSONL file")
         
         # For file input, default output is file with _compressed suffix
         if output:
@@ -1333,7 +1333,7 @@ def main(
                     try:
                         entries.append(json.loads(line))
                     except json.JSONDecodeError as e:
-                        print(f"⚠️  Skipping invalid JSON at line {line_num}: {e}")
+                        print(f"â ï¸  Skipping invalid JSON at line {line_num}: {e}")
         
         total_entries = len(entries)
         print(f"   Loaded {total_entries:,} trajectories from {input_path.name}")
@@ -1346,9 +1346,9 @@ def main(
             print(f"   Sampled {len(entries):,} trajectories ({sample_percent}% of {total_entries:,})")
         
         if dry_run:
-            print(f"\n🔍 DRY RUN MODE - analyzing without writing")
-            print(f"📄 Would process: {len(entries):,} trajectories")
-            print(f"📄 Would output to: {output_path}")
+            print(f"\nð DRY RUN MODE - analyzing without writing")
+            print(f"ð Would process: {len(entries):,} trajectories")
+            print(f"ð Would output to: {output_path}")
             return
         
         # Create a temporary directory for processing
@@ -1380,14 +1380,14 @@ def main(
             if metrics_file.exists():
                 metrics_output = output_path.parent / (output_path.stem + "_metrics.json")
                 shutil.copy(metrics_file, metrics_output)
-                print(f"💾 Metrics saved to {metrics_output}")
+                print(f"ð¾ Metrics saved to {metrics_output}")
         
-        print(f"\n�?Compression complete!")
-        print(f"📄 Output: {output_path}")
+        print(f"\nâ?Compression complete!")
+        print(f"ð Output: {output_path}")
         
     else:
         # Directory input - original behavior
-        print(f"📁 Input mode: Directory of JSONL files")
+        print(f"ð Input mode: Directory of JSONL files")
         
         if output:
             output_path = Path(output)
@@ -1396,7 +1396,7 @@ def main(
         
         # If sampling is requested for directory mode, we need to handle it differently
         if sample_percent is not None:
-            print(f"\n⚠️  Sampling from directory: will sample {sample_percent}% from each file")
+            print(f"\nâ ï¸  Sampling from directory: will sample {sample_percent}% from each file")
             
             # Create a temp directory with sampled files
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -1433,9 +1433,9 @@ def main(
                 print(f"   Sampled {total_sampled:,} from {total_original:,} total trajectories")
                 
                 if dry_run:
-                    print(f"\n🔍 DRY RUN MODE - analyzing without writing")
-                    print(f"📁 Would process: {temp_input_dir}")
-                    print(f"📁 Would output to: {output_path}")
+                    print(f"\nð DRY RUN MODE - analyzing without writing")
+                    print(f"ð Would process: {temp_input_dir}")
+                    print(f"ð Would output to: {output_path}")
                     return
                 
                 # Initialize compressor and process the sampled data
@@ -1443,16 +1443,16 @@ def main(
                 compressor.process_directory(temp_input_dir, output_path)
         else:
             if dry_run:
-                print(f"\n🔍 DRY RUN MODE - analyzing without writing")
-                print(f"📁 Would process: {input_path}")
-                print(f"📁 Would output to: {output_path}")
+                print(f"\nð DRY RUN MODE - analyzing without writing")
+                print(f"ð Would process: {input_path}")
+                print(f"ð Would output to: {output_path}")
                 return
             
             # Initialize compressor and process directly
             compressor = TrajectoryCompressor(compression_config)
             compressor.process_directory(input_path, output_path)
         
-        print("\n�?Compression complete!")
+        print("\nâ?Compression complete!")
 
 
 if __name__ == "__main__":

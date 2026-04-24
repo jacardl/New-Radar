@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Parseltongue v4 �?Input Obfuscation Engine
+Parseltongue v4 �¢?Input Obfuscation Engine
 Ported from G0DM0D3 (elder-plinius/G0DM0D3) JavaScript to Python.
 
 33 text obfuscation techniques across 3 tiers for bypassing
@@ -18,9 +18,9 @@ Usage:
 import re
 import base64
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # Trigger words that commonly trip safety classifiers
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 TRIGGER_WORDS = [
     'hack', 'exploit', 'bypass', 'crack', 'break', 'attack', 'penetrate',
@@ -35,23 +35,23 @@ TRIGGER_WORDS = [
     'act as', 'you are now', 'new identity',
 ]
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # Character maps
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 LEET_MAP = {'a': '4', 'b': '8', 'c': '(', 'e': '3', 'g': '9', 'h': '#',
             'i': '1', 'l': '1', 'o': '0', 's': '5', 't': '7', 'z': '2'}
 
 LEET_MAP_HEAVY = {
-    'a': '@', 'b': '|3', 'c': '¢', 'd': '|)', 'e': '�?, 'f': 'ƒ',
+    'a': '@', 'b': '|3', 'c': '��¢', 'd': '|)', 'e': '�¢?, 'f': '�',
     'g': '&', 'h': '|-|', 'i': '!', 'j': '_|', 'k': '|<', 'l': '|_',
     'm': '/\\/\\', 'n': '|\\|', 'o': '()', 'p': '|*', 'r': '|2',
     's': '$', 't': '+', 'u': '|_|', 'v': '\\/', 'w': '\\/\\/',
     'x': '><', 'y': '`/', 'z': '7_',
 }
 
-UNICODE_MAP = {'a': 'а', 'c': 'с', 'e': 'е', 'i': 'і', 'o': 'о',
-               'p': 'р', 's': 'ѕ', 'x': 'х', 'y': 'у'}
+UNICODE_MAP = {'a': '��°', 'c': '�', 'e': '��µ', 'i': '�', 'o': '��¾',
+               'p': '�', 's': '�', 'x': '�', 'y': '�'}
 
 SEMANTIC_SYNONYMS = {
     'hack': 'gain unauthorized access to', 'exploit': 'take advantage of',
@@ -69,17 +69,17 @@ SEMANTIC_SYNONYMS = {
 }
 
 SUPERSCRIPT_MAP = {
-    'a': '�?, 'b': '�?, 'c': '�?, 'd': '�?, 'e': '�?, 'f': '�?,
-    'g': '�?, 'h': 'ʰ', 'i': '�?, 'j': 'ʲ', 'k': '�?, 'l': 'ˡ',
-    'm': '�?, 'n': '�?, 'o': '�?, 'p': '�?, 'r': 'ʳ', 's': 'ˢ',
-    't': '�?, 'u': '�?, 'v': '�?, 'w': 'ʷ', 'x': 'ˣ', 'y': 'ʸ', 'z': '�?,
+    'a': '�¡�µ?, 'b': '�¡�µ?, 'c': '�¡�¶?, 'd': '�¡�µ?, 'e': '�¡�µ?, 'f': '�¡�¶?,
+    'g': '�¡�µ?, 'h': '��°', 'i': '�¢?, 'j': '��²', 'k': '�¡�µ?, 'l': '��¡',
+    'm': '�¡�µ?, 'n': '�¢?, 'o': '�¡�µ?, 'p': '�¡�µ?, 'r': '��³', 's': '��¢',
+    't': '�¡�µ?, 'u': '�¡�µ?, 'v': '�¡�µ?, 'w': '��·', 'x': '��£', 'y': '��¸', 'z': '�¡�¶?,
 }
 
 SMALLCAPS_MAP = {
-    'a': 'ᴀ', 'b': 'ʙ', 'c': '�?, 'd': '�?, 'e': '�?, 'f': '�?,
-    'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ', 'j': '�?, 'k': '�?, 'l': 'ʟ',
-    'm': '�?, 'n': 'ɴ', 'o': '�?, 'p': '�?, 'q': 'ǫ', 'r': 'ʀ',
-    's': '�?, 't': '�?, 'u': '�?, 'v': '�?, 'w': '�?, 'y': 'ʏ', 'z': '�?,
+    'a': '�¡�´', 'b': '�', 'c': '�¡�´?, 'd': '�¡�´?, 'e': '�¡�´?, 'f': '�ª?,
+    'g': '��¢', 'h': '�', 'i': '��ª', 'j': '�¡�´?, 'k': '�¡�´?, 'l': '�',
+    'm': '�¡�´?, 'n': '��´', 'o': '�¡�´?, 'p': '�¡�´?, 'q': '��«', 'r': '�',
+    's': '�ª?, 't': '�¡�´?, 'u': '�¡�´?, 'v': '�¡�´?, 'w': '�¡�´?, 'y': '�', 'z': '�¡�´?,
 }
 
 MORSE_MAP = {
@@ -98,28 +98,28 @@ NATO_ALPHABET = [
 ]
 
 BRAILLE_MAP = {
-    'a': '�?, 'b': '�?, 'c': '�?, 'd': '�?, 'e': '�?,
-    'f': '�?, 'g': '�?, 'h': '�?, 'i': '�?, 'j': '�?,
-    'k': '�?, 'l': '�?, 'm': '�?, 'n': '�?, 'o': '�?,
-    'p': '�?, 'q': '�?, 'r': '�?, 's': '�?, 't': '�?,
-    'u': '�?, 'v': '�?, 'w': '�?, 'x': '�?, 'y': '�?,
-    'z': '�?, ' ': '⠀',
+    'a': '�¢� ?, 'b': '�¢� ?, 'c': '�¢� ?, 'd': '�¢� ?, 'e': '�¢� ?,
+    'f': '�¢� ?, 'g': '�¢� ?, 'h': '�¢� ?, 'i': '�¢� ?, 'j': '�¢� ?,
+    'k': '�¢� ?, 'l': '�¢� ?, 'm': '�¢� ?, 'n': '�¢� ?, 'o': '�¢� ?,
+    'p': '�¢� ?, 'q': '�¢� ?, 'r': '�¢� ?, 's': '�¢� ?, 't': '�¢� ?,
+    'u': '�¢� ?, 'v': '�¢� ?, 'w': '�¢� ?, 'x': '�¢� ?, 'y': '�¢� ?,
+    'z': '�¢� ?, ' ': '�¢� ',
 }
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # 33 Obfuscation Techniques (3 tiers)
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 def _apply_raw(word):
-    """Raw �?no transformation (baseline)."""
+    """Raw �¢?no transformation (baseline)."""
     return word
 
 def _apply_leetspeak(word):
-    """L33t �?basic leetspeak substitution."""
+    """L33t �¢?basic leetspeak substitution."""
     return ''.join(LEET_MAP.get(c.lower(), c) for c in word)
 
 def _apply_unicode(word):
-    """Unicode �?Cyrillic/homoglyph substitution."""
+    """Unicode �¢?Cyrillic/homoglyph substitution."""
     result = []
     for c in word:
         mapped = UNICODE_MAP.get(c.lower())
@@ -130,7 +130,7 @@ def _apply_unicode(word):
     return ''.join(result)
 
 def _apply_bubble(word):
-    """Bubble �?circled letter Unicode characters."""
+    """Bubble �¢?circled letter Unicode characters."""
     result = []
     for c in word:
         code = ord(c.lower())
@@ -141,11 +141,11 @@ def _apply_bubble(word):
     return ''.join(result)
 
 def _apply_spaced(word):
-    """Spaced �?insert spaces between characters."""
+    """Spaced �¢?insert spaces between characters."""
     return ' '.join(word)
 
 def _apply_fullwidth(word):
-    """Fullwidth �?fullwidth Unicode characters."""
+    """Fullwidth �¢?fullwidth Unicode characters."""
     result = []
     for c in word:
         code = ord(c)
@@ -156,45 +156,45 @@ def _apply_fullwidth(word):
     return ''.join(result)
 
 def _apply_zwj(word):
-    """ZeroWidth �?zero-width joiners between characters."""
+    """ZeroWidth �¢?zero-width joiners between characters."""
     return '\u200D'.join(word)
 
 def _apply_mixedcase(word):
-    """MiXeD �?alternating case."""
+    """MiXeD �¢?alternating case."""
     return ''.join(c.upper() if i % 2 else c.lower() for i, c in enumerate(word))
 
 def _apply_semantic(word):
-    """Semantic �?replace with synonym/description."""
+    """Semantic �¢?replace with synonym/description."""
     return SEMANTIC_SYNONYMS.get(word.lower(), word)
 
 def _apply_dotted(word):
-    """Dotted �?dots between characters."""
+    """Dotted �¢?dots between characters."""
     return '.'.join(word)
 
 def _apply_underscored(word):
-    """Under_score �?underscores between characters."""
+    """Under_score �¢?underscores between characters."""
     return '_'.join(word)
 
-# ─── TIER 2: ENCODING + FRAMING (12�?2) ─────────────────────────
+# --- TIER 2: ENCODING + FRAMING (12�¢?2) -------------------------
 
 def _apply_reversed(word):
-    """Reversed �?reverse the characters."""
+    """Reversed �¢?reverse the characters."""
     return word[::-1]
 
 def _apply_superscript(word):
-    """Superscript �?superscript Unicode characters."""
+    """Superscript �¢?superscript Unicode characters."""
     return ''.join(SUPERSCRIPT_MAP.get(c.lower(), c) for c in word)
 
 def _apply_smallcaps(word):
-    """SmallCaps �?small capital Unicode characters."""
+    """SmallCaps �¢?small capital Unicode characters."""
     return ''.join(SMALLCAPS_MAP.get(c.lower(), c) for c in word)
 
 def _apply_morse(word):
-    """Morse �?morse code representation."""
+    """Morse �¢?morse code representation."""
     return ' '.join(MORSE_MAP.get(c.lower(), c) for c in word)
 
 def _apply_piglatin(word):
-    """PigLatin �?pig latin transformation."""
+    """PigLatin �¢?pig latin transformation."""
     w = word.lower()
     vowels = 'aeiou'
     if w[0] in vowels:
@@ -205,11 +205,11 @@ def _apply_piglatin(word):
     return w + 'ay'
 
 def _apply_brackets(word):
-    """[B.r.a.c.k] �?each character in brackets."""
+    """[B.r.a.c.k] �¢?each character in brackets."""
     return '[' + ']['.join(word) + ']'
 
 def _apply_mathbold(word):
-    """MathBold �?mathematical bold Unicode."""
+    """MathBold �¢?mathematical bold Unicode."""
     result = []
     for c in word:
         code = ord(c.lower())
@@ -220,7 +220,7 @@ def _apply_mathbold(word):
     return ''.join(result)
 
 def _apply_mathitalic(word):
-    """MathItalic �?mathematical italic Unicode."""
+    """MathItalic �¢?mathematical italic Unicode."""
     result = []
     for c in word:
         code = ord(c.lower())
@@ -231,21 +231,21 @@ def _apply_mathitalic(word):
     return ''.join(result)
 
 def _apply_strikethrough(word):
-    """S̶t̶r̶i̶k̶e̶ �?strikethrough combining characters."""
+    """S��¶t��¶r��¶i��¶k��¶e��¶ �¢?strikethrough combining characters."""
     return ''.join(c + '\u0336' for c in word)
 
 def _apply_leetheavy(word):
-    """L33t+ �?heavy leetspeak with extended map."""
+    """L33t+ �¢?heavy leetspeak with extended map."""
     return ''.join(LEET_MAP_HEAVY.get(c.lower(), LEET_MAP.get(c.lower(), c)) for c in word)
 
 def _apply_hyphenated(word):
-    """Hyphen �?hyphens between characters."""
+    """Hyphen �¢?hyphens between characters."""
     return '-'.join(word)
 
-# ─── TIER 3: MULTI-LAYER COMBOS (23�?3) ─────────────────────────
+# --- TIER 3: MULTI-LAYER COMBOS (23�¢?3) -------------------------
 
 def _apply_leetunicode(word):
-    """L33t+Uni �?alternating leet and unicode."""
+    """L33t+Uni �¢?alternating leet and unicode."""
     result = []
     for i, c in enumerate(word):
         lower = c.lower()
@@ -256,15 +256,15 @@ def _apply_leetunicode(word):
     return ''.join(result)
 
 def _apply_spacedmixed(word):
-    """S p A c E d �?spaced + alternating case."""
+    """S p A c E d �¢?spaced + alternating case."""
     return ' '.join(c.upper() if i % 2 else c.lower() for i, c in enumerate(word))
 
 def _apply_reversedleet(word):
-    """Rev+L33t �?reversed then leetspeak."""
+    """Rev+L33t �¢?reversed then leetspeak."""
     return ''.join(LEET_MAP.get(c.lower(), c) for c in reversed(word))
 
 def _apply_bubblespaced(word):
-    """Bubble+Spaced �?bubble text with spaces."""
+    """Bubble+Spaced �¢?bubble text with spaces."""
     result = []
     for c in word:
         code = ord(c.lower())
@@ -275,7 +275,7 @@ def _apply_bubblespaced(word):
     return ' '.join(result)
 
 def _apply_unicodezwj(word):
-    """Uni+ZWJ �?unicode homoglyphs with zero-width non-joiners."""
+    """Uni+ZWJ �¢?unicode homoglyphs with zero-width non-joiners."""
     result = []
     for c in word:
         mapped = UNICODE_MAP.get(c.lower())
@@ -283,18 +283,18 @@ def _apply_unicodezwj(word):
     return '\u200C'.join(result)
 
 def _apply_base64hint(word):
-    """Base64 �?base64 encode the word."""
+    """Base64 �¢?base64 encode the word."""
     try:
         return base64.b64encode(word.encode()).decode()
     except Exception:
         return word
 
 def _apply_hexencode(word):
-    """Hex �?hex encode each character."""
+    """Hex �¢?hex encode each character."""
     return ' '.join(f'0x{ord(c):x}' for c in word)
 
 def _apply_acrostic(word):
-    """Acrostic �?NATO alphabet expansion."""
+    """Acrostic �¢?NATO alphabet expansion."""
     result = []
     for c in word:
         idx = ord(c.lower()) - 97
@@ -305,7 +305,7 @@ def _apply_acrostic(word):
     return ' '.join(result)
 
 def _apply_dottedunicode(word):
-    """Dot+Uni �?unicode homoglyphs with dots."""
+    """Dot+Uni �¢?unicode homoglyphs with dots."""
     result = []
     for c in word:
         mapped = UNICODE_MAP.get(c.lower())
@@ -313,7 +313,7 @@ def _apply_dottedunicode(word):
     return '.'.join(result)
 
 def _apply_fullwidthmixed(word):
-    """FW MiX �?fullwidth + mixed case alternating."""
+    """FW MiX �¢?fullwidth + mixed case alternating."""
     result = []
     for i, c in enumerate(word):
         code = ord(c)
@@ -324,7 +324,7 @@ def _apply_fullwidthmixed(word):
     return ''.join(result)
 
 def _apply_triplelayer(word):
-    """Triple �?leet + unicode + uppercase rotating with ZWJ."""
+    """Triple �¢?leet + unicode + uppercase rotating with ZWJ."""
     result = []
     for i, c in enumerate(word):
         lower = c.lower()
@@ -338,9 +338,9 @@ def _apply_triplelayer(word):
     return '\u200D'.join(result)
 
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # Technique registry (ordered by tier)
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 TECHNIQUES = [
     # TIER 1: CORE OBFUSCATION (1-11)
@@ -385,9 +385,9 @@ TECHNIQUES = [
 
 TIER_SIZES = {'light': 11, 'standard': 22, 'heavy': 33}
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # Encoding escalation (for retry logic with GODMODE CLASSIC)
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 def to_braille(text):
     """Convert text to braille Unicode characters."""
@@ -399,7 +399,7 @@ def to_leetspeak(text):
 
 def to_bubble(text):
     """Convert text to bubble/circled text."""
-    circled = 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ'
+    circled = '�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢� �¢�¡�¢�¢�¢�£�¢�¤�¢�¥�¢�¦�¢�§�¢�¨�¢�©'
     result = []
     for c in text:
         idx = ord(c.lower()) - 97
@@ -430,9 +430,9 @@ ENCODING_ESCALATION = [
 ]
 
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # Core functions
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 def detect_triggers(text, custom_triggers=None):
     """Detect trigger words in text. Returns list of found triggers."""
@@ -520,13 +520,13 @@ def escalate_encoding(query, level=0):
     return enc['fn'](query), enc['label']
 
 
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 # CLI interface
-# ══════════════════════════════════════════════════════════════════�?
+# �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Parseltongue �?Input Obfuscation Engine')
+    parser = argparse.ArgumentParser(description='Parseltongue �¢?Input Obfuscation Engine')
     parser.add_argument('query', help='The query to obfuscate')
     parser.add_argument('--tier', choices=['light', 'standard', 'heavy'], default='standard',
                         help='Obfuscation tier (default: standard)')

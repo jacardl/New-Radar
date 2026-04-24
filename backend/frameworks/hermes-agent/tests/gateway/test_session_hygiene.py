@@ -1,10 +1,10 @@
-"""Tests for gateway session hygiene �?auto-compression of large sessions.
+"""Tests for gateway session hygiene é¥?auto-compression of large sessions.
 
 Verifies that the gateway detects pathologically large transcripts and
 triggers auto-compression before running the agent.  (#628)
 
 The hygiene system uses the SAME compression config as the agent:
-  compression.threshold × model context length
+  compression.threshold è³ model context length
 so CLI and messaging platforms behave identically.
 """
 
@@ -84,7 +84,7 @@ class HygieneCaptureAdapter(BasePlatformAdapter):
 class TestSessionHygieneThresholds:
     """Test that the threshold logic correctly identifies large sessions.
 
-    Thresholds are derived from model context length × compression threshold,
+    Thresholds are derived from model context length è³ compression threshold,
     matching what the agent's ContextCompressor uses.
     """
 
@@ -116,7 +116,7 @@ class TestSessionHygieneThresholds:
 
     def test_under_threshold_no_trigger(self):
         """Session under threshold should not trigger, even with many messages."""
-        # 250 short messages �?lots of messages but well under token threshold
+        # 250 short messages é¥?lots of messages but well under token threshold
         history = _make_history(250, content_size=10)
         approx_tokens = estimate_messages_tokens_rough(history)
 
@@ -132,13 +132,13 @@ class TestSessionHygieneThresholds:
         )
 
     def test_message_count_alone_does_not_trigger(self):
-        """Message count alone should NOT trigger �?only token count matters.
+        """Message count alone should NOT trigger é¥?only token count matters.
 
         The old system used an OR of token-count and message-count thresholds,
         which caused premature compression in tool-heavy sessions with 200+
         messages but low total tokens.
         """
-        # 300 very short messages �?old system would compress, new should not
+        # 300 very short messages é¥?old system would compress, new should not
         history = _make_history(300, content_size=10)
         approx_tokens = estimate_messages_tokens_rough(history)
 
@@ -217,12 +217,12 @@ class TestSessionHygieneWarnThreshold:
 
 class TestEstimatedTokenThreshold:
     """Verify that hygiene thresholds are always below the model's context
-    limit �?for both actual and estimated token counts.
+    limit é¥?for both actual and estimated token counts.
 
     Regression: a previous 1.4x multiplier on rough estimates pushed the
     threshold to 85% * 1.4 = 119% of context, which exceeded the model's
     limit and prevented hygiene from ever firing for ~200K models (GLM-5).
-    The fix removed the multiplier entirely �?the 85% threshold already
+    The fix removed the multiplier entirely é¥?the 85% threshold already
     provides ample headroom over the agent's 50% compressor.
     """
 
@@ -242,7 +242,7 @@ class TestEstimatedTokenThreshold:
         context_length = 200_000
         threshold_pct = 0.85
         threshold = int(context_length * threshold_pct)
-        # Both paths should use 170K �?no inflation
+        # Both paths should use 170K é¥?no inflation
         assert threshold == 170_000
 
     def test_warn_threshold_below_context(self):
@@ -254,7 +254,7 @@ class TestEstimatedTokenThreshold:
     def test_overestimate_fires_early_but_safely(self):
         """If rough estimate is 50% inflated, hygiene fires at ~57% actual usage.
 
-        That's between the agent's 50% threshold and the model's limit �?
+        That's between the agent's 50% threshold and the model's limit é¥?
         safe and harmless.
         """
         context_length = 200_000
@@ -382,6 +382,6 @@ async def test_session_hygiene_messages_stay_in_originating_topic(monkeypatch, t
     result = await runner._handle_message(event)
 
     assert result == "ok"
-    # Compression warnings are no longer sent to users �?compression
+    # Compression warnings are no longer sent to users é¥?compression
     # happens silently with server-side logging only.
     assert len(adapter.sent) == 0

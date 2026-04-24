@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 # The terminal tool polls this during command execution so it can kill
 # long-running subprocesses immediately instead of blocking until timeout.
 # ---------------------------------------------------------------------------
-from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 ‚Ä?re-exported
+from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 √¢?re-exported
 # display_hermes_home imported lazily at call site (stale-module safety during hermes update)
 
 
@@ -196,7 +196,7 @@ def _handle_sudo_failure(output: str, env_type: str) -> str:
     for failure in sudo_failures:
         if failure in output:
             from hermes_constants import display_hermes_home as _dhh
-            return output + f"\n\nüí° Tip: To enable sudo over messaging, add SUDO_PASSWORD to {_dhh()}/.env on the agent machine."
+            return output + f"\n\n√∞¬° Tip: To enable sudo over messaging, add SUDO_PASSWORD to {_dhh()}/.env on the agent machine."
     
     return output
 
@@ -280,13 +280,13 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
         time_module.sleep(0.2)
         
         print()
-        print("‚î? + "‚îÄ" * 58 + "‚î?)
-        print("‚î? üîê SUDO PASSWORD REQUIRED" + " " * 30 + "‚î?)
-        print("‚î? + "‚îÄ" * 58 + "‚î?)
-        print("‚î? Enter password below (input is hidden), or:            ‚î?)
-        print("‚î?   ‚Ä?Press Enter to skip (command fails gracefully)     ‚î?)
-        print(f"‚î?   ‚Ä?Wait {timeout_seconds}s to auto-skip" + " " * 27 + "‚î?)
-        print("‚î? + "‚îÄ" * 58 + "‚î?)
+        print("√¢? + "-" * 58 + "√¢?)
+        print("√¢? √∞ SUDO PASSWORD REQUIRED" + " " * 30 + "√¢?)
+        print("√¢? + "-" * 58 + "√¢?)
+        print("√¢? Enter password below (input is hidden), or:            √¢?)
+        print("√¢?   √¢?Press Enter to skip (command fails gracefully)     √¢?)
+        print(f"√¢?   √¢?Wait {timeout_seconds}s to auto-skip" + " " * 27 + "√¢?)
+        print("√¢? + "-" * 58 + "√¢?)
         print()
         print("  Password (hidden): ", end="", flush=True)
         
@@ -298,14 +298,14 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
             password = result["password"] or ""
             print()  # newline after hidden input
             if password:
-                print("  ‚ú?Password received (cached for this session)")
+                print("  √¢?Password received (cached for this session)")
             else:
-                print("  ‚è?Skipped - continuing without sudo")
+                print("  √¢?Skipped - continuing without sudo")
             print()
             sys.stdout.flush()
             return password
         else:
-            print("\n  ‚è?Timeout - continuing without sudo")
+            print("\n  √¢?Timeout - continuing without sudo")
             print("    (Press Enter to dismiss)")
             print()
             sys.stdout.flush()
@@ -313,7 +313,7 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
             
     except (EOFError, KeyboardInterrupt):
         print()
-        print("  ‚è?Cancelled - continuing without sudo")
+        print("  √¢?Cancelled - continuing without sudo")
         print()
         sys.stdout.flush()
         return ""
@@ -511,22 +511,22 @@ from tools.managed_tool_gateway import is_managed_tool_gateway_ready
 # Tool description for LLM
 TERMINAL_TOOL_DESCRIPTION = """Execute shell commands on a Linux environment. Filesystem usually persists between calls.
 
-Do NOT use cat/head/tail to read files ‚Ä?use read_file instead.
-Do NOT use grep/rg/find to search ‚Ä?use search_files instead.
-Do NOT use ls to list directories ‚Ä?use search_files(target='files') instead.
-Do NOT use sed/awk to edit files ‚Ä?use patch instead.
-Do NOT use echo/cat heredoc to create files ‚Ä?use write_file instead.
+Do NOT use cat/head/tail to read files √¢?use read_file instead.
+Do NOT use grep/rg/find to search √¢?use search_files instead.
+Do NOT use ls to list directories √¢?use search_files(target='files') instead.
+Do NOT use sed/awk to edit files √¢?use patch instead.
+Do NOT use echo/cat heredoc to create files √¢?use write_file instead.
 Reserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.
 
-Foreground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts ‚Ä?you'll still get the result in seconds if it's fast. Prefer foreground for short commands.
+Foreground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts √¢?you'll still get the result in seconds if it's fast. Prefer foreground for short commands.
 Background: Set background=true to get a session_id. Two patterns:
   (1) Long-lived processes that never exit (servers, watchers).
-  (2) Long-running tasks with notify_on_complete=true ‚Ä?you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.
+  (2) Long-running tasks with notify_on_complete=true √¢?you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.
 Use process(action="poll") for progress checks, process(action="wait") to block until done.
 Working directory: Use 'workdir' for per-command cwd.
 PTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).
 
-Do NOT use vim/nano/interactive tools without pty=true ‚Ä?they hang without a pseudo-terminal. Pipe git output to cat if it might page.
+Do NOT use vim/nano/interactive tools without pty=true √¢?they hang without a pseudo-terminal. Pipe git output to cat if it might page.
 """
 
 # Global state for environment lifecycle management
@@ -1033,7 +1033,7 @@ def _interpret_exit_code(command: str, exit_code: int) -> str | None:
     if exit_code == 0:
         return None
 
-    # Extract the last command in a pipeline/chain ‚Ä?that determines the
+    # Extract the last command in a pipeline/chain √¢?that determines the
     # exit code.  Handles  `cmd1 && cmd2`, `cmd1 | cmd2`, `cmd1; cmd2`.
     # Deliberately simple: split on shell operators and take the last piece.
     segments = re.split(r'\s*(?:\|\||&&|[|;])\s*', command)
@@ -1077,7 +1077,7 @@ def _interpret_exit_code(command: str, exit_code: int) -> str | None:
             28: "Operation timed out",
         },
         # git: 1 is context-dependent but often normal (e.g. git diff with changes)
-        "git":   {1: "Non-zero exit (often normal ‚Ä?e.g. 'git diff' returns 1 when files differ)"},
+        "git":   {1: "Non-zero exit (often normal √¢?e.g. 'git diff' returns 1 when files differ)"},
     }
 
     cmd_semantics = semantics.get(base_cmd)
@@ -1184,7 +1184,7 @@ def terminal_tool(
         effective_timeout = timeout or default_timeout
 
         # Reject foreground commands where the model explicitly requests
-        # a timeout above FOREGROUND_MAX_TIMEOUT ‚Ä?nudge it toward background.
+        # a timeout above FOREGROUND_MAX_TIMEOUT √¢?nudge it toward background.
         if not background and timeout and timeout > FOREGROUND_MAX_TIMEOUT:
             return json.dumps({
                 "error": (
@@ -1490,7 +1490,7 @@ def terminal_tool(
                 output = output[:head_chars] + truncated_notice + output[-tail_chars:]
 
             # Strip ANSI escape sequences so the model never sees terminal
-            # formatting ‚Ä?prevents it from copying escapes into file writes.
+            # formatting √¢?prevents it from copying escapes into file writes.
             from tools.ansi_strip import strip_ansi
             output = strip_ansi(output)
 
@@ -1617,7 +1617,7 @@ def check_terminal_requirements() -> bool:
             return True
 
         elif env_type == "daytona":
-            from daytona import Daytona  # noqa: F401 ‚Ä?SDK presence check
+            from daytona import Daytona  # noqa: F401 √¢?SDK presence check
             return os.getenv("DAYTONA_API_KEY") is not None
 
         else:
@@ -1647,10 +1647,10 @@ if __name__ == "__main__":
     print(f"  Lifetime: {config['lifetime_seconds']}s")
 
     if not check_terminal_requirements():
-        print("\n‚ù?Requirements not met. Please check the messages above.")
+        print("\n√¢?Requirements not met. Please check the messages above.")
         exit(1)
 
-    print("\n‚ú?All requirements met!")
+    print("\n√¢?All requirements met!")
     print("\nAvailable Tool:")
     print("  - terminal_tool: Execute commands in sandboxed environments")
 
@@ -1692,12 +1692,12 @@ TERMINAL_SCHEMA = {
             },
             "background": {
                 "type": "boolean",
-                "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true ‚Ä?you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
+                "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true √¢?you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
                 "default": False
             },
             "timeout": {
                 "type": "integer",
-                "description": f"Max seconds to wait (default: 180, foreground max: {FOREGROUND_MAX_TIMEOUT}). Returns INSTANTLY when command finishes ‚Ä?set high for long tasks, you won't wait unnecessarily. Foreground timeout above {FOREGROUND_MAX_TIMEOUT}s is rejected; use background=true for longer commands.",
+                "description": f"Max seconds to wait (default: 180, foreground max: {FOREGROUND_MAX_TIMEOUT}). Returns INSTANTLY when command finishes √¢?set high for long tasks, you won't wait unnecessarily. Foreground timeout above {FOREGROUND_MAX_TIMEOUT}s is rejected; use background=true for longer commands.",
                 "minimum": 1
             },
             "workdir": {
@@ -1711,13 +1711,13 @@ TERMINAL_SCHEMA = {
             },
             "notify_on_complete": {
                 "type": "boolean",
-                "description": "When true (and background=true), you'll be automatically notified when the process finishes ‚Ä?no polling needed. Use this for tasks that take a while (tests, builds, deployments) so you can keep working on other things in the meantime.",
+                "description": "When true (and background=true), you'll be automatically notified when the process finishes √¢?no polling needed. Use this for tasks that take a while (tests, builds, deployments) so you can keep working on other things in the meantime.",
                 "default": False
             },
             "watch_patterns": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "List of strings to watch for in background process output. When any pattern matches a line of output, you'll be notified with the matching text ‚Ä?like notify_on_complete but triggers mid-process on specific output. Use for monitoring logs, watching for errors, or waiting for specific events (e.g. [\"ERROR\", \"FAIL\", \"listening on port\"])."
+                "description": "List of strings to watch for in background process output. When any pattern matches a line of output, you'll be notified with the matching text √¢?like notify_on_complete but triggers mid-process on specific output. Use for monitoring logs, watching for errors, or waiting for specific events (e.g. [\"ERROR\", \"FAIL\", \"listening on port\"])."
             }
         },
         "required": ["command"]
@@ -1744,6 +1744,6 @@ registry.register(
     schema=TERMINAL_SCHEMA,
     handler=_handle_terminal,
     check_fn=check_terminal_requirements,
-    emoji="üíª",
+    emoji="√∞¬ª",
     max_result_size_chars=100_000,
 )

@@ -1,8 +1,8 @@
 """
-Report Engine JSON契约（IR）Schema定义�?
+Report Engine JSONå¥çº¦ï¼IRï¼Schemaå®ä¹
 
-这里集中维护所有章节级别的Schema与可用于提示词的文本表示�?
-确保章节生成、校验与渲染对同一个结构有统一认知�?
+è¿ééä¸­ç»´æ¤ææç« èçº§å«çSchemaä¸å¯ç¨äºæç¤ºè¯çææ¬è¡¨ç¤ºï¼?
+ç¡®ä¿ç« èçæãæ ¡éªä¸æ¸²æå¯¹åä¸ä¸ªç»ææç»ä¸è®¤ç¥
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from typing import Any, Dict, List
 
 IR_VERSION = "1.0"
 
-# ====== 基础常量 ======
+# ====== åºç¡å¸¸é ======
 ALLOWED_INLINE_MARKS: List[str] = [
     "bold",
     "italic",
@@ -54,7 +54,7 @@ ENGINE_AGENT_TITLES: Dict[str, str] = {
     "query": "Query Agent",
 }
 
-# ====== Schema定义 ======
+# ====== Schemaå®ä¹ ======
 inline_mark_schema: Dict[str, Any] = {
     "type": "object",
     "required": ["type"],
@@ -86,7 +86,7 @@ heading_block: Dict[str, Any] = {
     "type": "object",
     "properties": {
         "type": {"const": "heading"},
-        "level": {"type": "integer", "minimum": 1, "maximum": 2, "description": "绝对限制：最高只允许�?2 级标题，严禁使用 3 级或更深层级�?},
+        "level": {"type": "integer", "minimum": 1, "maximum": 2, "description": "ç»å¯¹éå¶ï¼æé«åªåè®¸å?2 çº§æ é¢ï¼ä¸¥ç¦ä½¿ç¨ 3 çº§ææ´æ·±å±çº§},
         "text": {"type": "string"},
         "anchor": {"type": "string"},
         "numbering": {"type": "string"},
@@ -187,14 +187,14 @@ swot_item_schema: Dict[str, Any] = {
                 "evidence": {"type": "string"},
                 "impact": {
                     "type": "string",
-                    "enum": ["�?, "中低", "�?, "中高", "�?, "极高"],
-                    "description": "影响评级，只允许填写：低/中低/�?中高/�?极高",
+                    "enum": ["ä½?, "ä¸­ä½", "ä¸?, "ä¸­é«", "é«?, "æé«"],
+                    "description": "å½±åè¯çº§ï¼åªåè®¸å¡«åï¼ä½/ä¸­ä½/ä¸?ä¸­é«/é«?æé«",
                 },
                 # "score": {
                 #     "type": "number",
                 #     "minimum": 0,
                 #     "maximum": 10,
-                #     "description": "评分，只允许0-10的数�?,
+                #     "description": "è¯åï¼åªåè®¸0-10çæ°å­?,
                 # },
                 "priority": {"type": ["string", "number"]},
             },
@@ -254,8 +254,8 @@ pest_item_schema: Dict[str, Any] = {
                 "evidence": {"type": "string"},
                 "trend": {
                     "type": "string",
-                    "enum": ["正面利好", "负面影响", "中�?, "不确�?, "持续观察"],
-                    "description": "趋势/影响评估，只允许填写：正面利�?负面影响/中�?不确�?持续观察",
+                    "enum": ["æ­£é¢å©å¥½", "è´é¢å½±å", "ä¸­æ?, "ä¸ç¡®å®?, "æç»­è§å¯"],
+                    "description": "è¶å¿/å½±åè¯ä¼°ï¼åªåè®¸å¡«åï¼æ­£é¢å©å¥?è´é¢å½±å/ä¸­æ?ä¸ç¡®å®?æç»­è§å¯",
                 },
                 "impact": {"type": ["string", "number"]},
             },
@@ -275,22 +275,22 @@ pest_block: Dict[str, Any] = {
         "political": {
             "type": "array",
             "items": {"$ref": "#/definitions/pestItem"},
-            "description": "政治因素：政策法规、政府态度、政治稳定性等",
+            "description": "æ¿æ²»å ç´ ï¼æ¿ç­æ³è§ãæ¿åºæåº¦ãæ¿æ²»ç¨³å®æ§ç­",
         },
         "economic": {
             "type": "array",
             "items": {"$ref": "#/definitions/pestItem"},
-            "description": "经济因素：经济周期、利率汇率、消费水平等",
+            "description": "ç»æµå ç´ ï¼ç»æµå¨æãå©çæ±çãæ¶è´¹æ°´å¹³ç­",
         },
         "social": {
             "type": "array",
             "items": {"$ref": "#/definitions/pestItem"},
-            "description": "社会因素：人口结构、文化趋势、生活方式等",
+            "description": "ç¤¾ä¼å ç´ ï¼äººå£ç»æãæåè¶å¿ãçæ´»æ¹å¼ç­",
         },
         "technological": {
             "type": "array",
             "items": {"$ref": "#/definitions/pestItem"},
-            "description": "技术因素：技术创新、研发投入、技术普及等",
+            "description": "ææ¯å ç´ ï¼ææ¯åæ°ãç åæå¥ãææ¯æ®åç­",
         },
     },
     "required": ["type"],

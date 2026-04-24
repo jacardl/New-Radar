@@ -54,7 +54,7 @@ class TestRunAsyncLoopLifecycle:
         loop = _run_async(_get_current_loop())
 
         assert not loop.is_closed(), (
-            "_run_async() closed the event loop �?cached async clients will "
+            "_run_async() closed the event loop é¥?cached async clients will "
             "crash with 'Event loop is closed' on GC (issue #2104)"
         )
 
@@ -66,7 +66,7 @@ class TestRunAsyncLoopLifecycle:
         loop2 = _run_async(_get_current_loop())
 
         assert loop1 is loop2, (
-            "_run_async() created a new loop on the second call �?cached "
+            "_run_async() created a new loop on the second call é¥?cached "
             "async clients from the first call would be orphaned"
         )
 
@@ -102,7 +102,7 @@ class TestRunAsyncWorkerThread:
             loop, still_open = pool.submit(_run_on_worker).result()
 
         assert still_open, (
-            "Worker thread's event loop was closed after _run_async �?"
+            "Worker thread's event loop was closed after _run_async é¥?"
             "cached async clients will crash with 'Event loop is closed'"
         )
 
@@ -121,7 +121,7 @@ class TestRunAsyncWorkerThread:
             loop1, loop2 = pool.submit(_run_twice_on_worker).result()
 
         assert loop1 is loop2, (
-            "Worker thread created different loops for consecutive calls �?"
+            "Worker thread created different loops for consecutive calls é¥?"
             "cached clients from the first call would be orphaned"
         )
         assert not loop1.is_closed()
@@ -156,7 +156,7 @@ class TestRunAsyncWorkerThread:
         # Each thread should have its own loop
         assert len(loop_ids) == 3, (
             f"Expected 3 distinct loops for 3 parallel workers, "
-            f"got {len(loop_ids)} �?workers may be contending on a shared loop"
+            f"got {len(loop_ids)} é¥?workers may be contending on a shared loop"
         )
 
     def test_worker_loop_separate_from_main_loop(self):
@@ -175,7 +175,7 @@ class TestRunAsyncWorkerThread:
             worker_loop_id = pool.submit(_get_worker_loop_id).result()
 
         assert worker_loop_id != id(main_loop), (
-            "Worker thread used the main thread's loop �?this would cause "
+            "Worker thread used the main thread's loop é¥?this would cause "
             "cross-thread contention on the event loop"
         )
 
@@ -211,7 +211,7 @@ def _mock_vision_response():
 
 class TestVisionDispatchLoopSafety:
     """Simulate the full registry.dispatch('vision_analyze') chain and
-    verify the event loop stays alive afterwards �?the exact scenario
+    verify the event loop stays alive afterwards é¥?the exact scenario
     from issue #2104."""
 
     def test_vision_dispatch_keeps_loop_alive(self, tmp_path):
@@ -253,7 +253,7 @@ class TestVisionDispatchLoopSafety:
 
         loop = _get_tool_loop()
         assert not loop.is_closed(), (
-            "Event loop closed after vision_analyze dispatch �?cached async "
+            "Event loop closed after vision_analyze dispatch é¥?cached async "
             "clients will crash with 'Event loop is closed' (issue #2104)"
         )
 

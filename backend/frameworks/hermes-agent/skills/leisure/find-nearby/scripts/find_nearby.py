@@ -169,7 +169,7 @@ def main():
         print(f"Found {len(places)} places within {args.radius}m:\n")
         for i, p in enumerate(places, 1):
             dist_str = f"{p['distance_m']}m" if p["distance_m"] < 1000 else f"{p['distance_m']/1000:.1f}km"
-            print(f"  {i}. {p['name']} ({p['type']}) �?{dist_str}")
+            print(f"  {i}. {p['name']} ({p['type']}) é¥?{dist_str}")
             if p.get("cuisine"):
                 print(f"     Cuisine: {p['cuisine']}")
             if p.get("hours"):

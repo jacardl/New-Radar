@@ -2,13 +2,13 @@
 DeepSeek V3 tool call parser.
 
 Format uses special unicode tokens:
-    <｜tool▁calls▁begin�?
-    <｜tool▁call▁begin�?type<｜tool▁sep�?function_name
+    <éæ¸¢oolé»ä¹§allsé»ä¹¥eginé?
+    <éæ¸¢oolé»ä¹§allé»ä¹¥eginé?type<éæ¸¢oolé»ä¹»epé?function_name
     ```json
     {"arg": "value"}
     ```
-    <｜tool▁call▁end�?
-    <｜tool▁calls▁end�?
+    <éæ¸¢oolé»ä¹§allé»ä¹ªndé?
+    <éæ¸¢oolé»ä¹§allsé»ä¹ªndé?
 
 Fixes Issue #989: Support for multiple simultaneous tool calls.
 """
@@ -37,12 +37,12 @@ class DeepSeekV3ToolCallParser(ToolCallParser):
     Ensures all tool calls are captured when the model executes multiple actions.
     """
 
-    START_TOKEN = "<｜tool▁calls▁begin�?"
+    START_TOKEN = "<éæ¸¢oolé»ä¹§allsé»ä¹¥eginé?"
 
     # Updated PATTERN: Using \s* instead of literal \n for increased robustness
     # against variations in model formatting (Issue #989).
     PATTERN = re.compile(
-        r"<｜tool▁call▁begin�?(?P<type>.*?)<｜tool▁sep�?(?P<function_name>.*?)\s*```json\s*(?P<function_arguments>.*?)\s*```\s*<｜tool▁call▁end�?",
+        r"<éæ¸¢oolé»ä¹§allé»ä¹¥eginé?(?P<type>.*?)<éæ¸¢oolé»ä¹»epé?(?P<function_name>.*?)\s*```json\s*(?P<function_arguments>.*?)\s*```\s*<éæ¸¢oolé»ä¹§allé»ä¹ªndé?",
         re.DOTALL,
     )
 

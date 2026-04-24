@@ -132,9 +132,9 @@ class TestCompletionQueue:
         s.exit_code = -15
         registry._running[s.id] = s
         with patch.object(registry, "_write_checkpoint"):
-            registry._move_to_finished(s)  # first call �?should enqueue
+            registry._move_to_finished(s)  # first call é¥?should enqueue
             s.exit_code = 143  # reader thread updates exit code
-            registry._move_to_finished(s)  # second call �?should be no-op
+            registry._move_to_finished(s)  # second call é¥?should be no-op
 
         assert registry.completion_queue.qsize() == 1
         completion = registry.completion_queue.get_nowait()
@@ -311,7 +311,7 @@ class TestCompletionConsumed:
         assert not registry.completion_queue.empty()
         assert not registry.is_completion_consumed("proc_wait")
 
-        # Agent calls wait() �?gets the result directly
+        # Agent calls wait() é¥?gets the result directly
         result = registry.wait("proc_wait", timeout=1)
         assert result["status"] == "exited"
 

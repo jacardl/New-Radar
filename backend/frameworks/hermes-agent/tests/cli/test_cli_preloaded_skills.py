@@ -107,7 +107,7 @@ def test_main_raises_for_unknown_preloaded_skill(monkeypatch):
 
 
 def test_show_banner_does_not_print_skills():
-    """show_banner() no longer prints the activated skills line �?it moved to run()."""
+    """show_banner() no longer prints the activated skills line é¥?it moved to run()."""
     cli_obj = _make_real_cli(compact=False)
     cli_obj.preloaded_skills = ["hermes-agent-dev", "github-auth"]
     cli_obj.console = MagicMock()

@@ -2,7 +2,7 @@
 
 Before launching an MCP server via npx/uvx, queries the OSV (Open Source
 Vulnerabilities) API to check if the package has any known malware advisories
-(MAL-* IDs).  Regular CVEs are ignored �?only confirmed malware is blocked.
+(MAL-* IDs).  Regular CVEs are ignored é¥?only confirmed malware is blocked.
 
 The API is free, public, and maintained by Google.  Typical latency is ~300ms.
 Fail-open: network errors allow the package to proceed.
@@ -37,7 +37,7 @@ def check_package_for_malware(
     """
     ecosystem = _infer_ecosystem(command)
     if not ecosystem:
-        return None  # not npx/uvx �?skip
+        return None  # not npx/uvx é¥?skip
 
     package, version = _parse_package_from_args(args, ecosystem)
     if not package:
@@ -46,7 +46,7 @@ def check_package_for_malware(
     try:
         malware = _query_osv(package, ecosystem, version)
     except Exception as exc:
-        # Fail-open: network errors, timeouts, parse failures �?allow
+        # Fail-open: network errors, timeouts, parse failures é«?allow
         logger.debug("OSV check failed for %s/%s (allowing): %s", ecosystem, package, exc)
         return None
 
@@ -151,5 +151,5 @@ def _query_osv(
         result = json.loads(resp.read())
 
     vulns = result.get("vulns", [])
-    # Only malware advisories �?ignore regular CVEs
+    # Only malware advisories é¥?ignore regular CVEs
     return [v for v in vulns if v.get("id", "").startswith("MAL-")]

@@ -166,7 +166,7 @@ def _fake_tool_handler(tool_name: str, args: Dict[str, Any], **kwargs) -> str:
 
 @pytest.mark.asyncio
 async def test_vllm_single_tool_call():
-    """vLLM model calls a tool, gets result, responds �?full Phase 2 flow."""
+    """vLLM model calls a tool, gets result, responds é¥?full Phase 2 flow."""
     sm = _make_server_manager()
     tokenizer = _get_tokenizer()
 
@@ -267,7 +267,7 @@ async def test_vllm_managed_server_produces_nodes():
         with patch("environments.agent_loop.handle_function_call", side_effect=_fake_tool_handler):
             result = await agent.run(messages)
 
-        # Get the managed state �?should have SequenceNodes
+        # Get the managed state é¥?should have SequenceNodes
         state = managed.get_state()
 
     assert state is not None, "ManagedServer should return state"

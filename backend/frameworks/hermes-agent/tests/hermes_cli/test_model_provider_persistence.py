@@ -2,7 +2,7 @@
 
 Regression tests for the bug where _save_model_choice could save config.model
 as a plain string, causing subsequent provider writes (which check
-isinstance(model, dict)) to silently fail �?leaving the provider unset and
+isinstance(model, dict)) to silently fail é¥?leaving the provider unset and
 falling back to auto-detection.
 """
 
@@ -18,7 +18,7 @@ def config_home(tmp_path, monkeypatch):
     home = tmp_path / "hermes"
     home.mkdir()
     config_yaml = home / "config.yaml"
-    # Start with model as a plain string �?the format that triggered the bug
+    # Start with model as a plain string é¥?the format that triggered the bug
     config_yaml.write_text("model: some-old-model\n")
     env_file = home / ".env"
     env_file.write_text("")

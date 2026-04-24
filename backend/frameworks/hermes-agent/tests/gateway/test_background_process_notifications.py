@@ -119,17 +119,17 @@ class TestLoadBackgroundNotificationsMode:
 @pytest.mark.parametrize(
     ("mode", "sessions", "expected_calls", "expected_fragment"),
     [
-        # all mode: running output �?sends update
+        # all mode: running output é«?sends update
         (
             "all",
             [
                 SimpleNamespace(output_buffer="building...\n", exited=False, exit_code=None),
-                None,  # process disappears �?watcher exits
+                None,  # process disappears é«?watcher exits
             ],
             1,
             "is still running",
         ),
-        # result mode: running output �?no update
+        # result mode: running output é«?no update
         (
             "result",
             [
@@ -139,35 +139,35 @@ class TestLoadBackgroundNotificationsMode:
             0,
             None,
         ),
-        # off mode: exited process �?no notification
+        # off mode: exited process é«?no notification
         (
             "off",
             [SimpleNamespace(output_buffer="done\n", exited=True, exit_code=0)],
             0,
             None,
         ),
-        # result mode: exited �?notifies
+        # result mode: exited é«?notifies
         (
             "result",
             [SimpleNamespace(output_buffer="done\n", exited=True, exit_code=0)],
             1,
             "finished with exit code 0",
         ),
-        # error mode: exit 0 �?no notification
+        # error mode: exit 0 é«?no notification
         (
             "error",
             [SimpleNamespace(output_buffer="done\n", exited=True, exit_code=0)],
             0,
             None,
         ),
-        # error mode: exit 1 �?notifies
+        # error mode: exit 1 é«?notifies
         (
             "error",
             [SimpleNamespace(output_buffer="traceback\n", exited=True, exit_code=1)],
             1,
             "finished with exit code 1",
         ),
-        # all mode: exited �?notifies
+        # all mode: exited é«?notifies
         (
             "all",
             [SimpleNamespace(output_buffer="ok\n", exited=True, exit_code=0)],

@@ -37,7 +37,7 @@ from tools.binary_extensions import BINARY_EXTENSIONS
 
 
 # ---------------------------------------------------------------------------
-# Write-path deny list �?blocks writes to sensitive system/credential files
+# Write-path deny list é¥?blocks writes to sensitive system/credential files
 # ---------------------------------------------------------------------------
 
 _HOME = str(Path.home())
@@ -501,7 +501,7 @@ class ShellFileOperations(FileOperations):
             # Still try to read, but warn
             pass
         
-        # Images are never inlined �?redirect to the vision tool
+        # Images are never inlined é¥?redirect to the vision tool
         if self._is_image(path):
             return ReadResult(
                 is_image=True,
@@ -566,7 +566,7 @@ class ShellFileOperations(FileOperations):
         ls_cmd = f"ls -1 {self._escape_shell_arg(dir_path)} 2>/dev/null | head -50"
         ls_result = self._exec(ls_cmd)
 
-        scored: list = []  # (score, filepath) �?higher is better
+        scored: list = []  # (score, filepath) é¥?higher is better
         if ls_result.exit_code == 0 and ls_result.stdout.strip():
             for f in ls_result.stdout.strip().split('\n'):
                 if not f:
@@ -627,7 +627,7 @@ class ShellFileOperations(FileOperations):
         if self._is_likely_binary(path, sample_result.stdout):
             return ReadResult(
                 is_binary=True, file_size=file_size,
-                error="Binary file �?cannot display as text."
+                error="Binary file é¥?cannot display as text."
             )
         cat_result = self._exec(f"cat {self._escape_shell_arg(path)}")
         if cat_result.exit_code != 0:
@@ -667,7 +667,7 @@ class ShellFileOperations(FileOperations):
         Write content to a file, creating parent directories as needed.
 
         Pipes content through stdin to avoid OS ARG_MAX limits on large
-        files. The content never appears in the shell command string �?
+        files. The content never appears in the shell command string é¥?
         only the file path does.
 
         Args:
@@ -694,7 +694,7 @@ class ShellFileOperations(FileOperations):
             if mkdir_result.exit_code == 0:
                 dirs_created = True
         
-        # Write via stdin pipe �?content bypasses shell arg parsing entirely,
+        # Write via stdin pipe é¥?content bypasses shell arg parsing entirely,
         # so there's no ARG_MAX limit regardless of file size.
         write_cmd = f"cat > {self._escape_shell_arg(path)}"
         write_result = self._exec(write_cmd, stdin_data=content)

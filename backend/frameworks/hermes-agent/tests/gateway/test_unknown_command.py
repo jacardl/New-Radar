@@ -105,7 +105,7 @@ async def test_unknown_slash_command_returns_guidance(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_unknown_slash_command_underscored_form_also_guarded(monkeypatch):
-    """Telegram may send /foo_bar �?same guard must trigger for underscored
+    """Telegram may send /foo_bar é¥?same guard must trigger for underscored
     commands that normalize to unknown hyphenated names."""
     import gateway.run as gateway_run
 

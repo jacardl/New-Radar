@@ -78,7 +78,7 @@ def build_channel_directory(adapters: Dict[Any, Any]) -> Dict[str, Any]:
 
     # Platforms that don't support direct channel enumeration get session-based
     # discovery automatically.  Skip infrastructure entries that aren't messaging
-    # platforms �?everything else falls through to _build_from_sessions().
+    # platforms é¥?everything else falls through to _build_from_sessions().
     _SKIP_SESSION_DISCOVERY = frozenset({"local", "api_server", "webhook"})
     for plat in Platform:
         plat_name = plat.value
@@ -107,7 +107,7 @@ def _build_discord(adapter) -> List[Dict[str, str]]:
         return channels
 
     try:
-        import discord as _discord  # noqa: F401 �?SDK presence check
+        import discord as _discord  # noqa: F401 é¥?SDK presence check
     except ImportError:
         return channels
 

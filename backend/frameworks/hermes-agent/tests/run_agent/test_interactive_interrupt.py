@@ -32,9 +32,9 @@ from tools.interrupt import set_interrupt, is_interrupted
 def make_slow_response(delay=2.0):
     """API response that takes a while."""
     def create(**kwargs):
-        log.info(f"   🌐 Mock API call starting (will take {delay}s)...")
+        log.info(f"   ð Mock API call starting (will take {delay}s)...")
         time.sleep(delay)
-        log.info(f"   🌐 Mock API call completed")
+        log.info(f"   ð Mock API call completed")
         resp = MagicMock()
         resp.choices = [MagicMock()]
         resp.choices[0].message.content = "Done with the task"
@@ -52,7 +52,7 @@ def make_slow_response(delay=2.0):
 def main() -> int:
     set_interrupt(False)
 
-    # ─── Create parent agent ───
+    # --- Create parent agent ---
     parent = AIAgent.__new__(AIAgent)
     parent._interrupt_requested = False
     parent._interrupt_message = None
@@ -84,7 +84,7 @@ def main() -> int:
     _original_interrupt = AIAgent.interrupt
 
     def logged_interrupt(self, message=None):
-        log.info(f"🔴 parent.interrupt() called with: {message!r}")
+        log.info(f"ð´ parent.interrupt() called with: {message!r}")
         log.info(f"   _active_children count: {len(self._active_children)}")
         _original_interrupt(self, message)
         log.info(f"   After interrupt: _interrupt_requested={self._interrupt_requested}")
@@ -93,14 +93,14 @@ def main() -> int:
 
     parent.interrupt = lambda msg=None: logged_interrupt(parent, msg)
 
-    # ─── Simulate the exact CLI flow ───
+    # --- Simulate the exact CLI flow ---
     interrupt_queue = queue.Queue()
     child_running = threading.Event()
     agent_result = [None]
 
     def agent_thread_func():
         """Simulates the agent_thread in cli.py's chat() method."""
-        log.info("🟢 agent_thread starting")
+        log.info("ð¢ agent_thread starting")
 
         with patch("run_agent.OpenAI") as MockOpenAI:
             mock_client = MagicMock()
@@ -114,11 +114,11 @@ def main() -> int:
             original_init = AIAgent.__init__
 
             def patched_init(self_agent, *a, **kw):
-                log.info("🟡 Child AIAgent.__init__ called")
+                log.info("ð¡ Child AIAgent.__init__ called")
                 original_init(self_agent, *a, **kw)
                 child_running.set()
                 log.info(
-                    f"🟡 Child started, parent._active_children = {len(parent._active_children)}"
+                    f"ð¡ Child started, parent._active_children = {len(parent._active_children)}"
                 )
 
             with patch.object(AIAgent, "__init__", patched_init):
@@ -137,13 +137,13 @@ def main() -> int:
                     override_api_mode="chat_completions",
                 )
                 agent_result[0] = result
-                log.info(f"🟢 agent_thread finished. Result status: {result.get('status')}")
+                log.info(f"ð¢ agent_thread finished. Result status: {result.get('status')}")
 
-    # ─── Start agent thread (like chat() does) ───
+    # --- Start agent thread (like chat() does) ---
     agent_thread = threading.Thread(target=agent_thread_func, name="agent_thread", daemon=True)
     agent_thread.start()
 
-    # ─── Wait for child to start ───
+    # --- Wait for child to start ---
     if not child_running.wait(timeout=10):
         print("FAIL: Child never started", file=sys.stderr)
         set_interrupt(False)
@@ -152,19 +152,19 @@ def main() -> int:
     # Give child time to enter its main loop and start API call
     time.sleep(1.0)
 
-    # ─── Simulate user typing a message (like handle_enter does) ───
-    log.info("📝 Simulating user typing 'Hey stop that'")
+    # --- Simulate user typing a message (like handle_enter does) ---
+    log.info("ð Simulating user typing 'Hey stop that'")
     interrupt_queue.put("Hey stop that")
 
-    # ─── Simulate chat() polling loop (like the real chat() method) ───
-    log.info("📡 Starting interrupt queue polling (like chat())")
+    # --- Simulate chat() polling loop (like the real chat() method) ---
+    log.info("ð¡ Starting interrupt queue polling (like chat())")
     interrupt_msg = None
     poll_count = 0
     while agent_thread.is_alive():
         try:
             interrupt_msg = interrupt_queue.get(timeout=0.1)
             if interrupt_msg:
-                log.info(f"📨 Got interrupt message from queue: {interrupt_msg!r}")
+                log.info(f"ð¨ Got interrupt message from queue: {interrupt_msg!r}")
                 log.info("   Calling parent.interrupt()...")
                 parent.interrupt(interrupt_msg)
                 log.info("   parent.interrupt() returned. Breaking poll loop.")
@@ -174,27 +174,27 @@ def main() -> int:
             if poll_count % 20 == 0:  # Log every 2s
                 log.info(f"   Still polling ({poll_count} iterations)...")
 
-    # ─── Wait for agent to finish ───
-    log.info("�?Waiting for agent_thread to join...")
+    # --- Wait for agent to finish ---
+    log.info("â?Waiting for agent_thread to join...")
     t0 = time.monotonic()
     agent_thread.join(timeout=10)
     elapsed = time.monotonic() - t0
-    log.info(f"�?agent_thread joined after {elapsed:.2f}s")
+    log.info(f"â?agent_thread joined after {elapsed:.2f}s")
 
-    # ─── Check results ───
+    # --- Check results ---
     result = agent_result[0]
     if result:
         log.info(f"Result status: {result['status']}")
         log.info(f"Result duration: {result['duration_seconds']}s")
         if result["status"] == "interrupted" and elapsed < 2.0:
-            print("�?PASS: Interrupt worked correctly!", file=sys.stderr)
+            print("â?PASS: Interrupt worked correctly!", file=sys.stderr)
             set_interrupt(False)
             return 0
-        print(f"�?FAIL: status={result['status']}, elapsed={elapsed:.2f}s", file=sys.stderr)
+        print(f"â?FAIL: status={result['status']}, elapsed={elapsed:.2f}s", file=sys.stderr)
         set_interrupt(False)
         return 1
 
-    print("�?FAIL: No result returned", file=sys.stderr)
+    print("â?FAIL: No result returned", file=sys.stderr)
     set_interrupt(False)
     return 1
 

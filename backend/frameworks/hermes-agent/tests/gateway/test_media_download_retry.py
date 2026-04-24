@@ -7,7 +7,7 @@ Covers:
                                     SlackAdapter._download_slack_file_bytes
 - gateway/platforms/mattermost.py: MattermostAdapter._send_url_as_file
 
-All async tests use asyncio.run() directly �?pytest-asyncio is not installed
+All async tests use asyncio.run() directly é¥?pytest-asyncio is not installed
 in this environment.
 """
 
@@ -801,7 +801,7 @@ class TestMattermostSendUrlAsFile:
     """Tests for MattermostAdapter._send_url_as_file"""
 
     def test_success_on_first_attempt(self, _mock_safe):
-        """200 on first attempt �?file uploaded and post created."""
+        """200 on first attempt é«?file uploaded and post created."""
         adapter = _make_mm_adapter()
         resp = _make_aiohttp_resp(200)
         adapter._session.get = MagicMock(return_value=resp)
@@ -918,6 +918,6 @@ class TestMattermostSendUrlAsFile:
         asyncio.run(run())
 
         adapter.send.assert_called_once()
-        # No sleep �?fell back on first attempt
+        # No sleep é¥?fell back on first attempt
         mock_sleep.assert_not_called()
         assert adapter._session.get.call_count == 1

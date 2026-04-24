@@ -528,7 +528,7 @@ class WeComAdapter(BasePlatformAdapter):
             timestamp=datetime.now(tz=timezone.utc),
         )
 
-        # Only batch plain text messages �?commands, media, etc. dispatch
+        # Only batch plain text messages â?commands, media, etc. dispatch
         # immediately since they won't be split by the WeCom client.
         if message_type == MessageType.TEXT and self._text_batch_delay_seconds > 0:
             self._enqueue_text_event(event)
@@ -898,8 +898,8 @@ class WeComAdapter(BasePlatformAdapter):
                 "final_type": normalized_type,
                 "rejected": True,
                 "reject_reason": (
-                    f"文件大小 {file_size_mb:.2f}MB 超过了企业微信允许的最大限�?20MB，无法发送�?
-                    "请尝试压缩文件或减小文件大小�?
+                    f"æä»¶å¤§å° {file_size_mb:.2f}MB è¶è¿äºä¼ä¸å¾®ä¿¡åè®¸çæå¤§éå?20MBï¼æ æ³åéã?
+                    "è¯·å°è¯åç¼©æä»¶æåå°æä»¶å¤§å°ã?
                 ),
                 "downgraded": False,
                 "downgrade_note": None,
@@ -911,7 +911,7 @@ class WeComAdapter(BasePlatformAdapter):
                 "rejected": False,
                 "reject_reason": None,
                 "downgraded": True,
-                "downgrade_note": f"图片大小 {file_size_mb:.2f}MB 超过 10MB 限制，已转为文件格式发�?,
+                "downgrade_note": f"å¾çå¤§å° {file_size_mb:.2f}MB è¶è¿ 10MB éå¶ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?,
             }
 
         if normalized_type == "video" and file_size > VIDEO_MAX_BYTES:
@@ -920,7 +920,7 @@ class WeComAdapter(BasePlatformAdapter):
                 "rejected": False,
                 "reject_reason": None,
                 "downgraded": True,
-                "downgrade_note": f"视频大小 {file_size_mb:.2f}MB 超过 10MB 限制，已转为文件格式发�?,
+                "downgrade_note": f"è§é¢å¤§å° {file_size_mb:.2f}MB è¶è¿ 10MB éå¶ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?,
             }
 
         if normalized_type == "voice":
@@ -931,7 +931,7 @@ class WeComAdapter(BasePlatformAdapter):
                     "reject_reason": None,
                     "downgraded": True,
                     "downgrade_note": (
-                        f"语音格式 {normalized_content_type} 不支持，企微仅支�?AMR 格式，已转为文件格式发�?
+                        f"è¯­é³æ ¼å¼ {normalized_content_type} ä¸æ¯æï¼ä¼å¾®ä»æ¯æ?AMR æ ¼å¼ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?
                     ),
                 }
             if file_size > VOICE_MAX_BYTES:
@@ -940,7 +940,7 @@ class WeComAdapter(BasePlatformAdapter):
                     "rejected": False,
                     "reject_reason": None,
                     "downgraded": True,
-                    "downgrade_note": f"语音大小 {file_size_mb:.2f}MB 超过 2MB 限制，已转为文件格式发�?,
+                    "downgrade_note": f"è¯­é³å¤§å° {file_size_mb:.2f}MB è¶è¿ 2MB éå¶ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?,
                 }
 
         return {
@@ -1229,7 +1229,7 @@ class WeComAdapter(BasePlatformAdapter):
         if prepared["rejected"]:
             await self._send_followup_markdown(
                 chat_id,
-                f"⚠️ {prepared['reject_reason']}",
+                f"â ï¸ {prepared['reject_reason']}",
                 reply_to=reply_to,
             )
             return SendResult(success=False, error=prepared["reject_reason"])
@@ -1270,7 +1270,7 @@ class WeComAdapter(BasePlatformAdapter):
         if prepared["downgraded"] and prepared["downgrade_note"]:
             downgrade_result = await self._send_followup_markdown(
                 chat_id,
-                f"ℹ️ {prepared['downgrade_note']}",
+                f"â¹ï¸ {prepared['downgrade_note']}",
                 reply_to=reply_to,
             )
 

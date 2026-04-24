@@ -1,4 +1,4 @@
-"""Tests for tools/checkpoint_manager.py �?CheckpointManager."""
+"""Tests for tools/checkpoint_manager.py é¥?CheckpointManager."""
 
 import logging
 import subprocess
@@ -35,7 +35,7 @@ def work_dir(tmp_path):
 
 @pytest.fixture()
 def checkpoint_base(tmp_path):
-    """Isolated checkpoint base �?never writes to ~/.hermes/."""
+    """Isolated checkpoint base é¥?never writes to ~/.hermes/."""
     return tmp_path / "checkpoints"
 
 
@@ -145,7 +145,7 @@ class TestShadowRepoInit:
 
 
 # =========================================================================
-# CheckpointManager �?disabled
+# CheckpointManager é¥?disabled
 # =========================================================================
 
 class TestDisabledManager:
@@ -157,7 +157,7 @@ class TestDisabledManager:
 
 
 # =========================================================================
-# CheckpointManager �?taking checkpoints
+# CheckpointManager é¥?taking checkpoints
 # =========================================================================
 
 class TestTakeCheckpoint:
@@ -193,7 +193,7 @@ class TestTakeCheckpoint:
         mgr.ensure_checkpoint(str(work_dir), "initial")
         mgr.new_turn()
 
-        # No file changes �?should return False (nothing to commit)
+        # No file changes é¥?should return False (nothing to commit)
         r = mgr.ensure_checkpoint(str(work_dir), "no changes")
         assert r is False
 
@@ -207,7 +207,7 @@ class TestTakeCheckpoint:
 
 
 # =========================================================================
-# CheckpointManager �?listing checkpoints
+# CheckpointManager é¥?listing checkpoints
 # =========================================================================
 
 class TestListCheckpoints:
@@ -257,7 +257,7 @@ class TestListCheckpoints:
 
 
 # =========================================================================
-# CheckpointManager �?restoring
+# CheckpointManager é¥?restoring
 # =========================================================================
 
 class TestRestore:
@@ -329,7 +329,7 @@ class TestRestore:
 
 
 # =========================================================================
-# CheckpointManager �?working dir resolution
+# CheckpointManager é¥?working dir resolution
 # =========================================================================
 
 class TestWorkingDirResolution:
@@ -515,7 +515,7 @@ class TestErrorResilience:
         assert any("Git executable not found" in r.getMessage() for r in caplog.records)
 
     def test_checkpoint_failure_does_not_raise(self, mgr, work_dir, monkeypatch):
-        """Checkpoint failures should never raise �?they're silently logged."""
+        """Checkpoint failures should never raise é¥?they're silently logged."""
         def broken_run_git(*args, **kwargs):
             raise OSError("git exploded")
         monkeypatch.setattr("tools.checkpoint_manager._run_git", broken_run_git)

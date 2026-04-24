@@ -1,5 +1,5 @@
 """
-AgenticOPDEnv �?On-Policy Distillation for Agentic Tool-Calling Tasks
+AgenticOPDEnv é¥?On-Policy Distillation for Agentic Tool-Calling Tasks
 =====================================================================
 
 First Atropos environment to populate the distill_token_ids / distill_logprobs
@@ -21,8 +21,8 @@ Key idea (from OpenClaw-RL, Princeton 2026):
 
 The trainer then computes per-token advantages:
   A_t = teacher_logprob(token_t) - student_logprob(token_t)
-  Positive �?teacher approves this token (upweight)
-  Negative �?teacher disapproves (downweight)
+  Positive é«?teacher approves this token (upweight)
+  Negative é«?teacher disapproves (downweight)
 
 This gives dense, token-level training signal from every tool interaction,
 instead of just a scalar reward at the end of the trajectory.
@@ -32,8 +32,8 @@ test results, error messages, terminal output). Falls back to built-in
 coding problems if no HuggingFace dataset is configured.
 
 Requirements:
-  - VLLM backend (server_type: vllm) �?needed for prompt logprob scoring
-  - Phase 2 mode (ManagedServer) �?needed for token-level tracking
+  - VLLM backend (server_type: vllm) é¥?needed for prompt logprob scoring
+  - Phase 2 mode (ManagedServer) é¥?needed for token-level tracking
 
 Usage:
     # Process mode (offline data generation with OPD)
@@ -91,9 +91,9 @@ from environments.tool_context import ToolContext
 logger = logging.getLogger(__name__)
 
 
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Built-in coding tasks (fallback when no HF dataset is configured)
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 BUILTIN_CODING_TASKS = [
     {
@@ -214,9 +214,9 @@ BUILTIN_CODING_TASKS = [
 ]
 
 
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Hint extraction prompts (adapted from OpenClaw-RL)
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 _HINT_JUDGE_SYSTEM = (
     "You are a process reward model used for hindsight hint extraction.\n"
@@ -226,7 +226,7 @@ _HINT_JUDGE_SYSTEM = (
     "## Understanding the next state's role\n"
     "- role='user': A reply from the user (follow-up, correction, new request, etc.).\n"
     "- role='tool': The return value of a tool the assistant invoked. "
-    "This content was NOT available before the assistant's action �?"
+    "This content was NOT available before the assistant's action é¥?"
     "it exists BECAUSE the assistant called the tool. "
     "A successful, non-error tool output generally means the assistant's "
     "action was appropriate; do NOT treat it as information the assistant "
@@ -310,9 +310,9 @@ def _append_hint_to_messages(messages: list[dict], hint: str) -> list[dict]:
     return cloned
 
 
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Configuration
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 
 class AgenticOPDConfig(HermesAgentEnvConfig):
@@ -335,7 +335,7 @@ class AgenticOPDConfig(HermesAgentEnvConfig):
     hint_max_next_state_chars: int = Field(
         default=4000,
         description="Maximum characters of next-state text to include in the hint judge prompt. "
-        "Tool results can be very long �?truncating prevents judge context overflow.",
+        "Tool results can be very long é¥?truncating prevents judge context overflow.",
     )
 
     # --- Reward settings ---
@@ -371,9 +371,9 @@ class AgenticOPDConfig(HermesAgentEnvConfig):
     )
 
 
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Environment
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 
 class AgenticOPDEnv(HermesAgentBaseEnv):
@@ -410,7 +410,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
                 "3. Run the tests with: python test_solution.py\n"
                 "4. If tests fail, read the error output carefully, fix your code, and re-run\n"
                 "5. Once all tests pass, report success\n\n"
-                "Be efficient �?write clean code and fix errors methodically."
+                "Be efficient é¥?write clean code and fix errors methodically."
             ),
             # OPD
             opd_enabled=True,
@@ -448,9 +448,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         self._hints_extracted_buffer: list[int] = []
         self._opd_turns_scored_buffer: list[int] = []
 
-    # ══════════════════════════════════════════════════════════════════�?
-    # 1. setup �?load dataset
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+    # 1. setup é¥?load dataset
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def setup(self) -> None:
         """Load coding tasks from HuggingFace or use built-in set."""
@@ -508,9 +508,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
             len(self._eval_items),
         )
 
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
     # 2. get_next_item
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def get_next_item(self) -> dict:
         """Return the next coding task, cycling through the dataset."""
@@ -520,9 +520,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         self._index += 1
         return item
 
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
     # 3. format_prompt
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     def format_prompt(self, item: dict) -> str:
         """Format the coding task as a user prompt."""
@@ -544,9 +544,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         )
         return prompt
 
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
     # 4. compute_reward
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def compute_reward(
         self,
@@ -574,7 +574,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
             elif exit_code == 0:
                 correctness = 0.8  # Ran without error but no explicit "passed"
             elif "assert" in output.lower() and "error" in output.lower():
-                correctness = 0.2  # Partial �?code runs but assertions fail
+                correctness = 0.2  # Partial é¥?code runs but assertions fail
             else:
                 correctness = 0.1  # Code errors out entirely
         except Exception as e:
@@ -628,7 +628,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         self._tool_usage_buffer.append(tool_usage)
 
         logger.debug(
-            "Reward: correctness=%.2f, efficiency=%.2f, tool_usage=%.2f �?%.3f",
+            "Reward: correctness=%.2f, efficiency=%.2f, tool_usage=%.2f é«?%.3f",
             correctness,
             efficiency,
             tool_usage,
@@ -636,9 +636,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         )
         return reward
 
-    # ══════════════════════════════════════════════════════════════════�?
-    # 5. collect_trajectories �?OPD pipeline
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+    # 5. collect_trajectories é¥?OPD pipeline
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def collect_trajectories(
         self, item: Item
@@ -649,7 +649,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         """
         Override collect_trajectories to add the OPD pipeline.
 
-        1. Run standard rollouts via super() �?ScoredDataGroup with tokens/masks/scores
+        1. Run standard rollouts via super() é«?ScoredDataGroup with tokens/masks/scores
         2. For each rollout, extract hints from next-state signals
         3. Score student tokens under enhanced (hint-augmented) distribution
         4. Add distill_token_ids / distill_logprobs to the ScoredDataGroup
@@ -796,7 +796,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
                 if response_len == 0:
                     continue
 
-                # Score via get_logprobs �?teacher scoring the student's tokens
+                # Score via get_logprobs é¥?teacher scoring the student's tokens
                 # under the enhanced (hint-augmented) distribution
                 try:
                     logprob_result = await self.server.get_logprobs(
@@ -1001,14 +1001,14 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
                 return i
         return None
 
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
     # 6. evaluate
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def evaluate(self, *args, **kwargs) -> None:
         """
         Evaluate on held-out coding tasks using the full agent loop.
-        No OPD during eval �?just standard agentic evaluation.
+        No OPD during eval é¥?just standard agentic evaluation.
         """
         if not self._eval_items:
             logger.warning("No eval items available.")
@@ -1105,7 +1105,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
                 )
 
                 logger.info(
-                    "  �?correctness=%.2f, reward=%.3f, turns=%d",
+                    "  é«?correctness=%.2f, reward=%.3f, turns=%d",
                     correctness,
                     reward,
                     result.turns_used,
@@ -1139,7 +1139,7 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         }
 
         logger.info(
-            "Eval complete �?correctness=%.3f, reward=%.3f, pass_rate=%.0f%%",
+            "Eval complete é¥?correctness=%.3f, reward=%.3f, pass_rate=%.0f%%",
             eval_metrics["eval/mean_correctness"],
             eval_metrics["eval/mean_reward"],
             eval_metrics["eval/pass_rate"] * 100,
@@ -1152,9 +1152,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
             end_time=end_time,
         )
 
-    # ══════════════════════════════════════════════════════════════════�?
-    # 7. wandb_log �?custom OPD metrics
-    # ══════════════════════════════════════════════════════════════════�?
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+    # 7. wandb_log é¥?custom OPD metrics
+    # éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
     async def wandb_log(self, wandb_metrics: Optional[Dict] = None) -> None:
         """Log reward breakdown and OPD-specific metrics to wandb."""
@@ -1206,9 +1206,9 @@ class AgenticOPDEnv(HermesAgentBaseEnv):
         await super().wandb_log(wandb_metrics)
 
 
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Entry point
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 if __name__ == "__main__":
     AgenticOPDEnv.cli()

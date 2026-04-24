@@ -1,10 +1,10 @@
 """
-Tests for mcp_serve �?Hermes MCP server.
+Tests for mcp_serve é¥?Hermes MCP server.
 
 Three layers of tests:
-1. Unit tests �?helpers, content extraction, attachment parsing
-2. EventBridge tests �?queue mechanics, cursors, waiters, concurrency
-3. End-to-end tests �?call actual MCP tools through FastMCP's tool manager
+1. Unit tests é¥?helpers, content extraction, attachment parsing
+2. EventBridge tests é¥?queue mechanics, cursors, waiters, concurrency
+3. End-to-end tests é¥?call actual MCP tools through FastMCP's tool manager
    with real session data in SQLite and sessions.json
 """
 
@@ -208,7 +208,7 @@ def mock_session_db(tmp_path, populated_sessions_dir):
 
 
 # ---------------------------------------------------------------------------
-# 1. UNIT TESTS �?helpers, extraction, attachments
+# 1. UNIT TESTS é¥?helpers, extraction, attachments
 # ---------------------------------------------------------------------------
 
 class TestImports:
@@ -302,7 +302,7 @@ class TestAttachmentExtraction:
 
 
 # ---------------------------------------------------------------------------
-# 2. EVENT BRIDGE TESTS �?queue, cursors, waiters, concurrency
+# 2. EVENT BRIDGE TESTS é¥?queue, cursors, waiters, concurrency
 # ---------------------------------------------------------------------------
 
 class TestEventBridge:
@@ -435,7 +435,7 @@ class TestEventBridge:
 
 
 # ---------------------------------------------------------------------------
-# 3. END-TO-END TESTS �?call MCP tools through FastMCP server
+# 3. END-TO-END TESTS é¥?call MCP tools through FastMCP server
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -537,7 +537,7 @@ class TestE2EMessagesRead:
         result = _run_tool(server, "messages_read",
                           {"session_key": "agent:main:telegram:dm:123456"})
         assert result["count"] > 0
-        # Should filter out tool messages �?only user/assistant
+        # Should filter out tool messages é¥?only user/assistant
         roles = {m["role"] for m in result["messages"]}
         assert "tool" not in roles
         assert "user" in roles
@@ -793,7 +793,7 @@ class TestE2EPermissions:
 
 
 # ---------------------------------------------------------------------------
-# 4. TOOL LISTING �?verify all 10 tools are registered
+# 4. TOOL LISTING é¥?verify all 10 tools are registered
 # ---------------------------------------------------------------------------
 
 class TestToolRegistration:
@@ -925,7 +925,7 @@ class TestEdgeCases:
 
 
 # ---------------------------------------------------------------------------
-# 7. EVENT BRIDGE POLL LOOP E2E �?real SQLite DB, mtime optimization
+# 7. EVENT BRIDGE POLL LOOP E2E é¥?real SQLite DB, mtime optimization
 # ---------------------------------------------------------------------------
 
 class TestEventBridgePollE2E:
@@ -1031,12 +1031,12 @@ class TestEventBridgePollE2E:
         db = TestDB()
         bridge = mcp_serve.EventBridge()
 
-        # First poll �?should process
+        # First poll é¥?should process
         bridge._poll_once(db)
         first_calls = db.call_count
         assert first_calls >= 1
 
-        # Second poll �?files unchanged, should skip entirely
+        # Second poll é¥?files unchanged, should skip entirely
         bridge._poll_once(db)
         assert db.call_count == first_calls, \
             "Second poll should skip DB queries when files unchanged"
@@ -1099,7 +1099,7 @@ class TestEventBridgePollE2E:
         sessions_data["agent:main:telegram:dm:new"]["updated_at"] = "2026-03-29T15:00:10"
         (sessions_dir / "sessions.json").write_text(json.dumps(sessions_data))
 
-        # Second poll �?should detect the new message
+        # Second poll é¥?should detect the new message
         bridge._poll_once(db)
         r2 = bridge.poll_events(after_cursor=r1["next_cursor"])
         assert len(r2["events"]) == 1

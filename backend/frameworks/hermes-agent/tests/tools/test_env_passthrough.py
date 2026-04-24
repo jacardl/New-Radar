@@ -1,4 +1,4 @@
-"""Tests for tools.env_passthrough �?skill and config env var passthrough."""
+"""Tests for tools.env_passthrough é¥?skill and config env var passthrough."""
 
 import os
 import pytest
@@ -189,11 +189,11 @@ class TestTerminalIntegration:
         blocked_var = next(iter(_HERMES_PROVIDER_ENV_BLOCKLIST))
         monkeypatch.setenv(blocked_var, "secret_value")
 
-        # Without passthrough �?blocked
+        # Without passthrough é¥?blocked
         result_before = _make_run_env({})
         assert blocked_var not in result_before
 
-        # With passthrough �?allowed
+        # With passthrough é¥?allowed
         register_env_passthrough([blocked_var])
         result_after = _make_run_env({})
         assert blocked_var in result_after

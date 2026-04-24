@@ -59,7 +59,7 @@ def daytona_sdk(monkeypatch):
 @pytest.fixture()
 def make_env(daytona_sdk, monkeypatch):
     """Factory that creates a DaytonaEnvironment with a mocked SDK."""
-    # Prevent is_interrupted from interfering �?patch where it's used (base.py)
+    # Prevent is_interrupted from interfering é¥?patch where it's used (base.py)
     monkeypatch.setattr("tools.environments.base.is_interrupted", lambda: False)
     # Prevent skills/credential sync from consuming mock exec calls
     monkeypatch.setattr("tools.credential_files.get_credential_file_mounts", lambda: [])
@@ -331,7 +331,7 @@ class TestExecute:
 
         result = env.execute("echo retry")
         # DaytonaError now surfaces directly through _ThreadedProcessHandle
-        # (no retry logic) �?the error becomes returncode=1
+        # (no retry logic) é¥?the error becomes returncode=1
         assert result["returncode"] == 1
 
 

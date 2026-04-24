@@ -1,4 +1,4 @@
-"""Tests for tools.environments.docker.find_docker �?Docker CLI discovery."""
+"""Tests for tools.environments.docker.find_docker é¥?Docker CLI discovery."""
 
 import os
 from unittest.mock import patch

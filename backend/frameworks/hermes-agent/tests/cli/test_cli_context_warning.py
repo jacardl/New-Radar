@@ -80,7 +80,7 @@ class TestLowContextWarning:
         assert len(warning_calls) == 1
 
     def test_no_warning_at_boundary(self, cli_obj):
-        """No warning at exactly 8192 �?8192 is borderline but included in warning."""
+        """No warning at exactly 8192 é¥?8192 is borderline but included in warning."""
         cli_obj.agent.context_compressor.context_length = 8192
         with patch("cli.get_tool_definitions", return_value=[]), \
              patch("cli.build_welcome_banner"):

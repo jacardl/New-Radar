@@ -1,5 +1,5 @@
 """
-Tests for hermes_cli.mcp_config �?``hermes mcp`` subcommands.
+Tests for hermes_cli.mcp_config é¥?``hermes mcp`` subcommands.
 
 These tests mock the MCP server connection layer so they run without
 any actual MCP servers or API keys.
@@ -249,7 +249,7 @@ class TestMcpAdd:
     def test_add_connection_failure_save_disabled(
         self, tmp_path, capsys, monkeypatch
     ):
-        """Failed connection �?option to save as disabled."""
+        """Failed connection é«?option to save as disabled."""
 
         def mock_probe_fail(name, config, **kw):
             raise ConnectionError("Connection refused")

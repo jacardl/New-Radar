@@ -1,4 +1,4 @@
-"""Tests for SSE client disconnect �?agent task cancellation.
+"""Tests for SSE client disconnect é«?agent task cancellation.
 
 When a streaming /v1/chat/completions client disconnects mid-stream
 (network drop, browser tab close), the agent is interrupted via
@@ -40,7 +40,7 @@ def _make_request():
 # ---------------------------------------------------------------------------
 
 class TestSSEAgentCancelOnDisconnect:
-    """gateway/platforms/api_server.py �?_write_sse_chat_completion()"""
+    """gateway/platforms/api_server.py é¥?_write_sse_chat_completion()"""
 
     def test_agent_task_cancelled_on_client_disconnect(self):
         """When response.write raises ConnectionResetError (client dropped),
@@ -191,7 +191,7 @@ class TestSSEAgentCancelOnDisconnect:
                     stream_q, agent_task,
                 )
 
-            # Task was already done �?should not be cancelled
+            # Task was already done é¥?should not be cancelled
             assert agent_task.done()
             assert not agent_task.cancelled()
 
@@ -249,7 +249,7 @@ class TestSSEAgentCancelOnDisconnect:
 
     def test_agent_ref_none_still_cancels_task(self):
         """When agent_ref is not provided (None), the task is still cancelled
-        on disconnect �?just without the interrupt() call."""
+        on disconnect é¥?just without the interrupt() call."""
         adapter = _make_adapter()
 
         stream_q = queue.Queue()
@@ -269,7 +269,7 @@ class TestSSEAgentCancelOnDisconnect:
 
             with patch("gateway.platforms.api_server.web.StreamResponse",
                        return_value=mock_response):
-                # No agent_ref passed �?should still handle disconnect cleanly
+                # No agent_ref passed é¥?should still handle disconnect cleanly
                 await adapter._write_sse_chat_completion(
                     _make_request(), "cmpl-noref", "gpt-4", 1234567890,
                     stream_q, agent_task,

@@ -1,4 +1,4 @@
-"""Tests for agent/insights.py �?InsightsEngine analytics and reporting."""
+"""Tests for agent/insights.py é¥?InsightsEngine analytics and reporting."""
 
 import time
 import pytest
@@ -211,7 +211,7 @@ class TestBarChart:
 
 
 # =========================================================================
-# InsightsEngine �?empty DB
+# InsightsEngine é¥?empty DB
 # =========================================================================
 
 class TestInsightsEmpty:
@@ -235,7 +235,7 @@ class TestInsightsEmpty:
 
 
 # =========================================================================
-# InsightsEngine �?populated DB
+# InsightsEngine é¥?populated DB
 # =========================================================================
 
 class TestInsightsPopulated:
@@ -429,7 +429,7 @@ class TestTerminalFormatting:
         report = engine.generate(days=30)
         text = engine.format_terminal(report)
 
-        assert "�? in text  # Bar chart characters
+        assert "é»? in text  # Bar chart characters
 
     def test_terminal_format_shows_na_for_custom_models(self, db):
         """Custom models should show N/A instead of fake cost."""

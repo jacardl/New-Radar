@@ -2,7 +2,7 @@
 DeepSeek V3.1 tool call parser.
 
 Similar to V3 but with a slightly different format:
-    <｜tool▁call▁begin�?function_name<｜tool▁sep�?arguments<｜tool▁call▁end�?
+    <éæ¸¢oolé»ä¹§allé»ä¹¥eginé?function_name<éæ¸¢oolé»ä¹»epé?arguments<éæ¸¢oolé»ä¹§allé»ä¹ªndé?
 
 Note: V3 has type+name before the separator, V3.1 has name before and args after.
 
@@ -31,11 +31,11 @@ class DeepSeekV31ToolCallParser(ToolCallParser):
     arguments come after (no type field, no json code block wrapper).
     """
 
-    START_TOKEN = "<｜tool▁calls▁begin�?"
+    START_TOKEN = "<éæ¸¢oolé»ä¹§allsé»ä¹¥eginé?"
 
     # Regex captures: function_name, function_arguments
     PATTERN = re.compile(
-        r"<｜tool▁call▁begin�?(?P<function_name>.*?)<｜tool▁sep�?(?P<function_arguments>.*?)<｜tool▁call▁end�?",
+        r"<éæ¸¢oolé»ä¹§allé»ä¹¥eginé?(?P<function_name>.*?)<éæ¸¢oolé»ä¹»epé?(?P<function_arguments>.*?)<éæ¸¢oolé»ä¹§allé»ä¹ªndé?",
         re.DOTALL,
     )
 

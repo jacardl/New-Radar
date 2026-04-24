@@ -77,7 +77,7 @@ class TestDiscoverHomebrewNodeDirs:
         assert "/opt/homebrew/opt/node@24/bin" in result
 
     def test_excludes_plain_node(self):
-        """'node' (unversioned) should be excluded �?covered by /opt/homebrew/bin."""
+        """'node' (unversioned) should be excluded é¥?covered by /opt/homebrew/bin."""
         with patch("os.path.isdir", return_value=True), \
              patch("os.listdir", return_value=["node"]):
             result = _discover_homebrew_node_dirs()

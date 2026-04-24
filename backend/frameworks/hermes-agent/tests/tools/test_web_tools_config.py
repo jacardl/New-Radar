@@ -1,11 +1,11 @@
 """Tests for web backend client configuration and singleton behavior.
 
 Coverage:
-  _get_firecrawl_client() �?configuration matrix, singleton caching,
+  _get_firecrawl_client() â?configuration matrix, singleton caching,
   constructor failure recovery, return value verification, edge cases.
-  _get_backend() �?backend selection logic with env var combinations.
-  _get_parallel_client() �?Parallel client configuration, singleton caching.
-  check_web_api_key() �?unified availability check across all web backends.
+  _get_backend() â?backend selection logic with env var combinations.
+  _get_parallel_client() â?Parallel client configuration, singleton caching.
+  check_web_api_key() â?unified availability check across all web backends.
 """
 
 import importlib
@@ -53,10 +53,10 @@ class TestFirecrawlClientConfig:
         ):
             os.environ.pop(key, None)
 
-    # ── Configuration matrix ─────────────────────────────────────────
+    # -- Configuration matrix -----------------------------------------
 
     def test_cloud_mode_key_only(self):
-        """API key without URL �?cloud Firecrawl."""
+        """API key without URL â?cloud Firecrawl."""
         with patch.dict(os.environ, {"FIRECRAWL_API_KEY": "fc-test"}):
             with patch("tools.web_tools.Firecrawl") as mock_fc:
                 from tools.web_tools import _get_firecrawl_client
@@ -65,7 +65,7 @@ class TestFirecrawlClientConfig:
                 assert result is mock_fc.return_value
 
     def test_self_hosted_with_key(self):
-        """Both key + URL �?self-hosted with auth."""
+        """Both key + URL â?self-hosted with auth."""
         with patch.dict(os.environ, {
             "FIRECRAWL_API_KEY": "fc-test",
             "FIRECRAWL_API_URL": "http://localhost:3002",
@@ -79,7 +79,7 @@ class TestFirecrawlClientConfig:
                 assert result is mock_fc.return_value
 
     def test_self_hosted_no_key(self):
-        """URL only, no key �?self-hosted without auth."""
+        """URL only, no key â?self-hosted without auth."""
         with patch.dict(os.environ, {"FIRECRAWL_API_URL": "http://localhost:3002"}):
             with patch("tools.web_tools.Firecrawl") as mock_fc:
                 from tools.web_tools import _get_firecrawl_client
@@ -88,7 +88,7 @@ class TestFirecrawlClientConfig:
                 assert result is mock_fc.return_value
 
     def test_no_config_raises_with_helpful_message(self):
-        """Neither key nor URL �?ValueError with guidance."""
+        """Neither key nor URL â?ValueError with guidance."""
         with patch("tools.web_tools.Firecrawl"):
             with patch("tools.web_tools._read_nous_access_token", return_value=None):
                 from tools.web_tools import _get_firecrawl_client
@@ -237,7 +237,7 @@ class TestFirecrawlClientConfig:
         assert result == "summary text"
         mock_async_call.assert_awaited_once()
 
-    # ── Singleton caching ────────────────────────────────────────────
+    # -- Singleton caching --------------------------------------------
 
     def test_singleton_returns_same_instance(self):
         """Second call returns cached client without re-constructing."""
@@ -265,7 +265,7 @@ class TestFirecrawlClientConfig:
                 result = _get_firecrawl_client()
                 assert result is not None
 
-    # ── Edge cases ───────────────────────────────────────────────────
+    # -- Edge cases ---------------------------------------------------
 
     def test_empty_string_key_treated_as_absent(self):
         """FIRECRAWL_API_KEY='' should not be passed as api_key."""
@@ -280,7 +280,7 @@ class TestFirecrawlClientConfig:
                 mock_fc.assert_called_once_with(api_url="http://localhost:3002")
 
     def test_empty_string_key_no_url_raises(self):
-        """FIRECRAWL_API_KEY='' with no URL �?should raise."""
+        """FIRECRAWL_API_KEY='' with no URL â?should raise."""
         with patch.dict(os.environ, {"FIRECRAWL_API_KEY": ""}):
             with patch("tools.web_tools.Firecrawl"):
                 with patch("tools.web_tools._read_nous_access_token", return_value=None):
@@ -320,64 +320,64 @@ class TestBackendSelection:
         for key in self._ENV_KEYS:
             os.environ.pop(key, None)
 
-    # ── Config-based selection (web.backend in config.yaml) ───────────
+    # -- Config-based selection (web.backend in config.yaml) -----------
 
     def test_config_parallel(self):
-        """web.backend=parallel in config �?'parallel' regardless of keys."""
+        """web.backend=parallel in config â?'parallel' regardless of keys."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "parallel"}):
             assert _get_backend() == "parallel"
 
     def test_config_exa(self):
-        """web.backend=exa in config �?'exa' regardless of other keys."""
+        """web.backend=exa in config â?'exa' regardless of other keys."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "exa"}), \
              patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key"}):
             assert _get_backend() == "exa"
 
     def test_config_firecrawl(self):
-        """web.backend=firecrawl in config �?'firecrawl' even if Parallel key set."""
+        """web.backend=firecrawl in config â?'firecrawl' even if Parallel key set."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "firecrawl"}), \
              patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key"}):
             assert _get_backend() == "firecrawl"
 
     def test_config_tavily(self):
-        """web.backend=tavily in config �?'tavily' regardless of other keys."""
+        """web.backend=tavily in config â?'tavily' regardless of other keys."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "tavily"}):
             assert _get_backend() == "tavily"
 
     def test_config_tavily_overrides_env_keys(self):
-        """web.backend=tavily in config �?'tavily' even if Firecrawl key set."""
+        """web.backend=tavily in config â?'tavily' even if Firecrawl key set."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "tavily"}), \
              patch.dict(os.environ, {"FIRECRAWL_API_KEY": "fc-test"}):
             assert _get_backend() == "tavily"
 
     def test_config_case_insensitive(self):
-        """web.backend=Parallel (mixed case) �?'parallel'."""
+        """web.backend=Parallel (mixed case) â?'parallel'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "Parallel"}):
             assert _get_backend() == "parallel"
 
     def test_config_tavily_case_insensitive(self):
-        """web.backend=Tavily (mixed case) �?'tavily'."""
+        """web.backend=Tavily (mixed case) â?'tavily'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "Tavily"}):
             assert _get_backend() == "tavily"
 
-    # ── Fallback (no web.backend in config) ───────────────────────────
+    # -- Fallback (no web.backend in config) ---------------------------
 
     def test_fallback_parallel_only_key(self):
-        """Only PARALLEL_API_KEY set �?'parallel'."""
+        """Only PARALLEL_API_KEY set â?'parallel'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key"}):
             assert _get_backend() == "parallel"
 
     def test_fallback_exa_only_key(self):
-        """Only EXA_API_KEY set �?'exa'."""
+        """Only EXA_API_KEY set â?'exa'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"EXA_API_KEY": "exa-test"}):
@@ -391,49 +391,49 @@ class TestBackendSelection:
             assert _get_backend() == "parallel"
 
     def test_fallback_tavily_only_key(self):
-        """Only TAVILY_API_KEY set �?'tavily'."""
+        """Only TAVILY_API_KEY set â?'tavily'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"TAVILY_API_KEY": "tvly-test"}):
             assert _get_backend() == "tavily"
 
     def test_fallback_tavily_with_firecrawl_prefers_firecrawl(self):
-        """Tavily + Firecrawl keys, no config �?'firecrawl' (backward compat)."""
+        """Tavily + Firecrawl keys, no config â?'firecrawl' (backward compat)."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"TAVILY_API_KEY": "tvly-test", "FIRECRAWL_API_KEY": "fc-test"}):
             assert _get_backend() == "firecrawl"
 
     def test_fallback_tavily_with_parallel_prefers_parallel(self):
-        """Tavily + Parallel keys, no config �?'parallel' (Parallel takes priority over Tavily)."""
+        """Tavily + Parallel keys, no config â?'parallel' (Parallel takes priority over Tavily)."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"TAVILY_API_KEY": "tvly-test", "PARALLEL_API_KEY": "par-test"}):
-            # Parallel + no Firecrawl �?parallel
+            # Parallel + no Firecrawl â?parallel
             assert _get_backend() == "parallel"
 
     def test_fallback_both_keys_defaults_to_firecrawl(self):
-        """Both keys set, no config �?'firecrawl' (backward compat)."""
+        """Both keys set, no config â?'firecrawl' (backward compat)."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key", "FIRECRAWL_API_KEY": "fc-test"}):
             assert _get_backend() == "firecrawl"
 
     def test_fallback_firecrawl_only_key(self):
-        """Only FIRECRAWL_API_KEY set �?'firecrawl'."""
+        """Only FIRECRAWL_API_KEY set â?'firecrawl'."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch.dict(os.environ, {"FIRECRAWL_API_KEY": "fc-test"}):
             assert _get_backend() == "firecrawl"
 
     def test_fallback_no_keys_defaults_to_firecrawl(self):
-        """No keys, no config �?'firecrawl' (will fail at client init)."""
+        """No keys, no config â?'firecrawl' (will fail at client init)."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}):
             assert _get_backend() == "firecrawl"
 
     def test_invalid_config_falls_through_to_fallback(self):
-        """web.backend=invalid �?ignored, uses key-based fallback."""
+        """web.backend=invalid â?ignored, uses key-based fallback."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={"backend": "nonexistent"}), \
              patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key"}):
@@ -468,7 +468,7 @@ class TestParallelClientConfig:
         sys.modules.pop("parallel", None)
 
     def test_creates_client_with_key(self):
-        """PARALLEL_API_KEY set �?creates Parallel client."""
+        """PARALLEL_API_KEY set â?creates Parallel client."""
         with patch.dict(os.environ, {"PARALLEL_API_KEY": "test-key"}):
             from tools.web_tools import _get_parallel_client
             from parallel import Parallel
@@ -477,7 +477,7 @@ class TestParallelClientConfig:
             assert isinstance(client, Parallel)
 
     def test_no_key_raises_with_helpful_message(self):
-        """No PARALLEL_API_KEY �?ValueError with guidance."""
+        """No PARALLEL_API_KEY â?ValueError with guidance."""
         from tools.web_tools import _get_parallel_client
         with pytest.raises(ValueError, match="PARALLEL_API_KEY"):
             _get_parallel_client()

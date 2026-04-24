@@ -129,7 +129,7 @@ def atomic_yaml_write(
         raise
 
 
-# ─── JSON Helpers ─────────────────────────────────────────────────────────────
+# --- JSON Helpers -------------------------------------------------------------
 
 
 def safe_json_loads(text: str, default: Any = None) -> Any:
@@ -145,7 +145,7 @@ def safe_json_loads(text: str, default: Any = None) -> Any:
         return default
 
 
-# ─── Environment Variable Helpers ─────────────────────────────────────────────
+# --- Environment Variable Helpers ---------------------------------------------
 
 
 def env_int(key: str, default: int = 0) -> int:

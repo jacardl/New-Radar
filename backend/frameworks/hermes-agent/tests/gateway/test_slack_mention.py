@@ -165,7 +165,7 @@ def test_free_response_channels_empty_string():
 
 def test_free_response_channels_env_var_fallback(monkeypatch):
     monkeypatch.setenv("SLACK_FREE_RESPONSE_CHANNELS", f"{CHANNEL_ID},{OTHER_CHANNEL_ID}")
-    adapter = _make_adapter()  # no config value �?falls back to env
+    adapter = _make_adapter()  # no config value é«?falls back to env
     result = adapter._slack_free_response_channels()
     assert CHANNEL_ID in result
     assert OTHER_CHANNEL_ID in result
@@ -265,7 +265,7 @@ def test_bot_uid_none_processes_channel_message():
     adapter._team_bot_user_ids = {}
 
     # With bot_uid=None, the `if not is_dm and bot_uid:` condition is False,
-    # so the gating block is skipped �?message passes through.
+    # so the gating block is skipped é¥?message passes through.
     bot_uid = adapter._team_bot_user_ids.get("T1", adapter._bot_user_id)
     assert bot_uid is None
 

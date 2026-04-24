@@ -620,7 +620,7 @@ def test_auth_remove_env_seeded_does_not_resurrect(tmp_path, monkeypatch):
 
     auth_remove_command(_Args())
 
-    # Now reload the pool �?the entry should NOT come back
+    # Now reload the pool é¥?the entry should NOT come back
     from agent.credential_pool import load_pool
     pool = load_pool("openrouter")
     assert not pool.has_credentials()

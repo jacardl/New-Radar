@@ -1,5 +1,5 @@
 """
-Tests for extract_local_files() �?auto-detection of bare local file paths
+Tests for extract_local_files() é¥?auto-detection of bare local file paths
 in model response text for native media delivery.
 
 Covers: path matching, code-block exclusion, URL rejection, tilde expansion,
@@ -121,7 +121,7 @@ class TestIsfileGuard:
         assert "/tmp/nope.png" in cleaned  # not stripped
 
     def test_only_existing_paths_extracted(self):
-        """Mix of existing and non-existing �?only existing are returned."""
+        """Mix of existing and non-existing é¥?only existing are returned."""
         paths, cleaned = _extract(
             "A /tmp/real.png and /tmp/fake.jpg end",
             existing_files={"/tmp/real.png"},

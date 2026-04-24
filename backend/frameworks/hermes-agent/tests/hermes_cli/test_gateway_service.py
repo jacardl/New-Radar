@@ -350,7 +350,7 @@ class TestLaunchdServiceRecovery:
         monkeypatch.setattr(gateway_cli.subprocess, "run", fake_run)
         monkeypatch.setattr(gateway_cli, "_wait_for_gateway_exit", lambda **kw: None)
 
-        # Should not raise �?exit code 3 means already unloaded
+        # Should not raise é¥?exit code 3 means already unloaded
         gateway_cli.launchd_stop()
 
         output = capsys.readouterr().out
@@ -671,7 +671,7 @@ class TestSystemUnitHermesHome:
         assert '/root/' not in unit
 
     def test_system_unit_preserves_custom_hermes_home(self, monkeypatch):
-        # Custom HERMES_HOME not under any user's home �?keep as-is
+        # Custom HERMES_HOME not under any user's home é¥?keep as-is
         monkeypatch.setattr(Path, "home", staticmethod(lambda: Path("/root")))
         monkeypatch.setenv("HERMES_HOME", "/opt/hermes-shared")
         monkeypatch.setattr(
@@ -888,7 +888,7 @@ class TestEnsureUserSystemdEnv:
 
 
 class TestProfileArg:
-    """Tests for _profile_arg �?returns '--profile <name>' for named profiles."""
+    """Tests for _profile_arg é¥?returns '--profile <name>' for named profiles."""
 
     def test_default_hermes_home_returns_empty(self, tmp_path, monkeypatch):
         """Default ~/.hermes should not produce a --profile flag."""
@@ -918,7 +918,7 @@ class TestProfileArg:
         assert result == ""
 
     def test_nested_profile_path_returns_empty(self, tmp_path, monkeypatch):
-        """~/.hermes/profiles/mybot/subdir should NOT match �?too deep."""
+        """~/.hermes/profiles/mybot/subdir should NOT match é¥?too deep."""
         nested = tmp_path / ".hermes" / "profiles" / "mybot" / "subdir"
         nested.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)

@@ -135,7 +135,7 @@ async def test_internal_event_bypasses_authorization(monkeypatch, tmp_path):
     # Stop execution before the agent runner so the test doesn't block in
     # run_in_executor.  Auth check happens before _handle_message_with_agent.
     async def _raise(*_a, **_kw):
-        raise RuntimeError("sentinel �?stop here")
+        raise RuntimeError("sentinel é¥?stop here")
     monkeypatch.setattr(GatewayRunner, "_handle_message_with_agent", _raise)
 
     try:
@@ -186,7 +186,7 @@ async def test_internal_event_does_not_trigger_pairing(monkeypatch, tmp_path):
     # Stop execution before the agent runner so the test doesn't block in
     # run_in_executor.  Pairing check happens before _handle_message_with_agent.
     async def _raise(*_a, **_kw):
-        raise RuntimeError("sentinel �?stop here")
+        raise RuntimeError("sentinel é¥?stop here")
     monkeypatch.setattr(GatewayRunner, "_handle_message_with_agent", _raise)
 
     try:

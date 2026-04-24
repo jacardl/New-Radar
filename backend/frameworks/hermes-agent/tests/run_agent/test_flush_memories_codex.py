@@ -92,7 +92,7 @@ def _chat_response_with_memory_call():
 
 
 class TestFlushMemoriesRespectsConfigTimeout:
-    """flush_memories() must NOT hardcode timeout=30.0 �?it should defer
+    """flush_memories() must NOT hardcode timeout=30.0 é¥?it should defer
     to the config value via auxiliary.flush_memories.timeout."""
 
     def test_auxiliary_path_omits_explicit_timeout(self, monkeypatch):

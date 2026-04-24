@@ -15,7 +15,7 @@ import pytest
 from gateway.config import Platform, PlatformConfig, HomeChannel
 
 
-# ── Config loading ──────────────────────────────────────────────────
+# -- Config loading --------------------------------------------------
 
 class TestSmsConfigLoading:
     """Verify _apply_env_overrides wires SMS correctly."""
@@ -69,7 +69,7 @@ class TestSmsConfigLoading:
             assert Platform.SMS in connected
 
 
-# ── Format / truncate ───────────────────────────────────────────────
+# -- Format / truncate -----------------------------------------------
 
 class TestSmsFormatAndTruncate:
     """Test SmsAdapter.format_message strips markdown."""
@@ -124,7 +124,7 @@ class TestSmsFormatAndTruncate:
         assert result == "a\n\nb"
 
 
-# ── Echo prevention ────────────────────────────────────────────────
+# -- Echo prevention ------------------------------------------------
 
 class TestSmsEchoPrevention:
     """Adapter should ignore messages from its own number."""
@@ -144,7 +144,7 @@ class TestSmsEchoPrevention:
             assert adapter._from_number == "+15550001111"
 
 
-# ── Requirements check ─────────────────────────────────────────────
+# -- Requirements check ---------------------------------------------
 
 class TestSmsRequirements:
     def test_check_sms_requirements_missing_sid(self):
@@ -178,7 +178,7 @@ class TestSmsRequirements:
                 assert result is False
 
 
-# ── Toolset verification ───────────────────────────────────────────
+# -- Toolset verification -------------------------------------------
 
 class TestSmsToolset:
     def test_hermes_sms_toolset_exists(self):
@@ -203,7 +203,7 @@ class TestSmsToolset:
 
     def test_sms_in_scheduler_platform_map(self):
         """Verify cron scheduler recognizes 'sms' as a valid platform."""
-        # Just check the Platform enum has SMS �?the scheduler imports it dynamically
+        # Just check the Platform enum has SMS â?the scheduler imports it dynamically
         assert Platform.SMS.value == "sms"
 
     def test_sms_in_send_message_platform_map(self):
@@ -218,7 +218,7 @@ class TestSmsToolset:
         assert "sms" in deliver_desc.lower()
 
 
-# ── Webhook host configuration ─────────────────────────────────────
+# -- Webhook host configuration -------------------------------------
 
 class TestWebhookHostConfig:
     """Verify SMS_WEBHOOK_HOST env var and default."""
@@ -270,7 +270,7 @@ class TestWebhookHostConfig:
             assert adapter._webhook_url == "https://example.com/webhooks/twilio"
 
 
-# ── Startup guard (fail-closed) ────────────────────────────────────
+# -- Startup guard (fail-closed) ------------------------------------
 
 class TestStartupGuard:
     """Adapter must refuse to start without SMS_WEBHOOK_URL."""
@@ -328,7 +328,7 @@ class TestStartupGuard:
             await adapter.disconnect()
 
 
-# ── Twilio signature validation ────────────────────────────────────
+# -- Twilio signature validation ------------------------------------
 
 def _compute_twilio_signature(auth_token, url, params):
     """Reference implementation of Twilio's signature algorithm."""
@@ -451,7 +451,7 @@ class TestTwilioSignatureValidation:
         ) is True
 
 
-# ── Webhook signature enforcement (handler-level) ──────────────────
+# -- Webhook signature enforcement (handler-level) ------------------
 
 class TestWebhookSignatureEnforcement:
     """Integration tests for signature validation in _handle_webhook."""

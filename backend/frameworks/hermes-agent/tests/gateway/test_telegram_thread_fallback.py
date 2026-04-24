@@ -3,7 +3,7 @@
 When message_thread_id points to a non-existent thread, Telegram returns
 BadRequest('Message thread not found'). Since BadRequest is a subclass of
 NetworkError in python-telegram-bot, the old retry loop treated this as a
-transient error and retried 3 times before silently failing �?killing all
+transient error and retried 3 times before silently failing â?killing all
 tool progress messages, streaming responses, and typing indicators.
 
 The fix detects "thread not found" BadRequest errors and retries the send
@@ -20,9 +20,9 @@ from gateway.config import PlatformConfig, Platform
 from gateway.platforms.base import SendResult
 
 
-# ── Fake telegram.error hierarchy ──────────────────────────────────────
+# -- Fake telegram.error hierarchy --------------------------------------
 # Mirrors the real python-telegram-bot hierarchy:
-#   BadRequest �?NetworkError �?TelegramError �?Exception
+#   BadRequest â?NetworkError â?TelegramError â?Exception
 
 
 class FakeNetworkError(Exception):
@@ -114,7 +114,7 @@ async def test_send_retries_without_thread_on_thread_not_found():
 
 @pytest.mark.asyncio
 async def test_send_raises_on_other_bad_request():
-    """Non-thread BadRequest errors should NOT be retried �?they fail immediately."""
+    """Non-thread BadRequest errors should NOT be retried â?they fail immediately."""
     adapter = _make_adapter()
 
     async def mock_send_message(**kwargs):
@@ -183,7 +183,7 @@ async def test_send_retries_network_errors_normally():
 async def test_send_does_not_retry_timeout():
     """TimedOut (subclass of NetworkError) should NOT be retried in send().
 
-    The request may have already been delivered to the user �?retrying
+    The request may have already been delivered to the user â?retrying
     would send duplicate messages.
     """
     adapter = _make_adapter()
@@ -203,7 +203,7 @@ async def test_send_does_not_retry_timeout():
 
     assert result.success is False
     assert "Timed out" in result.error
-    # CRITICAL: only 1 attempt �?no retry for TimedOut
+    # CRITICAL: only 1 attempt â?no retry for TimedOut
     assert attempt[0] == 1
 
 
@@ -232,7 +232,7 @@ async def test_thread_fallback_only_fires_once():
     )
 
     assert result.success is True
-    # First chunk: attempt with thread �?fail �?retry without �?succeed
+    # First chunk: attempt with thread â?fail â?retry without â?succeed
     # Second chunk: should use thread_id=None directly (effective_thread_id
     # was cleared per-chunk but the metadata doesn't change between chunks)
     # The key point: the message was delivered despite the invalid thread

@@ -1,4 +1,4 @@
-"""Tests for /compress <focus> �?guided compression with focus topic.
+"""Tests for /compress <focus> é¥?guided compression with focus topic.
 
 Inspired by Claude Code's /compact <focus> feature.
 """

@@ -1,4 +1,4 @@
-"""Tests for session resume history display �?_display_resumed_history() and
+"""Tests for session resume history display �¢?_display_resumed_history() and
 _preload_resumed_session().
 
 Verifies that resuming a session shows a compact recap of the previous
@@ -48,11 +48,11 @@ def _make_cli(config_overrides=None, env_overrides=None, **kwargs):
         return HermesCLI(**kwargs)
 
 
-# ── Sample conversation histories for tests ──────────────────────────
+# -- Sample conversation histories for tests --------------------------
 
 
 def _simple_history():
-    """Two-turn conversation: user �?assistant �?user �?assistant."""
+    """Two-turn conversation: user �¢?assistant �¢?user �¢?assistant."""
     return [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "What is Python?"},
@@ -113,7 +113,7 @@ def _multimodal_history():
     ]
 
 
-# ── Tests for _display_resumed_history ───────────────────────────────
+# -- Tests for _display_resumed_history -------------------------------
 
 
 class TestDisplayResumedHistory:
@@ -177,7 +177,7 @@ class TestDisplayResumedHistory:
         # The 300-char truncated text is present but may be line-wrapped by
         # Rich's panel renderer, so check the total A count in the output
         a_count = output.count("A")
-        assert 200 <= a_count <= 310  # roughly 300 chars (±panel padding)
+        assert 200 <= a_count <= 310  # roughly 300 chars (��±panel padding)
 
     def test_long_assistant_message_truncated(self):
         """Non-last assistant messages are still truncated."""
@@ -368,7 +368,7 @@ class TestDisplayResumedHistory:
         assert "terminal" in output
 
 
-# ── Tests for _preload_resumed_session ──────────────────────────────
+# -- Tests for _preload_resumed_session ------------------------------
 
 
 class TestPreloadResumedSession:
@@ -474,7 +474,7 @@ class TestPreloadResumedSession:
         assert "1 user messages" not in output
 
 
-# ── Integration: _init_agent skips when preloaded ────────────────────
+# -- Integration: _init_agent skips when preloaded --------------------
 
 
 class TestInitAgentSkipsPreloaded:
@@ -498,7 +498,7 @@ class TestInitAgentSkipsPreloaded:
         mock_db.get_messages_as_conversation.assert_not_called()
 
 
-# ── Config default tests ─────────────────────────────────────────────
+# -- Config default tests ---------------------------------------------
 
 
 class TestResumeDisplayConfig:

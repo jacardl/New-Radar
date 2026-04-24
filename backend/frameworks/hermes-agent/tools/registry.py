@@ -184,7 +184,7 @@ class ToolRegistry:
                     if not quiet:
                         logger.debug("Tool %s unavailable (check failed)", name)
                     continue
-            # Ensure schema always has a "name" field �?use entry.name as fallback
+            # Ensure schema always has a "name" field é¥?use entry.name as fallback
             schema_with_name = {**entry.schema, "name": entry.name}
             result.append({"type": "function", "function": schema_with_name})
         return result
@@ -234,7 +234,7 @@ class ToolRegistry:
         """Return a tool's raw schema dict, bypassing check_fn filtering.
 
         Useful for token estimation and introspection where availability
-        doesn't matter �?only the schema content does.
+        doesn't matter é¥?only the schema content does.
         """
         entry = self.get_entry(name)
         return entry.schema if entry else None
@@ -244,7 +244,7 @@ class ToolRegistry:
         entry = self.get_entry(name)
         return entry.toolset if entry else None
 
-    def get_emoji(self, name: str, default: str = "�?) -> str:
+    def get_emoji(self, name: str, default: str = "é¿?) -> str:
         """Return the emoji for a tool, or *default* if unset."""
         entry = self.get_entry(name)
         return (entry.emoji if entry and entry.emoji else default)

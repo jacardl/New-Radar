@@ -1,6 +1,6 @@
 """Hybrid keyword/BM25 retrieval for the memory store.
 
-Ported from KIK memory_agent.py �?combines FTS5 full-text search with
+Ported from KIK memory_agent.py é¥?combines FTS5 full-text search with
 Jaccard similarity reranking and trust-weighted scoring.
 """
 
@@ -52,7 +52,7 @@ class FactRetriever:
         min_trust: float = 0.3,
         limit: int = 10,
     ) -> list[dict]:
-        """Hybrid search: FTS5 candidates �?Jaccard rerank �?trust weighting.
+        """Hybrid search: FTS5 candidates é«?Jaccard rerank é«?trust weighting.
 
         Pipeline:
         1. FTS5 search: Get limit*3 candidates from SQLite full-text search
@@ -106,7 +106,7 @@ class FactRetriever:
         # Sort by score descending, return top limit
         scored.sort(key=lambda x: x["score"], reverse=True)
         results = scored[:limit]
-        # Strip raw HRR bytes �?callers expect JSON-serializable dicts
+        # Strip raw HRR bytes é¥?callers expect JSON-serializable dicts
         for fact in results:
             fact.pop("hrr_vector", None)
         return results
@@ -120,7 +120,7 @@ class FactRetriever:
         """Compositional entity query using HRR algebra.
 
         Unbinds entity from memory bank to extract associated content.
-        This is NOT keyword search �?it uses algebraic structure to find facts
+        This is NOT keyword search é¥?it uses algebraic structure to find facts
         where the entity plays a structural role.
 
         Falls back to FTS5 search if numpy unavailable.
@@ -198,7 +198,7 @@ class FactRetriever:
         """Discover facts that share structural connections with an entity.
 
         Unlike probe (which finds facts *about* an entity), related finds
-        facts that are connected through shared context �?e.g., other entities
+        facts that are connected through shared context é¥?e.g., other entities
         mentioned alongside this one, or content that overlaps structurally.
 
         Falls back to FTS5 search if numpy unavailable.
@@ -208,7 +208,7 @@ class FactRetriever:
 
         conn = self.store._conn
 
-        # Encode entity as a bare atom (not role-bound �?we want ANY structural match)
+        # Encode entity as a bare atom (not role-bound é¥?we want ANY structural match)
         entity_vec = hrr.encode_atom(entity.lower(), self.hrr_dim)
 
         # Get all facts with vectors
@@ -248,7 +248,7 @@ class FactRetriever:
 
             entity_role_sim = hrr.similarity(residual, role_entity)
             content_role_sim = hrr.similarity(residual, role_content)
-            # Take the max �?entity could appear in either role
+            # Take the max é¥?entity could appear in either role
             best_sim = max(entity_role_sim, content_role_sim)
 
             fact["score"] = (best_sim + 1.0) / 2.0 * fact["trust_score"]
@@ -263,14 +263,14 @@ class FactRetriever:
         category: str | None = None,
         limit: int = 10,
     ) -> list[dict]:
-        """Multi-entity compositional query �?vector-space JOIN.
+        """Multi-entity compositional query é¥?vector-space JOIN.
 
         Given multiple entities, algebraically intersects their structural
         connections to find facts related to ALL of them simultaneously.
         This is compositional reasoning that no embedding DB can do.
 
         Example: reason(["peppi", "backend"]) finds facts where peppi AND
-        backend both play structural roles �?without keyword matching.
+        backend both play structural roles é¥?without keyword matching.
 
         Falls back to FTS5 search if numpy unavailable.
         """
@@ -345,7 +345,7 @@ class FactRetriever:
 
         Two facts contradict when they share entities (same subject) but have
         low content-vector similarity (different claims). This is automated
-        memory hygiene �?no other memory system does this.
+        memory hygiene é¥?no other memory system does this.
 
         Returns pairs of facts with a contradiction score.
         Falls back to empty list if numpy unavailable.
@@ -375,8 +375,8 @@ class FactRetriever:
         if len(rows) < 2:
             return []
 
-        # Guard against O(n²) explosion on large fact stores.
-        # At 500 facts, that's ~125K comparisons �?acceptable.
+        # Guard against O(nè) explosion on large fact stores.
+        # At 500 facts, that's ~125K comparisons é¥?acceptable.
         # Above that, only check the most recently updated facts.
         _MAX_CONTRADICT_FACTS = 500
         if len(rows) > _MAX_CONTRADICT_FACTS:
@@ -520,7 +520,7 @@ class FactRetriever:
         try:
             rows = conn.execute(sql, params).fetchall()
         except Exception:
-            # FTS5 MATCH can fail on malformed queries �?fall back to empty
+            # FTS5 MATCH can fail on malformed queries é¥?fall back to empty
             return []
 
         if not rows:
@@ -559,7 +559,7 @@ class FactRetriever:
 
     @staticmethod
     def _jaccard_similarity(set_a: set, set_b: set) -> float:
-        """Jaccard similarity coefficient: |A �?B| / |A �?B|."""
+        """Jaccard similarity coefficient: |A é­?B| / |A é­?B|."""
         if not set_a or not set_b:
             return 0.0
         intersection = len(set_a & set_b)

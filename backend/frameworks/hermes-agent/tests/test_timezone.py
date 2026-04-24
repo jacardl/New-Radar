@@ -28,7 +28,7 @@ def _reset_hermes_time_cache():
 
 
 # =========================================================================
-# hermes_time.now() �?core helper
+# hermes_time.now() é¥?core helper
 # =========================================================================
 
 class TestHermesTimeNow:
@@ -75,7 +75,7 @@ class TestHermesTimeNow:
         assert "Mars/Olympus_Mons" in caplog.text
 
     def test_empty_timezone_uses_local(self):
-        """No timezone configured �?server-local time (still tz-aware)."""
+        """No timezone configured é«?server-local time (still tz-aware)."""
         os.environ.pop("HERMES_TIMEZONE", None)
         result = hermes_time.now()
         assert result.tzinfo is not None
@@ -132,7 +132,7 @@ class TestGetTimezone:
 
 
 # =========================================================================
-# execute_code child env �?TZ injection
+# execute_code child env é¥?TZ injection
 # =========================================================================
 
 @pytest.mark.skipif(sys.platform == "win32", reason="UDS not available on Windows")
@@ -142,7 +142,7 @@ class TestCodeExecutionTZ:
     @pytest.fixture(autouse=True)
     def _import_execute_code(self, monkeypatch):
         """Lazy-import execute_code to avoid pulling in firecrawl at collection time."""
-        # Force local backend �?other tests in the same xdist worker may leak
+        # Force local backend é¥?other tests in the same xdist worker may leak
         # TERMINAL_ENV=modal/docker which causes modal.exception.AuthError.
         monkeypatch.setenv("TERMINAL_ENV", "local")
         try:
@@ -252,7 +252,7 @@ class TestCronTimezone:
         jobs[0]["next_run_at"] = naive_past
         save_jobs(jobs)
 
-        # Should not crash �?_ensure_aware handles the naive timestamp
+        # Should not crash é¥?_ensure_aware handles the naive timestamp
         due = get_due_jobs()
         assert len(due) == 1
 
@@ -268,7 +268,7 @@ class TestCronTimezone:
         os.environ["HERMES_TIMEZONE"] = "Asia/Kolkata"
         _reset_hermes_time_cache()
 
-        # Create a naive datetime �?will be interpreted as system-local time
+        # Create a naive datetime é¥?will be interpreted as system-local time
         naive_dt = datetime(2026, 3, 11, 12, 0, 0)
 
         result = _ensure_aware(naive_dt)
@@ -324,7 +324,7 @@ class TestCronTimezone:
         jobs = load_jobs()
 
         # Simulate a naive timestamp that was written by datetime.now() on a
-        # system running in UTC+5:30 �?5 minutes in the past (local time)
+        # system running in UTC+5:30 é¥?5 minutes in the past (local time)
         naive_past = (datetime.now() - timedelta(seconds=30)).isoformat()
         jobs[0]["next_run_at"] = naive_past
         save_jobs(jobs)
@@ -332,19 +332,19 @@ class TestCronTimezone:
         # Must be recognized as due regardless of tz mismatch
         due = get_due_jobs()
         assert len(due) == 1, (
-            "Overdue job was skipped �?_ensure_aware likely shifted absolute time"
+            "Overdue job was skipped é¥?_ensure_aware likely shifted absolute time"
         )
 
     def test_get_due_jobs_naive_cross_timezone(self, tmp_path, monkeypatch):
         """Naive past timestamps must be detected as due even when Hermes tz
-        is behind system local tz �?the scenario that triggered #806."""
+        is behind system local tz é¥?the scenario that triggered #806."""
         import cron.jobs as jobs_module
         monkeypatch.setattr(jobs_module, "CRON_DIR", tmp_path / "cron")
         monkeypatch.setattr(jobs_module, "JOBS_FILE", tmp_path / "cron" / "jobs.json")
         monkeypatch.setattr(jobs_module, "OUTPUT_DIR", tmp_path / "cron" / "output")
 
         # Use a Hermes timezone far behind UTC so that the numeric wall time
-        # of the naive timestamp exceeds _hermes_now's wall time �?this would
+        # of the naive timestamp exceeds _hermes_now's wall time é¥?this would
         # have caused a false "not due" with the old replace(tzinfo=...) approach.
         os.environ["HERMES_TIMEZONE"] = "Pacific/Midway"  # UTC-11
         _reset_hermes_time_cache()

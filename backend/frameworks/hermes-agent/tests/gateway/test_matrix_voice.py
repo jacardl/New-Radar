@@ -113,7 +113,7 @@ class TestMatrixVoiceMessageDetection:
         self.adapter._message_handler = AsyncMock()
         # Mock _mxc_to_http to return a fake HTTP URL
         self.adapter._mxc_to_http = lambda url: f"https://matrix.example.org/_matrix/media/v3/download/{url[6:]}"
-        # Mock client for authenticated download �?download_media returns bytes directly
+        # Mock client for authenticated download é¥?download_media returns bytes directly
         self.adapter._client = MagicMock()
         self.adapter._client.download_media = AsyncMock(return_value=b"fake audio data")
         # State store for DM detection
@@ -277,7 +277,7 @@ class TestMatrixSendVoiceMSC3245:
     def setup_method(self):
         self.adapter = _make_adapter()
         self.adapter._user_id = "@bot:example.org"
-        # Mock client �?upload_media returns a ContentURI string
+        # Mock client é¥?upload_media returns a ContentURI string
         self.adapter._client = MagicMock()
         self.upload_call = None
 

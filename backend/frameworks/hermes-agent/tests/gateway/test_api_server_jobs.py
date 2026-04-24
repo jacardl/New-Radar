@@ -312,7 +312,7 @@ class TestUpdateJob:
 
     @pytest.mark.asyncio
     async def test_update_job_rejects_unknown_fields(self, adapter):
-        """PATCH /api/jobs/{id} �?only allowed fields pass through."""
+        """PATCH /api/jobs/{id} é¥?only allowed fields pass through."""
         app = _create_app(adapter)
         updated_job = {**SAMPLE_JOB, "name": "new-name"}
         mock_update = MagicMock(return_value=updated_job)

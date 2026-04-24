@@ -60,7 +60,7 @@ def _make_adapter():
 
 
 # ===========================================================================
-# send_exec_approval �?Block Kit buttons
+# send_exec_approval é¥?Block Kit buttons
 # ===========================================================================
 
 class TestSlackExecApproval:
@@ -146,7 +146,7 @@ class TestSlackExecApproval:
 
 
 # ===========================================================================
-# _handle_approval_action �?button click handler
+# _handle_approval_action é¥?button click handler
 # ===========================================================================
 
 class TestSlackApprovalAction:
@@ -318,7 +318,7 @@ class TestSlackThreadContext:
 
 
 # ===========================================================================
-# _has_active_session_for_thread �?session key fix (#5833)
+# _has_active_session_for_thread é¥?session key fix (#5833)
 # ===========================================================================
 
 class TestSessionKeyFix:
@@ -374,7 +374,7 @@ class TestSessionKeyFix:
 
 
 # ===========================================================================
-# Thread engagement �?bot-started threads & mentioned threads
+# Thread engagement é¥?bot-started threads & mentioned threads
 # ===========================================================================
 
 class TestThreadEngagement:

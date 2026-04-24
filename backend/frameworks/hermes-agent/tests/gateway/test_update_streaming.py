@@ -233,7 +233,7 @@ class TestUpdateCommandGatewayFlag:
 
 
 # ---------------------------------------------------------------------------
-# _watch_update_progress â€?output streaming
+# _watch_update_progress Ã©Â¥?output streaming
 # ---------------------------------------------------------------------------
 
 
@@ -251,7 +251,7 @@ class TestWatchUpdateProgress:
                    "session_key": "agent:main:telegram:dm:111"}
         (hermes_home / ".update_pending.json").write_text(json.dumps(pending))
         # Write output
-        (hermes_home / ".update_output.txt").write_text("â†?Fetching updates...\n")
+        (hermes_home / ".update_output.txt").write_text("Ã©Â«?Fetching updates...\n")
 
         mock_adapter = AsyncMock()
         runner.adapters = {Platform.TELEGRAM: mock_adapter}
@@ -260,7 +260,7 @@ class TestWatchUpdateProgress:
         async def write_exit_code():
             await asyncio.sleep(0.3)
             (hermes_home / ".update_output.txt").write_text(
-                "â†?Fetching updates...\nâœ?Code updated!\n"
+                "Ã©Â«?Fetching updates...\nÃ©?Code updated!\n"
             )
             (hermes_home / ".update_exit_code").write_text("0")
 

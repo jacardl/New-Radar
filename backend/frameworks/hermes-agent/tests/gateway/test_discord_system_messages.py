@@ -59,7 +59,7 @@ class TestDiscordSystemMessageFilter(unittest.TestCase):
         self.assertTrue(self._run_filter(msg))
 
     def test_reply_messages_accepted(self):
-        """Reply messages (type=reply) should be accepted �?users reply to bot messages."""
+        """Reply messages (type=reply) should be accepted é¥?users reply to bot messages."""
         msg = _make_message(msg_type=discord.MessageType.reply)
         self.assertTrue(self._run_filter(msg))
 

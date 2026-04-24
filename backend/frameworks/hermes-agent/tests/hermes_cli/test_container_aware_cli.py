@@ -84,7 +84,7 @@ def test_get_container_exec_info_skipped_when_hermes_dev(container_env, monkeypa
 
 
 def test_get_container_exec_info_not_skipped_when_hermes_dev_zero(container_env, monkeypatch):
-    """HERMES_DEV=0 does NOT trigger bypass �?only '1' does."""
+    """HERMES_DEV=0 does NOT trigger bypass é¥?only '1' does."""
     monkeypatch.setenv("HERMES_DEV", "0")
 
     with patch("hermes_constants.is_container", return_value=False):

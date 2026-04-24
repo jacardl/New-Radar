@@ -58,7 +58,7 @@ def resolve_config_path() -> Path:
 
     Resolution order:
       1. $HERMES_HOME/honcho.json      (profile-local, if it exists)
-      2. ~/.hermes/honcho.json          (default profile �?shared host blocks live here)
+      2. ~/.hermes/honcho.json          (default profile é¥?shared host blocks live here)
       3. ~/.honcho/config.json          (global, cross-app interop)
 
     Returns the global path if none exist (for first-time setup writes).
@@ -67,7 +67,7 @@ def resolve_config_path() -> Path:
     if local_path.exists():
         return local_path
 
-    # Default profile's config �?host blocks accumulate here via setup/clone
+    # Default profile's config é¥?host blocks accumulate here via setup/clone
     default_path = Path.home() / ".hermes" / "honcho.json"
     if default_path != local_path and default_path.exists():
         return default_path
@@ -80,7 +80,7 @@ _VALID_RECALL_MODES = {"hybrid", "context", "tools"}
 
 
 def _normalize_recall_mode(val: str) -> str:
-    """Normalize legacy recall mode values (e.g. 'auto' �?'hybrid')."""
+    """Normalize legacy recall mode values (e.g. 'auto' é«?'hybrid')."""
     val = _RECALL_MODE_ALIASES.get(val, val)
     return val if val in _VALID_RECALL_MODES else "hybrid"
 
@@ -104,7 +104,7 @@ def _normalize_observation_mode(val: str) -> str:
     return val if val in _VALID_OBSERVATION_MODES else "directional"
 
 
-# Observation presets �?granular booleans derived from legacy string mode.
+# Observation presets é¥?granular booleans derived from legacy string mode.
 # Explicit per-peer config always wins over presets.
 _OBSERVATION_PRESETS = {
     "directional": {
@@ -174,30 +174,30 @@ class HonchoClientConfig:
     # reasoning_level: "minimal" | "low" | "medium" | "high" | "max"
     dialectic_reasoning_level: str = "low"
     # dynamic: auto-bump reasoning level based on query length
-    #   true  �?low->medium (120+ chars), low->high (400+ chars), capped at "high"
-    #   false �?always use dialecticReasoningLevel as-is
+    #   true  é¥?low->medium (120+ chars), low->high (400+ chars), capped at "high"
+    #   false é¥?always use dialecticReasoningLevel as-is
     dialectic_dynamic: bool = True
     # Max chars of dialectic result to inject into Hermes system prompt
     dialectic_max_chars: int = 600
-    # Honcho API limits �?configurable for self-hosted instances
+    # Honcho API limits é¥?configurable for self-hosted instances
     # Max chars per message sent via add_messages() (Honcho cloud: 25000)
     message_max_chars: int = 25000
     # Max chars for dialectic query input to peer.chat() (Honcho cloud: 10000)
     dialectic_max_input_chars: int = 10000
     # Recall mode: how memory retrieval works when Honcho is active.
-    # "hybrid"  �?auto-injected context + Honcho tools available (model decides)
-    # "context" �?auto-injected context only, Honcho tools removed
-    # "tools"   �?Honcho tools only, no auto-injected context
+    # "hybrid"  é¥?auto-injected context + Honcho tools available (model decides)
+    # "context" é¥?auto-injected context only, Honcho tools removed
+    # "tools"   é¥?Honcho tools only, no auto-injected context
     recall_mode: str = "hybrid"
     # When True and recallMode is "tools", create the Honcho session eagerly
     # during initialize() instead of deferring to the first tool call.
     # This ensures sync_turn() can write from the very first turn.
-    # Does NOT enable automatic context injection �?only changes init timing.
+    # Does NOT enable automatic context injection é¥?only changes init timing.
     init_on_session_start: bool = False
     # Observation mode: legacy string shorthand ("directional" or "unified").
     # Kept for backward compat; granular per-peer booleans below are preferred.
     observation_mode: str = "directional"
-    # Per-peer observation booleans �?maps 1:1 to Honcho's SessionPeerConfig.
+    # Per-peer observation booleans é¥?maps 1:1 to Honcho's SessionPeerConfig.
     # Resolved from "observation" object in config, falling back to observation_mode preset.
     user_observe_me: bool = True
     user_observe_others: bool = True
@@ -428,10 +428,10 @@ class HonchoClientConfig:
         Resolution order:
           1. Manual directory override from sessions map
           2. Hermes session title (from /title command)
-          3. per-session strategy �?Hermes session_id ({timestamp}_{hex})
-          4. per-repo strategy �?git repo root directory name
-          5. per-directory strategy �?directory basename
-          6. global strategy �?workspace name
+          3. per-session strategy é¥?Hermes session_id ({timestamp}_{hex})
+          4. per-repo strategy é¥?git repo root directory name
+          5. per-directory strategy é¥?directory basename
+          6. global strategy é¥?workspace name
         """
         import re
 

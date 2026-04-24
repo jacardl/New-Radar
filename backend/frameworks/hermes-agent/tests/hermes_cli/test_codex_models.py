@@ -107,7 +107,7 @@ def test_model_command_uses_runtime_access_token_for_codex_list(monkeypatch):
     assert captured["current_model"] == "openai/gpt-5.4"
 
 
-# ── Tests for _normalize_model_for_provider ──────────────────────────
+# -- Tests for _normalize_model_for_provider --------------------------
 
 
 def _make_cli(model="anthropic/claude-opus-4.6", **kwargs):
@@ -141,7 +141,7 @@ class TestNormalizeModelForProvider:
     Only two things happen:
     1. Provider prefixes are stripped (API needs bare slugs)
     2. The *untouched default* model is swapped for a Codex model
-    Everything else passes through �?the API is the judge.
+    Everything else passes through â?the API is the judge.
     """
 
     def test_non_codex_provider_is_noop(self):
@@ -163,30 +163,30 @@ class TestNormalizeModelForProvider:
         assert cli.model == "gpt-5.3-codex"
 
     def test_bare_non_codex_model_passes_through(self):
-        """gpt-5.4 (no 'codex' suffix) passes through �?user chose it."""
+        """gpt-5.4 (no 'codex' suffix) passes through â?user chose it."""
         cli = _make_cli(model="gpt-5.4")
         changed = cli._normalize_model_for_provider("openai-codex")
         assert changed is False
         assert cli.model == "gpt-5.4"
 
     def test_any_bare_model_trusted(self):
-        """Even a non-OpenAI bare model passes through �?user explicitly set it."""
+        """Even a non-OpenAI bare model passes through â?user explicitly set it."""
         cli = _make_cli(model="claude-opus-4-6")
         changed = cli._normalize_model_for_provider("openai-codex")
-        # User explicitly chose this model �?we trust them, API will error if wrong
+        # User explicitly chose this model â?we trust them, API will error if wrong
         assert changed is False
         assert cli.model == "claude-opus-4-6"
 
     def test_provider_prefix_stripped(self):
-        """openai/gpt-5.4 �?gpt-5.4 (strip prefix, keep model)."""
+        """openai/gpt-5.4 â?gpt-5.4 (strip prefix, keep model)."""
         cli = _make_cli(model="openai/gpt-5.4")
         changed = cli._normalize_model_for_provider("openai-codex")
         assert changed is True
         assert cli.model == "gpt-5.4"
 
     def test_any_provider_prefix_stripped(self):
-        """anthropic/claude-opus-4.6 �?claude-opus-4.6 (strip prefix only).
-        User explicitly chose this �?let the API decide if it works."""
+        """anthropic/claude-opus-4.6 â?claude-opus-4.6 (strip prefix only).
+        User explicitly chose this â?let the API decide if it works."""
         cli = _make_cli(model="anthropic/claude-opus-4.6")
         changed = cli._normalize_model_for_provider("openai-codex")
         assert changed is True

@@ -4,7 +4,7 @@ Regression test for GitHub PR #6088 / Discord report: OpenRouter model IDs
 with variant suffixes like ``:free``, ``:extended``, ``:fast`` were being
 mangled by the colon-to-slash conversion in model_switch.py Step c.
 
-The fix: Step c now skips colon→slash conversion when the model name already
+The fix: Step c now skips coloné«æ¯lash conversion when the model name already
 contains a forward slash (i.e. is already in ``vendor/model`` format), since
 the colon is a variant tag, not a vendor separator.
 """
@@ -14,7 +14,7 @@ from unittest.mock import patch
 from hermes_cli.model_switch import switch_model
 
 
-# Shared mock context �?skip network calls, credential resolution, catalog lookups
+# Shared mock context é¥?skip network calls, credential resolution, catalog lookups
 _MOCK_VALIDATION = {"accepted": True, "persist": True, "recognized": True, "message": None}
 
 
@@ -55,7 +55,7 @@ class TestVariantTagPreservation:
         assert result == "nvidia/nemotron-3-super-120b-a12b"
 
     def test_legacy_colon_format_with_tag_converts_first_colon_only(self):
-        """vendor:model:free (no slash) �?vendor/model:free �?first colon becomes slash."""
+        """vendor:model:free (no slash) é«?vendor/model:free é¥?first colon becomes slash."""
         result = _run_switch("nvidia:nemotron-3-super-120b-a12b:free")
         assert result == "nvidia/nemotron-3-super-120b-a12b:free"
 

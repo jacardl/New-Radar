@@ -1,6 +1,6 @@
-"""Models.dev registry integration �?primary database for providers and models.
+"""Models.dev registry integration é¥?primary database for providers and models.
 
-Fetches from https://models.dev/api.json �?a community-maintained database
+Fetches from https://models.dev/api.json é¥?a community-maintained database
 of 4000+ models across 109+ providers.  Provides:
 
 - **Provider metadata**: name, base URL, env vars, documentation link
@@ -9,7 +9,7 @@ of 4000+ models across 109+ providers.  Provides:
   open-weights flag, family grouping, deprecation status
 
 Data resolution order (like TypeScript OpenCode):
-  1. Bundled snapshot (ships with the package �?offline-first)
+  1. Bundled snapshot (ships with the package é¥?offline-first)
   2. Disk cache (~/.hermes/models_dev_cache.json)
   3. Network fetch (https://models.dev/api.json)
   4. Background refresh every 60 minutes
@@ -40,7 +40,7 @@ _models_dev_cache_time: float = 0
 
 
 # ---------------------------------------------------------------------------
-# Dataclasses �?rich metadata for providers and models
+# Dataclasses é¥?rich metadata for providers and models
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -135,10 +135,10 @@ class ProviderInfo:
 
 
 # ---------------------------------------------------------------------------
-# Provider ID mapping: Hermes �?models.dev
+# Provider ID mapping: Hermes é«?models.dev
 # ---------------------------------------------------------------------------
 
-# Hermes provider names �?models.dev provider IDs
+# Hermes provider names é«?models.dev provider IDs
 PROVIDER_TO_MODELS_DEV: Dict[str, str] = {
     "openrouter": "openrouter",
     "anthropic": "anthropic",
@@ -171,7 +171,7 @@ PROVIDER_TO_MODELS_DEV: Dict[str, str] = {
     "cohere": "cohere",
 }
 
-# Reverse mapping: models.dev �?Hermes (built lazily)
+# Reverse mapping: models.dev é«?Hermes (built lazily)
 _MODELS_DEV_TO_PROVIDER: Optional[Dict[str, str]] = None
 
 
@@ -236,7 +236,7 @@ def fetch_models_dev(force_refresh: bool = False) -> Dict[str, Any]:
     except Exception as e:
         logger.debug("Failed to fetch models.dev: %s", e)
 
-    # Fall back to disk cache �?use a short TTL (5 min) so we retry
+    # Fall back to disk cache é¥?use a short TTL (5 min) so we retry
     # the network fetch soon instead of serving stale data for a full hour.
     if not _models_dev_cache:
         _models_dev_cache = _load_disk_cache()
@@ -361,12 +361,12 @@ def get_model_capabilities(provider: str, model: str) -> Optional[ModelCapabilit
     Returns None if model not found.
 
     Extracts from model entry fields:
-      - reasoning  (bool)  �?supports_reasoning
-      - tool_call  (bool)  �?supports_tools
-      - attachment (bool)  �?supports_vision
-      - limit.context (int) �?context_window
-      - limit.output  (int) �?max_output_tokens
-      - family     (str)   �?model_family
+      - reasoning  (bool)  é«?supports_reasoning
+      - tool_call  (bool)  é«?supports_tools
+      - attachment (bool)  é«?supports_vision
+      - limit.context (int) é«?context_window
+      - limit.output  (int) é«?max_output_tokens
+      - family     (str)   é«?model_family
     """
     models = _get_provider_models(provider)
     if models is None:
@@ -457,7 +457,7 @@ def list_agentic_models(provider: str) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
-# Rich dataclass constructors �?parse raw models.dev JSON into dataclasses
+# Rich dataclass constructors é¥?parse raw models.dev JSON into dataclasses
 # ---------------------------------------------------------------------------
 
 def _parse_model_info(model_id: str, raw: Dict[str, Any], provider_id: str) -> ModelInfo:
@@ -535,7 +535,7 @@ def get_provider_info(provider_id: str) -> Optional[ProviderInfo]:
     Accepts either a Hermes provider ID (e.g. "kilocode") or a models.dev
     ID (e.g. "kilo").  Returns None if the provider is not in the catalog.
     """
-    # Resolve Hermes ID �?models.dev ID
+    # Resolve Hermes ID é«?models.dev ID
     mdev_id = PROVIDER_TO_MODELS_DEV.get(provider_id, provider_id)
 
     data = fetch_models_dev()

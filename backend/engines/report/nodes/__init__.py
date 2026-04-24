@@ -1,6 +1,6 @@
 """
-Report Engine节点处理模块�?
-封装模板选择、章节生成、文档布局、篇幅规划等流水线节点�?"""
+Report Engineèç¹å¤çæ¨¡å
+å°è£æ¨¡æ¿éæ©ãç« èçæãææ¡£å¸å±ãç¯å¹è§åç­æµæ°´çº¿èç¹"""
 
 from .base_node import BaseNode, StateMutationNode
 from .template_selection_node import TemplateSelectionNode

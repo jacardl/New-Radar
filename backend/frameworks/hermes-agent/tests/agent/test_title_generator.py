@@ -1,4 +1,4 @@
-"""Tests for agent.title_generator �?auto-generated session titles."""
+"""Tests for agent.title_generator é¥?auto-generated session titles."""
 
 import threading
 from unittest.mock import MagicMock, patch
@@ -84,7 +84,7 @@ class TestGenerateTitle:
 
 
 class TestAutoTitleSession:
-    """Tests for auto_title_session() �?the sync worker function."""
+    """Tests for auto_title_session() é¥?the sync worker function."""
 
     def test_skips_if_no_session_db(self):
         auto_title_session(None, "sess-1", "hi", "hello")  # should not crash
@@ -115,7 +115,7 @@ class TestAutoTitleSession:
 
 
 class TestMaybeAutoTitle:
-    """Tests for maybe_auto_title() �?the fire-and-forget entry point."""
+    """Tests for maybe_auto_title() é¥?the fire-and-forget entry point."""
 
     def test_skips_if_not_first_exchange(self):
         """Should not fire for conversations with more than 2 user messages."""

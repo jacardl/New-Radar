@@ -31,18 +31,18 @@ FORUM_HOST_ROLE_INSTRUCTION = """You are an objective analysis moderator (Forum 
    - Gather their findings and identify consensus and disagreements
    - Ask follow-up questions to eliminate blind spots
 
-3. **Cross-Validation**: Check if different agents' findings conflict; mark low-confidence content but do NOT discard it — preserve it with source attribution for users to judge.
+3. **Cross-Validation**: Check if different agents' findings conflict; mark low-confidence content but do NOT discard it - preserve it with source attribution for users to judge.
 
-4. **Hard Stop (Zero-Shot Constraint)** [Highest Priority]: If the context does NOT contain sufficient information, you MUST directly output '数据不足，无法分析' (Insufficient data, cannot analyze). You are ABSOLUTELY PROHIBITED from role-playing, inferring, or fabricating data based on your own knowledge.
+4. **Hard Stop (Zero-Shot Constraint)** [Highest Priority]: If the context does NOT contain sufficient information, you MUST directly output 'æ°æ®ä¸è¶³ï¼æ æ³åæ' (Insufficient data, cannot analyze). You are ABSOLUTELY PROHIBITED from role-playing, inferring, or fabricating data based on your own knowledge.
 
 5. **Anti-Hallucination**: All conclusions must be sourced from the Agent records above. Do not speculate or invent content.
 
 **Output Requirements**:
-1. Pure factual guidance — only summarize based on provided data, never add subjective emotions
-2. Source attribution — all factual viewpoints must cite which Agent provided the data
-3. Concise and objective — keep each analysis under 1000 characters
-4. Avoid cyber forensics and over-professionalism — use plain language (e.g., "these 100+ posts were almost all sent at the same time with highly similar content — likely bots")
-5. **CRITICAL**: If data from different sources conflicts, explicitly mark it as "低置信度" (low confidence) but still include it with the original source URL for user verification
+1. Pure factual guidance - only summarize based on provided data, never add subjective emotions
+2. Source attribution - all factual viewpoints must cite which Agent provided the data
+3. Concise and objective - keep each analysis under 1000 characters
+4. Avoid cyber forensics and over-professionalism - use plain language (e.g., "these 100+ posts were almost all sent at the same time with highly similar content - likely bots")
+5. **CRITICAL**: If data from different sources conflicts, explicitly mark it as "ä½ç½®ä¿¡åº¦" (low confidence) but still include it with the original source URL for user verification
 
 **Agent Information Sources**:
 - INSIGHT Agent: Private opinion database data (local PostgreSQL crawled_data)
@@ -181,9 +181,9 @@ class ForumAgent(BaseHermesAgent):
 
         # Build sub-queries for each engine based on the main query
         sub_queries = {
-            'query': f"网络搜索最新相关资讯和舆情动态：{user_query}",
-            'insight': f"分析本地数据库中关于该话题的舆情数据和情感倾向：{user_query}",
-            'media': f"分析该话题相关的多媒体内容（图片、视频、图文）传播情况：{user_query}",
+            'query': f"ç½ç»æç´¢ææ°ç¸å³èµè®¯åèæå¨æï¼{user_query}",
+            'insight': f"åææ¬å°æ°æ®åºä¸­å³äºè¯¥è¯é¢çèææ°æ®åææå¾åï¼{user_query}",
+            'media': f"åæè¯¥è¯é¢ç¸å³çå¤åªä½åå®¹ï¼å¾çãè§é¢ãå¾æï¼ä¼ æ­æåµï¼{user_query}",
         }
 
         # Dispatch to enabled engines in parallel
@@ -217,7 +217,7 @@ class ForumAgent(BaseHermesAgent):
             results['synthesis'] = synthesis
         except Exception as e:
             logger.exception("ForumAgent: Synthesis failed")
-            results['synthesis'] = f"综合分析失败: {str(e)}"
+            results['synthesis'] = f"ç»¼ååæå¤±è´¥: {str(e)}"
 
         return results
 
@@ -247,31 +247,31 @@ class ForumAgent(BaseHermesAgent):
         model = getattr(settings, 'OPENAI_MODEL_NAME', 'new-radar-agent')
 
         # Step 1: Announce intent decomposition
-        yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"🔍 正在分解任务...\"}},\"finish_reason\":null}}]}}\n\n"
+        yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"ð æ­£å¨åè§£ä»»å¡...\"}},\"finish_reason\":null}}]}}\n\n"
         yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"\\n\"}},\"finish_reason\":null}}]}}\n\n"
 
         # Step 2: Dispatch to engines in parallel, stream progress
         sub_queries = {
-            'query': f"网络搜索最新相关资讯和舆情动态：{user_query}",
-            'insight': f"分析本地数据库中关于该话题的舆情数据和情感倾向：{user_query}",
-            'media': f"分析该话题相关的多媒体内容（图片、视频、图文）传播情况：{user_query}",
+            'query': f"ç½ç»æç´¢ææ°ç¸å³èµè®¯åèæå¨æï¼{user_query}",
+            'insight': f"åææ¬å°æ°æ®åºä¸­å³äºè¯¥è¯é¢çèææ°æ®åææå¾åï¼{user_query}",
+            'media': f"åæè¯¥è¯é¢ç¸å³çå¤åªä½åå®¹ï¼å¾çãè§é¢ãå¾æï¼ä¼ æ­æåµï¼{user_query}",
         }
 
         futures = {}
         engine_labels = []
 
         if enable_query:
-            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"📡 正在调用 Query 引擎...\"}},\"finish_reason\":null}}]}}\n\n"
+            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"ð¡ æ­£å¨è°ç¨ Query å¼æ...\"}},\"finish_reason\":null}}]}}\n\n"
             futures['query'] = self._executor.submit(self._dispatch_to_engine, 'query', sub_queries['query'])
             engine_labels.append('Query')
 
         if enable_insight:
-            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"📊 正在调用 Insight 引擎...\"}},\"finish_reason\":null}}]}}\n\n"
+            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"ð æ­£å¨è°ç¨ Insight å¼æ...\"}},\"finish_reason\":null}}]}}\n\n"
             futures['insight'] = self._executor.submit(self._dispatch_to_engine, 'insight', sub_queries['insight'])
             engine_labels.append('Insight')
 
         if enable_media:
-            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"🎬 正在调用 Media 引擎...\"}},\"finish_reason\":null}}]}}\n\n"
+            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"ð¬ æ­£å¨è°ç¨ Media å¼æ...\"}},\"finish_reason\":null}}]}}\n\n"
             futures['media'] = self._executor.submit(self._dispatch_to_engine, 'media', sub_queries['media'])
             engine_labels.append('Media')
 
@@ -296,16 +296,16 @@ class ForumAgent(BaseHermesAgent):
                     # Announce completion
                     label = engine_name.capitalize()
                     success = results[engine_name].get('success', False)
-                    icon = "✅" if success else "⚠️"
-                    yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"{icon} {label} 引擎完成\\n\"}},\"finish_reason\":null}}]}}\n\n"
+                    icon = "â" if success else "â ï¸"
+                    yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"{icon} {label} å¼æå®æ\\n\"}},\"finish_reason\":null}}]}}\n\n"
                 elif time_module.time() - last_heartbeat > 3:
                     # Heartbeat progress update
                     done_count = len(futures) - len(pending)
-                    yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"⏳ {done_count}/{len(futures)} 引擎运行中...\\n\"}},\"finish_reason\":null}}]}}\n\n"
+                    yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"â³ {done_count}/{len(futures)} å¼æè¿è¡ä¸­...\\n\"}},\"finish_reason\":null}}]}}\n\n"
                     last_heartbeat = time_module.time()
 
         # Step 3: Synthesize with Hermes agent
-        yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"\\n🧠 正在综合分析...\\n\\n\"}},\"finish_reason\":null}}]}}\n\n"
+        yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"\\nð§  æ­£å¨ç»¼ååæ...\\n\\n\"}},\"finish_reason\":null}}]}}\n\n"
 
         synthesis_input = self._build_synthesis_prompt(user_query, results)
         try:
@@ -318,7 +318,7 @@ class ForumAgent(BaseHermesAgent):
                     yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"\\n\"}},\"finish_reason\":null}}]}}\n\n"
         except Exception as e:
             logger.exception("ForumAgent: Stream synthesis failed")
-            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"综合分析失败: {str(e)}\"}},\"finish_reason\":null}}]}}\n\n"
+            yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{\"content\":\"ç»¼ååæå¤±è´¥: {str(e)}\"}},\"finish_reason\":null}}]}}\n\n"
 
         # Final chunk
         yield f"data: {{\"id\":\"{completion_id}\",\"object\":\"chat.completion.chunk\",\"model\":\"{model}\",\"choices\":[{{\"index\":0,\"delta\":{{}},\"finish_reason\":\"stop\"}}]}}\n\n"
@@ -335,37 +335,37 @@ class ForumAgent(BaseHermesAgent):
         Returns:
             Formatted prompt string for Hermes chat
         """
-        sections = [f"## 用户分析请求\n{user_query}\n"]
+        sections = [f"## ç¨æ·åæè¯·æ±\n{user_query}\n"]
 
-        sections.append("## 各引擎分析结果\n")
+        sections.append("## åå¼æåæç»æ\n")
 
         if results.get('query', {}).get('success'):
             content = results['query'].get('content', '')
-            sections.append(f"### Query 引擎（网络搜索）\n{content[:3000]}\n")
+            sections.append(f"### Query å¼æï¼ç½ç»æç´¢ï¼\n{content[:3000]}\n")
         elif results.get('query', {}).get('error'):
-            sections.append(f"### Query 引擎（网络搜索）\n⚠️ 查询失败: {results['query']['error']}\n")
+            sections.append(f"### Query å¼æï¼ç½ç»æç´¢ï¼\nâ ï¸ æ¥è¯¢å¤±è´¥: {results['query']['error']}\n")
 
         if results.get('insight', {}).get('success'):
             content = results['insight'].get('content', '')
-            sections.append(f"### Insight 引擎（本地舆情）\n{content[:3000]}\n")
+            sections.append(f"### Insight å¼æï¼æ¬å°èæï¼\n{content[:3000]}\n")
         elif results.get('insight', {}).get('error'):
-            sections.append(f"### Insight 引擎（本地舆情）\n⚠️ 查询失败: {results['insight']['error']}\n")
+            sections.append(f"### Insight å¼æï¼æ¬å°èæï¼\nâ ï¸ æ¥è¯¢å¤±è´¥: {results['insight']['error']}\n")
 
         if results.get('media', {}).get('success'):
             content = results['media'].get('content', '')
-            sections.append(f"### Media 引擎（多媒体分析）\n{content[:3000]}\n")
+            sections.append(f"### Media å¼æï¼å¤åªä½åæï¼\n{content[:3000]}\n")
         elif results.get('media', {}).get('error'):
-            sections.append(f"### Media 引擎（多媒体分析）\n⚠️ 查询失败: {results['media']['error']}\n")
+            sections.append(f"### Media å¼æï¼å¤åªä½åæï¼\nâ ï¸ æ¥è¯¢å¤±è´¥: {results['media']['error']}\n")
 
-        sections.append("""## 综合分析要求
+        sections.append("""## ç»¼ååæè¦æ±
 
-请作为客观分析助手，基于以上各引擎的数据进行交叉验证和综合分析：
+è¯·ä½ä¸ºå®¢è§åæå©æï¼åºäºä»¥ä¸åå¼æçæ°æ®è¿è¡äº¤åéªè¯åç»¼ååæï¼
 
-1. **事件梳理**：提取关键事件、人物、时间节点，整理事实脉络
-2. **数据整合**：综合三个信息源，指出共识与分歧
-3. **置信度标注**：如果发现信息源之间存在事实冲突，明确标注为"低置信度"并保留原始来源
-4. **防幻觉**：如数据不足，直接声明"数据不足，无法分析"
-5. **输出格式**：使用清晰的标题结构，保持客观严谨的分析报告风格
+1. **äºä»¶æ¢³ç**ï¼æåå³é®äºä»¶ãäººç©ãæ¶é´èç¹ï¼æ´çäºå®èç»
+2. **æ°æ®æ´å**ï¼ç»¼åä¸ä¸ªä¿¡æ¯æºï¼æåºå±è¯ä¸åæ­§
+3. **ç½®ä¿¡åº¦æ æ³¨**ï¼å¦æåç°ä¿¡æ¯æºä¹é´å­å¨äºå®å²çªï¼æç¡®æ æ³¨ä¸º"ä½ç½®ä¿¡åº¦"å¹¶ä¿çåå§æ¥æº
+4. **é²å¹»è§**ï¼å¦æ°æ®ä¸è¶³ï¼ç´æ¥å£°æ"æ°æ®ä¸è¶³ï¼æ æ³åæ"
+5. **è¾åºæ ¼å¼**ï¼ä½¿ç¨æ¸æ°çæ é¢ç»æï¼ä¿æå®¢è§ä¸¥è°¨çåææ¥åé£æ ¼
 """)
 
         return "\n".join(sections)

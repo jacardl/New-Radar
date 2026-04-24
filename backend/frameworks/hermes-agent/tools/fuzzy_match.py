@@ -262,8 +262,8 @@ def _strategy_trimmed_boundary(content: str, pattern: str) -> List[Tuple[int, in
 def _build_orig_to_norm_map(original: str) -> List[int]:
     """Build a list mapping each original character index to its normalized index.
 
-    Because UNICODE_MAP replacements may expand characters (e.g. em-dash �?'--',
-    ellipsis �?'...'), the normalised string can be longer than the original.
+    Because UNICODE_MAP replacements may expand characters (e.g. em-dash é«?'--',
+    ellipsis é«?'...'), the normalised string can be longer than the original.
     This map lets us convert positions in the normalised string back to the
     corresponding positions in the original string.
 
@@ -317,12 +317,12 @@ def _strategy_unicode_normalized(content: str, pattern: str) -> List[Tuple[int, 
     exact and line_trimmed matching on the normalised copies.
 
     Positions are mapped back to the *original* string via
-    ``_build_orig_to_norm_map`` �?necessary because some UNICODE_MAP
+    ``_build_orig_to_norm_map`` é¥?necessary because some UNICODE_MAP
     replacements expand a single character into multiple ASCII characters,
-    making a naïve position copy incorrect.
+    making a naève position copy incorrect.
     """
     # Normalize both sides. Either the content or the pattern (or both) may
-    # carry unicode variants �?e.g. content has an em-dash that should match
+    # carry unicode variants é¥?e.g. content has an em-dash that should match
     # the LLM's ASCII '--', or vice-versa.  Skip only when neither changes.
     norm_pattern = _unicode_normalize(pattern)
     norm_content = _unicode_normalize(content)
@@ -373,7 +373,7 @@ def _strategy_block_anchor(content: str, pattern: str) -> List[Tuple[int, int]]:
     candidate_count = len(potential_matches)
     
     # Thresholding logic: 0.50 for unique matches, 0.70 for multiple candidates.
-    # Previous values (0.10 / 0.30) were dangerously loose �?a 10% middle-section
+    # Previous values (0.10 / 0.30) were dangerously loose é¥?a 10% middle-section
     # similarity could match completely unrelated blocks.
     threshold = 0.50 if candidate_count == 1 else 0.70
 

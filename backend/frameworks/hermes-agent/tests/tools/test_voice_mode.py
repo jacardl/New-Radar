@@ -57,12 +57,12 @@ def mock_sd(monkeypatch):
 
 
 # ============================================================================
-# detect_audio_environment �?WSL / SSH / Docker detection
+# detect_audio_environment é¥?WSL / SSH / Docker detection
 # ============================================================================
 
 class TestDetectAudioEnvironment:
     def test_clean_environment_is_available(self, monkeypatch):
-        """No SSH, Docker, or WSL �?should be available."""
+        """No SSH, Docker, or WSL é¥?should be available."""
         monkeypatch.delenv("SSH_CLIENT", raising=False)
         monkeypatch.delenv("SSH_TTY", raising=False)
         monkeypatch.delenv("SSH_CONNECTION", raising=False)
@@ -504,7 +504,7 @@ class TestAudioRecorderCancel:
 
         assert recorder.is_recording is False
         assert recorder._frames == []
-        # Stream is kept alive (persistent) �?cancel() does NOT close it.
+        # Stream is kept alive (persistent) é¥?cancel() does NOT close it.
         mock_stream.stop.assert_not_called()
         mock_stream.close.assert_not_called()
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-chembl_target.py �?Search ChEMBL for a target and retrieve top active compounds.
+chembl_target.py é¥?Search ChEMBL for a target and retrieve top active compounds.
 Usage: python3 chembl_target.py "EGFR" --min-pchembl 7 --limit 20
 No external dependencies.
 """
@@ -18,7 +18,7 @@ def get(endpoint):
         print(f"API error: {e}", file=sys.stderr); return None
 
 def main():
-    parser = argparse.ArgumentParser(description="ChEMBL target �?active compounds")
+    parser = argparse.ArgumentParser(description="ChEMBL target é«?active compounds")
     parser.add_argument("target")
     parser.add_argument("--min-pchembl", type=float, default=6.0)
     parser.add_argument("--limit", type=int, default=10)
@@ -33,7 +33,7 @@ def main():
     tid = t.get("target_chembl_id","")
     print(f"\nTarget: {t.get('pref_name')} ({tid})")
     print(f"Type: {t.get('target_type')} | Organism: {t.get('organism','N/A')}")
-    print(f"\nFetching compounds with pChEMBL �?{args.min_pchembl}...\n")
+    print(f"\nFetching compounds with pChEMBL é®?{args.min_pchembl}...\n")
 
     acts = get(f"/activity?target_chembl_id={tid}&pchembl_value__gte={args.min_pchembl}&assay_type=B&limit={args.limit}&order_by=-pchembl_value&format=json")
     if not acts or not acts.get("activities"):

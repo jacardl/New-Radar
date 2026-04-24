@@ -8,7 +8,7 @@ from hermes_cli import setup as setup_mod
 
 
 # ---------------------------------------------------------------------------
-# _offer_openclaw_migration �?unit tests
+# _offer_openclaw_migration é¥?unit tests
 # ---------------------------------------------------------------------------
 
 
@@ -220,7 +220,7 @@ class TestOfferOpenclawMigration:
 
 
 # ---------------------------------------------------------------------------
-# Integration with run_setup_wizard �?first-time flow
+# Integration with run_setup_wizard é¥?first-time flow
 # ---------------------------------------------------------------------------
 
 
@@ -359,7 +359,7 @@ class TestSetupWizardOpenclawIntegration:
 
 
 # ---------------------------------------------------------------------------
-# _get_section_config_summary / _skip_configured_section �?unit tests
+# _get_section_config_summary / _skip_configured_section é¥?unit tests
 # ---------------------------------------------------------------------------
 
 
@@ -484,7 +484,7 @@ class TestSetupWizardSkipsConfiguredSections:
         """
         args = _first_time_args()
 
-        # Track whether migration has "run" �?after it does, API key is available
+        # Track whether migration has "run" é¥?after it does, API key is available
         migration_done = {"value": False}
 
         def env_side(key):
@@ -527,12 +527,12 @@ class TestSetupWizardSkipsConfiguredSections:
         ):
             setup_mod.run_setup_wizard(args)
 
-        # Model has API key �?skip offered, user said No �?section NOT called
+        # Model has API key é«?skip offered, user said No é«?section NOT called
         mock_model.assert_not_called()
-        # Terminal/agent always have a summary �?skip offered, user said No
+        # Terminal/agent always have a summary é«?skip offered, user said No
         mock_terminal.assert_not_called()
         mock_agent.assert_not_called()
-        # Gateway has no tokens (env_side returns "" for gateway keys) �?section runs
+        # Gateway has no tokens (env_side returns "" for gateway keys) é«?section runs
         mock_gateway.assert_called_once()
-        # Tools have no keys �?section runs
+        # Tools have no keys é«?section runs
         mock_tools.assert_called_once()

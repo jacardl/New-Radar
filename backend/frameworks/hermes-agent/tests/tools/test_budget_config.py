@@ -40,7 +40,7 @@ class TestModuleConstants:
 
 
 class TestPinnedThresholds:
-    """PINNED_THRESHOLDS �?tools whose values must never be overridden."""
+    """PINNED_THRESHOLDS é¥?tools whose values must never be overridden."""
 
     def test_read_file_is_inf(self):
         assert PINNED_THRESHOLDS["read_file"] == float("inf")

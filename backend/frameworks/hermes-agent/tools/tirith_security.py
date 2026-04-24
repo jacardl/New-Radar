@@ -15,7 +15,7 @@ it is automatically downloaded from GitHub releases to $HERMES_HOME/bin/tirith.
 The download always verifies SHA-256 checksums.  When cosign is available on
 PATH, provenance verification (GitHub Actions workflow signature) is also
 performed.  If cosign is not installed, the download proceeds with SHA-256
-verification only �?still secure via HTTPS + checksum, just without supply
+verification only é¥?still secure via HTTPS + checksum, just without supply
 chain provenance proof.  Installation runs in a background thread so startup
 never blocks.
 """
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 _REPO = "sheeki03/tirith"
 
-# Cosign provenance verification �?pinned to the specific release workflow
+# Cosign provenance verification é¥?pinned to the specific release workflow
 _COSIGN_IDENTITY_REGEXP = f"^https://github.com/{_REPO}/\\.github/workflows/release\\.yml@refs/tags/v"
 _COSIGN_ISSUER = "https://token.actions.githubusercontent.com"
 
@@ -92,7 +92,7 @@ def _load_security_config() -> dict:
 # ---------------------------------------------------------------------------
 
 # Cached path after first resolution (avoids repeated shutil.which per command).
-# _INSTALL_FAILED means "we tried and failed" �?prevents retry on every command.
+# _INSTALL_FAILED means "we tried and failed" é¥?prevents retry on every command.
 _resolved_path: str | None | bool = None
 _INSTALL_FAILED = False  # sentinel: distinct from "not yet tried"
 _install_failure_reason: str = ""  # reason tag when _resolved_path is _INSTALL_FAILED
@@ -101,7 +101,7 @@ _install_failure_reason: str = ""  # reason tag when _resolved_path is _INSTALL_
 _install_lock = threading.Lock()
 _install_thread: threading.Thread | None = None
 
-# Disk-persistent failure marker �?avoids retry across process restarts
+# Disk-persistent failure marker é¥?avoids retry across process restarts
 _MARKER_TTL = 86400  # 24 hours
 
 
@@ -217,11 +217,11 @@ def _verify_cosign(checksums_path: str, sig_path: str, cert_path: str) -> bool |
     """Verify cosign provenance signature on checksums.txt.
 
     Returns:
-        True  �?cosign verified successfully
-        False �?cosign found but verification failed
-        None  �?cosign not available (not on PATH, or execution failed)
+        True  é¥?cosign verified successfully
+        False é¥?cosign found but verification failed
+        None  é¥?cosign not available (not on PATH, or execution failed)
 
-    The caller treats both False and None as "abort auto-install" �?only
+    The caller treats both False and None as "abort auto-install" é¥?only
     True allows the install to proceed.
     """
     cosign = shutil.which("cosign")
@@ -304,7 +304,7 @@ def _install_tirith(*, log_failures: bool = True) -> tuple[str | None, str]:
         sig_path = os.path.join(tmpdir, "checksums.txt.sig")
         cert_path = os.path.join(tmpdir, "checksums.txt.pem")
 
-        logger.info("tirith not found �?downloading latest release for %s...", target)
+        logger.info("tirith not found é¥?downloading latest release for %s...", target)
 
         try:
             _download_file(f"{base_url}/{archive_name}", archive_path)
@@ -313,7 +313,7 @@ def _install_tirith(*, log_failures: bool = True) -> tuple[str | None, str]:
             log("tirith download failed: %s", exc)
             return None, "download_failed"
 
-        # Cosign provenance verification �?preferred but not mandatory.
+        # Cosign provenance verification é¥?preferred but not mandatory.
         # When cosign is available, we verify that the release was produced
         # by the expected GitHub Actions workflow (full supply chain proof).
         # Without cosign, SHA-256 checksum + HTTPS still provides integrity
@@ -330,16 +330,16 @@ def _install_tirith(*, log_failures: bool = True) -> tuple[str | None, str]:
                 if cosign_result is True:
                     cosign_verified = True
                 elif cosign_result is False:
-                    # Verification explicitly rejected �?abort, the release
+                    # Verification explicitly rejected é¥?abort, the release
                     # may have been tampered with.
                     log("tirith install aborted: cosign provenance verification failed")
                     return None, "cosign_verification_failed"
                 else:
-                    # None = execution failure (timeout/OSError) �?proceed
+                    # None = execution failure (timeout/OSError) é¥?proceed
                     # with SHA-256 only since cosign itself is broken.
                     logger.info("cosign execution failed, proceeding with SHA-256 only")
         else:
-            logger.info("cosign not on PATH �?installing tirith with SHA-256 verification only "
+            logger.info("cosign not on PATH é¥?installing tirith with SHA-256 verification only "
                         "(install cosign for full supply chain verification)")
 
         if not _verify_checksum(archive_path, checksums_path, archive_name):
@@ -380,13 +380,13 @@ def _resolve_tirith_path(configured_path: str) -> str:
     """Resolve the tirith binary path, auto-installing if necessary.
 
     If the user explicitly set a path (anything other than the bare "tirith"
-    default), that path is authoritative �?we never fall through to
+    default), that path is authoritative é¥?we never fall through to
     auto-download a different binary.
 
     For the default "tirith":
     1. PATH lookup via shutil.which
     2. $HERMES_HOME/bin/tirith (previously auto-installed)
-    3. Auto-install from GitHub releases �?$HERMES_HOME/bin/tirith
+    3. Auto-install from GitHub releases é«?$HERMES_HOME/bin/tirith
 
     Failed installs are cached for the process lifetime (and persisted to
     disk for 24h) to avoid repeated network attempts.
@@ -416,7 +416,7 @@ def _resolve_tirith_path(configured_path: str) -> str:
         _install_failure_reason = "explicit_path_missing"
         return expanded
 
-    # Default "tirith" �?always re-run cheap local checks so a manual
+    # Default "tirith" é¥?always re-run cheap local checks so a manual
     # install is picked up even after a previous network failure (P2 fix:
     # long-lived gateway/CLI recovers without restart).
     found = shutil.which("tirith")
@@ -434,11 +434,11 @@ def _resolve_tirith_path(configured_path: str) -> str:
         return hermes_bin
 
     # Local checks failed.  If a previous install attempt already failed,
-    # skip the network retry �?UNLESS the failure was "cosign_missing" and
+    # skip the network retry é¥?UNLESS the failure was "cosign_missing" and
     # cosign is now available (retryable cause resolved in-process).
     if install_failed:
         if _install_failure_reason == "cosign_missing" and shutil.which("cosign"):
-            # Retryable cause resolved �?clear sentinel and fall through to retry
+            # Retryable cause resolved é¥?clear sentinel and fall through to retry
             _resolved_path = None
             _install_failure_reason = ""
             _clear_install_failed()
@@ -446,7 +446,7 @@ def _resolve_tirith_path(configured_path: str) -> str:
         else:
             return expanded
 
-    # If a background install thread is running, don't start a parallel one �?
+    # If a background install thread is running, don't start a parallel one é¥?
     # return the configured path; the OSError handler in check_command_security
     # will apply fail_open until the thread finishes.
     if _install_thread is not None and _install_thread.is_alive():
@@ -468,7 +468,7 @@ def _resolve_tirith_path(configured_path: str) -> str:
         _clear_install_failed()
         return installed
 
-    # Install failed �?cache the miss and persist reason to disk
+    # Install failed é¥?cache the miss and persist reason to disk
     _resolved_path = _INSTALL_FAILED
     _install_failure_reason = reason
     _mark_install_failed(reason)
@@ -544,7 +544,7 @@ def ensure_installed(*, log_failures: bool = True):
         _install_failure_reason = "explicit_path_missing"
         return None
 
-    # Default "tirith" �?quick local checks first (no network)
+    # Default "tirith" é¥?quick local checks first (no network)
     found = shutil.which("tirith")
     if found:
         _resolved_path = found
@@ -569,7 +569,7 @@ def ensure_installed(*, log_failures: bool = True):
             return None
 
     # Check disk failure marker (skip network attempt for 24h, unless
-    # the cosign_missing reason was resolved �?handled by _is_install_failed_on_disk).
+    # the cosign_missing reason was resolved é¥?handled by _is_install_failed_on_disk).
     # Preserve the marker's real reason for in-memory retry logic.
     disk_reason = _read_failure_reason()
     if disk_reason is not None and _is_install_failed_on_disk():
@@ -577,7 +577,7 @@ def ensure_installed(*, log_failures: bool = True):
         _install_failure_reason = disk_reason
         return None
 
-    # Need to download �?launch background thread so startup doesn't block
+    # Need to download é¥?launch background thread so startup doesn't block
     if _install_thread is None or not _install_thread.is_alive():
         _install_thread = threading.Thread(
             target=_background_install,
@@ -645,7 +645,7 @@ def check_command_security(command: str) -> dict:
     elif exit_code == 2:
         action = "warn"
     else:
-        # Unknown exit code �?respect fail_open
+        # Unknown exit code é¥?respect fail_open
         logger.warning("tirith returned unexpected exit code %d", exit_code)
         if fail_open:
             return {"action": "allow", "findings": [], "summary": f"tirith exit code {exit_code} (fail-open)"}

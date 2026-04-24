@@ -1,7 +1,7 @@
 """
-章节装订器：负责把多个章节JSON合并为整本IR�?
+ç« èè£è®¢å¨ï¼è´è´£æå¤ä¸ªç« èJSONåå¹¶ä¸ºæ´æ¬IR
 
-DocumentComposer 会注入缺失锚点、统一顺序，并补齐 IR 级元数据�?
+DocumentComposer ä¼æ³¨å¥ç¼ºå¤±éç¹ãç»ä¸é¡ºåºï¼å¹¶è¡¥é½ IR çº§åæ°æ®
 """
 
 from __future__ import annotations
@@ -14,16 +14,16 @@ from ..ir import IR_VERSION
 
 class DocumentComposer:
     """
-    将章节拼接成Document IR的简单装订器�?
+    å°ç« èæ¼æ¥æDocument IRçç®åè£è®¢å¨
 
-    作用�?
-        - 按order排序章节，补充默认chapterId�?
-        - 防止anchor重复，生成全局唯一锚点�?
-        - 注入 IR 版本与生成时间戳�?
+    ä½ç¨ï¼?
+        - æorderæåºç« èï¼è¡¥åé»è®¤chapterIdï¼?
+        - é²æ­¢anchoréå¤ï¼çæå¨å±å¯ä¸éç¹ï¼?
+        - æ³¨å¥ IR çæ¬ä¸çææ¶é´æ³
     """
 
     def __init__(self):
-        """初始化装订器并记录已使用的锚点，避免重复"""
+        """åå§åè£è®¢å¨å¹¶è®°å½å·²ä½¿ç¨çéç¹ï¼é¿åéå¤"""
         self._seen_anchors: Set[str] = set()
 
     def build_document(
@@ -33,29 +33,29 @@ class DocumentComposer:
         chapters: List[Dict[str, object]],
     ) -> Dict[str, object]:
         """
-        把所有章节按order排序并注入唯一锚点，形成整本IR�?
+        æææç« èæorderæåºå¹¶æ³¨å¥å¯ä¸éç¹ï¼å½¢ææ´æ¬IR
 
-        同时合并 metadata/themeTokens/assets，供渲染器直接消费�?
+        åæ¶åå¹¶ metadata/themeTokens/assetsï¼ä¾æ¸²æå¨ç´æ¥æ¶è´¹
 
-        参数:
-            report_id: 本次报告ID�?
-            metadata: 全局元信息（标题、主题、toc等）�?
-            chapters: 章节payload列表�?
+        åæ°:
+            report_id: æ¬æ¬¡æ¥åID
+            metadata: å¨å±åä¿¡æ¯ï¼æ é¢ãä¸»é¢ocç­ï¼
+            chapters: ç« èpayloadåè¡¨
 
-        返回:
-            dict: 满足渲染器需求的Document IR�?
+        è¿å:
+            dict: æ»¡è¶³æ¸²æå¨éæ±çDocument IR
         """
-        # 全局处理合并所有的引用文献，并重新编号
+        # å¨å±å¤çåå¹¶ææçå¼ç¨æç®ï¼å¹¶éæ°ç¼å·
         self._consolidate_citations(chapters)
 
-        # 构建从chapterId到toc anchor的映�?
+        # æå»ºä»chapterIdå°toc anchorçæ å°?
         toc_anchor_map = self._build_toc_anchor_map(metadata)
 
         ordered = sorted(chapters, key=lambda c: c.get("order", 0))
         for idx, chapter in enumerate(ordered, start=1):
             chapter.setdefault("chapterId", f"S{idx}")
 
-            # 优先级：1. 目录配置的anchor 2. 章节自带的anchor 3. 默认anchor
+            # ä¼åçº§ï¼1. ç®å½éç½®çanchor 2. ç« èèªå¸¦çanchor 3. é»è®¤anchor
             chapter_id = chapter.get("chapterId")
             anchor = (
                 toc_anchor_map.get(chapter_id) or
@@ -82,7 +82,7 @@ class DocumentComposer:
         return document
 
     def _ensure_unique_anchor(self, anchor: str) -> str:
-        """若存在重复锚点则追加序号，确保全局唯一�?""
+        """è¥å­å¨éå¤éç¹åè¿½å åºå·ï¼ç¡®ä¿å¨å±å¯ä¸""
         base = anchor
         counter = 2
         while anchor in self._seen_anchors:
@@ -93,7 +93,7 @@ class DocumentComposer:
 
     def _build_toc_anchor_map(self, metadata: Dict[str, object]) -> Dict[str, str]:
         """
-        从metadata.toc.customEntries构建chapterId到anchor的映射�?
+        ä»metadata.toc.customEntriesæå»ºchapterIdå°anchorçæ å°
         """
         toc_config = metadata.get("toc") or {}
         custom_entries = toc_config.get("customEntries") or []
@@ -110,7 +110,7 @@ class DocumentComposer:
 
     def _consolidate_citations(self, chapters: List[Dict[str, object]]) -> None:
         """
-        把所有章节中�?citationList 合并为一份全局参考资料，并修正正文中�?inline citation 编号�?
+        æææç« èä¸­ç?citationList åå¹¶ä¸ºä¸ä»½å¨å±åèèµæï¼å¹¶ä¿®æ­£æ­£æä¸­ç?inline citation ç¼å·
         """
         global_citations = []
         url_to_global_index = {}
@@ -197,8 +197,8 @@ class DocumentComposer:
                                             
                                     inline_text = str(inline.get("text", ""))
                                     
-                                    # 针对表格中长文本引用的优化：如果 text 很长（包含描述），则直接�?href 替换为真�?url
-                                    # 否则只替换编号并指向文末
+                                    # éå¯¹è¡¨æ ¼ä¸­é¿ææ¬å¼ç¨çä¼åï¼å¦æ text å¾é¿ï¼åå«æè¿°ï¼ï¼åç´æ¥å°?href æ¿æ¢ä¸ºçå®?url
+                                    # å¦ååªæ¿æ¢ç¼å·å¹¶æåææ«
                                     if len(inline_text) > 5 and actual_url:
                                         if f"[{local_idx}]" in inline_text:
                                             inline["text"] = inline_text.replace(f"[{local_idx}]", f"[{g_idx}]")
@@ -212,7 +212,7 @@ class DocumentComposer:
                                                 m["href"] = f"#citation-{g_idx}"
                                     new_inlines.append(inline)
                                 else:
-                                    # 如果�?citationList 中找不到该编号，说明�?LLM 幻觉编造的越界引用，直接丢弃该标记
+                                    # å¦æå?citationList ä¸­æ¾ä¸å°è¯¥ç¼å·ï¼è¯´ææ?LLM å¹»è§ç¼é çè¶çå¼ç¨ï¼ç´æ¥ä¸¢å¼è¯¥æ è®°
                                     pass
                             else:
                                 new_inlines.append(inline)
@@ -238,7 +238,7 @@ class DocumentComposer:
             })
 
     def _ensure_heading_block(self, chapter: Dict[str, object]) -> None:
-        """保证占位章节仍然拥有可用于目录的heading block�?""
+        """ä¿è¯å ä½ç« èä»ç¶æ¥æå¯ç¨äºç®å½çheading block""
         blocks = chapter.get("blocks")
         if isinstance(blocks, list):
             for block in blocks:
@@ -247,7 +247,7 @@ class DocumentComposer:
         heading = {
             "type": "heading",
             "level": 2,
-            "text": chapter.get("title") or "占位章节",
+            "text": chapter.get("title") or "å ä½ç« è",
             "anchor": chapter.get("anchor"),
         }
         if isinstance(blocks, list):

@@ -79,7 +79,7 @@ class TestCrossLoopCacheIsolation:
                 client, _ = _get_cached_client("custom", "m1", async_mode=True,
                                                  base_url="http://localhost:8081/v1")
             results[name] = (id(client), id(loop))
-            # Don't close loop �?simulates real usage where loops persist
+            # Don't close loop é¥?simulates real usage where loops persist
 
         t1 = threading.Thread(target=_get_client_on_new_loop, args=("a",))
         t2 = threading.Thread(target=_get_client_on_new_loop, args=("b",))
@@ -91,7 +91,7 @@ class TestCrossLoopCacheIsolation:
 
         assert loop_id_a != loop_id_b, "Test setup error: same loop on both threads"
         assert client_id_a != client_id_b, (
-            "Different event loops got the SAME cached client �?this causes "
+            "Different event loops got the SAME cached client é¥?this causes "
             "httpx cross-loop deadlocks in gateway mode (#2681)"
         )
 
@@ -151,7 +151,7 @@ class TestCrossLoopCacheIsolation:
         t.join()
 
         assert worker_client_id[0] != id(gateway_client), (
-            "Worker thread (asyncio.run) got the gateway's cached client �?"
+            "Worker thread (asyncio.run) got the gateway's cached client é¥?"
             "this is the exact cross-loop scenario that causes httpx deadlocks. "
             "The cache key must include the event loop identity (#2681)"
         )

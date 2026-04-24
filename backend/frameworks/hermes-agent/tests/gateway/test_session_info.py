@@ -1,4 +1,4 @@
-"""Tests for GatewayRunner._format_session_info �?session config surfacing."""
+"""Tests for GatewayRunner._format_session_info é¥?session config surfacing."""
 
 import pytest
 from unittest.mock import patch, MagicMock

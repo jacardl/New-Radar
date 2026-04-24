@@ -1,4 +1,4 @@
-"""Tests for tools/skill_manager_tool.py �?skill creation, editing, and deletion."""
+"""Tests for tools/skill_manager_tool.py é¥?skill creation, editing, and deletion."""
 
 import json
 from contextlib import contextmanager
@@ -30,7 +30,7 @@ from tools.skill_manager_tool import (
 @contextmanager
 def _skill_dir(tmp_path):
     """Patch both SKILLS_DIR and get_all_skills_dirs so _find_skill searches
-    only the temp directory �?not the real ~/.hermes/skills/."""
+    only the temp directory é¥?not the real ~/.hermes/skills/."""
     with patch("tools.skill_manager_tool.SKILLS_DIR", tmp_path), \
          patch("agent.skill_utils.get_all_skills_dirs", return_value=[tmp_path]):
         yield
@@ -150,7 +150,7 @@ class TestValidateFrontmatter:
 
 
 # ---------------------------------------------------------------------------
-# _validate_file_path �?path traversal prevention
+# _validate_file_path é¥?path traversal prevention
 # ---------------------------------------------------------------------------
 
 

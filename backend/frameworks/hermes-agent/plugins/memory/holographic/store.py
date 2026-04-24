@@ -167,7 +167,7 @@ class MemoryStore:
                 self._conn.commit()
                 fact_id: int = cur.lastrowid  # type: ignore[assignment]
             except sqlite3.IntegrityError:
-                # Duplicate content �?return existing id
+                # Duplicate content é¥?return existing id
                 row = self._conn.execute(
                     "SELECT fact_id FROM facts WHERE content = ?", (content,)
                 ).fetchone()
@@ -438,7 +438,7 @@ class MemoryStore:
         if row is not None:
             return int(row["entity_id"])
 
-        # Search aliases �?aliases stored as comma-separated; use LIKE with % boundaries
+        # Search aliases é¥?aliases stored as comma-separated; use LIKE with % boundaries
         alias_row = self._conn.execute(
             """
             SELECT entity_id FROM entities

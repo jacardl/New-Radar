@@ -33,7 +33,7 @@ from gateway.platforms.base import (
 def _ensure_telegram_mock():
     """Install mock telegram modules so TelegramAdapter can be imported."""
     if "telegram" in sys.modules and hasattr(sys.modules["telegram"], "__file__"):
-        # Real library is installed �?no mocking needed
+        # Real library is installed é¥?no mocking needed
         return
 
     telegram_mod = MagicMock()
@@ -89,7 +89,7 @@ def _make_message(document=None, caption=None, media_group_id=None, photo=None):
     msg.text = caption or ""
     msg.caption = caption
     msg.date = None
-    # Media flags �?all None except explicit payload
+    # Media flags é¥?all None except explicit payload
     msg.photo = photo
     msg.video = None
     msg.audio = None
@@ -297,7 +297,7 @@ class TestDocumentDownloadBlock:
 
     @pytest.mark.asyncio
     async def test_unicode_decode_error_handled(self, adapter):
-        """Binary bytes that aren't valid UTF-8 in a .txt �?content not injected but file still cached."""
+        """Binary bytes that aren't valid UTF-8 in a .txt é¥?content not injected but file still cached."""
         binary = bytes(range(128, 256))  # not valid UTF-8
         file_obj = _make_file_obj(binary)
         doc = _make_document(
@@ -312,7 +312,7 @@ class TestDocumentDownloadBlock:
         # File should still be cached
         assert len(event.media_urls) == 1
         assert os.path.exists(event.media_urls[0])
-        # Content NOT injected �?text should be empty (no caption set)
+        # Content NOT injected é¥?text should be empty (no caption set)
         assert "[Content of" not in (event.text or "")
 
     @pytest.mark.asyncio
@@ -349,7 +349,7 @@ class TestDocumentDownloadBlock:
 
 
 # ---------------------------------------------------------------------------
-# TestMediaGroups �?media group (album) buffering
+# TestMediaGroups é¥?media group (album) buffering
 # ---------------------------------------------------------------------------
 
 class TestMediaGroups:
@@ -413,11 +413,11 @@ class TestMediaGroups:
 
 
 # ---------------------------------------------------------------------------
-# TestSendDocument �?outbound file attachment delivery
+# TestSendDocument é¥?outbound file attachment delivery
 # ---------------------------------------------------------------------------
 
 class TestSendDocument:
-    """Tests for TelegramAdapter.send_document() �?sending files to users."""
+    """Tests for TelegramAdapter.send_document() é¥?sending files to users."""
 
     @pytest.fixture()
     def connected_adapter(self, adapter):
@@ -624,11 +624,11 @@ class TestTelegramPhotoBatching:
 
 
 # ---------------------------------------------------------------------------
-# TestSendVideo �?outbound video delivery
+# TestSendVideo é¥?outbound video delivery
 # ---------------------------------------------------------------------------
 
 class TestSendVideo:
-    """Tests for TelegramAdapter.send_video() �?sending videos to users."""
+    """Tests for TelegramAdapter.send_video() é¥?sending videos to users."""
 
     @pytest.fixture()
     def connected_adapter(self, adapter):

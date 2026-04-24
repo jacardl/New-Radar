@@ -1,4 +1,4 @@
-"""Tests for gateway/hooks.py �?event hook system."""
+"""Tests for gateway/hooks.py é¥?event hook system."""
 
 import asyncio
 from pathlib import Path

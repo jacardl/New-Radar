@@ -102,7 +102,7 @@ class TestHandleBackgroundCommand:
             event = _make_event(text="/background Summarize the top HN stories")
             result = await runner._handle_background_command(event)
 
-        assert "🔄" in result
+        assert "é¦æ§" in result
         assert "Background task started" in result
         assert "bg_" in result  # task ID starts with bg_
         assert "Summarize the top HN stories" in result
@@ -172,7 +172,7 @@ class TestRunBackgroundTask:
             chat_id="67890",
             user_name="testuser",
         )
-        # No adapters set �?should not raise
+        # No adapters set é¥?should not raise
         await runner._run_background_task("test prompt", source, "bg_test")
 
     @pytest.mark.asyncio

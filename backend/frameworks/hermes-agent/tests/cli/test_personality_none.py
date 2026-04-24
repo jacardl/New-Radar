@@ -1,10 +1,10 @@
-"""Tests for /personality none �?clearing personality overlay."""
+"""Tests for /personality none â?clearing personality overlay."""
 import pytest
 from unittest.mock import MagicMock, patch, mock_open
 import yaml
 
 
-# ── CLI tests ──────────────────────────────────────────────────────────────
+# -- CLI tests --------------------------------------------------------------
 
 class TestCLIPersonalityNone:
 
@@ -70,7 +70,7 @@ class TestCLIPersonalityNone:
         assert "none" in output.lower()
 
 
-# ── Gateway tests ──────────────────────────────────────────────────────────
+# -- Gateway tests ----------------------------------------------------------
 
 class TestGatewayPersonalityNone:
 

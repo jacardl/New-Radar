@@ -375,7 +375,7 @@ class TestSlashCommandCompleter:
         assert len(completions) == 1
         assert completions[0].text == "gif-search"
         assert completions[0].display_text == "/gif-search"
-        assert completions[0].display_meta_text == "�?Search for GIFs across providers"
+        assert completions[0].display_meta_text == "â?Search for GIFs across providers"
 
     def test_skill_exact_match_adds_trailing_space(self):
         completer = SlashCommandCompleter(
@@ -416,8 +416,8 @@ class TestSlashCommandCompleter:
         completions = _completions(completer, "/long")
         assert len(completions) == 1
         meta = completions[0].display_meta_text
-        # "�?" prefix + 50 chars + "..."
-        assert meta == f"�?{'A' * 50}..."
+        # "â?" prefix + 50 chars + "..."
+        assert meta == f"â?{'A' * 50}..."
 
     def test_skill_missing_description_uses_fallback(self):
         completer = SlashCommandCompleter(
@@ -430,7 +430,7 @@ class TestSlashCommandCompleter:
         assert "Skill command" in completions[0].display_meta_text
 
 
-# ── SUBCOMMANDS extraction ──────────────────────────────────────────────
+# -- SUBCOMMANDS extraction ----------------------------------------------
 
 
 class TestSubcommands:
@@ -470,7 +470,7 @@ class TestSubcommands:
         assert "/clear" not in SUBCOMMANDS
 
 
-# ── Subcommand tab completion ───────────────────────────────────────────
+# -- Subcommand tab completion -------------------------------------------
 
 
 class TestSubcommandCompletion:
@@ -513,7 +513,7 @@ class TestSubcommandCompletion:
         assert completions == []
 
 
-# ── Ghost text (SlashCommandAutoSuggest) ────────────────────────────────
+# -- Ghost text (SlashCommandAutoSuggest) --------------------------------
 
 
 def _suggestion(text: str, completer=None) -> str | None:
@@ -530,22 +530,22 @@ def _suggestion(text: str, completer=None) -> str | None:
 
 class TestGhostText:
     def test_command_name_suggestion(self):
-        """/he �?'lp'"""
+        """/he â?'lp'"""
         assert _suggestion("/he") == "lp"
 
     def test_command_name_suggestion_reasoning(self):
-        """/rea �?'soning'"""
+        """/rea â?'soning'"""
         assert _suggestion("/rea") == "soning"
 
     def test_no_suggestion_for_complete_command(self):
         assert _suggestion("/help") is None
 
     def test_subcommand_suggestion(self):
-        """/reasoning h �?'igh'"""
+        """/reasoning h â?'igh'"""
         assert _suggestion("/reasoning h") == "igh"
 
     def test_subcommand_suggestion_show(self):
-        """/reasoning sh �?'ow'"""
+        """/reasoning sh â?'ow'"""
         assert _suggestion("/reasoning sh") == "ow"
 
     def test_fast_subcommand_suggestion(self):
@@ -565,7 +565,7 @@ class TestGhostText:
 
 
 class TestSanitizeTelegramName:
-    """Tests for _sanitize_telegram_name() �?Telegram requires [a-z0-9_] only."""
+    """Tests for _sanitize_telegram_name() â?Telegram requires [a-z0-9_] only."""
 
     def test_hyphens_replaced_with_underscores(self):
         assert _sanitize_telegram_name("my-skill-name") == "my_skill_name"
@@ -612,7 +612,7 @@ class TestSanitizeTelegramName:
 
 
 class TestClampTelegramNames:
-    """Tests for _clamp_telegram_names() �?32-char enforcement + collision."""
+    """Tests for _clamp_telegram_names() â?32-char enforcement + collision."""
 
     def test_short_names_unchanged(self):
         entries = [("help", "Show help"), ("status", "Show status")]
@@ -814,7 +814,7 @@ class TestBackwardCompatAliases:
 # ---------------------------------------------------------------------------
 
 class TestDiscordSkillCommands:
-    """Tests for discord_skill_commands() �?centralized skill registration."""
+    """Tests for discord_skill_commands() â?centralized skill registration."""
 
     def test_returns_skill_entries(self, tmp_path, monkeypatch):
         """Skills under SKILLS_DIR (not .hub) should be returned."""

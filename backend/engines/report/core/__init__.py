@@ -1,8 +1,8 @@
 """
-Report Engine核心工具集合�?
+Report Engineæ ¸å¿å·¥å·éå
 
-该包封装了模板切片、章节存储与章节装订三大基础能力�?
-所有上层节点都会复用这些工具保证结构一致�?
+è¯¥åå°è£äºæ¨¡æ¿åçãç« èå­å¨ä¸ç« èè£è®¢ä¸å¤§åºç¡è½åï¼?
+ææä¸å±èç¹é½ä¼å¤ç¨è¿äºå·¥å·ä¿è¯ç»æä¸è´
 """
 
 from .template_parser import TemplateSection, parse_template_sections

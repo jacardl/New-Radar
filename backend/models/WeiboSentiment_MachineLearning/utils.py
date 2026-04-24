@@ -6,7 +6,7 @@ import pickle
 from typing import List, Tuple, Any
 
 
-# 加载停用�?
+# å è½½åç¨è¯?
 stopwords = []
 stopwords_path = "data/stopwords.txt"
 if os.path.exists(stopwords_path):
@@ -14,12 +14,12 @@ if os.path.exists(stopwords_path):
         for w in f:
             stopwords.append(w.strip())
 else:
-    print(f"警告: 停用词文�?{stopwords_path} 不存在，将使用空停用词列�?)
+    print(f"è­¦å: åç¨è¯æä»?{stopwords_path} ä¸å­å¨ï¼å°ä½¿ç¨ç©ºåç¨è¯åè¡?)
 
 
 def load_corpus(path):
     """
-    加载语料�?
+    å è½½è¯­æåº?
     """
     data = []
     with open(path, "r", encoding="utf8") as f:
@@ -32,7 +32,7 @@ def load_corpus(path):
 
 def load_corpus_bert(path):
     """
-    加载语料�?
+    å è½½è¯­æåº?
     """
     data = []
     with open(path, "r", encoding="utf8") as f:
@@ -45,94 +45,94 @@ def load_corpus_bert(path):
 
 def processing(text):
     """
-    数据预处�? 可以根据自己的需求进行重�?
+    æ°æ®é¢å¤ç? å¯ä»¥æ ¹æ®èªå·±çéæ±è¿è¡éè½?
     """
-    # 数据清洗部分
-    text = re.sub("\{%.+?%\}", " ", text)           # 去除 {%xxx%} (地理定位, 微博话题�?
-    text = re.sub("@.+?( |$)", " ", text)           # 去除 @xxx (用户�?
-    text = re.sub("�?+?�?, " ", text)              # 去除 【xx�?(里面的内容通常都不是用户自己写�?
-    text = re.sub("\u200b", " ", text)              # '\u200b'是这个数据集中的一个bad case, 不用特别在意
-    # 分词
+    # æ°æ®æ¸æ´é¨å
+    text = re.sub("\{%.+?%\}", " ", text)           # å»é¤ {%xxx%} (å°çå®ä½, å¾®åè¯é¢ç­?
+    text = re.sub("@.+?( |$)", " ", text)           # å»é¤ @xxx (ç¨æ·å?
+    text = re.sub("+?, " ", text)              # å»é¤ x(éé¢çåå®¹éå¸¸é½ä¸æ¯ç¨æ·èªå·±åç?
+    text = re.sub("\u200b", " ", text)              # '\u200b'æ¯è¿ä¸ªæ°æ®éä¸­çä¸ä¸ªbad case, ä¸ç¨ç¹å«å¨æ
+    # åè¯
     words = [w for w in jieba.lcut(text) if w.isalpha()]
-    # 对否定词`不`做特殊处�? 与其后面的词进行拼接
-    while "�? in words:
-        index = words.index("�?)
+    # å¯¹å¦å®è¯`ä¸`åç¹æ®å¤ç? ä¸å¶åé¢çè¯è¿è¡æ¼æ¥
+    while "ä¸? in words:
+        index = words.index("ä¸?)
         if index == len(words) - 1:
             break
-        words[index: index+2] = ["".join(words[index: index+2])]  # 列表切片赋值的酷炫写法
-    # 用空格拼接成字符�?
+        words[index: index+2] = ["".join(words[index: index+2])]  # åè¡¨åçèµå¼çé·ç«åæ³
+    # ç¨ç©ºæ ¼æ¼æ¥æå­ç¬¦ä¸?
     result = " ".join(words)
     return result
 
 
 def processing_bert(text):
     """
-    数据预处�? 可以根据自己的需求进行重�?
+    æ°æ®é¢å¤ç? å¯ä»¥æ ¹æ®èªå·±çéæ±è¿è¡éè½?
     """
-    # 数据清洗部分
-    text = re.sub("\{%.+?%\}", " ", text)           # 去除 {%xxx%} (地理定位, 微博话题�?
-    text = re.sub("@.+?( |$)", " ", text)           # 去除 @xxx (用户�?
-    text = re.sub("�?+?�?, " ", text)              # 去除 【xx�?(里面的内容通常都不是用户自己写�?
-    text = re.sub("\u200b", " ", text)              # '\u200b'是这个数据集中的一个bad case, 不用特别在意
+    # æ°æ®æ¸æ´é¨å
+    text = re.sub("\{%.+?%\}", " ", text)           # å»é¤ {%xxx%} (å°çå®ä½, å¾®åè¯é¢ç­?
+    text = re.sub("@.+?( |$)", " ", text)           # å»é¤ @xxx (ç¨æ·å?
+    text = re.sub("+?, " ", text)              # å»é¤ x(éé¢çåå®¹éå¸¸é½ä¸æ¯ç¨æ·èªå·±åç?
+    text = re.sub("\u200b", " ", text)              # '\u200b'æ¯è¿ä¸ªæ°æ®éä¸­çä¸ä¸ªbad case, ä¸ç¨ç¹å«å¨æ
     return text
 
 
 def save_model(model: Any, model_path: str) -> None:
     """
-    保存模型到文�?
+    ä¿å­æ¨¡åå°æä»?
     
     Args:
-        model: 要保存的模型对象
-        model_path: 保存路径
+        model: è¦ä¿å­çæ¨¡åå¯¹è±¡
+        model_path: ä¿å­è·¯å¾
     """
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     
     with open(model_path, 'wb') as f:
         pickle.dump(model, f)
     
-    print(f"模型已保存到: {model_path}")
+    print(f"æ¨¡åå·²ä¿å­å°: {model_path}")
 
 
 def load_model(model_path: str) -> Any:
     """
-    从文件加载模�?
+    ä»æä»¶å è½½æ¨¡å?
     
     Args:
-        model_path: 模型文件路径
+        model_path: æ¨¡åæä»¶è·¯å¾
         
     Returns:
-        加载的模型对�?
+        å è½½çæ¨¡åå¯¹è±?
     """
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"模型文件不存�? {model_path}")
+        raise FileNotFoundError(f"æ¨¡åæä»¶ä¸å­å? {model_path}")
     
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
     
-    print(f"已加载模�? {model_path}")
+    print(f"å·²å è½½æ¨¡å? {model_path}")
     return model
 
 
 def preprocess_text_simple(text: str) -> str:
     """
-    简单的文本预处理函数，用于预测时的文本清洗
+    ç®åçææ¬é¢å¤çå½æ°ï¼ç¨äºé¢æµæ¶çææ¬æ¸æ´
     
     Args:
-        text: 原始文本
+        text: åå§ææ¬
         
     Returns:
-        清洗后的文本
+        æ¸æ´åçææ¬
     """
-    # 数据清洗
-    text = re.sub("\{%.+?%\}", " ", text)           # 去除 {%xxx%}
-    text = re.sub("@.+?( |$)", " ", text)           # 去除 @xxx
-    text = re.sub("�?+?�?, " ", text)              # 去除 【xx�?
-    text = re.sub("\u200b", " ", text)              # 去除特殊字符
+    # æ°æ®æ¸æ´
+    text = re.sub("\{%.+?%\}", " ", text)           # å»é¤ {%xxx%}
+    text = re.sub("@.+?( |$)", " ", text)           # å»é¤ @xxx
+    text = re.sub("+?, " ", text)              # å»é¤ x
+    text = re.sub("\u200b", " ", text)              # å»é¤ç¹æ®å­ç¬¦
     
-    # 删除表情符号
+    # å é¤è¡¨æç¬¦å·
     text = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002600-\U000027BF\U0001f900-\U0001f9ff\U0001f018-\U0001f270\U0000231a-\U0000231b\U0000238d-\U0000238d\U000024c2-\U0001f251]+', '', text)
     
-    # 多个空格合并为一�?
+    # å¤ä¸ªç©ºæ ¼åå¹¶ä¸ºä¸ä¸?
     text = re.sub(r"\s+", " ", text)
     
     return text.strip()

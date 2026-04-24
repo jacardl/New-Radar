@@ -1,4 +1,4 @@
-"""Tests for Arcee AI provider support �?standard direct API provider."""
+"""Tests for Arcee AI provider support é¥?standard direct API provider."""
 
 import sys
 import types
@@ -196,12 +196,12 @@ class TestArceeProvidersModule:
 
 
 # =============================================================================
-# Auxiliary client �?main-model-first design
+# Auxiliary client é¥?main-model-first design
 # =============================================================================
 
 
 class TestArceeAuxiliary:
     def test_main_model_first_design(self):
-        """Arcee uses main-model-first �?no entry in _API_KEY_PROVIDER_AUX_MODELS."""
+        """Arcee uses main-model-first é¥?no entry in _API_KEY_PROVIDER_AUX_MODELS."""
         from agent.auxiliary_client import _API_KEY_PROVIDER_AUX_MODELS
         assert "arcee" not in _API_KEY_PROVIDER_AUX_MODELS

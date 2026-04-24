@@ -1,4 +1,4 @@
-"""hermes-memory-store �?holographic memory plugin using MemoryProvider interface.
+"""hermes-memory-store é¥?holographic memory plugin using MemoryProvider interface.
 
 Registers as a MemoryProvider plugin, giving the agent structured fact storage
 with entity resolution, trust scoring, and HRR-based compositional retrieval.
@@ -38,16 +38,16 @@ FACT_STORE_SCHEMA = {
     "name": "fact_store",
     "description": (
         "Deep structured memory with algebraic reasoning. "
-        "Use alongside the memory tool �?memory for always-on context, "
+        "Use alongside the memory tool é¥?memory for always-on context, "
         "fact_store for deep recall and compositional queries.\n\n"
-        "ACTIONS (simple �?powerful):\n"
-        "�?add �?Store a fact the user would expect you to remember.\n"
-        "�?search �?Keyword lookup ('editor config', 'deploy process').\n"
-        "�?probe �?Entity recall: ALL facts about a person/thing.\n"
-        "�?related �?What connects to an entity? Structural adjacency.\n"
-        "�?reason �?Compositional: facts connected to MULTIPLE entities simultaneously.\n"
-        "�?contradict �?Memory hygiene: find facts making conflicting claims.\n"
-        "�?update/remove/list �?CRUD operations.\n\n"
+        "ACTIONS (simple é«?powerful):\n"
+        "é¥?add é¥?Store a fact the user would expect you to remember.\n"
+        "é¥?search é¥?Keyword lookup ('editor config', 'deploy process').\n"
+        "é¥?probe é¥?Entity recall: ALL facts about a person/thing.\n"
+        "é¥?related é¥?What connects to an entity? Structural adjacency.\n"
+        "é¥?reason é¥?Compositional: facts connected to MULTIPLE entities simultaneously.\n"
+        "é¥?contradict é¥?Memory hygiene: find facts making conflicting claims.\n"
+        "é¥?update/remove/list é¥?CRUD operations.\n\n"
         "IMPORTANT: Before answering questions about the user, ALWAYS probe or reason first."
     ),
     "parameters": {
@@ -76,7 +76,7 @@ FACT_FEEDBACK_SCHEMA = {
     "name": "fact_feedback",
     "description": (
         "Rate a fact after using it. Mark 'helpful' if accurate, 'unhelpful' if outdated. "
-        "This trains the memory �?good facts rise, bad facts sink."
+        "This trains the memory é¥?good facts rise, bad facts sink."
     ),
     "parameters": {
         "type": "object",
@@ -191,7 +191,7 @@ class HolographicMemoryProvider(MemoryProvider):
         if total == 0:
             return (
                 "# Holographic Memory\n"
-                "Active. Empty fact store �?proactively add facts the user would expect you to remember.\n"
+                "Active. Empty fact store é¥?proactively add facts the user would expect you to remember.\n"
                 "Use fact_store(action='add') to store durable structured facts about people, projects, preferences, decisions.\n"
                 "Use fact_feedback to rate facts after using them (trains trust scores)."
             )

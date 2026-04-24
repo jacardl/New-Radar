@@ -1,6 +1,6 @@
 """
-状态管理模�?
-定义Deep Search Agent的状态数据结�?
+ç¶æç®¡çæ¨¡å?
+å®ä¹Deep Search Agentçç¶ææ°æ®ç»æ?
 """
 
 from .state import State, Paragraph, Research, Search

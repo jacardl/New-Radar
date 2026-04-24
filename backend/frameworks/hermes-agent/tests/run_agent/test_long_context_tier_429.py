@@ -2,10 +2,10 @@
 
 When Claude Max users without "extra usage" hit the 1M context tier
 on Sonnet, Anthropic returns HTTP 429 "Extra usage is required for long
-context requests."  This is NOT a transient rate limit �?the agent should
+context requests."  This is NOT a transient rate limit é¥?the agent should
 reduce context_length to 200k and compress instead of retrying.
 
-Only Sonnet is affected �?Opus 1M is general access.
+Only Sonnet is affected é¥?Opus 1M is general access.
 """
 
 import pytest
@@ -58,7 +58,7 @@ class TestLongContextTierDetection:
         )
 
     def test_rejects_opus(self):
-        """Opus 1M is general access �?should NOT trigger reduction."""
+        """Opus 1M is general access é¥?should NOT trigger reduction."""
         assert not self._is_long_context_tier_error(
             429,
             "Extra usage is required for long context requests.",
@@ -126,7 +126,7 @@ class TestContextReduction:
         assert comp.context_length == 200_000
         assert comp.threshold_tokens == 100_000
         assert comp._context_probed is True
-        # Must NOT persist �?subscription tier, not model capability
+        # Must NOT persist é¥?subscription tier, not model capability
         assert comp._context_probe_persistable is False
 
     def test_no_reduction_when_already_200k(self):
@@ -175,7 +175,7 @@ class TestAgentErrorPath:
         assert _is_long_context_tier_error
 
     def test_opus_429_falls_through_to_rate_limit(self):
-        """Opus should NOT match �?falls through to generic rate-limit."""
+        """Opus should NOT match é¥?falls through to generic rate-limit."""
         error_msg = "extra usage is required for long context requests."
         status_code = 429
         model = "claude-opus-4.6"

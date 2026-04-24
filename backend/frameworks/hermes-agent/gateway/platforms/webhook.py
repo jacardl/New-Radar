@@ -79,7 +79,7 @@ class WebhookAdapter(BasePlatformAdapter):
         #
         # Read by every send() invocation for the chat_id (status messages
         # AND the final response).  Cleaned up via TTL on each POST so the
-        # dict stays bounded �?see _prune_delivery_info().  Do NOT pop on
+        # dict stays bounded â?see _prune_delivery_info().  Do NOT pop on
         # send(), or interim status messages (e.g. fallback notifications,
         # context-pressure warnings) will consume the entry before the
         # final response arrives, causing the response to silently fall
@@ -112,7 +112,7 @@ class WebhookAdapter(BasePlatformAdapter):
         # Load agent-created subscriptions before validating
         self._reload_dynamic_routes()
 
-        # Validate routes at startup �?secret is required per route
+        # Validate routes at startup â?secret is required per route
         for name, route in self._routes.items():
             secret = route.get("secret", self._global_secret)
             if not secret:
@@ -126,7 +126,7 @@ class WebhookAdapter(BasePlatformAdapter):
         app.router.add_get("/health", self._handle_health)
         app.router.add_post("/webhooks/{route_name}", self._handle_webhook)
 
-        # Port conflict detection �?fail fast if port is already in use
+        # Port conflict detection â?fail fast if port is already in use
         import socket as _socket
         try:
             with _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM) as _s:
@@ -145,7 +145,7 @@ class WebhookAdapter(BasePlatformAdapter):
 
         route_names = ", ".join(self._routes.keys()) or "(none configured)"
         logger.info(
-            "[webhook] Listening on %s:%d �?routes: %s",
+            "[webhook] Listening on %s:%d â?routes: %s",
             self._host,
             self._port,
             route_names,
@@ -171,7 +171,7 @@ class WebhookAdapter(BasePlatformAdapter):
         chat_id is ``webhook:{route}:{delivery_id}``.  The delivery info
         stored during webhook receipt is read with ``.get()`` (not popped)
         so that interim status messages emitted before the final response
-        �?fallback-model notifications, context-pressure warnings, etc. �?
+        â?fallback-model notifications, context-pressure warnings, etc. â?
         do not consume the entry and silently downgrade the final response
         to the ``log`` deliver type.  TTL cleanup happens on POST.
         """
@@ -185,7 +185,7 @@ class WebhookAdapter(BasePlatformAdapter):
         if deliver_type == "github_comment":
             return await self._deliver_github_comment(content, delivery)
 
-        # Cross-platform delivery �?any platform with a gateway adapter
+        # Cross-platform delivery â?any platform with a gateway adapter
         if self.gateway_runner and deliver_type in (
             "telegram",
             "discord",
@@ -239,7 +239,7 @@ class WebhookAdapter(BasePlatformAdapter):
     # ------------------------------------------------------------------
 
     async def _handle_health(self, request: "web.Request") -> "web.Response":
-        """GET /health �?simple health check."""
+        """GET /health â?simple health check."""
         return web.json_response({"status": "ok", "platform": "webhook"})
 
     def _reload_dynamic_routes(self) -> None:
@@ -276,7 +276,7 @@ class WebhookAdapter(BasePlatformAdapter):
             logger.error("[webhook] Failed to reload dynamic routes: %s", e)
 
     async def _handle_webhook(self, request: "web.Request") -> "web.Response":
-        """POST /webhooks/{route_name} �?receive and process a webhook event."""
+        """POST /webhooks/{route_name} â?receive and process a webhook event."""
         # Hot-reload dynamic subscriptions on each request (mtime-gated, cheap)
         self._reload_dynamic_routes()
 
@@ -288,7 +288,7 @@ class WebhookAdapter(BasePlatformAdapter):
                 {"error": f"Unknown route: {route_name}"}, status=404
             )
 
-        # ── Auth-before-body ─────────────────────────────────────
+        # -- Auth-before-body -------------------------------------
         # Check Content-Length before reading the full payload.
         content_length = request.content_length or 0
         if content_length > self._max_body_bytes:
@@ -296,7 +296,7 @@ class WebhookAdapter(BasePlatformAdapter):
                 {"error": "Payload too large"}, status=413
             )
 
-        # ── Rate limiting ────────────────────────────────────────
+        # -- Rate limiting ----------------------------------------
         now = time.time()
         window = self._rate_counts.setdefault(route_name, [])
         window[:] = [t for t in window if now - t < 60]
@@ -367,7 +367,7 @@ class WebhookAdapter(BasePlatformAdapter):
 
         # Inject skill content if configured.
         # We call build_skill_invocation_message() directly rather than
-        # using /skill-name slash commands �?the gateway's command parser
+        # using /skill-name slash commands â?the gateway's command parser
         # would intercept those and break the flow.
         skills = route_config.get("skills", [])
         if skills:
@@ -400,7 +400,7 @@ class WebhookAdapter(BasePlatformAdapter):
             request.headers.get("X-Request-ID", str(int(time.time() * 1000))),
         )
 
-        # ── Idempotency ─────────────────────────────────────────
+        # -- Idempotency -----------------------------------------
         # Skip duplicate deliveries (webhook retries).
         now = time.time()
         # Prune expired entries
@@ -462,7 +462,7 @@ class WebhookAdapter(BasePlatformAdapter):
             delivery_id,
         )
 
-        # Non-blocking �?return 202 Accepted immediately
+        # Non-blocking â?return 202 Accepted immediately
         task = asyncio.create_task(self.handle_message(event))
         self._background_tasks.add(task)
         task.add_done_callback(self._background_tasks.discard)
@@ -506,7 +506,7 @@ class WebhookAdapter(BasePlatformAdapter):
             ).hexdigest()
             return hmac.compare_digest(generic_sig, expected)
 
-        # No recognised signature header but secret is configured �?reject
+        # No recognised signature header but secret is configured â?reject
         logger.debug(
             "[webhook] Secret configured but no signature header found"
         )
@@ -526,7 +526,7 @@ class WebhookAdapter(BasePlatformAdapter):
         """Render a prompt template with the webhook payload.
 
         Supports dot-notation access into nested dicts:
-        ``{pull_request.title}`` �?``payload["pull_request"]["title"]``
+        ``{pull_request.title}`` â?``payload["pull_request"]["title"]``
 
         Special token ``{__raw__}`` dumps the entire payload as indented
         JSON (truncated to 4000 chars).  Useful for monitoring alerts or
@@ -616,7 +616,7 @@ class WebhookAdapter(BasePlatformAdapter):
                 return SendResult(success=False, error=result.stderr)
         except FileNotFoundError:
             logger.error(
-                "[webhook] 'gh' CLI not found �?install GitHub CLI for "
+                "[webhook] 'gh' CLI not found â?install GitHub CLI for "
                 "github_comment delivery"
             )
             return SendResult(

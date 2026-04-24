@@ -1,15 +1,15 @@
 """
-PDF布局优化�?
+PDFå¸å±ä¼åå?
 
-自动分析和优化PDF布局，确保内容不溢出、排版美观�?
-支持�?
-- 自动调整字号
-- 优化行间�?
-- 调整色块大小
-- 智能排列信息�?
-- 保存和加载优化方�?
-- 文本宽度检测和溢出预防
-- 色块边界检测和自动调整
+èªå¨åæåä¼åPDFå¸å±ï¼ç¡®ä¿åå®¹ä¸æº¢åºãæçç¾è§
+æ¯æï¼?
+- èªå¨è°æ´å­å·
+- ä¼åè¡é´è·?
+- è°æ´è²åå¤§å°
+- æºè½æåä¿¡æ¯å?
+- ä¿å­åå è½½ä¼åæ¹æ¡?
+- ææ¬å®½åº¦æ£æµåæº¢åºé¢é²
+- è²åè¾¹çæ£æµåèªå¨è°æ´
 """
 
 from __future__ import annotations
@@ -25,82 +25,82 @@ from loguru import logger
 
 @dataclass
 class KPICardLayout:
-    """KPI卡片布局配置"""
-    font_size_value: int = 32  # 数值字�?
-    font_size_label: int = 14  # 标签字号
-    font_size_change: int = 13  # 变化值字�?
-    padding: int = 20  # 内边�?
-    min_height: int = 120  # 最小高�?
-    value_max_length: int = 10  # 数值最大字符数（超过则缩小字号�?
+    """KPIå¡çå¸å±éç½®"""
+    font_size_value: int = 32  # æ°å¼å­å?
+    font_size_label: int = 14  # æ ç­¾å­å·
+    font_size_change: int = 13  # ååå¼å­å?
+    padding: int = 20  # åè¾¹è·?
+    min_height: int = 120  # æå°é«åº?
+    value_max_length: int = 10  # æ°å¼æå¤§å­ç¬¦æ°ï¼è¶è¿åç¼©å°å­å·ï¼?
 
 
 @dataclass
 class CalloutLayout:
-    """提示框布局配置"""
-    font_size_title: int = 16  # 标题字号
-    font_size_content: int = 14  # 内容字号
-    padding: int = 20  # 内边�?
-    line_height: float = 1.6  # 行高倍数
-    max_width: str = "100%"  # 最大宽�?
+    """æç¤ºæ¡å¸å±éç½®"""
+    font_size_title: int = 16  # æ é¢å­å·
+    font_size_content: int = 14  # åå®¹å­å·
+    padding: int = 20  # åè¾¹è·?
+    line_height: float = 1.6  # è¡é«åæ°
+    max_width: str = "100%"  # æå¤§å®½åº?
 
 
 @dataclass
 class TableLayout:
-    """表格布局配置"""
-    font_size_header: int = 13  # 表头字号
-    font_size_body: int = 12  # 表体字号
-    cell_padding: int = 12  # 单元格内边距
-    max_cell_width: int = 200  # 最大单元格宽度（像素）
-    overflow_strategy: str = "wrap"  # 溢出策略：wrap(换行) / ellipsis(省略�?
+    """è¡¨æ ¼å¸å±éç½®"""
+    font_size_header: int = 13  # è¡¨å¤´å­å·
+    font_size_body: int = 12  # è¡¨ä½å­å·
+    cell_padding: int = 12  # ååæ ¼åè¾¹è·
+    max_cell_width: int = 200  # æå¤§ååæ ¼å®½åº¦ï¼åç´ ï¼
+    overflow_strategy: str = "wrap"  # æº¢åºç­ç¥ï¼wrap(æ¢è¡) / ellipsis(çç¥å?
 
 
 @dataclass
 class ChartLayout:
-    """图表布局配置"""
-    font_size_title: int = 16  # 图表标题字号
-    font_size_label: int = 12  # 标签字号
-    min_height: int = 300  # 最小高�?
-    max_height: int = 600  # 最大高�?
-    padding: int = 20  # 内边�?
+    """å¾è¡¨å¸å±éç½®"""
+    font_size_title: int = 16  # å¾è¡¨æ é¢å­å·
+    font_size_label: int = 12  # æ ç­¾å­å·
+    min_height: int = 300  # æå°é«åº?
+    max_height: int = 600  # æå¤§é«åº?
+    padding: int = 20  # åè¾¹è·?
 
 
 @dataclass
 class GridLayout:
-    """网格布局配置"""
-    columns: int = 3  # 每行列数（正文默认三列）
-    gap: int = 20  # 间距
-    responsive_breakpoint: int = 768  # 响应式断点（宽度�?
+    """ç½æ ¼å¸å±éç½®"""
+    columns: int = 3  # æ¯è¡åæ°ï¼æ­£æé»è®¤ä¸åï¼
+    gap: int = 20  # é´è·
+    responsive_breakpoint: int = 768  # ååºå¼æ­ç¹ï¼å®½åº¦ï¼?
 
 
 @dataclass
 class DataBlockLayout:
-    """数据块（色块、KPI、表格等）的缩放配置"""
-    overview_text_scale: float = 0.93  # 文章总览数据块文字缩放（轻微缩小�?
-    overview_kpi_scale: float = 0.88  # 总览KPI缩放
-    body_text_scale: float = 0.8      # 正文数据块文字缩放（大幅缩小�?
-    body_kpi_scale: float = 0.76      # 正文KPI缩放
-    min_overview_font: int = 12       # 总览最小字�?
-    min_body_font: int = 11           # 正文最小字�?
+    """æ°æ®åï¼è²åPIãè¡¨æ ¼ç­ï¼çç¼©æ¾éç½®"""
+    overview_text_scale: float = 0.93  # æç« æ»è§æ°æ®åæå­ç¼©æ¾ï¼è½»å¾®ç¼©å°ï¼?
+    overview_kpi_scale: float = 0.88  # æ»è§KPIç¼©æ¾
+    body_text_scale: float = 0.8      # æ­£ææ°æ®åæå­ç¼©æ¾ï¼å¤§å¹ç¼©å°ï¼?
+    body_kpi_scale: float = 0.76      # æ­£æKPIç¼©æ¾
+    min_overview_font: int = 12       # æ»è§æå°å­å?
+    min_body_font: int = 11           # æ­£ææå°å­å?
 
 
 @dataclass
 class PageLayout:
-    """页面整体布局配置"""
-    font_size_base: int = 14  # 基础字号
-    font_size_h1: int = 28  # 一级标�?
-    font_size_h2: int = 24  # 二级标题
-    font_size_h3: int = 20  # 三级标题
-    font_size_h4: int = 16  # 四级标题
-    line_height: float = 1.6  # 行高倍数
-    paragraph_spacing: int = 16  # 段落间距
-    section_spacing: int = 32  # 章节间距
-    page_padding: int = 40  # 页面边距
-    max_content_width: int = 800  # 最大内容宽�?
+    """é¡µé¢æ´ä½å¸å±éç½®"""
+    font_size_base: int = 14  # åºç¡å­å·
+    font_size_h1: int = 28  # ä¸çº§æ é¢?
+    font_size_h2: int = 24  # äºçº§æ é¢
+    font_size_h3: int = 20  # ä¸çº§æ é¢
+    font_size_h4: int = 16  # åçº§æ é¢
+    line_height: float = 1.6  # è¡é«åæ°
+    paragraph_spacing: int = 16  # æ®µè½é´è·
+    section_spacing: int = 32  # ç« èé´è·
+    page_padding: int = 40  # é¡µé¢è¾¹è·
+    max_content_width: int = 800  # æå¤§åå®¹å®½åº?
 
 
 @dataclass
 class PDFLayoutConfig:
-    """完整的PDF布局配置"""
+    """å®æ´çPDFå¸å±éç½®"""
     page: PageLayout
     kpi_card: KPICardLayout
     callout: CalloutLayout
@@ -109,14 +109,14 @@ class PDFLayoutConfig:
     grid: GridLayout
     data_block: DataBlockLayout
 
-    # 优化策略配置
-    auto_adjust_font_size: bool = True  # 自动调整字号
-    auto_adjust_grid_columns: bool = True  # 自动调整网格列数
-    prevent_orphan_headers: bool = True  # 防止标题孤行
-    optimize_for_print: bool = True  # 打印优化
+    # ä¼åç­ç¥éç½®
+    auto_adjust_font_size: bool = True  # èªå¨è°æ´å­å·
+    auto_adjust_grid_columns: bool = True  # èªå¨è°æ´ç½æ ¼åæ°
+    prevent_orphan_headers: bool = True  # é²æ­¢æ é¢å­¤è¡
+    optimize_for_print: bool = True  # æå°ä¼å
 
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字�?""
+        """è½¬æ¢ä¸ºå­å?""
         return {
             'page': asdict(self.page),
             'kpi_card': asdict(self.kpi_card),
@@ -133,7 +133,7 @@ class PDFLayoutConfig:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> PDFLayoutConfig:
-        """从字典创建配�?""
+        """ä»å­å¸åå»ºéç½?""
         return cls(
             page=PageLayout(**data['page']),
             kpi_card=KPICardLayout(**data['kpi_card']),
@@ -151,36 +151,36 @@ class PDFLayoutConfig:
 
 class PDFLayoutOptimizer:
     """
-    PDF布局优化�?
+    PDFå¸å±ä¼åå?
 
-    根据内容特征自动优化PDF布局，防止溢出和排版问题�?
+    æ ¹æ®åå®¹ç¹å¾èªå¨ä¼åPDFå¸å±ï¼é²æ­¢æº¢åºåæçé®é¢
     """
 
-    # 字符宽度估算系数（基于常见中文字体）
-    # 中文字符通常是等宽的，约等于字号的像素�?
-    # 英文和数字约为字号的0.5-0.6�?
-    # 更新：使用更精确的系数以更好地预测溢�?
+    # å­ç¬¦å®½åº¦ä¼°ç®ç³»æ°ï¼åºäºå¸¸è§ä¸­æå­ä½ï¼
+    # ä¸­æå­ç¬¦éå¸¸æ¯ç­å®½çï¼çº¦ç­äºå­å·çåç´ å?
+    # è±æåæ°å­çº¦ä¸ºå­å·ç0.5-0.6å?
+    # æ´æ°ï¼ä½¿ç¨æ´ç²¾ç¡®çç³»æ°ä»¥æ´å¥½å°é¢æµæº¢å?
     CHAR_WIDTH_FACTOR = {
-        'chinese': 1.05,     # 中文字符（略微增加以确保安全边界�?
-        'english': 0.58,     # 英文字母
-        'number': 0.65,      # 数字（数字通常比字母稍宽）
-        'symbol': 0.45,      # 符号
-        'percent': 0.7,      # 百分号等特殊符号
+        'chinese': 1.05,     # ä¸­æå­ç¬¦ï¼ç¥å¾®å¢å ä»¥ç¡®ä¿å®å¨è¾¹çï¼?
+        'english': 0.58,     # è±æå­æ¯
+        'number': 0.65,      # æ°å­ï¼æ°å­éå¸¸æ¯å­æ¯ç¨å®½ï¼
+        'symbol': 0.45,      # ç¬¦å·
+        'percent': 0.7,      # ç¾åå·ç­ç¹æ®ç¬¦å·
     }
 
     def __init__(self, config: Optional[PDFLayoutConfig] = None):
         """
-        初始化优化器
+        åå§åä¼åå¨
 
-        参数:
-            config: 布局配置，如果为None则使用默认配�?
+        åæ°:
+            config: å¸å±éç½®ï¼å¦æä¸ºNoneåä½¿ç¨é»è®¤éç½?
         """
         self.config = config or self._create_default_config()
         self.optimization_log = []
 
     @staticmethod
     def _create_default_config() -> PDFLayoutConfig:
-        """创建默认配置"""
+        """åå»ºé»è®¤éç½®"""
         return PDFLayoutConfig(
             page=PageLayout(),
             kpi_card=KPICardLayout(),
@@ -193,40 +193,40 @@ class PDFLayoutOptimizer:
 
     def optimize_for_document(self, document_ir: Dict[str, Any]) -> PDFLayoutConfig:
         """
-        根据文档IR内容优化布局配置
+        æ ¹æ®ææ¡£IRåå®¹ä¼åå¸å±éç½®
 
-        参数:
-            document_ir: Document IR数据
+        åæ°:
+            document_ir: Document IRæ°æ®
 
-        返回:
-            PDFLayoutConfig: 优化后的布局配置
+        è¿å:
+            PDFLayoutConfig: ä¼ååçå¸å±éç½®
         """
-        logger.info("开始分析文档并优化布局...")
+        logger.info("å¼å§åæææ¡£å¹¶ä¼åå¸å±...")
 
-        # 分析文档结构
+        # åæææ¡£ç»æ
         stats = self._analyze_document(document_ir)
 
-        # 根据分析结果调整配置
+        # æ ¹æ®åæç»æè°æ´éç½®
         optimized_config = self._adjust_config_based_on_stats(stats)
 
-        # 记录优化日志
+        # è®°å½ä¼åæ¥å¿
         self._log_optimization(stats, optimized_config)
 
         return optimized_config
 
     def _analyze_document(self, document_ir: Dict[str, Any]) -> Dict[str, Any]:
         """
-        分析文档内容特征
+        åæææ¡£åå®¹ç¹å¾
 
-        返回统计信息�?
-        - kpi_count: KPI卡片数量
-        - table_count: 表格数量
-        - chart_count: 图表数量
-        - max_kpi_value_length: 最长KPI数值长�?
-        - max_table_columns: 最多表格列�?
-        - total_content_length: 总内容长�?
-        - hero_kpi_count: Hero区域的KPI数量
-        - max_hero_kpi_value_length: Hero区域最长KPI数值长�?
+        è¿åç»è®¡ä¿¡æ¯ï¼?
+        - kpi_count: KPIå¡çæ°é
+        - table_count: è¡¨æ ¼æ°é
+        - chart_count: å¾è¡¨æ°é
+        - max_kpi_value_length: æé¿KPIæ°å¼é¿åº?
+        - max_table_columns: æå¤è¡¨æ ¼åæ?
+        - total_content_length: æ»åå®¹é¿åº?
+        - hero_kpi_count: HeroåºåçKPIæ°é
+        - max_hero_kpi_value_length: Heroåºåæé¿KPIæ°å¼é¿åº?
         """
         stats = {
             'kpi_count': 0,
@@ -242,7 +242,7 @@ class PDFLayoutOptimizer:
             'max_hero_kpi_value_length': 0,
         }
 
-        # 分析hero区域的KPI
+        # åæheroåºåçKPI
         metadata = document_ir.get('metadata', {})
         hero = metadata.get('hero', {})
         if hero:
@@ -255,33 +255,33 @@ class PDFLayoutOptimizer:
                     len(value)
                 )
 
-        # 优先使用chapters，fallback到sections
+        # ä¼åä½¿ç¨chaptersï¼fallbackå°sections
         chapters = document_ir.get('chapters', [])
         if not chapters:
             chapters = document_ir.get('sections', [])
 
-        # 遍历章节
+        # éåç« è
         for chapter in chapters:
             self._analyze_chapter(chapter, stats)
 
-        logger.info(f"文档分析完成: {stats}")
+        logger.info(f"ææ¡£åæå®æ: {stats}")
         return stats
 
     def _analyze_chapter(self, chapter: Dict[str, Any], stats: Dict[str, Any]):
-        """分析单个章节"""
-        # 分析章节中的blocks
+        """åæåä¸ªç« è"""
+        # åæç« èä¸­çblocks
         blocks = chapter.get('blocks', [])
         for block in blocks:
             self._analyze_block(block, stats)
 
-        # 递归处理子章节（如果有）
+        # éå½å¤çå­ç« èï¼å¦ææï¼
         children = chapter.get('children', [])
         for child in children:
             if isinstance(child, dict):
                 self._analyze_chapter(child, stats)
 
     def _analyze_block(self, block: Dict[str, Any], stats: Dict[str, Any]):
-        """分析单个block节点"""
+        """åæåä¸ªblockèç¹"""
         if not isinstance(block, dict):
             return
 
@@ -291,7 +291,7 @@ class PDFLayoutOptimizer:
             kpis = block.get('items', [])
             stats['kpi_count'] += len(kpis)
 
-            # 检查KPI数值长�?
+            # æ£æ¥KPIæ°å¼é¿åº?
             for kpi in kpis:
                 value = str(kpi.get('value', ''))
                 stats['max_kpi_value_length'] = max(
@@ -302,11 +302,11 @@ class PDFLayoutOptimizer:
         elif node_type == 'table':
             stats['table_count'] += 1
 
-            # 分析表格结构
+            # åæè¡¨æ ¼ç»æ
             headers = block.get('headers', [])
             rows = block.get('rows', [])
             if rows and isinstance(rows[0], dict):
-                # 从第一行的cells计算列数
+                # ä»ç¬¬ä¸è¡çcellsè®¡ç®åæ°
                 cells = rows[0].get('cells', [])
                 stats['max_table_columns'] = max(
                     stats['max_table_columns'],
@@ -327,7 +327,7 @@ class PDFLayoutOptimizer:
 
         elif node_type == 'callout':
             stats['callout_count'] += 1
-            # 检查callout中的blocks
+            # æ£æ¥calloutä¸­çblocks
             callout_blocks = block.get('blocks', [])
             for cb in callout_blocks:
                 if isinstance(cb, dict) and cb.get('type') == 'paragraph':
@@ -341,14 +341,14 @@ class PDFLayoutOptimizer:
             if len(text) > 500:
                 stats['has_long_text'] = True
 
-        # 递归处理嵌套的blocks
+        # éå½å¤çåµå¥çblocks
         nested_blocks = block.get('blocks', [])
         if nested_blocks:
             for nested in nested_blocks:
                 self._analyze_block(nested, stats)
 
     def _extract_text_from_paragraph(self, paragraph: Dict[str, Any]) -> str:
-        """从paragraph block中提取纯文本"""
+        """ä»paragraph blockä¸­æåçº¯ææ¬"""
         text_parts = []
         inlines = paragraph.get('inlines', [])
         for inline in inlines:
@@ -361,33 +361,33 @@ class PDFLayoutOptimizer:
         return ''.join(text_parts)
 
     def _analyze_section(self, section: Dict[str, Any], stats: Dict[str, Any]):
-        """递归分析章节（保留用于向后兼容）"""
-        # 这个方法保留用于向后兼容，实际上调用_analyze_chapter
+        """éå½åæç« èï¼ä¿çç¨äºååå¼å®¹ï¼"""
+        # è¿ä¸ªæ¹æ³ä¿çç¨äºååå¼å®¹ï¼å®éä¸è°ç¨_analyze_chapter
         self._analyze_chapter(section, stats)
 
     def _estimate_text_width(self, text: str, font_size: int) -> float:
         """
-        估算文本的像素宽�?
+        ä¼°ç®ææ¬çåç´ å®½åº?
 
-        参数:
-            text: 要测量的文本
-            font_size: 字号（像素）
+        åæ°:
+            text: è¦æµéçææ¬
+            font_size: å­å·ï¼åç´ ï¼
 
-        返回:
-            float: 估算的宽度（像素�?
+        è¿å:
+            float: ä¼°ç®çå®½åº¦ï¼åç´ ï¼?
         """
         if not text:
             return 0.0
 
         width = 0.0
         for char in text:
-            if '\u4e00' <= char <= '\u9fff':  # 中文字符范围
+            if '\u4e00' <= char <= '\u9fff':  # ä¸­æå­ç¬¦èå´
                 width += font_size * self.CHAR_WIDTH_FACTOR['chinese']
             elif char.isalpha():
                 width += font_size * self.CHAR_WIDTH_FACTOR['english']
             elif char.isdigit():
                 width += font_size * self.CHAR_WIDTH_FACTOR['number']
-            elif char in '%�?:  # 百分�?
+            elif char in '%ï¼?:  # ç¾åå?
                 width += font_size * self.CHAR_WIDTH_FACTOR['percent']
             else:
                 width += font_size * self.CHAR_WIDTH_FACTOR['symbol']
@@ -396,15 +396,15 @@ class PDFLayoutOptimizer:
 
     def _check_text_overflow(self, text: str, font_size: int, max_width: int) -> bool:
         """
-        检查文本是否会溢出
+        æ£æ¥ææ¬æ¯å¦ä¼æº¢åº
 
-        参数:
-            text: 要检查的文本
-            font_size: 字号（像素）
-            max_width: 最大宽度（像素�?
+        åæ°:
+            text: è¦æ£æ¥çææ¬
+            font_size: å­å·ï¼åç´ ï¼
+            max_width: æå¤§å®½åº¦ï¼åç´ ï¼?
 
-        返回:
-            bool: True表示会溢�?
+        è¿å:
+            bool: Trueè¡¨ç¤ºä¼æº¢å?
         """
         estimated_width = self._estimate_text_width(text, font_size)
         return estimated_width > max_width
@@ -417,57 +417,57 @@ class PDFLayoutOptimizer:
         max_font_size: int = 32
     ) -> Tuple[int, bool]:
         """
-        计算安全的字号以避免溢出
+        è®¡ç®å®å¨çå­å·ä»¥é¿åæº¢åº
 
-        参数:
-            text: 要显示的文本
-            max_width: 最大宽度（像素�?
-            min_font_size: 最小字�?
-            max_font_size: 最大字�?
+        åæ°:
+            text: è¦æ¾ç¤ºçææ¬
+            max_width: æå¤§å®½åº¦ï¼åç´ ï¼?
+            min_font_size: æå°å­å?
+            max_font_size: æå¤§å­å?
 
-        返回:
-            Tuple[int, bool]: (建议字号, 是否需要调�?
+        è¿å:
+            Tuple[int, bool]: (å»ºè®®å­å·, æ¯å¦éè¦è°æ?
         """
         if not text:
             return max_font_size, False
 
-        # 从最大字号开始尝�?
+        # ä»æå¤§å­å·å¼å§å°è¯?
         for font_size in range(max_font_size, min_font_size - 1, -1):
             if not self._check_text_overflow(text, font_size, max_width):
-                # 如果需要缩小字�?
+                # å¦æéè¦ç¼©å°å­å?
                 needs_adjustment = font_size < max_font_size
                 return font_size, needs_adjustment
 
-        # 如果连最小字号都溢出，返回最小字号并标记需要调�?
+        # å¦æè¿æå°å­å·é½æº¢åºï¼è¿åæå°å­å·å¹¶æ è®°éè¦è°æ?
         return min_font_size, True
 
     def _detect_kpi_overflow_issues(self, stats: Dict[str, Any]) -> List[str]:
         """
-        检测KPI卡片可能的溢出问�?
+        æ£æµKPIå¡çå¯è½çæº¢åºé®é¢?
 
-        参数:
-            stats: 文档统计信息
+        åæ°:
+            stats: ææ¡£ç»è®¡ä¿¡æ¯
 
-        返回:
-            List[str]: 检测到的问题列�?
+        è¿å:
+            List[str]: æ£æµå°çé®é¢åè¡?
         """
         issues = []
 
-        # KPI卡片的典型宽度（像素�?
-        # 基于2列布局，容器宽�?00px，间�?0px
-        kpi_card_width = (800 - 20) // 2 - 40  # 减去padding
+        # KPIå¡ççå¸åå®½åº¦ï¼åç´ ï¼?
+        # åºäº2åå¸å±ï¼å®¹å¨å®½åº?00pxï¼é´è·?0px
+        kpi_card_width = (800 - 20) // 2 - 40  # åå»padding
 
-        # 检查最长KPI数�?
+        # æ£æ¥æé¿KPIæ°å?
         max_kpi_length = stats.get('max_kpi_value_length', 0)
         if max_kpi_length > 0:
-            # 假设一个很长的数�?
-            sample_text = '1' * max_kpi_length + '亿元'
+            # åè®¾ä¸ä¸ªå¾é¿çæ°å?
+            sample_text = '1' * max_kpi_length + 'äº¿å'
             current_font_size = self.config.kpi_card.font_size_value
 
             if self._check_text_overflow(sample_text, current_font_size, kpi_card_width):
                 issues.append(
-                    f"KPI数值过�?{max_kpi_length}字符)�?
-                    f"字号{current_font_size}px可能导致溢出"
+                    f"KPIæ°å¼è¿é?{max_kpi_length}å­ç¬¦)ï¼?
+                    f"å­å·{current_font_size}pxå¯è½å¯¼è´æº¢åº"
                 )
 
         return issues
@@ -476,7 +476,7 @@ class PDFLayoutOptimizer:
         self,
         stats: Dict[str, Any]
     ) -> PDFLayoutConfig:
-        """根据统计信息调整配置"""
+        """æ ¹æ®ç»è®¡ä¿¡æ¯è°æ´éç½®"""
         config = PDFLayoutConfig(
             page=PageLayout(**asdict(self.config.page)),
             kpi_card=KPICardLayout(**asdict(self.config.kpi_card)),
@@ -491,63 +491,63 @@ class PDFLayoutOptimizer:
             optimize_for_print=self.config.optimize_for_print,
         )
 
-        # 检测KPI溢出问题
+        # æ£æµKPIæº¢åºé®é¢
         overflow_issues = self._detect_kpi_overflow_issues(stats)
         if overflow_issues:
             for issue in overflow_issues:
-                logger.warning(f"检测到布局问题: {issue}")
+                logger.warning(f"æ£æµå°å¸å±é®é¢: {issue}")
 
-        # KPI卡片宽度（像素）- 更保守的计算，留出更多安全边�?
-        kpi_card_width = (800 - 20) // 2 - 60  # 2列布局，增加边距以防溢�?
+        # KPIå¡çå®½åº¦ï¼åç´ ï¼- æ´ä¿å®çè®¡ç®ï¼çåºæ´å¤å®å¨è¾¹ç?
+        kpi_card_width = (800 - 20) // 2 - 60  # 2åå¸å±ï¼å¢å è¾¹è·ä»¥é²æº¢å?
 
-        # 优先处理Hero区域的KPI（如果有的话�?
+        # ä¼åå¤çHeroåºåçKPIï¼å¦ææçè¯ï¼?
         if stats['hero_kpi_count'] > 0 and stats['max_hero_kpi_value_length'] > 0:
-            # Hero区域的KPI卡片宽度通常更窄
-            hero_kpi_width = 250  # Hero侧边栏的典型宽度
-            sample_text = '9' * stats['max_hero_kpi_value_length'] + '�?
+            # HeroåºåçKPIå¡çå®½åº¦éå¸¸æ´çª
+            hero_kpi_width = 250  # Heroä¾§è¾¹æ çå¸åå®½åº¦
+            sample_text = '9' * stats['max_hero_kpi_value_length'] + 'å?
             safe_font_size, needs_adjustment = self._calculate_safe_font_size(
                 sample_text,
                 hero_kpi_width,
                 min_font_size=14,
-                max_font_size=24  # Hero KPI字号通常较小
+                max_font_size=24  # Hero KPIå­å·éå¸¸è¾å°
             )
 
             if needs_adjustment or stats['max_hero_kpi_value_length'] > 6:
-                # Hero KPI需要更保守的字�?
+                # Hero KPIéè¦æ´ä¿å®çå­å?
                 config.kpi_card.font_size_value = max(14, safe_font_size - 2)
                 self.optimization_log.append(
-                    f"Hero KPI数值较�?{stats['max_hero_kpi_value_length']}字符)�?
-                    f"字号调整为{config.kpi_card.font_size_value}px"
+                    f"Hero KPIæ°å¼è¾é?{stats['max_hero_kpi_value_length']}å­ç¬¦)ï¼?
+                    f"å­å·è°æ´ä¸º{config.kpi_card.font_size_value}px"
                 )
 
-        # 根据KPI数值长度智能调整字�?
+        # æ ¹æ®KPIæ°å¼é¿åº¦æºè½è°æ´å­å?
         if stats['max_kpi_value_length'] > 0:
-            # 创建示例文本进行测试 - 使用实际可能的字符组�?
-            sample_text = '9' * stats['max_kpi_value_length'] + '�?  # 加上可能的单�?
+            # åå»ºç¤ºä¾ææ¬è¿è¡æµè¯ - ä½¿ç¨å®éå¯è½çå­ç¬¦ç»å?
+            sample_text = '9' * stats['max_kpi_value_length'] + 'äº?  # å ä¸å¯è½çåä½?
             safe_font_size, needs_adjustment = self._calculate_safe_font_size(
                 sample_text,
                 kpi_card_width,
-                min_font_size=16,  # 降低最小字号以确保不溢�?
-                max_font_size=28   # 降低最大字号以更保�?
+                min_font_size=16,  # éä½æå°å­å·ä»¥ç¡®ä¿ä¸æº¢å?
+                max_font_size=28   # éä½æå¤§å­å·ä»¥æ´ä¿å®?
             )
 
             if needs_adjustment:
                 config.kpi_card.font_size_value = safe_font_size
-                # 进一步降低以留出安全边界
+                # è¿ä¸æ­¥éä½ä»¥çåºå®å¨è¾¹ç
                 config.kpi_card.font_size_value = max(16, safe_font_size - 2)
                 self.optimization_log.append(
-                    f"KPI数值过�?{stats['max_kpi_value_length']}字符)�?
-                    f"字号自动调整为{config.kpi_card.font_size_value}px以防止溢�?
+                    f"KPIæ°å¼è¿é?{stats['max_kpi_value_length']}å­ç¬¦)ï¼?
+                    f"å­å·èªå¨è°æ´ä¸º{config.kpi_card.font_size_value}pxä»¥é²æ­¢æº¢å?
                 )
             elif stats['max_kpi_value_length'] > 8:
-                # 对于较长文本，更保守地调�?
+                # å¯¹äºè¾é¿ææ¬ï¼æ´ä¿å®å°è°æ?
                 config.kpi_card.font_size_value = min(24, safe_font_size)
                 self.optimization_log.append(
-                    f"KPI数值较�?{stats['max_kpi_value_length']}字符)�?
-                    f"预防性调整字号为{config.kpi_card.font_size_value}px"
+                    f"KPIæ°å¼è¾é?{stats['max_kpi_value_length']}å­ç¬¦)ï¼?
+                    f"é¢é²æ§è°æ´å­å·ä¸º{config.kpi_card.font_size_value}px"
                 )
 
-        # 收紧KPI字号上限，为正文数据块缩放留出空�?
+        # æ¶ç´§KPIå­å·ä¸éï¼ä¸ºæ­£ææ°æ®åç¼©æ¾çåºç©ºé?
         base = config.page.font_size_base
         kpi_value_cap = max(base + 6, 20)
         kpi_label_cap = max(base - 1, 12)
@@ -564,21 +564,21 @@ class PDFLayoutOptimizer:
         config.kpi_card.font_size_change = min(original_change, kpi_change_cap)
         config.kpi_card.font_size_change = max(config.kpi_card.font_size_change, 12)
         self.optimization_log.append(
-            f"KPI字号上限收紧：数值{original_value}px→{config.kpi_card.font_size_value}px�?
-            f"标签{original_label}px→{config.kpi_card.font_size_label}px�?
-            f"变动{original_change}px→{config.kpi_card.font_size_change}px"
+            f"KPIå­å·ä¸éæ¶ç´§ï¼æ°å¼{original_value}px->{config.kpi_card.font_size_value}pxï¼?
+            f"æ ç­¾{original_label}px->{config.kpi_card.font_size_label}pxï¼?
+            f"åå¨{original_change}px->{config.kpi_card.font_size_change}px"
         )
 
         total_blocks = (stats['kpi_count'] + stats['table_count'] +
                         stats['chart_count'] + stats['callout_count'])
 
-        # 分开收紧文章总览与正文数据块的文�?
+        # åå¼æ¶ç´§æç« æ»è§ä¸æ­£ææ°æ®åçæå­?
         if stats['hero_kpi_count'] >= 3 or stats['max_hero_kpi_value_length'] > 6:
             prev = config.data_block.overview_kpi_scale
             config.data_block.overview_kpi_scale = min(prev, 0.86)
             if config.data_block.overview_kpi_scale != prev:
                 self.optimization_log.append(
-                    f"文章总览KPI较密集，缩放系数 {prev:.2f}→{config.data_block.overview_kpi_scale:.2f}"
+                    f"æç« æ»è§KPIè¾å¯éï¼ç¼©æ¾ç³»æ° {prev:.2f}->{config.data_block.overview_kpi_scale:.2f}"
                 )
 
         if stats['has_long_text'] or stats['max_table_columns'] > 6:
@@ -587,8 +587,8 @@ class PDFLayoutOptimizer:
             config.data_block.body_text_scale = min(prev_text, 0.78)
             config.data_block.body_kpi_scale = min(prev_kpi, 0.74)
             self.optimization_log.append(
-                f"正文数据块紧缩：长文�?宽表触发，文字缩放至{config.data_block.body_text_scale*100:.0f}%�?
-                f"KPI缩放至{config.data_block.body_kpi_scale*100:.0f}%"
+                f"æ­£ææ°æ®åç´§ç¼©ï¼é¿ææ?å®½è¡¨è§¦åï¼æå­ç¼©æ¾è³{config.data_block.body_text_scale*100:.0f}%ï¼?
+                f"KPIç¼©æ¾è³{config.data_block.body_kpi_scale*100:.0f}%"
             )
         elif total_blocks > 16:
             prev_text = config.data_block.body_text_scale
@@ -596,92 +596,92 @@ class PDFLayoutOptimizer:
             config.data_block.body_text_scale = min(prev_text, 0.80)
             config.data_block.body_kpi_scale = min(prev_kpi, 0.75)
             self.optimization_log.append(
-                f"正文数据块缩放：内容块较�?{total_blocks}�?，文字缩放至{config.data_block.body_text_scale*100:.0f}%�?
-                f"KPI缩放至{config.data_block.body_kpi_scale*100:.0f}%"
+                f"æ­£ææ°æ®åç¼©æ¾ï¼åå®¹åè¾å¤?{total_blocks}ä¸?ï¼æå­ç¼©æ¾è³{config.data_block.body_text_scale*100:.0f}%ï¼?
+                f"KPIç¼©æ¾è³{config.data_block.body_kpi_scale*100:.0f}%"
             )
         elif total_blocks > 10:
             prev_text = config.data_block.body_text_scale
             config.data_block.body_text_scale = min(prev_text, 0.82)
             if config.data_block.body_text_scale != prev_text:
                 self.optimization_log.append(
-                    f"正文数据块轻量缩�?{total_blocks}个块)，文字缩放系�?{prev_text:.2f}→{config.data_block.body_text_scale:.2f}"
+                    f"æ­£ææ°æ®åè½»éç¼©æ?{total_blocks}ä¸ªå)ï¼æå­ç¼©æ¾ç³»æ?{prev_text:.2f}->{config.data_block.body_text_scale:.2f}"
                 )
 
-        # 根据KPI数量调整间距但保持正文默认三列装�?
+        # æ ¹æ®KPIæ°éè°æ´é´è·ä½ä¿ææ­£æé»è®¤ä¸åè£è®?
         config.grid.columns = 3
         if stats['kpi_count'] > 6:
             config.kpi_card.min_height = 100
-            config.kpi_card.padding = 14  # 缩小padding以节省空�?
-            config.grid.gap = 16  # 减小间距
+            config.kpi_card.padding = 14  # ç¼©å°paddingä»¥èçç©ºé?
+            config.grid.gap = 16  # åå°é´è·
             self.optimization_log.append(
-                f"KPI卡片较多({stats['kpi_count']}�?�?
-                f"保持三列布局并缩小内边距和间�?
+                f"KPIå¡çè¾å¤({stats['kpi_count']}ä¸?ï¼?
+                f"ä¿æä¸åå¸å±å¹¶ç¼©å°åè¾¹è·åé´è·?
             )
         elif stats['kpi_count'] > 4:
             config.kpi_card.padding = 16
             config.grid.gap = 18
             self.optimization_log.append(
-                f"KPI卡片适中({stats['kpi_count']}�?，保持三列布局并适度调整间距"
+                f"KPIå¡çéä¸­({stats['kpi_count']}ä¸?ï¼ä¿æä¸åå¸å±å¹¶éåº¦è°æ´é´è·"
             )
         elif stats['kpi_count'] <= 2:
-            config.kpi_card.padding = 22  # 较少卡片时增加padding
+            config.kpi_card.padding = 22  # è¾å°å¡çæ¶å¢å padding
             config.grid.gap = 20
             self.optimization_log.append(
-                f"KPI卡片较少({stats['kpi_count']}�?�?
-                f"保持三列布局并增加内边距"
+                f"KPIå¡çè¾å°({stats['kpi_count']}ä¸?ï¼?
+                f"ä¿æä¸åå¸å±å¹¶å¢å åè¾¹è·"
             )
 
-        # 根据表格列数调整字号和间�?
+        # æ ¹æ®è¡¨æ ¼åæ°è°æ´å­å·åé´è·?
         if stats['max_table_columns'] > 8:
             config.table.font_size_header = 10
             config.table.font_size_body = 9
             config.table.cell_padding = 6
             self.optimization_log.append(
-                f"表格列数很多({stats['max_table_columns']}�?�?
-                f"大幅缩小字号和内边距"
+                f"è¡¨æ ¼åæ°å¾å¤({stats['max_table_columns']}å?ï¼?
+                f"å¤§å¹ç¼©å°å­å·ååè¾¹è·"
             )
         elif stats['max_table_columns'] > 6:
             config.table.font_size_header = 11
             config.table.font_size_body = 10
             config.table.cell_padding = 8
             self.optimization_log.append(
-                f"表格列数较多({stats['max_table_columns']}�?�?
-                f"缩小字号和内边距"
+                f"è¡¨æ ¼åæ°è¾å¤({stats['max_table_columns']}å?ï¼?
+                f"ç¼©å°å­å·ååè¾¹è·"
             )
         elif stats['max_table_columns'] > 4:
             config.table.font_size_header = 12
             config.table.font_size_body = 11
             config.table.cell_padding = 10
             self.optimization_log.append(
-                f"表格列数适中({stats['max_table_columns']}�?�?
-                f"适度调整字号"
+                f"è¡¨æ ¼åæ°éä¸­({stats['max_table_columns']}å?ï¼?
+                f"éåº¦è°æ´å­å·"
             )
 
-        # 如果有长文本，增加行高和段落间距
+        # å¦ææé¿ææ¬ï¼å¢å è¡é«åæ®µè½é´è·
         if stats['has_long_text']:
-            config.page.line_height = 1.75  # 稍微降低以节省空�?
+            config.page.line_height = 1.75  # ç¨å¾®éä½ä»¥èçç©ºé?
             config.callout.line_height = 1.75
-            config.page.paragraph_spacing = 16  # 适度间距
+            config.page.paragraph_spacing = 16  # éåº¦é´è·
             self.optimization_log.append(
-                "检测到长文本，增加行高�?.75和段落间距以提高可读�?
+                "æ£æµå°é¿ææ¬ï¼å¢å è¡é«è?.75åæ®µè½é´è·ä»¥æé«å¯è¯»æ?
             )
         else:
-            # 没有长文本时使用更紧凑的间距
+            # æ²¡æé¿ææ¬æ¶ä½¿ç¨æ´ç´§åçé´è·
             config.page.line_height = 1.5
             config.callout.line_height = 1.6
             config.page.paragraph_spacing = 14
             self.optimization_log.append(
-                "文本长度适中，使用标准行高和段落间距"
+                "ææ¬é¿åº¦éä¸­ï¼ä½¿ç¨æ åè¡é«åæ®µè½é´è·"
             )
 
-        # 如果内容较多，减小整体字�?
+        # å¦æåå®¹è¾å¤ï¼åå°æ´ä½å­å?
         if total_blocks > 20:
             config.page.font_size_base = 13
             config.page.font_size_h2 = 22
             config.page.font_size_h3 = 18
             self.optimization_log.append(
-                f"内容块较�?{total_blocks}�?�?
-                f"适度缩小整体字号以优化排�?
+                f"åå®¹åè¾å¤?{total_blocks}ä¸?ï¼?
+                f"éåº¦ç¼©å°æ´ä½å­å·ä»¥ä¼åæç?
             )
 
         return config
@@ -691,7 +691,7 @@ class PDFLayoutOptimizer:
         stats: Dict[str, Any],
         config: PDFLayoutConfig
     ):
-        """记录优化过程"""
+        """è®°å½ä¼åè¿ç¨"""
         log_entry = {
             'timestamp': datetime.now().isoformat(),
             'document_stats': stats,
@@ -699,22 +699,22 @@ class PDFLayoutOptimizer:
             'final_config': config.to_dict(),
         }
 
-        logger.info(f"布局优化完成，应用了{len(self.optimization_log)}项优�?)
+        logger.info(f"å¸å±ä¼åå®æï¼åºç¨äº{len(self.optimization_log)}é¡¹ä¼å?)
         for opt in self.optimization_log:
             logger.info(f"  - {opt}")
 
-        # 清空日志供下次使�?
+        # æ¸ç©ºæ¥å¿ä¾ä¸æ¬¡ä½¿ç?
         self.optimization_log.clear()
 
         return log_entry
 
     def save_config(self, path: str | Path, log_entry: Optional[Dict] = None):
         """
-        保存配置到文�?
+        ä¿å­éç½®å°æä»?
 
-        参数:
-            path: 保存路径
-            log_entry: 优化日志条目（可选）
+        åæ°:
+            path: ä¿å­è·¯å¾
+            log_entry: ä¼åæ¥å¿æ¡ç®ï¼å¯éï¼
         """
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -729,23 +729,23 @@ class PDFLayoutOptimizer:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-        logger.info(f"布局配置已保�? {path}")
+        logger.info(f"å¸å±éç½®å·²ä¿å­? {path}")
 
     @classmethod
     def load_config(cls, path: str | Path) -> PDFLayoutOptimizer:
         """
-        从文件加载配�?
+        ä»æä»¶å è½½éç½?
 
-        参数:
-            path: 配置文件路径
+        åæ°:
+            path: éç½®æä»¶è·¯å¾
 
-        返回:
-            PDFLayoutOptimizer: 加载了配置的优化器实�?
+        è¿å:
+            PDFLayoutOptimizer: å è½½äºéç½®çä¼åå¨å®ä¾?
         """
         path = Path(path)
 
         if not path.exists():
-            logger.warning(f"配置文件不存�? {path}，使用默认配�?)
+            logger.warning(f"éç½®æä»¶ä¸å­å? {path}ï¼ä½¿ç¨é»è®¤éç½?)
             return cls()
 
         with open(path, 'r', encoding='utf-8') as f:
@@ -754,34 +754,34 @@ class PDFLayoutOptimizer:
         config = PDFLayoutConfig.from_dict(data['config'])
         optimizer = cls(config)
 
-        logger.info(f"布局配置已加�? {path}")
+        logger.info(f"å¸å±éç½®å·²å è½? {path}")
         return optimizer
 
     def generate_pdf_css(self) -> str:
         """
-        根据当前配置生成PDF专用CSS
+        æ ¹æ®å½åéç½®çæPDFä¸ç¨CSS
 
-        返回:
-            str: CSS样式字符�?
+        è¿å:
+            str: CSSæ ·å¼å­ç¬¦ä¸?
         """
         cfg = self.config
         db = cfg.data_block
 
         def _scaled(value: float, scale: float, minimum: int) -> int:
-            """按比例缩放并下限保护，避免数据块文字过大或过�?""
+            """ææ¯ä¾ç¼©æ¾å¹¶ä¸éä¿æ¤ï¼é¿åæ°æ®åæå­è¿å¤§æè¿å°?""
             try:
                 return max(int(round(value * scale)), minimum)
             except Exception:
                 return minimum
 
-        # 文章总览数据块字�?
+        # æç« æ»è§æ°æ®åå­ä½?
         overview_summary_font = _scaled(cfg.page.font_size_base, db.overview_text_scale, db.min_overview_font)
         overview_badge_font = _scaled(max(cfg.page.font_size_base - 2, db.min_overview_font), db.overview_text_scale, db.min_overview_font)
         overview_kpi_value = _scaled(cfg.kpi_card.font_size_value, db.overview_kpi_scale, db.min_overview_font + 1)
         overview_kpi_label = _scaled(cfg.kpi_card.font_size_label, db.overview_kpi_scale, db.min_overview_font)
         overview_kpi_delta = _scaled(cfg.kpi_card.font_size_change, db.overview_kpi_scale, db.min_overview_font)
 
-        # 正文数据块字�?
+        # æ­£ææ°æ®åå­ä½?
         body_kpi_value = _scaled(cfg.kpi_card.font_size_value, db.body_kpi_scale, db.min_body_font + 1)
         body_kpi_label = _scaled(cfg.kpi_card.font_size_label, db.body_kpi_scale, db.min_body_font)
         body_kpi_delta = _scaled(cfg.kpi_card.font_size_change, db.body_kpi_scale, db.min_body_font)
@@ -793,14 +793,14 @@ class PDFLayoutOptimizer:
         body_badge_font = _scaled(max(cfg.page.font_size_base - 2, db.min_body_font), db.body_text_scale, db.min_body_font)
 
         css = f"""
-/* PDF布局优化样式 - 由PDFLayoutOptimizer自动生成 */
+/* PDFå¸å±ä¼åæ ·å¼ - ç±PDFLayoutOptimizerèªå¨çæ */
 
-/* 隐藏独立的封面section，已合并到hero */
+/* éèç¬ç«çå°é¢sectionï¼å·²åå¹¶å°hero */
 .cover {{
     display: none !important;
 }}
 
-/* PDF中显示hero actions（建�?行动条目�?*/
+/* PDFä¸­æ¾ç¤ºhero actionsï¼å»ºè®?è¡å¨æ¡ç®ï¼?*/
 .hero-actions {{
     display: flex !important;
     flex-wrap: wrap !important;
@@ -838,7 +838,7 @@ class PDFLayoutOptimizer:
     box-sizing: border-box !important;
 }}
 
-/* 页面基础样式 */
+/* é¡µé¢åºç¡æ ·å¼ */
 body {{
     font-size: {cfg.page.font_size_base}px;
     line-height: {cfg.page.line_height};
@@ -850,13 +850,13 @@ main {{
     margin: 0 auto;
 }}
 
-/* 标题样式 */
+/* æ é¢æ ·å¼ */
 h1 {{ font-size: {cfg.page.font_size_h1}px !important; }}
 h2 {{ font-size: {cfg.page.font_size_h2}px !important; }}
 h3 {{ font-size: {cfg.page.font_size_h3}px !important; }}
 h4 {{ font-size: {cfg.page.font_size_h4}px !important; }}
 
-/* 段落间距 */
+/* æ®µè½é´è· */
 p {{
     margin-bottom: {cfg.page.paragraph_spacing}px;
 }}
@@ -865,7 +865,7 @@ p {{
     margin-bottom: {cfg.page.section_spacing}px;
 }}
 
-/* KPI卡片优化 - 防止溢出 */
+/* KPIå¡çä¼å - é²æ­¢æº¢åº */
 .kpi-grid {{
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -880,7 +880,7 @@ p {{
     grid-column: span 2;
 }}
 
-/* 单条/双条/三条的特殊列�?*/
+/* åæ¡/åæ¡/ä¸æ¡çç¹æ®åæ?*/
 .chapter .kpi-grid[data-kpi-count="1"] {{
     grid-template-columns: repeat(1, minmax(0, 1fr));
     grid-auto-flow: row;
@@ -898,7 +898,7 @@ p {{
     grid-template-columns: repeat(6, minmax(0, 1fr));
 }}
 
-/* 四条时采�?x2排布 */
+/* åæ¡æ¶éç?x2æå¸ */
 .chapter .kpi-grid[data-kpi-count="4"] {{
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }}
@@ -906,7 +906,7 @@ p {{
     grid-column: span 2;
 }}
 
-/* 五条及以上默认三列（6栅格，每卡占2�?*/
+/* äºæ¡åä»¥ä¸é»è®¤ä¸åï¼6æ æ ¼ï¼æ¯å¡å 2ï¼?*/
 .chapter .kpi-grid[data-kpi-count="5"],
 .chapter .kpi-grid[data-kpi-count="6"],
 .chapter .kpi-grid[data-kpi-count="7"],
@@ -922,7 +922,7 @@ p {{
     grid-template-columns: repeat(6, minmax(0, 1fr));
 }}
 
-/* 余数�?时，最后两张平分全�?*/
+/* ä½æ°ä¸?æ¶ï¼æåä¸¤å¼ å¹³åå¨å®?*/
 .chapter .kpi-grid[data-kpi-count="5"] .kpi-card:nth-last-child(-n+2),
 .chapter .kpi-grid[data-kpi-count="8"] .kpi-card:nth-last-child(-n+2),
 .chapter .kpi-grid[data-kpi-count="11"] .kpi-card:nth-last-child(-n+2),
@@ -930,7 +930,7 @@ p {{
     grid-column: span 3;
 }}
 
-/* 余数�?时，最后一张占满全�?*/
+/* ä½æ°ä¸?æ¶ï¼æåä¸å¼ å æ»¡å¨å®?*/
 .chapter .kpi-grid[data-kpi-count="7"] .kpi-card:last-child,
 .chapter .kpi-grid[data-kpi-count="10"] .kpi-card:last-child,
 .chapter .kpi-grid[data-kpi-count="13"] .kpi-card:last-child,
@@ -985,7 +985,7 @@ p {{
     line-height: 1.3;
 }}
 
-/* 提示框优�?- 防止溢出 */
+/* æç¤ºæ¡ä¼å?- é²æ­¢æº¢åº */
 .callout {{
     padding: {cfg.callout.padding}px !important;
     margin: 20px 0;
@@ -993,7 +993,7 @@ p {{
     font-size: {body_callout_content}px !important;
     break-inside: avoid;
     page-break-inside: avoid;
-    /* 防止溢出 */
+    /* é²æ­¢æº¢åº */
     overflow: hidden;
     box-sizing: border-box;
     max-width: 100%;
@@ -1025,19 +1025,19 @@ p {{
     font-size: {body_callout_content}px !important;
 }}
 
-/* 确保 callout 内部最后一个元素不会溢出底�?*/
+/* ç¡®ä¿ callout åé¨æåä¸ä¸ªåç´ ä¸ä¼æº¢åºåºé?*/
 .callout > *:last-child,
 .callout > *:last-child > *:last-child {{
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }}
 
-/* 表格优化 - 严格防止溢出 */
+/* è¡¨æ ¼ä¼å - ä¸¥æ ¼é²æ­¢æº¢åº */
 table {{
     width: 100%;
     break-inside: avoid;
     page-break-inside: avoid;
-    /* 表格布局固定 */
+    /* è¡¨æ ¼å¸å±åºå® */
     table-layout: fixed;
     max-width: 100%;
     overflow: hidden;
@@ -1046,7 +1046,7 @@ table {{
 th {{
     font-size: {body_table_header}px !important;
     padding: {cfg.table.cell_padding}px !important;
-    /* 表头文字控制 */
+    /* è¡¨å¤´æå­æ§å¶ */
     word-break: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
@@ -1057,7 +1057,7 @@ td {{
     font-size: {body_table_body}px !important;
     padding: {cfg.table.cell_padding}px !important;
     max-width: {cfg.table.max_cell_width}px;
-    /* 强制换行，防止溢�?*/
+    /* å¼ºå¶æ¢è¡ï¼é²æ­¢æº¢å?*/
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -1065,14 +1065,14 @@ td {{
     white-space: normal;
 }}
 
-/* 图表优化 */
+/* å¾è¡¨ä¼å */
 .chart-card {{
     min-height: {cfg.chart.min_height}px;
     max-height: {cfg.chart.max_height}px;
     padding: {cfg.chart.padding}px;
     break-inside: avoid;
     page-break-inside: avoid;
-    /* 防止图表溢出 */
+    /* é²æ­¢å¾è¡¨æº¢åº */
     overflow: hidden;
     max-width: 100%;
     box-sizing: border-box;
@@ -1083,7 +1083,7 @@ td {{
     word-break: break-word;
 }}
 
-/* Hero区域合并版本 - 去掉大色块，首屏以卡片化排布呈现文章总览 */
+/* Heroåºååå¹¶çæ¬ - å»æå¤§è²åï¼é¦å±ä»¥å¡çåæå¸åç°æç« æ»è§ */
 .hero-section-combined {{
     padding: 38px 44px !important;
     margin: 0 auto 34px auto !important;
@@ -1100,7 +1100,7 @@ td {{
     page-break-inside: avoid;
 }}
 
-/* Hero标题区域 */
+/* Heroæ é¢åºå */
 .hero-header {{
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1135,7 +1135,7 @@ td {{
     font-weight: 500;
 }}
 
-/* Hero主体区域 - 网格分栏 */
+/* Heroä¸»ä½åºå - ç½æ ¼åæ  */
 .hero-body {{
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
@@ -1144,7 +1144,7 @@ td {{
     align-content: start;
 }}
 
-/* 左侧摘要/亮点 */
+/* å·¦ä¾§æè¦/äº®ç¹ */
 .hero-content {{
     display: grid;
     gap: 14px;
@@ -1152,7 +1152,7 @@ td {{
     align-content: start;
 }}
 
-/* 右侧KPI区域 */
+/* å³ä¾§KPIåºå */
 .hero-side {{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1165,7 +1165,7 @@ td {{
     align-content: flex-start;
 }}
 
-/* Hero区域的KPI卡片 */
+/* HeroåºåçKPIå¡ç */
 .hero-kpi {{
     background: #fdfdfd;
     border-radius: 14px !important;
@@ -1215,7 +1215,7 @@ td {{
     line-height: 1.2;
 }}
 
-/* Hero summary文本 */
+/* Hero summaryææ¬ */
 .hero-summary {{
     font-size: {overview_summary_font}px !important;
     line-height: 1.65;
@@ -1233,7 +1233,7 @@ td {{
     box-shadow: none;
 }}
 
-/* Hero highlights列表 - 网格排布 */
+/* Hero highlightsåè¡¨ - ç½æ ¼æå¸ */
 .hero-highlights {{
     list-style: none;
     padding: 0;
@@ -1250,7 +1250,7 @@ td {{
     flex-grow: 0;
 }}
 
-/* hero highlights中的badge - 卡片化的小条�?*/
+/* hero highlightsä¸­çbadge - å¡çåçå°æ¡ç?*/
 .hero-highlights .badge {{
     font-size: {overview_badge_font}px !important;
     padding: 10px 12px !important;
@@ -1276,7 +1276,7 @@ td {{
     justify-content: flex-start;
 }}
 
-/* Hero actions按钮 - PDF中显示为线框标签样式 */
+/* Hero actionsæé® - PDFä¸­æ¾ç¤ºä¸ºçº¿æ¡æ ç­¾æ ·å¼ */
 .hero-actions {{
     margin-top: 14px;
     display: flex !important;
@@ -1314,7 +1314,7 @@ td {{
     box-shadow: none !important;
 }}
 
-/* 防止标题孤行 */
+/* é²æ­¢æ é¢å­¤è¡ */
 h1, h2, h3, h4, h5, h6 {{
     break-after: avoid;
     page-break-after: avoid;
@@ -1322,20 +1322,20 @@ h1, h2, h3, h4, h5, h6 {{
     overflow-wrap: break-word;
 }}
 
-/* ===== 强制页面分离规则 ===== */
+/* ===== å¼ºå¶é¡µé¢åç¦»è§å ===== */
 
-/* 目录section强制开始新页并在之后强制分�?*/
+/* ç®å½sectionå¼ºå¶å¼å§æ°é¡µå¹¶å¨ä¹åå¼ºå¶åé¡?*/
 .toc-section {{
     page-break-before: always !important;
     page-break-after: always !important;
 }}
 
-/* 第一个章节强制开始新页（正文从第三页开始） */
+/* ç¬¬ä¸ä¸ªç« èå¼ºå¶å¼å§æ°é¡µï¼æ­£æä»ç¬¬ä¸é¡µå¼å§ï¼ */
 main > .chapter:first-of-type {{
     page-break-before: always !important;
 }}
 
-/* 确保内容块不被分页且不溢�?*/
+/* ç¡®ä¿åå®¹åä¸è¢«åé¡µä¸ä¸æº¢å?*/
 .content-block {{
     break-inside: avoid;
     page-break-inside: avoid;
@@ -1343,35 +1343,35 @@ main > .chapter:first-of-type {{
     max-width: 100%;
 }}
 
-/* 全局溢出防护 */
+/* å¨å±æº¢åºé²æ¤ */
 * {{
     box-sizing: border-box;
     max-width: 100%;
 }}
 
-/* 特别控制数字和长单词 */
+/* ç¹å«æ§å¶æ°å­åé¿åè¯ */
 .kpi-value, .value, .delta {{
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;  /* 稍微紧缩间距以节省空�?*/
+    letter-spacing: -0.02em;  /* ç¨å¾®ç´§ç¼©é´è·ä»¥èçç©ºé?*/
 }}
 
-/* 色块（badge）样式控�?- 防止过大 */
+/* è²åï¼badgeï¼æ ·å¼æ§å?- é²æ­¢è¿å¤§ */
 .badge {{
     display: inline-block;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
-    /* 限制badge的最大尺�?*/
+    /* éå¶badgeçæå¤§å°ºå¯?*/
     padding: 4px 12px !important;
     font-size: {body_badge_font}px !important;
     line-height: 1.4 !important;
-    /* 防止badge异常过大 */
+    /* é²æ­¢badgeå¼å¸¸è¿å¤§ */
     word-break: break-word;
     hyphens: auto;
 }}
 
-/* 确保callout不会过大 */
+/* ç¡®ä¿calloutä¸ä¼è¿å¤§ */
 .callout {{
     max-width: 100% !important;
     margin: 16px 0 !important;
@@ -1380,9 +1380,9 @@ main > .chapter:first-of-type {{
     overflow: hidden;
 }}
 
-/* 响应式调�?*/
+/* ååºå¼è°æ?*/
 @media print {{
-    /* 打印时更严格的控�?*/
+    /* æå°æ¶æ´ä¸¥æ ¼çæ§å?*/
     * {{
         overflow: visible !important;
         max-width: 100% !important;

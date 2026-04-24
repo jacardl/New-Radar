@@ -159,7 +159,7 @@ class _ThreadedProcessHandle:
         self._returncode: int | None = None
         self._error: Exception | None = None
 
-        # Pipe for stdout �?drain thread in _wait_for_process reads the read end.
+        # Pipe for stdout é¥?drain thread in _wait_for_process reads the read end.
         read_fd, write_fd = os.pipe()
         self._stdout = os.fdopen(read_fd, "r", encoding="utf-8", errors="replace")
         self._write_fd = write_fd
@@ -316,7 +316,7 @@ class BaseEnvironment(ABC):
             )
         except Exception as exc:
             logger.warning(
-                "init_session failed (session=%s): %s �?"
+                "init_session failed (session=%s): %s é¥?"
                 "falling back to bash -l per command",
                 self._session_id,
                 exc,
@@ -338,7 +338,7 @@ class BaseEnvironment(ABC):
         if self._snapshot_ready:
             parts.append(f"source {self._snapshot_path} 2>/dev/null || true")
 
-        # cd to working directory �?let bash expand ~ natively
+        # cd to working directory é¥?let bash expand ~ natively
         quoted_cwd = (
             shlex.quote(cwd) if cwd != "~" and not cwd.startswith("~/") else cwd
         )
@@ -382,7 +382,7 @@ class BaseEnvironment(ABC):
     def _wait_for_process(self, proc: ProcessHandle, timeout: int = 120) -> dict:
         """Poll-based wait with interrupt checking and stdout draining.
 
-        Shared across all backends �?not overridden.
+        Shared across all backends é¥?not overridden.
 
         Fires the ``activity_callback`` (if set on this instance) every 10s
         while the process is running so the gateway's inactivity timeout
@@ -397,7 +397,7 @@ class BaseEnvironment(ABC):
             except UnicodeDecodeError:
                 output_chunks.clear()
                 output_chunks.append(
-                    "[binary output detected �?raw bytes not displayable]"
+                    "[binary output detected é¥?raw bytes not displayable]"
                 )
             except (ValueError, OSError):
                 pass
@@ -507,7 +507,7 @@ class BaseEnvironment(ABC):
 
         Remote backends (SSH, Modal, Daytona) override this to trigger
         their FileSyncManager.  Bind-mount backends (Docker, Singularity)
-        and Local don't need file sync �?the host filesystem is directly
+        and Local don't need file sync é¥?the host filesystem is directly
         visible inside the container/process.
         """
         pass

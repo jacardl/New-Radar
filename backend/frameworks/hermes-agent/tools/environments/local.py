@@ -1,4 +1,4 @@
-"""Local execution environment �?spawn-per-call with session snapshot."""
+"""Local execution environment é¥?spawn-per-call with session snapshot."""
 
 import os
 import platform
@@ -172,7 +172,7 @@ def _find_bash() -> str:
     )
 
 
-# Backward compat �?process_registry.py imports this name
+# Backward compat é¥?process_registry.py imports this name
 _find_shell = _find_bash
 
 
@@ -203,8 +203,8 @@ def _make_run_env(env: dict) -> dict:
         run_env["PATH"] = f"{existing_path}:{_SANE_PATH}" if existing_path else _SANE_PATH
 
     # Per-profile HOME isolation: redirect system tool configs (git, ssh, gh,
-    # npm �? into {HERMES_HOME}/home/ when that directory exists.  Only the
-    # subprocess sees the override �?the Python process keeps the real HOME.
+    # npm é¥? into {HERMES_HOME}/home/ when that directory exists.  Only the
+    # subprocess sees the override é¥?the Python process keeps the real HOME.
     from hermes_constants import get_subprocess_home
     _profile_home = get_subprocess_home()
     if _profile_home:

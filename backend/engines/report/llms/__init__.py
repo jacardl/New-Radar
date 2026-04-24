@@ -1,7 +1,7 @@
 """
-Report Engine LLM子模块�?
+Report Engine LLMå­æ¨¡å
 
-目前主要暴露 OpenAI 兼容�?`LLMClient` 封装�?
+ç®åä¸»è¦æ´é² OpenAI å¼å®¹ç?`LLMClient` å°è£
 """
 
 from .base import LLMClient

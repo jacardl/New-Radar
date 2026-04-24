@@ -1,12 +1,12 @@
 """Tests for Anthropic error handling in the agent retry loop.
 
 Covers all error paths in run_agent.py's run_conversation() for api_mode=anthropic_messages:
-- 429 rate limit �?retried with backoff
-- 529 overloaded �?retried with backoff
-- 400 bad request �?non-retryable, immediate fail
-- 401 unauthorized �?credential refresh + retry
-- 500 server error �?retried with backoff
-- "prompt is too long" �?context length error triggers compression
+- 429 rate limit é«?retried with backoff
+- 529 overloaded é«?retried with backoff
+- 400 bad request é«?non-retryable, immediate fail
+- 401 unauthorized é«?credential refresh + retry
+- 500 server error é«?retried with backoff
+- "prompt is too long" é«?context length error triggers compression
 """
 
 import asyncio
@@ -232,7 +232,7 @@ def test_529_overloaded_is_retried_and_recovers(monkeypatch):
 def test_429_exhausts_all_retries_before_raising(monkeypatch):
     """429 must retry max_retries times, then return a failed result.
 
-    The agent no longer re-raises after exhausting retries �?it returns a
+    The agent no longer re-raises after exhausting retries é¥?it returns a
     result dict with the error in final_response.  This changed when the
     fallback-provider feature was added (the agent tries a fallback before
     giving up, and returns a result dict either way).
@@ -293,7 +293,7 @@ def test_401_credential_refresh_recovers(monkeypatch):
                 return _anthropic_response("Auth refreshed")
 
             self._interruptible_api_call = _fake_api_call
-            # Also patch streaming path �?run_conversation now prefers
+            # Also patch streaming path é¥?run_conversation now prefers
             # streaming for health checking even without stream consumers.
             self._interruptible_streaming_api_call = lambda api_kwargs, **kw: _fake_api_call(api_kwargs)
             return super().run_conversation(
@@ -412,7 +412,7 @@ def test_401_refresh_fails_is_non_retryable(monkeypatch):
         )
     )
 
-    # 401 after failed refresh �?non-retryable (falls through to is_client_error)
+    # 401 after failed refresh é«?non-retryable (falls through to is_client_error)
     assert result["api_calls"] == 1
     assert "401" in str(result.get("final_response", "")) or "unauthorized" in str(result.get("final_response", "")).lower()
 

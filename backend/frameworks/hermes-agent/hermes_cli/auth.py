@@ -450,7 +450,7 @@ def _resolve_zai_base_url(api_key: str, default_url: str, env_override: str) -> 
             logger.debug("Z.AI: using cached endpoint %s", cached["base_url"])
             return cached["base_url"]
 
-    # Probe â€?may take up to ~8s per endpoint.
+    # Probe Ã¢?may take up to ~8s per endpoint.
     detected = detect_zai_endpoint(api_key)
     if detected and detected.get("base_url"):
         # Persist the detection result keyed on the API key hash.
@@ -543,7 +543,7 @@ def _oauth_trace(event: str, *, sequence_id: Optional[str] = None, **fields: Any
 
 
 # =============================================================================
-# Auth Store â€?persistence layer for ~/.hermes/auth.json
+# Auth Store Ã¢?persistence layer for ~/.hermes/auth.json
 # =============================================================================
 
 def _auth_file_path() -> Path:
@@ -790,7 +790,7 @@ def is_provider_explicitly_configured(provider_id: str) -> bool:
         pass
 
     # 3. Check provider-specific env vars
-    # Exclude CLAUDE_CODE_OAUTH_TOKEN â€?it's set by Claude Code itself,
+    # Exclude CLAUDE_CODE_OAUTH_TOKEN Ã¢?it's set by Claude Code itself,
     # not by the user explicitly configuring anthropic in Hermes.
     _IMPLICIT_ENV_VARS = {"CLAUDE_CODE_OAUTH_TOKEN"}
     pconfig = PROVIDER_REGISTRY.get(normalized)
@@ -855,7 +855,7 @@ def deactivate_provider() -> None:
 
 
 # =============================================================================
-# Provider Resolution â€?picks which provider to use
+# Provider Resolution Ã¢?picks which provider to use
 # =============================================================================
 
 
@@ -871,14 +871,14 @@ def _get_config_hint_for_unknown_provider(provider_name: str) -> str:
         if not issues:
             return ""
 
-        lines = ["Config issue detected â€?run 'hermes doctor' for full diagnostics:"]
+        lines = ["Config issue detected Ã¢?run 'hermes doctor' for full diagnostics:"]
         for ci in issues:
             prefix = "ERROR" if ci.severity == "error" else "WARNING"
             lines.append(f"  [{prefix}] {ci.message}")
             # Show first line of hint
             first_hint = ci.hint.splitlines()[0] if ci.hint else ""
             if first_hint:
-                lines.append(f"    â†?{first_hint}")
+                lines.append(f"    Ã¢?{first_hint}")
         return "\n".join(lines)
     except Exception:
         return ""
@@ -921,7 +921,7 @@ def resolve_provider(
         "mimo": "xiaomi", "xiaomi-mimo": "xiaomi",
         "go": "opencode-go", "opencode-go-sub": "opencode-go",
         "kilo": "kilocode", "kilo-code": "kilocode", "kilo-gateway": "kilocode",
-        # Local server aliases â€?route through the generic custom provider
+        # Local server aliases Ã¢?route through the generic custom provider
         "lmstudio": "custom", "lm-studio": "custom", "lm_studio": "custom",
         "ollama": "custom", "vllm": "custom", "llamacpp": "custom",
         "llama.cpp": "custom", "llama-cpp": "custom",
@@ -1227,7 +1227,7 @@ def _is_remote_session() -> bool:
 
 
 # =============================================================================
-# OpenAI Codex auth â€?tokens stored in ~/.hermes/auth.json (not ~/.codex/)
+# OpenAI Codex auth Ã¢?tokens stored in ~/.hermes/auth.json (not ~/.codex/)
 #
 # Hermes maintains its own Codex OAuth session separate from the Codex CLI
 # and VS Code extension. This prevents refresh token rotation conflicts
@@ -1478,12 +1478,12 @@ def _import_codex_cli_tokens() -> Optional[Dict[str, str]]:
         refresh_token = tokens.get("refresh_token")
         if not access_token or not refresh_token:
             return None
-        # Reject expired tokens â€?importing stale tokens from ~/.codex/
+        # Reject expired tokens Ã¢?importing stale tokens from ~/.codex/
         # that can't be refreshed leaves the user stuck with "Login successful!"
         # but no working credentials.
         if _codex_access_token_is_expiring(access_token, 0):
             logger.debug(
-                "Codex CLI tokens at %s are expired â€?skipping import.", auth_path,
+                "Codex CLI tokens at %s are expired Ã¢?skipping import.", auth_path,
             )
             return None
         return dict(tokens)
@@ -1510,7 +1510,7 @@ def resolve_codex_runtime_credentials(
         cli_tokens = _import_codex_cli_tokens()
         if cli_tokens:
             logger.info("Migrating Codex credentials from ~/.codex/ to Hermes auth store")
-            print("âš ï¸  Migrating Codex credentials to Hermes's own auth store.")
+            print("Ã¢Â Ã¯Â¸  Migrating Codex credentials to Hermes's own auth store.")
             print("   This avoids conflicts with Codex CLI and VS Code.")
             print("   Run `hermes auth` to create a fully independent session.\n")
             _save_codex_tokens(cli_tokens)
@@ -1585,7 +1585,7 @@ def _resolve_verify(
         if not os.path.isfile(ca_path):
             import logging
             logging.getLogger("hermes.auth").warning(
-                "CA bundle path does not exist: %s â€?falling back to default certificates",
+                "CA bundle path does not exist: %s Ã¢?falling back to default certificates",
                 ca_path,
             )
             return True
@@ -1594,7 +1594,7 @@ def _resolve_verify(
 
 
 # =============================================================================
-# OAuth Device Code Flow â€?generic, parameterized by provider
+# OAuth Device Code Flow Ã¢?generic, parameterized by provider
 # =============================================================================
 
 def _request_device_code(
@@ -1674,7 +1674,7 @@ def _poll_for_token(
 
 
 # =============================================================================
-# Nous Portal â€?token refresh, agent key minting, model discovery
+# Nous Portal Ã¢?token refresh, agent key minting, model discovery
 # =============================================================================
 
 def _refresh_access_token(
@@ -1781,7 +1781,7 @@ def fetch_nous_models(
         model_id = item.get("id")
         if isinstance(model_id, str) and model_id.strip():
             mid = model_id.strip()
-            # Skip Hermes models â€?they're not reliable for agentic tool-calling
+            # Skip Hermes models Ã¢?they're not reliable for agentic tool-calling
             if "hermes" in mid.lower():
                 continue
             model_ids.append(mid)
@@ -2268,7 +2268,7 @@ def get_nous_auth_status() -> Dict[str, Any]:
     and ``hermes auth`` store credentials), then falls back to the legacy
     auth-store provider state.
     """
-    # Check credential pool first â€?the dashboard device-code flow saves
+    # Check credential pool first Ã¢?the dashboard device-code flow saves
     # here but may not have written to the auth store yet.
     try:
         from agent.credential_pool import load_pool
@@ -2322,7 +2322,7 @@ def get_codex_auth_status() -> Dict[str, Any]:
     Checks the credential pool first (where `hermes auth` stores credentials),
     then falls back to the legacy provider state.
     """
-    # Check credential pool first â€?this is where `hermes auth` and
+    # Check credential pool first Ã¢?this is where `hermes auth` and
     # `hermes model` store device_code tokens.
     try:
         from agent.credential_pool import load_pool
@@ -2523,7 +2523,7 @@ def resolve_external_process_provider_credentials(provider_id: str) -> Dict[str,
 
 
 # =============================================================================
-# CLI Commands â€?login / logout
+# CLI Commands Ã¢?login / logout
 # =============================================================================
 
 def _update_config_for_provider(
@@ -2667,7 +2667,7 @@ def _prompt_model_selection(
         else:
             base = mid
         if mid == current_model:
-            base += "  â†?currently in use"
+            base += "  Ã¢?currently in use"
         return base
 
     # Default cursor on the current model (index 0 if it was reordered to top)
@@ -2708,7 +2708,7 @@ def _prompt_model_selection(
             for mid in _unavailable:
                 print(f"{_DIM}     {_label(mid)}{_RESET}")
             print()
-            print(f"{_DIM}  â”€â”€ Upgrade at {_upgrade_url} for paid models â”€â”€{_RESET}")
+            print(f"{_DIM}  -- Upgrade at {_upgrade_url} for paid models --{_RESET}")
             print()
             effective_title = "Available free models:"
         else:
@@ -2751,7 +2751,7 @@ def _prompt_model_selection(
     if _unavailable:
         _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
         print()
-        print(f"  {_DIM}â”€â”€ Unavailable models (requires paid tier â€?upgrade at {_upgrade_url}) â”€â”€{_RESET}")
+        print(f"  {_DIM}-- Unavailable models (requires paid tier Ã¢?upgrade at {_upgrade_url}) --{_RESET}")
         for mid in _unavailable:
             print(f"  {'':>{num_width}}  {_DIM}{_label(mid)}{_RESET}")
     print()
@@ -2779,7 +2779,7 @@ def _prompt_model_selection(
 def _save_model_choice(model_id: str) -> None:
     """Save the selected model to config.yaml (single source of truth).
 
-    The model is stored in config.yaml only â€?NOT in .env.  This avoids
+    The model is stored in config.yaml only Ã¢?NOT in .env.  This avoids
     conflicts in multi-agent setups where env vars would stomp each other.
     """
     from hermes_cli.config import save_config, load_config
@@ -2809,7 +2809,7 @@ def _login_openai_codex(args, pconfig: ProviderConfig) -> None:
         existing = resolve_codex_runtime_credentials()
         # Verify the resolved token is actually usable (not expired).
         # resolve_codex_runtime_credentials attempts refresh, so if we get
-        # here the token should be valid â€?but double-check before telling
+        # here the token should be valid Ã¢?but double-check before telling
         # the user "Login successful!".
         _resolved_key = existing.get("api_key", "")
         if isinstance(_resolved_key, str) and _resolved_key and not _codex_access_token_is_expiring(_resolved_key, 60):
@@ -2848,10 +2848,10 @@ def _login_openai_codex(args, pconfig: ProviderConfig) -> None:
             print(f"  Config updated: {config_path} (model.provider=openai-codex)")
             return
 
-    # Run a fresh device code flow â€?Hermes gets its own OAuth session
+    # Run a fresh device code flow Ã¢?Hermes gets its own OAuth session
     print()
     print("Signing in to OpenAI Codex...")
-    print("(Hermes creates its own session â€?won't affect Codex CLI or VS Code)")
+    print("(Hermes creates its own session Ã¢?won't affect Codex CLI or VS Code)")
     print()
 
     creds = _codex_device_code_login()
@@ -3074,7 +3074,7 @@ def _nous_device_code_login(
             if opened:
                 print("  (Opened browser for verification)")
             else:
-                print("  Could not open browser automatically â€?use the URL above.")
+                print("  Could not open browser automatically Ã¢?use the URL above.")
 
         effective_interval = max(1, min(interval, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS))
         print(f"Waiting for approval (polling every {effective_interval}s)...")
@@ -3208,7 +3208,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                     )
             _portal = auth_state.get("portal_base_url", "")
             if model_ids:
-                print(f"Showing {len(model_ids)} curated models â€?use \"Enter custom model name\" for others.")
+                print(f"Showing {len(model_ids)} curated models Ã¢?use \"Enter custom model name\" for others.")
                 selected_model = _prompt_model_selection(
                     model_ids, pricing=pricing,
                     unavailable_models=unavailable_models,

@@ -1,4 +1,4 @@
-"""Tests for batch_runner checkpoint behavior �?incremental writes, resume, atomicity."""
+"""Tests for batch_runner checkpoint behavior é¥?incremental writes, resume, atomicity."""
 
 import json
 import os

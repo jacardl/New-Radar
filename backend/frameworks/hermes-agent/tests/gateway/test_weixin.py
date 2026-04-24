@@ -30,7 +30,7 @@ class TestWeixinFormatting:
 
         assert (
             adapter.format_message(content)
-            == "【Title】\n\n**Plan**\n\nUse **bold** and docs (https://example.com)."
+            == "ãTitleã\n\n**Plan**\n\nUse **bold** and docs (https://example.com)."
         )
 
     def test_format_message_rewrites_markdown_tables(self):
@@ -67,10 +67,10 @@ class TestWeixinChunking:
     def test_split_text_splits_short_chatty_replies_into_separate_bubbles(self):
         adapter = _make_adapter()
 
-        content = adapter.format_message("第一行\n第二行\n第三�?)
+        content = adapter.format_message("ç¬¬ä¸è¡\nç¬¬äºè¡\nç¬¬ä¸è¡?)
         chunks = adapter._split_text(content)
 
-        assert chunks == ["第一�?, "第二�?, "第三�?]
+        assert chunks == ["ç¬¬ä¸è¡?, "ç¬¬äºè¡?, "ç¬¬ä¸è¡?]
 
     def test_split_text_keeps_structured_table_block_together(self):
         adapter = _make_adapter()
@@ -86,22 +86,22 @@ class TestWeixinChunking:
         adapter = _make_adapter()
 
         content = adapter.format_message(
-            "今天结论：\n"
-            "- 留存下降 3%\n"
-            "- 转化上涨 8%\n"
-            "- 主要问题在首日激�?
+            "ä»å¤©ç»è®ºï¼\n"
+            "- çå­ä¸é 3%\n"
+            "- è½¬åä¸æ¶¨ 8%\n"
+            "- ä¸»è¦é®é¢å¨é¦æ¥æ¿æ´?
         )
         chunks = adapter._split_text(content)
 
-        assert chunks == ["今天结论：\n- 留存下降 3%\n- 转化上涨 8%\n- 主要问题在首日激�?]
+        assert chunks == ["ä»å¤©ç»è®ºï¼\n- çå­ä¸é 3%\n- è½¬åä¸æ¶¨ 8%\n- ä¸»è¦é®é¢å¨é¦æ¥æ¿æ´?]
 
     def test_split_text_keeps_heading_with_body_together(self):
         adapter = _make_adapter()
 
-        content = adapter.format_message("## 结论\n这是正文")
+        content = adapter.format_message("## ç»è®º\nè¿æ¯æ­£æ")
         chunks = adapter._split_text(content)
 
-        assert chunks == ["**结论**\n这是正文"]
+        assert chunks == ["**ç»è®º**\nè¿æ¯æ­£æ"]
 
     def test_split_text_keeps_short_reformatted_table_in_single_chunk(self):
         adapter = _make_adapter()
@@ -156,10 +156,10 @@ class TestWeixinChunking:
             )
         )
 
-        content = adapter.format_message("第一行\n第二行\n第三�?)
+        content = adapter.format_message("ç¬¬ä¸è¡\nç¬¬äºè¡\nç¬¬ä¸è¡?)
         chunks = adapter._split_text(content)
 
-        assert chunks == ["第一�?, "第二�?, "第三�?]
+        assert chunks == ["ç¬¬ä¸è¡?, "ç¬¬äºè¡?, "ç¬¬ä¸è¡?]
 
 
 class TestWeixinConfig:
@@ -354,7 +354,7 @@ class TestWeixinChunkDelivery:
         result = asyncio.run(adapter.send("wxid_test123", "first\n\nsecond\n\nthird"))
 
         assert result.success is True
-        # 3 chunks, but chunk 2 fails once and retries �?4 _send_message calls total
+        # 3 chunks, but chunk 2 fails once and retries â?4 _send_message calls total
         assert send_message_mock.await_count == 4
         # The retried chunk should reuse the same client_id for deduplication
         first_try = send_message_mock.await_args_list[1].kwargs
@@ -402,7 +402,7 @@ class TestWeixinBlankMessagePrevention:
     Three separate guards now prevent a blank WeChat message from ever being
     dispatched:
 
-    1. ``_split_text_for_weixin_delivery("")`` returns ``[]`` �?not ``[""]``.
+    1. ``_split_text_for_weixin_delivery("")`` returns ``[]`` â?not ``[""]``.
     2. ``send()`` filters out empty/whitespace-only chunks before calling
        ``_send_text_chunk``.
     3. ``_send_message()`` raises ``ValueError`` for empty text as a last-resort
@@ -435,7 +435,7 @@ class TestWeixinBlankMessagePrevention:
         adapter._token_store.get = lambda account_id, chat_id: "ctx-token"
 
         result = asyncio.run(adapter.send("wxid_test123", ""))
-        # Empty content �?no chunks �?no _send_message calls
+        # Empty content â?no chunks â?no _send_message calls
         assert result.success is True
         send_message_mock.assert_not_awaited()
 
@@ -457,7 +457,7 @@ class TestWeixinBlankMessagePrevention:
 
 
 class TestWeixinStreamingCursorSuppression:
-    """WeChat doesn't support message editing �?cursor must be suppressed."""
+    """WeChat doesn't support message editing â?cursor must be suppressed."""
 
     def test_supports_message_editing_is_false(self):
         adapter = _make_adapter()

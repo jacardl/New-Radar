@@ -1,4 +1,4 @@
-"""Tests for cron/scheduler.py �?origin resolution, delivery routing, and error logging."""
+"""Tests for cron/scheduler.py é¥?origin resolution, delivery routing, and error logging."""
 
 import json
 import logging
@@ -564,7 +564,7 @@ class TestDeliverResultErrorReturns:
         assert result is None
 
     def test_returns_none_for_local_delivery(self):
-        """local-only jobs don't deliver �?not a failure."""
+        """local-only jobs don't deliver é¥?not a failure."""
         job = {"id": "local-job", "deliver": "local"}
         result = _deliver_result(job, "Output.")
         assert result is None
@@ -1010,7 +1010,7 @@ class TestSilentDelivery:
         deliver_mock.assert_not_called()
 
     def test_silent_trailing_suppresses_delivery(self):
-        """Agent appended [SILENT] after explanation text �?must still suppress."""
+        """Agent appended [SILENT] after explanation text é¥?must still suppress."""
         response = "2 deals filtered out (like<10, reply<15).\n\n[SILENT]"
         with patch("cron.scheduler.get_due_jobs", return_value=[self._make_job()]), \
              patch("cron.scheduler.run_job", return_value=(True, "# output", response, None)), \
@@ -1165,7 +1165,7 @@ class TestTickAdvanceBeforeRun:
 
 
 class TestSendMediaViaAdapter:
-    """Unit tests for _send_media_via_adapter �?routes files to typed adapter methods."""
+    """Unit tests for _send_media_via_adapter é¥?routes files to typed adapter methods."""
 
     @staticmethod
     def _run_with_loop(adapter, chat_id, media_files, metadata, job):

@@ -1,8 +1,8 @@
 """
-Report Engine�?
+Report Engine--
 
-一个智能报告生成AI代理实现，聚�?Query/Media/Insight 三个子引擎的
-Markdown 与论坛讨论，最终落地结构化HTML报告�?
+ä¸ä¸ªæºè½æ¥åçæAIä»£çå®ç°ï¼èåQuery/Media/Insight ä¸ä¸ªå­å¼æç
+Markdown ä¸è®ºåè®¨è®ºï¼æç»è½å°ç»æåHTMLæ¥å--
 """
 
 from .agent import ReportAgent, create_agent

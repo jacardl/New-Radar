@@ -192,7 +192,7 @@ TOOLSETS = {
         "includes": []
     },
 
-    # "honcho" toolset removed �?Honcho is now a memory provider plugin.
+    # "honcho" toolset removed é¥?Honcho is now a memory provider plugin.
     # Tools are injected via MemoryManager, not the toolset system.
 
     "homeassistant": {
@@ -224,7 +224,7 @@ TOOLSETS = {
     # ==========================================================================
 
     "hermes-acp": {
-        "description": "Editor integration (VS Code, Zed, JetBrains) �?coding-focused tools without messaging, audio, or clarify UI",
+        "description": "Editor integration (VS Code, Zed, JetBrains) é¥?coding-focused tools without messaging, audio, or clarify UI",
         "tools": [
             "web_search", "web_extract",
             "terminal", "process",
@@ -243,7 +243,7 @@ TOOLSETS = {
     },
 
     "hermes-api-server": {
-        "description": "OpenAI-compatible API server �?full agent tools accessible via HTTP (no interactive UI tools like clarify or send_message)",
+        "description": "OpenAI-compatible API server é¥?full agent tools accessible via HTTP (no interactive UI tools like clarify or send_message)",
         "tools": [
             # Web
             "web_search", "web_extract",
@@ -441,7 +441,7 @@ def resolve_toolset(name: str, visited: Set[str] = None) -> List[str]:
         return list(all_tools)
 
     # Check for cycles / already-resolved (diamond deps).
-    # Silently return [] �?either this is a diamond (not a bug, tools already
+    # Silently return [] é¥?either this is a diamond (not a bug, tools already
     # collected via another path) or a genuine cycle (safe to skip).
     if name in visited:
         return []
@@ -496,7 +496,7 @@ def _get_plugin_toolset_names() -> Set[str]:
     """Return toolset names registered by plugins (from the tool registry).
 
     These are toolsets that exist in the registry but not in the static
-    ``TOOLSETS`` dict �?i.e. they were added by plugins at load time.
+    ``TOOLSETS`` dict é¥?i.e. they were added by plugins at load time.
     """
     try:
         from tools.registry import registry

@@ -110,13 +110,13 @@ def gh_pr_list():
             return []
         return json.loads(result.stdout)
     except FileNotFoundError:
-        print("  [warn] 'gh' CLI not found �?skipping salvaged PR scan.", file=sys.stderr)
+        print("  [warn] 'gh' CLI not found é¥?skipping salvaged PR scan.", file=sys.stderr)
         return []
     except subprocess.TimeoutExpired:
-        print("  [warn] gh pr list timed out �?skipping salvaged PR scan.", file=sys.stderr)
+        print("  [warn] gh pr list timed out é¥?skipping salvaged PR scan.", file=sys.stderr)
         return []
     except json.JSONDecodeError:
-        print("  [warn] gh pr list returned invalid JSON �?skipping salvaged PR scan.", file=sys.stderr)
+        print("  [warn] gh pr list returned invalid JSON é¥?skipping salvaged PR scan.", file=sys.stderr)
         return []
 
 
@@ -179,7 +179,7 @@ def collect_commit_authors(since_tag, until="HEAD"):
         if handle.startswith("@"):
             contributors[handle.lstrip("@")].add("commit")
         else:
-            # Could not resolve �?record as unknown
+            # Could not resolve é¥?record as unknown
             contributors[handle].add("commit")
             unknown_emails[email] = name
 
@@ -269,7 +269,7 @@ def collect_salvaged_contributors(since_tag, until="HEAD"):
         for pattern in SALVAGE_PATTERNS:
             for match in pattern.finditer(body):
                 value = match.group(1)
-                # If it's a number, it's a PR reference �?skip for now
+                # If it's a number, it's a PR reference é¥?skip for now
                 # (would need another API call to resolve PR author)
                 if value.isdigit():
                     continue

@@ -23,7 +23,7 @@ Configuration in config.yaml:
             model: "glm-asr"               # glm-asr, whisper-1, etc.
 
     Voice transcription priority:
-      1. QQ's built-in ``asr_refer_text`` (Tencent ASR â€?free, always tried first)
+      1. QQ's built-in ``asr_refer_text`` (Tencent ASR Ã¢?free, always tried first)
       2. Configured STT provider via ``stt`` config or ``QQ_STT_*`` env vars
 
 Reference: https://bot.q.qq.com/wiki/develop/api-v2/
@@ -175,7 +175,7 @@ class QQAdapter(BasePlatformAdapter):
         self._heartbeat_interval: float = 30.0  # seconds, updated by Hello
         self._session_id: Optional[str] = None
         self._last_seq: Optional[int] = None
-        self._chat_type_map: Dict[str, str] = {}  # chat_id â†?"c2c"|"group"|"guild"|"dm"
+        self._chat_type_map: Dict[str, str] = {}  # chat_id Ã¢?"c2c"|"group"|"guild"|"dm"
 
         # Request/response correlation
         self._pending_responses: Dict[str, asyncio.Future] = {}
@@ -357,7 +357,7 @@ class QQAdapter(BasePlatformAdapter):
 
     async def _open_ws(self, gateway_url: str) -> None:
         """Open a WebSocket connection to the QQ Bot gateway."""
-        # Only clean up WebSocket resources â€?keep _http_client alive for REST API calls.
+        # Only clean up WebSocket resources Ã¢?keep _http_client alive for REST API calls.
         if self._ws and not self._ws.closed:
             await self._ws.close()
         self._ws = None
@@ -376,11 +376,11 @@ class QQAdapter(BasePlatformAdapter):
         """Read WebSocket events and reconnect on errors.
 
         Close code handling follows the OpenClaw qqbot reference implementation:
-          4004 â†?invalid token, refresh and reconnect
-          4006/4007/4009 â†?session invalid, clear session and re-identify
-          4008 â†?rate limited, back off 60s
-          4914 â†?bot offline/sandbox, stop reconnecting
-          4915 â†?bot banned, stop reconnecting
+          4004 Ã¢?invalid token, refresh and reconnect
+          4006/4007/4009 Ã¢?session invalid, clear session and re-identify
+          4008 Ã¢?rate limited, back off 60s
+          4914 Ã¢?bot offline/sandbox, stop reconnecting
+          4915 Ã¢?bot banned, stop reconnecting
         """
         backoff_idx = 0
         connect_time = 0.0
@@ -415,7 +415,7 @@ class QQAdapter(BasePlatformAdapter):
                             self.name,
                         )
                         self._set_fatal_error("qq_quick_disconnect",
-                            "Too many quick disconnects â€?check bot permissions", retryable=True)
+                            "Too many quick disconnects Ã¢?check bot permissions", retryable=True)
                         return
                 else:
                     quick_disconnect_count = 0
@@ -443,13 +443,13 @@ class QQAdapter(BasePlatformAdapter):
                         backoff_idx += 1
                     continue
 
-                # Token invalid â†?clear cached token so _ensure_token() refreshes
+                # Token invalid Ã¢?clear cached token so _ensure_token() refreshes
                 if code == 4004:
                     logger.info("[%s] Invalid token (4004), will refresh and reconnect", self.name)
                     self._access_token = None
                     self._token_expires_at = 0.0
 
-                # Session invalid â†?clear session, will re-identify on next Hello
+                # Session invalid Ã¢?clear session, will re-identify on next Hello
                 if code in (4006, 4007, 4009, 4900, 4901, 4902, 4903, 4904, 4905,
                            4906, 4907, 4908, 4909, 4910, 4911, 4912, 4913):
                     logger.info("[%s] Session error (%d), clearing session for re-identify", self.name, code)
@@ -616,7 +616,7 @@ class QQAdapter(BasePlatformAdapter):
         if isinstance(s, int) and (self._last_seq is None or s > self._last_seq):
             self._last_seq = s
 
-        # op 10 = Hello (heartbeat interval) â€?must reply with Identify/Resume
+        # op 10 = Hello (heartbeat interval) Ã¢?must reply with Identify/Resume
         if op == 10:
             d_data = d if isinstance(d, dict) else {}
             interval_ms = d_data.get("heartbeat_interval", 30000)
@@ -653,7 +653,7 @@ class QQAdapter(BasePlatformAdapter):
         logger.debug("[%s] Unknown op: %s", self.name, op)
 
     def _handle_ready(self, d: Any) -> None:
-        """Handle the READY event â€?store session_id for resume."""
+        """Handle the READY event Ã¢?store session_id for resume."""
         if isinstance(d, dict):
             self._session_id = d.get("session_id")
             logger.info("[%s] Ready, session_id=%s", self.name, self._session_id)
@@ -919,7 +919,7 @@ class QQAdapter(BasePlatformAdapter):
             return MessageType.VIDEO
         if "image" in first_type or "photo" in first_type:
             return MessageType.PHOTO
-        # Unknown content type with an attachment â€?don't assume PHOTO
+        # Unknown content type with an attachment Ã¢?don't assume PHOTO
         # to prevent non-image files from being sent to vision analysis.
         logger.debug("[QQ] Unknown media content_type '%s', defaulting to TEXT", first_type)
         return MessageType.TEXT
@@ -929,14 +929,14 @@ class QQAdapter(BasePlatformAdapter):
     ) -> Dict[str, Any]:
         """Process inbound attachments (all message types).
 
-        Mirrors OpenClaw's ``processAttachments`` â€?handles images, voice, and
+        Mirrors OpenClaw's ``processAttachments`` Ã¢?handles images, voice, and
         other files uniformly.
 
         Returns a dict with:
-        - image_urls: list[str]  â€?cached local image paths
-        - image_media_types: list[str] â€?MIME types of cached images
-        - voice_transcripts: list[str] â€?STT transcripts for voice messages
-        - attachment_info: str â€?text description of non-image, non-voice attachments
+        - image_urls: list[str]  Ã¢?cached local image paths
+        - image_media_types: list[str] Ã¢?MIME types of cached images
+        - voice_transcripts: list[str] Ã¢?STT transcripts for voice messages
+        - attachment_info: str Ã¢?text description of non-image, non-voice attachments
         """
         if not isinstance(attachments, list):
             return {"image_urls": [], "image_media_types": [],
@@ -986,7 +986,7 @@ class QQAdapter(BasePlatformAdapter):
                     logger.info("[QQ] Voice transcript: %s", transcript)
                 else:
                     logger.warning("[QQ] Voice STT failed for %s", url[:60])
-                    voice_transcripts.append("[Voice] [è¯­éŸ³è¯†åˆ«å¤±è´¥]")
+                    voice_transcripts.append("[Voice] [Ã¨Â¯Â­Ã©Â³Ã¨Â¯Ã¥Â«Ã¥Â¤Â±Ã¨Â´Â¥]")
             elif ct.startswith("image/"):
                 # Image: download and cache locally.
                 try:
@@ -1080,9 +1080,9 @@ class QQAdapter(BasePlatformAdapter):
         """Download a voice attachment, convert to wav, and transcribe.
 
         Priority:
-        1. QQ's built-in ``asr_refer_text`` (Tencent's own ASR â€?free, no API call).
+        1. QQ's built-in ``asr_refer_text`` (Tencent's own ASR Ã¢?free, no API call).
         2. Self-hosted STT on ``voice_wav_url`` (pre-converted WAV from QQ, avoids SILK decoding).
-        3. Self-hosted STT on the original attachment URL (requires SILKâ†’WAV conversion).
+        3. Self-hosted STT on the original attachment URL (requires SILK->WAV conversion).
 
         Returns the transcript text, or None on failure.
         """
@@ -1091,7 +1091,7 @@ class QQAdapter(BasePlatformAdapter):
             logger.info("[QQ] STT: using QQ asr_refer_text: %r", asr_refer_text[:100])
             return asr_refer_text
 
-        # Determine which URL to download (prefer voice_wav_url â€?already WAV)
+        # Determine which URL to download (prefer voice_wav_url Ã¢?already WAV)
         download_url = url
         is_pre_wav = False
         if voice_wav_url:
@@ -1229,7 +1229,7 @@ class QQAdapter(BasePlatformAdapter):
         try:
             import pilk
         except ImportError:
-            logger.warning("[QQ] pilk not installed â€?cannot decode SILK audio. Run: pip install pilk")
+            logger.warning("[QQ] pilk not installed Ã¢?cannot decode SILK audio. Run: pip install pilk")
             return None
 
         # Try converting the file as-is
@@ -1267,7 +1267,7 @@ class QQAdapter(BasePlatformAdapter):
         """Last resort: try writing audio data as raw PCM 16-bit mono 16kHz WAV.
 
         This will produce garbage if the data isn't raw PCM, but at least
-        the ASR engine won't crash â€?it'll just return empty.
+        the ASR engine won't crash Ã¢?it'll just return empty.
         """
         try:
             import wave
@@ -1311,7 +1311,7 @@ class QQAdapter(BasePlatformAdapter):
         """Resolve STT backend configuration from config/environment.
 
         Priority:
-        1. Plugin-specific: ``channels.qqbot.stt`` in config.yaml â†?``self.config.extra["stt"]``
+        1. Plugin-specific: ``channels.qqbot.stt`` in config.yaml Ã¢?``self.config.extra["stt"]``
         2. QQ-specific env vars: ``QQ_STT_API_KEY`` / ``QQ_STT_BASE_URL`` / ``QQ_STT_MODEL``
         3. Return None if nothing is configured (STT will be skipped, QQ built-in ASR still works).
         """
@@ -1448,7 +1448,7 @@ class QQAdapter(BasePlatformAdapter):
             return None
 
     # ------------------------------------------------------------------
-    # Outbound messaging â€?REST API
+    # Outbound messaging Ã¢?REST API
     # ------------------------------------------------------------------
 
     async def _api_request(
@@ -1460,7 +1460,7 @@ class QQAdapter(BasePlatformAdapter):
     ) -> Dict[str, Any]:
         """Make an authenticated REST API request to QQ Bot API."""
         if not self._http_client:
-            raise RuntimeError("HTTP client not initialized â€?not connected?")
+            raise RuntimeError("HTTP client not initialized Ã¢?not connected?")
 
         token = await self._ensure_token()
         headers = {
@@ -1577,10 +1577,10 @@ class QQAdapter(BasePlatformAdapter):
             except Exception as exc:
                 last_exc = exc
                 err = str(exc).lower()
-                # Permanent errors â€?don't retry
+                # Permanent errors Ã¢?don't retry
                 if any(k in err for k in ("invalid", "forbidden", "not found", "bad request")):
                     break
-                # Transient â€?back off and retry
+                # Transient Ã¢?back off and retry
                 if attempt < 2:
                     delay = 1.0 * (2 ** attempt)
                     logger.warning("[%s] send retry %d/3 after %.1fs: %s",
@@ -1810,7 +1810,7 @@ class QQAdapter(BasePlatformAdapter):
             resolved_name = file_name or Path(parsed.path).name or "media"
             return source, content_type, resolved_name
 
-        # Local file â€?encode as raw base64 for QQ Bot API file_data field.
+        # Local file Ã¢?encode as raw base64 for QQ Bot API file_data field.
         # The QQ API expects plain base64, NOT a data URI.
         local_path = Path(source).expanduser()
         if not local_path.is_absolute():

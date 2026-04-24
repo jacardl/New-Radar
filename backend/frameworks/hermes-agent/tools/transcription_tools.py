@@ -4,10 +4,10 @@ Transcription Tools Module
 
 Provides speech-to-text transcription with three providers:
 
-  - **local** (default, free) �?faster-whisper running locally, no API key needed.
+  - **local** (default, free) é¥?faster-whisper running locally, no API key needed.
     Auto-downloads the model (~150 MB for ``base``) on first use.
-  - **groq** (free tier) �?Groq Whisper API, requires ``GROQ_API_KEY``.
-  - **openai** (paid) �?OpenAI Whisper API, requires ``VOICE_TOOLS_OPENAI_KEY``.
+  - **groq** (free tier) é¥?Groq Whisper API, requires ``GROQ_API_KEY``.
+  - **openai** (paid) é¥?OpenAI Whisper API, requires ``VOICE_TOOLS_OPENAI_KEY``.
 
 Used by the messaging gateway to automatically transcribe voice messages
 sent by users on Telegram, Discord, WhatsApp, Slack, and Signal.
@@ -40,7 +40,7 @@ from tools.tool_backend_helpers import managed_nous_tools_enabled, resolve_opena
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Optional imports �?graceful degradation
+# Optional imports é¥?graceful degradation
 # ---------------------------------------------------------------------------
 
 import importlib.util as _ilu
@@ -82,7 +82,7 @@ MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
 OPENAI_MODELS = {"whisper-1", "gpt-4o-mini-transcribe", "gpt-4o-transcribe"}
 GROQ_MODELS = {"whisper-large-v3", "whisper-large-v3-turbo", "distil-whisper-large-v3-en"}
 
-# Singleton for the local model �?loaded once, reused across calls
+# Singleton for the local model é¥?loaded once, reused across calls
 _local_model: Optional[object] = None
 _local_model_name: Optional[str] = None
 
@@ -164,7 +164,7 @@ def _get_provider(stt_config: dict) -> str:
     """Determine which STT provider to use.
 
     When ``stt.provider`` is explicitly set in config, that choice is
-    honoured �?no silent cloud fallback.  When no provider is configured,
+    honoured é¥?no silent cloud fallback.  When no provider is configured,
     auto-detect tries: local > groq (free) > openai (paid).
     """
     if not is_stt_enabled(stt_config):
@@ -223,7 +223,7 @@ def _get_provider(stt_config: dict) -> str:
             )
             return "none"
 
-        return provider  # Unknown �?let it fail downstream
+        return provider  # Unknown é¥?let it fail downstream
 
     # --- Auto-detect (no explicit provider): local > groq > openai > mistral -
 
@@ -407,7 +407,7 @@ def _transcribe_local_command(file_path: str, model_name: str) -> Dict[str, Any]
         return {"success": False, "transcript": "", "error": f"Local transcription failed: {e}"}
 
 # ---------------------------------------------------------------------------
-# Provider: groq (Whisper API �?free tier)
+# Provider: groq (Whisper API é¥?free tier)
 # ---------------------------------------------------------------------------
 
 

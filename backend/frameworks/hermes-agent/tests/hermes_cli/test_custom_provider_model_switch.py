@@ -35,7 +35,7 @@ class TestCustomProviderModelSwitch:
 
     def test_saved_model_still_probes_endpoint(self, config_home):
         """When a model is already saved, the function must still call
-        fetch_api_models to probe the endpoint �?not skip with early return."""
+        fetch_api_models to probe the endpoint é¥?not skip with early return."""
         from hermes_cli.main import _model_flow_named_custom
 
         provider_info = {

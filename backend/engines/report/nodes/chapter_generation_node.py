@@ -1,8 +1,8 @@
 """
-章节级JSON生成节点�?
+ç« èçº§JSONçæèç¹
 
-每个章节依据Markdown模板切片独立调用LLM，流式写入Raw文件�?
-完成后校验并落盘标准化JSON。该节点只负责“拿到合规章节”�?
+æ¯ä¸ªç« èä¾æ®Markdownæ¨¡æ¿åçç¬ç«è°ç¨LLMï¼æµå¼åå¥Rawæä»¶ï¼?
+å®æåæ ¡éªå¹¶è½çæ ååJSONãè¯¥èç¹åªè´è´£"æ¿å°åè§ç« è"
 """
 
 from __future__ import annotations
@@ -35,20 +35,20 @@ from .base_node import BaseNode
 
 try:
     from json_repair import repair_json as _json_repair_fn
-except ImportError:  # pragma: no cover - 可选依�?
+except ImportError:  # pragma: no cover - å¯éä¾èµ?
     _json_repair_fn = None
 
 
 class ChapterJsonParseError(ValueError):
-    """章节LLM输出无法解析为合法JSON时抛出的异常，附带原始文本方便排查�?""
+    """ç« èLLMè¾åºæ æ³è§£æä¸ºåæ³JSONæ¶æåºçå¼å¸¸ï¼éå¸¦åå§ææ¬æ¹ä¾¿ææ¥""
 
     def __init__(self, message: str, raw_text: Optional[str] = None):
         """
-        构造异常并附加原始输出，便于日志中定位�?
+        æé å¼å¸¸å¹¶éå åå§è¾åºï¼ä¾¿äºæ¥å¿ä¸­å®ä½
 
         Args:
-            message: 人类可读的错误描述�?
-            raw_text: 触发异常的完整LLM输出�?
+            message: äººç±»å¯è¯»çéè¯¯æè¿°
+            raw_text: è§¦åå¼å¸¸çå®æ´LLMè¾åº
         """
         super().__init__(message)
         self.raw_text = raw_text
@@ -56,9 +56,9 @@ class ChapterJsonParseError(ValueError):
 
 class ChapterContentError(ValueError):
     """
-    章节内容稀疏异常�?
+    ç« èåå®¹ç¨çå¼å¸¸
 
-    当LLM仅输出标题或正文不足以支撑一章时触发，驱动重试以保证报告质量�?
+    å½LLMä»è¾åºæ é¢ææ­£æä¸è¶³ä»¥æ¯æä¸ç« æ¶è§¦åï¼é©±å¨éè¯ä»¥ä¿è¯æ¥åè´¨é
     """
 
     def __init__(
@@ -69,7 +69,7 @@ class ChapterContentError(ValueError):
         narrative_characters: int = 0,
         non_heading_blocks: int = 0,
     ):
-        """保存本次异常的正文特征，供重试与兜底策略参考�?""
+        """ä¿å­æ¬æ¬¡å¼å¸¸çæ­£æç¹å¾ï¼ä¾éè¯ä¸ååºç­ç¥åè""
         super().__init__(message)
         self.chapter_payload: Optional[Dict[str, Any]] = chapter
         self.body_characters: int = int(body_characters or 0)
@@ -79,9 +79,9 @@ class ChapterContentError(ValueError):
 
 class ChapterValidationError(ValueError):
     """
-    章节结构在本地和LLM修复后仍无法通过校验时抛出�?
+    ç« èç»æå¨æ¬å°åLLMä¿®å¤åä»æ æ³éè¿æ ¡éªæ¶æåº
 
-    该异常用于在Agent层触发针对单章的重试，而无需重启整本报告�?
+    è¯¥å¼å¸¸ç¨äºå¨Agentå±è§¦åéå¯¹åç« çéè¯ï¼èæ ééå¯æ´æ¬æ¥å
     """
 
     def __init__(self, message: str, errors: Optional[List[str]] | None = None):
@@ -91,13 +91,13 @@ class ChapterValidationError(ValueError):
 
 class ChapterGenerationNode(BaseNode):
     """
-    负责按章节调用LLM并校验JSON结构�?
+    è´è´£æç« èè°ç¨LLMå¹¶æ ¡éªJSONç»æ
 
-    核心能力�?
-        - 构造章节级 payload 与提示词�?
-        - 以流式形式写�?raw 文件并透传 delta�?
-        - 尝试修复/解析LLM输出，并使用 IRValidator 校验�?
-        - 对block结构做容错修复，确保最终JSON可渲染�?
+    æ ¸å¿è½åï¼?
+        - æé ç« èçº§ payload ä¸æç¤ºè¯ï¼?
+        - ä»¥æµå¼å½¢å¼åå?raw æä»¶å¹¶éä¼  deltaï¼?
+        - å°è¯ä¿®å¤/è§£æLLMè¾åºï¼å¹¶ä½¿ç¨ IRValidator æ ¡éªï¼?
+        - å¯¹blockç»æåå®¹éä¿®å¤ï¼ç¡®ä¿æç»JSONå¯æ¸²æ
     """
 
     _COLON_EQUALS_PATTERN = re.compile(r'(":\s*)=')
@@ -124,13 +124,13 @@ class ChapterGenerationNode(BaseNode):
         "sub": "subscript",
         "sup": "superscript",
     }
-    # 章节若仅包含标题或字符过少则视为失败，强制LLM重新生成
+    # ç« èè¥ä»åå«æ é¢æå­ç¬¦è¿å°åè§ä¸ºå¤±è´¥ï¼å¼ºå¶LLMéæ°çæ
     _MIN_NON_HEADING_BLOCKS = 2
     _MIN_BODY_CHARACTERS = 600
     _MIN_NARRATIVE_CHARACTERS = 300
     _PARAGRAPH_FRAGMENT_MAX_CHARS = 80
     _PARAGRAPH_FRAGMENT_NO_TERMINATOR_MAX_CHARS = 240
-    _TERMINATION_PUNCTUATION = set("。！�??�?…�?)
+    _TERMINATION_PUNCTUATION = set("ãï¼ï¼??ï¼?...â?)
 
     def __init__(
         self,
@@ -141,12 +141,12 @@ class ChapterGenerationNode(BaseNode):
         error_log_dir: Optional[str | Path] = None,
     ):
         """
-        记录LLM客户�?校验�?章节存储器，便于run方法调度�?
+        è®°å½LLMå®¢æ·ç«?æ ¡éªå?ç« èå­å¨å¨ï¼ä¾¿äºrunæ¹æ³è°åº¦
 
         Args:
-            llm_client: 实际调用大模型的客户�?
-            validator: IR结构校验�?
-            storage: 负责章节流式落盘的存储器
+            llm_client: å®éè°ç¨å¤§æ¨¡åçå®¢æ·ç«?
+            validator: IRç»ææ ¡éªå?
+            storage: è´è´£ç« èæµå¼è½ççå­å¨å¨
         """
         super().__init__(llm_client, "ChapterGenerationNode")
         self.validator = validator
@@ -162,7 +162,7 @@ class ChapterGenerationNode(BaseNode):
         self._rescue_attempted_labels: Dict[str, Set[str]] = {}
         self._skipped_placeholder_chapters: Set[str] = set()
         self._archived_failed_json: Dict[str, str] = {}
-        # 兜底使用更鲁棒的JSON解析器，尽可能拆出合法块
+        # ååºä½¿ç¨æ´é²æ£çJSONè§£æå¨ï¼å°½å¯è½æåºåæ³å
         self._robust_parser = RobustJSONParser(
             enable_json_repair=True,
             enable_llm_repair=False,
@@ -177,21 +177,21 @@ class ChapterGenerationNode(BaseNode):
         **kwargs,
     ) -> Dict[str, Any]:
         """
-        针对单个章节调用LLM，校�?落盘章节JSON并返回结构化结果�?
+        éå¯¹åä¸ªç« èè°ç¨LLMï¼æ ¡éª?è½çç« èJSONå¹¶è¿åç»æåç»æ
 
-        参数:
-            section: 模板切片生成的章节对象，包含标题/顺序/slug�?
-            context: Agent构造的共享上下文（主题、篇幅、布局等）�?
-            run_dir: 章节存盘目录，由 `ChapterStorage.start_session` 返回�?
-            stream_callback: 可选流式回调，将LLM delta 推送给前端�?
-            **kwargs: 透传温度、top_p等采样参数�?
+        åæ°:
+            section: æ¨¡æ¿åççæçç« èå¯¹è±¡ï¼åå«æ é¢/é¡ºåº/slug
+            context: Agentæé çå±äº«ä¸ä¸æï¼ä¸»é¢ãç¯å¹ãå¸å±ç­ï¼
+            run_dir: ç« èå­çç®å½ï¼ç± `ChapterStorage.start_session` è¿å
+            stream_callback: å¯éæµå¼åè°ï¼å°LLM delta æ¨éç»åç«¯
+            **kwargs: éä¼ æ¸©åº¦op_pç­éæ ·åæ°
 
-        返回:
-            dict: 通过IR校验的章节JSON�?
+        è¿å:
+            dict: éè¿IRæ ¡éªçç« èJSON
 
-        异常:
-            ChapterJsonParseError: 多次尝试后仍无法解析合法JSON�?
-            ChapterContentError: 正文密度不足或只有标题，需要触发重试�?
+        å¼å¸¸:
+            ChapterJsonParseError: å¤æ¬¡å°è¯åä»æ æ³è§£æåæ³JSON
+            ChapterContentError: æ­£æå¯åº¦ä¸è¶³æåªææ é¢ï¼éè¦è§¦åéè¯
         """
         chapter_meta = {
             "chapterId": section.chapter_id,
@@ -217,7 +217,7 @@ class ChapterGenerationNode(BaseNode):
         try:
             chapter_json = self._parse_chapter(raw_text)
         except ChapterJsonParseError as parse_error:
-            logger.warning(f"{section.title} 章节JSON解析失败，尝试跨引擎修复: {parse_error}")
+            logger.warning(f"{section.title} ç« èJSONè§£æå¤±è´¥ï¼å°è¯è·¨å¼æä¿®å¤: {parse_error}")
             parse_context.append(str(parse_error))
             self._archive_failed_output(section, raw_text)
             recovered = self._attempt_cross_engine_json_rescue(
@@ -228,7 +228,7 @@ class ChapterGenerationNode(BaseNode):
             )
             if recovered:
                 chapter_json = recovered
-                logger.info(f"{section.title} 章节JSON已通过跨引擎修�?)
+                logger.info(f"{section.title} ç« èJSONå·²éè¿è·¨å¼æä¿®å¤?)
             else:
                 placeholder = self._build_placeholder_chapter(section, raw_text, parse_error)
                 if not placeholder:
@@ -237,7 +237,7 @@ class ChapterGenerationNode(BaseNode):
                 parse_context.extend(placeholder_notes)
                 placeholder_created = True
 
-        # 自动补全关键字段后再校验
+        # èªå¨è¡¥å¨å³é®å­æ®µååæ ¡éª
         chapter_json.setdefault("chapterId", section.chapter_id)
         chapter_json.setdefault("anchor", section.slug)
         chapter_json.setdefault("title", section.title)
@@ -281,7 +281,7 @@ class ChapterGenerationNode(BaseNode):
 
         if not valid:
             raise ChapterValidationError(
-                f"{section.title} 章节JSON校验失败: {'; '.join(errors[:5])}",
+                f"{section.title} ç« èJSONæ ¡éªå¤±è´¥: {'; '.join(errors[:5])}",
                 errors=errors,
             )
         if content_error:
@@ -289,13 +289,13 @@ class ChapterGenerationNode(BaseNode):
 
         return chapter_json
 
-    # ====== 内部方法 ======
+    # ====== åé¨æ¹æ³ ======
 
     def _chunk_and_filter_markdown(self, markdown_text: str, target_title: str, target_outline: str, max_chars: int = 15000) -> str:
         """
-        轻量�?Markdown 文本分块与按需检�?(Working Memory 机制实现)�?
-        根据当前章节�?title �?outline，对长篇 markdown 进行基于段落/标题的切片，
-        计算关键词重合度，只保留最相关�?chunks�?
+        è½»éçº?Markdown ææ¬ååä¸æéæ£ç´?(Working Memory æºå¶å®ç°)
+        æ ¹æ®å½åç« èç?title å?outlineï¼å¯¹é¿ç¯ markdown è¿è¡åºäºæ®µè½/æ é¢çåçï¼
+        è®¡ç®å³é®è¯éååº¦ï¼åªä¿çæç¸å³ç?chunks
         """
         if not markdown_text or len(markdown_text) <= max_chars:
             return markdown_text
@@ -303,66 +303,66 @@ class ChapterGenerationNode(BaseNode):
         import re
         import jieba
         
-        # 1. 简单的 Markdown 分块（按二级/三级标题或双换行拆分�?
+        # 1. ç®åç Markdown ååï¼æäºçº§/ä¸çº§æ é¢æåæ¢è¡æåï¼?
         chunks = re.split(r'\n(?=## |\n\n)', markdown_text)
         
-        # 2. 提取当前章节的目标关键词
+        # 2. æåå½åç« èçç®æ å³é®è¯
         target_text = f"{target_title} {target_outline}"
-        # 简单过滤常见停用词，提取实�?
+        # ç®åè¿æ»¤å¸¸è§åç¨è¯ï¼æåå®è¯?
         target_words = set(w for w in jieba.cut(target_text) if len(w) > 1)
         
         if not target_words:
-            # 提取失败则直接截�?
+            # æåå¤±è´¥åç´æ¥æªæ?
             return markdown_text[:max_chars]
             
-        # 3. 对每�?chunk 进行打分
+        # 3. å¯¹æ¯ä¸?chunk è¿è¡æå
         chunk_scores = []
         for chunk in chunks:
             if not chunk.strip():
                 continue
-            # 计算�?chunk 中包含目标关键词的数�?
+            # è®¡ç®è¯?chunk ä¸­åå«ç®æ å³é®è¯çæ°é?
             chunk_words = set(jieba.cut(chunk))
             score = len(target_words.intersection(chunk_words))
-            # 加上长度惩罚，倾向于保留信息量适中的段落，避免极短段落
+            # å ä¸é¿åº¦æ©ç½ï¼å¾åäºä¿çä¿¡æ¯ééä¸­çæ®µè½ï¼é¿åæç­æ®µè½
             score += min(len(chunk) / 500.0, 2.0)
             chunk_scores.append((score, chunk))
             
-        # 4. 按分数倒序排序
+        # 4. æåæ°ååºæåº
         chunk_scores.sort(key=lambda x: x[0], reverse=True)
         
-        # 5. 组装最高分�?chunks 直到达到 max_chars 限制
+        # 5. ç»è£æé«åç?chunks ç´å°è¾¾å° max_chars éå¶
         selected_chunks = []
         current_len = 0
         for score, chunk in chunk_scores:
             if current_len + len(chunk) > max_chars:
-                # 尽量凑满
+                # å°½éåæ»¡
                 if current_len < max_chars * 0.5:
-                    selected_chunks.append(chunk[:max_chars - current_len] + "\n...(截断)")
+                    selected_chunks.append(chunk[:max_chars - current_len] + "\n...(æªæ­)")
                 break
             selected_chunks.append(chunk)
             current_len += len(chunk)
             
-        # 按在原文中的先后顺序重新排序（为了可读性，这里简化处理，直接返回�?
-        # 这里为了快速实现，直接用相关度最高的放在前面
+        # æå¨åæä¸­çååé¡ºåºéæ°æåºï¼ä¸ºäºå¯è¯»æ§ï¼è¿éç®åå¤çï¼ç´æ¥è¿åï¼?
+        # è¿éä¸ºäºå¿«éå®ç°ï¼ç´æ¥ç¨ç¸å³åº¦æé«çæ¾å¨åé¢
         return "\n\n".join(selected_chunks)
 
     def _build_payload(self, section: TemplateSection, context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        构造LLM输入payload�?
+        æé LLMè¾å¥payload
 
-        参数:
-            section: 当前要生成的章节，提供标�?编号/提纲�?
-            context: 全局上下文字典，包含主题、三引擎报告、篇幅规划等�?
+        åæ°:
+            section: å½åè¦çæçç« èï¼æä¾æ é¢?ç¼å·/æçº²
+            context: å¨å±ä¸ä¸æå­å¸ï¼åå«ä¸»é¢ãä¸å¼ææ¥åãç¯å¹è§åç­
 
-        返回:
-            dict: 可以直接序列化进提示词的payload，兼顾章节信息与全局约束�?
+        è¿å:
+            dict: å¯ä»¥ç´æ¥åºååè¿æç¤ºè¯çpayloadï¼å¼é¡¾ç« èä¿¡æ¯ä¸å¨å±çº¦æ
         """
         reports = context.get("reports", {})
-        # 章节篇幅规划（来自WordBudgetNode），用于指导字数与强调点
+        # ç« èç¯å¹è§åï¼æ¥èªWordBudgetNodeï¼ï¼ç¨äºæå¯¼å­æ°ä¸å¼ºè°ç¹
         chapter_plan_map = context.get("chapter_directives", {})
         chapter_plan = chapter_plan_map.get(section.chapter_id) if chapter_plan_map else {}
 
-        # �?layout �?tocPlan 中查找该章节是否允许使用SWOT块和PEST�?
+        # ä»?layout ç?tocPlan ä¸­æ¥æ¾è¯¥ç« èæ¯å¦åè®¸ä½¿ç¨SWOTååPESTå?
         allow_swot = self._get_chapter_swot_permission(section.chapter_id, context)
         allow_pest = self._get_chapter_pest_permission(section.chapter_id, context)
 
@@ -380,7 +380,7 @@ class ChapterGenerationNode(BaseNode):
                 "templateName": context.get("template_name"),
                 "themeTokens": context.get("theme_tokens", {}),
                 "styleDirectives": context.get("style_directives", {}),
-                # layout里包含标�?目录/hero等信息，方便章节保持统一视觉调�?
+                # layoutéåå«æ é¢?ç®å½/heroç­ä¿¡æ¯ï¼æ¹ä¾¿ç« èä¿æç»ä¸è§è§è°æ?
                 "layout": context.get("layout"),
                 "templateOverview": context.get("template_overview", {}),
             },
@@ -390,7 +390,7 @@ class ChapterGenerationNode(BaseNode):
                 "insight_engine": self._chunk_and_filter_markdown(reports.get("insight_engine", ""), section.title, section.outline, 15000),
             },
             # =======================
-            # 新增: 传递前文记�?
+            # æ°å¢: ä¼ éåæè®°å¿?
             # =======================
             "previousChapterMemories": context.get("chapter_memories", []),
             "forumLogs": self._chunk_and_filter_markdown(context.get("forum_logs", ""), section.title, section.outline, 15000),
@@ -427,17 +427,17 @@ class ChapterGenerationNode(BaseNode):
 
     def _get_chapter_swot_permission(self, chapter_id: str, context: Dict[str, Any]) -> bool:
         """
-        �?layout �?tocPlan 中查找指定章节是否允许使�?SWOT 块�?
+        ä»?layout ç?tocPlan ä¸­æ¥æ¾æå®ç« èæ¯å¦åè®¸ä½¿ç?SWOT å
 
-        全文最多只有一个章节允许使�?SWOT 块，由文档设计阶段在 tocPlan �?
-        通过 allowSwot 字段标记�?
+        å¨ææå¤åªæä¸ä¸ªç« èåè®¸ä½¿ç?SWOT åï¼ç±ææ¡£è®¾è®¡é¶æ®µå¨ tocPlan ä¸?
+        éè¿ allowSwot å­æ®µæ è®°
 
-        参数:
-            chapter_id: 当前章节ID�?
-            context: 全局上下文字典�?
+        åæ°:
+            chapter_id: å½åç« èID
+            context: å¨å±ä¸ä¸æå­å¸
 
-        返回:
-            bool: 如果该章节允许使�?SWOT 块则返回 True，否则返�?False�?
+        è¿å:
+            bool: å¦æè¯¥ç« èåè®¸ä½¿ç?SWOT ååè¿å Trueï¼å¦åè¿å?False
         """
         layout = context.get("layout")
         if not isinstance(layout, dict):
@@ -457,23 +457,23 @@ class ChapterGenerationNode(BaseNode):
 
     def _get_chapter_pest_permission(self, chapter_id: str, context: Dict[str, Any]) -> bool:
         """
-        �?layout �?tocPlan 中查找指定章节是否允许使�?PEST 块�?
+        ä»?layout ç?tocPlan ä¸­æ¥æ¾æå®ç« èæ¯å¦åè®¸ä½¿ç?PEST å
 
-        全文最多只有一个章节允许使�?PEST 块，由文档设计阶段在 tocPlan �?
-        通过 allowPest 字段标记�?
+        å¨ææå¤åªæä¸ä¸ªç« èåè®¸ä½¿ç?PEST åï¼ç±ææ¡£è®¾è®¡é¶æ®µå¨ tocPlan ä¸?
+        éè¿ allowPest å­æ®µæ è®°
 
-        PEST块用于宏观环境分析：
-        - Political（政治因素）
-        - Economic（经济因素）
-        - Social（社会因素）
-        - Technological（技术因素）
+        PESTåç¨äºå®è§ç¯å¢åæï¼
+        - Politicalï¼æ¿æ²»å ç´ ï¼
+        - Economicï¼ç»æµå ç´ ï¼
+        - Socialï¼ç¤¾ä¼å ç´ ï¼
+        - Technologicalï¼ææ¯å ç´ ï¼
 
-        参数:
-            chapter_id: 当前章节ID�?
-            context: 全局上下文字典�?
+        åæ°:
+            chapter_id: å½åç« èID
+            context: å¨å±ä¸ä¸æå­å¸
 
-        返回:
-            bool: 如果该章节允许使�?PEST 块则返回 True，否则返�?False�?
+        è¿å:
+            bool: å¦æè¯¥ç« èåè®¸ä½¿ç?PEST ååè¿å Trueï¼å¦åè¿å?False
         """
         layout = context.get("layout")
         if not isinstance(layout, dict):
@@ -500,17 +500,17 @@ class ChapterGenerationNode(BaseNode):
         **kwargs,
     ) -> str:
         """
-        流式调用LLM并实时写入raw文件，同时通过回调将delta抛出�?
+        æµå¼è°ç¨LLMå¹¶å®æ¶åå¥rawæä»¶ï¼åæ¶éè¿åè°å°deltaæåº
 
-        参数:
-            user_message: 拼装好的用户提示词�?
-            chapter_dir: 章节的本地缓存目录，用于存放 stream.raw�?
-            stream_callback: SSE流式推送的回调函数�?
-            section_meta: 附带的章节ID/标题，用于回调payload�?
-            **kwargs: 透传温度、top_p等参数�?
+        åæ°:
+            user_message: æ¼è£å¥½çç¨æ·æç¤ºè¯
+            chapter_dir: ç« èçæ¬å°ç¼å­ç®å½ï¼ç¨äºå­æ¾ stream.raw
+            stream_callback: SSEæµå¼æ¨éçåè°å½æ°
+            section_meta: éå¸¦çç« èID/æ é¢ï¼ç¨äºåè°payload
+            **kwargs: éä¼ æ¸©åº¦op_pç­åæ°
 
-        返回:
-            str: 将所有delta拼接后的原始文本�?
+        è¿å:
+            str: å°æædeltaæ¼æ¥åçåå§ææ¬
         """
         chunks: List[str] = []
         with self.storage.capture_stream(chapter_dir) as stream_fp:
@@ -527,8 +527,8 @@ class ChapterGenerationNode(BaseNode):
                     meta = section_meta or {}
                     try:
                         stream_callback(delta, meta)
-                    except Exception as callback_error:  # pragma: no cover - 仅记录，不阻断主流程
-                        logger.warning(f"章节流式回调失败: {callback_error}")
+                    except Exception as callback_error:  # pragma: no cover - ä»è®°å½ï¼ä¸é»æ­ä¸»æµç¨
+                        logger.warning(f"ç« èæµå¼åè°å¤±è´¥: {callback_error}")
         return "".join(chunks)
 
     def _attempt_cross_engine_json_rescue(
@@ -539,15 +539,15 @@ class ChapterGenerationNode(BaseNode):
         run_id: str,
     ) -> Optional[Dict[str, Any]]:
         """
-        依次调用Report/Forum/Insight/Media四套API尝试修复无法解析的JSON�?
+        ä¾æ¬¡è°ç¨Report/Forum/Insight/Mediaåå¥APIå°è¯ä¿®å¤æ æ³è§£æçJSON
 
         Returns:
-            dict | None: 成功修复时返回章节JSON，否则为None�?
+            dict | None: æåä¿®å¤æ¶è¿åç« èJSONï¼å¦åä¸ºNone
         """
         if not self.fallback_llm_clients:
             return None
         if self._chapter_already_skipped(section):
-            logger.info(f"[{run_id}] {section.title} 已标记为占位，不再触发跨引擎修复")
+            logger.info(f"[{run_id}] {section.title} å·²æ è®°ä¸ºå ä½ï¼ä¸åè§¦åè·¨å¼æä¿®å¤")
             return None
         section_payload = {
             "chapterId": section.chapter_id,
@@ -569,7 +569,7 @@ class ChapterGenerationNode(BaseNode):
             attempt_index = len(attempted_labels) + 1
             attempted_labels.add(label)
             logger.info(
-                f"[{run_id}] 章节 {section.title} 触发 {label} API JSON抢修（第{attempt_index}次尝试）"
+                f"[{run_id}] ç« è {section.title} è§¦å {label} API JSONæ¢ä¿®ï¼ç¬¬{attempt_index}æ¬¡å°è¯ï¼"
             )
             try:
                 response = client.invoke(
@@ -579,22 +579,22 @@ class ChapterGenerationNode(BaseNode):
                     top_p=0.05,
                 )
             except Exception as exc:
-                logger.warning(f"{label} JSON修复调用失败: {exc}")
+                logger.warning(f"{label} JSONä¿®å¤è°ç¨å¤±è´¥: {exc}")
                 continue
             if not response:
                 continue
             try:
                 repaired = self._parse_chapter(response)
             except Exception as exc:
-                logger.warning(f"{label} JSON修复输出仍无法解�? {exc}")
+                logger.warning(f"{label} JSONä¿®å¤è¾åºä»æ æ³è§£æ? {exc}")
                 continue
-            logger.warning(f"[{run_id}] {label} API已修复章节JSON")
+            logger.warning(f"[{run_id}] {label} APIå·²ä¿®å¤ç« èJSON")
             self._archived_failed_json.pop(section.chapter_id, None)
             return repaired
         return None
 
     def _ensure_run_state(self, run_id: str):
-        """确保每次报告运行时的修复状态隔离，防止上一份任务的记录影响新任务�?""
+        """ç¡®ä¿æ¯æ¬¡æ¥åè¿è¡æ¶çä¿®å¤ç¶æéç¦»ï¼é²æ­¢ä¸ä¸ä»½ä»»å¡çè®°å½å½±åæ°ä»»å¡""
         if self._active_run_id == run_id:
             return
         self._active_run_id = run_id
@@ -603,21 +603,21 @@ class ChapterGenerationNode(BaseNode):
         self._archived_failed_json = {}
 
     def _archive_failed_output(self, section: TemplateSection, raw_text: str):
-        """缓存当前章节的原始错误JSON，以便后续占位或人工使用�?""
+        """ç¼å­å½åç« èçåå§éè¯¯JSONï¼ä»¥ä¾¿åç»­å ä½æäººå·¥ä½¿ç¨""
         if not raw_text:
             return
         self._archived_failed_json[section.chapter_id] = raw_text
 
     def _get_archived_failed_output(self, section: TemplateSection) -> Optional[str]:
-        """获取章节最近一次失败的原始输出�?""
+        """è·åç« èæè¿ä¸æ¬¡å¤±è´¥çåå§è¾åº""
         return self._archived_failed_json.get(section.chapter_id)
 
     def _mark_chapter_skipped(self, section: TemplateSection):
-        """记录该章节已经降级为占位，避免重复触发跨引擎修复�?""
+        """è®°å½è¯¥ç« èå·²ç»éçº§ä¸ºå ä½ï¼é¿åéå¤è§¦åè·¨å¼æä¿®å¤""
         self._skipped_placeholder_chapters.add(section.chapter_id)
 
     def _chapter_already_skipped(self, section: TemplateSection) -> bool:
-        """判断章节是否已经被标记为占位�?""
+        """å¤æ­ç« èæ¯å¦å·²ç»è¢«æ è®°ä¸ºå ä½""
         return section.chapter_id in self._skipped_placeholder_chapters
 
     def _build_placeholder_chapter(
@@ -627,16 +627,16 @@ class ChapterGenerationNode(BaseNode):
         parse_error: Exception,
     ) -> Optional[Tuple[Dict[str, Any], List[str]]]:
         """
-        在所有修复失败时构造可渲染的占位章节，并记录日志文件供后续排查�?
+        å¨ææä¿®å¤å¤±è´¥æ¶æé å¯æ¸²æçå ä½ç« èï¼å¹¶è®°å½æ¥å¿æä»¶ä¾åç»­ææ¥
         """
         snapshot = self._get_archived_failed_output(section) or raw_text
         log_ref = self._persist_error_payload(section, snapshot, parse_error)
         if not log_ref:
-            logger.error(f"{section.title} 章节JSON完全损坏且无法写入日�?)
+            logger.error(f"{section.title} ç« èJSONå®å¨æåä¸æ æ³åå¥æ¥å¿?)
             return None
         importance = "critical" if self._is_section_critical(section) else "standard"
         message = (
-            f"LLM返回块解析错误，详情请见 {log_ref['relativeFile']} �?{log_ref['entryId']} 记录�?
+            f"LLMè¿ååè§£æéè¯¯ï¼è¯¦æè¯·è§ {log_ref['relativeFile']} ç?{log_ref['entryId']} è®°å½
         )
         heading_block = {
             "type": "heading",
@@ -647,7 +647,7 @@ class ChapterGenerationNode(BaseNode):
         callout_block = {
             "type": "callout",
             "tone": "danger" if importance == "critical" else "warning",
-            "title": "LLM返回块解析错�?,
+            "title": "LLMè¿ååè§£æéè¯?,
             "blocks": [
                 {
                     "type": "paragraph",
@@ -674,23 +674,23 @@ class ChapterGenerationNode(BaseNode):
             "errorPlaceholder": True,
         }
         errors = [
-            f"{section.title} 章节JSON解析失败，已降级为占位。参�?{log_ref['relativeFile']}#{log_ref['entryId']}"
+            f"{section.title} ç« èJSONè§£æå¤±è´¥ï¼å·²éçº§ä¸ºå ä½ãåè?{log_ref['relativeFile']}#{log_ref['entryId']}"
         ]
         self._mark_chapter_skipped(section)
         return placeholder, errors
 
     def _parse_chapter(self, raw_text: str) -> Dict[str, Any]:
         """
-        清洗LLM输出并解析JSON�?
+        æ¸æ´LLMè¾åºå¹¶è§£æJSON
 
-        参数:
-            raw_text: LLM原始输出（可能包含```包裹或额外说明）�?
+        åæ°:
+            raw_text: LLMåå§è¾åºï¼å¯è½åå«```åè£¹æé¢å¤è¯´æï¼
 
-        返回:
-            dict: 章节JSON对象，至少包�?chapterId/title/blocks�?
+        è¿å:
+            dict: ç« èJSONå¯¹è±¡ï¼è³å°åå?chapterId/title/blocks
 
-        异常:
-            ChapterJsonParseError: 多种修复策略仍无法解析合法JSON�?
+        å¼å¸¸:
+            ChapterJsonParseError: å¤ç§ä¿®å¤ç­ç¥ä»æ æ³è§£æåæ³JSON
         """
         cleaned = raw_text.strip()
         if cleaned.startswith("```json"):
@@ -701,7 +701,7 @@ class ChapterGenerationNode(BaseNode):
             cleaned = cleaned[:-3]
         cleaned = cleaned.strip()
         if not cleaned:
-            raise ChapterJsonParseError("LLM返回空内�?, raw_text=raw_text)
+            raise ChapterJsonParseError("LLMè¿åç©ºåå®?, raw_text=raw_text)
 
         candidate_payloads = [cleaned]
         repaired = self._repair_llm_json(cleaned)
@@ -728,7 +728,7 @@ class ChapterGenerationNode(BaseNode):
                     )
                 except JSONParseError as robust_exc:
                     raise ChapterJsonParseError(
-                        f"章节JSON解析失败: {robust_exc}", raw_text=cleaned
+                        f"ç« èJSONè§£æå¤±è´¥: {robust_exc}", raw_text=cleaned
                     ) from robust_exc
 
         if "chapter" in data and isinstance(data["chapter"], dict):
@@ -744,7 +744,7 @@ class ChapterGenerationNode(BaseNode):
                         return item["chapter"]
                     if all(key in item for key in ("chapterId", "title", "blocks")):
                         return item
-        raise ChapterJsonParseError("章节JSON缺少chapter字段或结构不完整", raw_text=cleaned)
+        raise ChapterJsonParseError("ç« èJSONç¼ºå°chapterå­æ®µæç»æä¸å®æ´", raw_text=cleaned)
 
     def _persist_error_payload(
         self,
@@ -752,7 +752,7 @@ class ChapterGenerationNode(BaseNode):
         raw_text: str,
         parse_error: Exception,
     ) -> Optional[Dict[str, str]]:
-        """将无法解析的JSON文本落盘，便于在HTML中指向具体文件�?""
+        """å°æ æ³è§£æçJSONææ¬è½çï¼ä¾¿äºå¨HTMLä¸­æåå·ä½æä»¶""
         try:
             self._failed_block_counter += 1
             entry_id = f"E{self._failed_block_counter:04d}"
@@ -784,11 +784,11 @@ class ChapterGenerationNode(BaseNode):
                 "timestamp": timestamp,
             }
         except Exception as exc:
-            logger.error(f"记录章节JSON错误日志失败: {exc}")
+            logger.error(f"è®°å½ç« èJSONéè¯¯æ¥å¿å¤±è´¥: {exc}")
             return None
 
     def _is_section_critical(self, section: TemplateSection) -> bool:
-        """基于章节深度/编号判断是否会影响目录，从而决定提示强度�?""
+        """åºäºç« èæ·±åº¦/ç¼å·å¤æ­æ¯å¦ä¼å½±åç®å½ï¼ä»èå³å®æç¤ºå¼ºåº¦""
         if not section:
             return False
         if section.depth <= 2:
@@ -800,43 +800,43 @@ class ChapterGenerationNode(BaseNode):
 
     def _repair_llm_json(self, text: str) -> str:
         """
-        处理常见的LLM错误（如":=导致的非法JSON）�?
+        å¤çå¸¸è§çLLMéè¯¯ï¼å¦":=å¯¼è´çéæ³JSONï¼
 
-        参数:
-            text: 原始章节JSON文本�?
+        åæ°:
+            text: åå§ç« èJSONææ¬
 
-        返回:
-            str: 修复后的文本；若未做改动则返回原内容�?
+        è¿å:
+            str: ä¿®å¤åçææ¬ï¼è¥æªåæ¹å¨åè¿åååå®¹
         """
         repaired = text
         mutated = False
 
         new_text = self._COLON_EQUALS_PATTERN.sub(r"\1", repaired)
         if new_text != repaired:
-            logger.warning("检测到章节JSON中的\":=\"字符，已自动移除多余�?='�?)
+            logger.warning("æ£æµå°ç« èJSONä¸­ç\":=\"å­ç¬¦ï¼å·²èªå¨ç§»é¤å¤ä½ç?='å?)
             repaired = new_text
             mutated = True
 
         repaired, escaped = self._escape_in_string_controls(repaired)
         if escaped:
-            logger.warning("检测到章节JSON字符串中存在未转义的控制字符，已自动转换为转义序�?)
+            logger.warning("æ£æµå°ç« èJSONå­ç¬¦ä¸²ä¸­å­å¨æªè½¬ä¹çæ§å¶å­ç¬¦ï¼å·²èªå¨è½¬æ¢ä¸ºè½¬ä¹åºå?)
             mutated = True
 
         repaired, balanced = self._balance_brackets(repaired)
         if balanced:
-            logger.warning("检测到章节JSON括号不平衡，已自动补�?剔除异常括号")
+            logger.warning("æ£æµå°ç« èJSONæ¬å·ä¸å¹³è¡¡ï¼å·²èªå¨è¡¥é½?åé¤å¼å¸¸æ¬å·")
             mutated = True
 
         repaired, commas_fixed = self._fix_missing_commas(repaired)
         if commas_fixed:
-            logger.warning("检测到章节JSON对象/数组之间缺少逗号，已自动补齐")
+            logger.warning("æ£æµå°ç« èJSONå¯¹è±¡/æ°ç»ä¹é´ç¼ºå°éå·ï¼å·²èªå¨è¡¥é½")
             mutated = True
 
         return repaired if mutated else text
 
     def _escape_in_string_controls(self, text: str) -> Tuple[str, bool]:
         """
-        将字符串字面量中的裸换行/制表�?控制字符替换为JSON合法的转义序列�?
+        å°å­ç¬¦ä¸²å­é¢éä¸­çè£¸æ¢è¡/å¶è¡¨ç¬?æ§å¶å­ç¬¦æ¿æ¢ä¸ºJSONåæ³çè½¬ä¹åºå
         """
         if not text:
             return text, False
@@ -878,7 +878,7 @@ class ChapterGenerationNode(BaseNode):
         return "".join(result), mutated
 
     def _fix_missing_commas(self, text: str) -> Tuple[str, bool]:
-        """在对�?数组连续出现时自动补逗号"""
+        """å¨å¯¹è±?æ°ç»è¿ç»­åºç°æ¶èªå¨è¡¥éå·"""
         if not text:
             return text, False
 
@@ -916,7 +916,7 @@ class ChapterGenerationNode(BaseNode):
         return "".join(chars), mutated
 
     def _balance_brackets(self, text: str) -> Tuple[str, bool]:
-        """尝试修复因LLM多写/少写括号导致的不平衡结构"""
+        """å°è¯ä¿®å¤å LLMå¤å/å°åæ¬å·å¯¼è´çä¸å¹³è¡¡ç»æ"""
         if not text:
             return text, False
 
@@ -971,17 +971,17 @@ class ChapterGenerationNode(BaseNode):
         return "".join(result), mutated
 
     def _attempt_json_repair(self, text: str) -> str | None:
-        """使用可选的json_repair库进一步修复复杂语法错�?""
+        """ä½¿ç¨å¯éçjson_repairåºè¿ä¸æ­¥ä¿®å¤å¤æè¯­æ³éè¯?""
         if not _json_repair_fn:
             return None
         try:
             fixed = _json_repair_fn(text)
-        except Exception as exc:  # pragma: no cover - 库级故障
-            logger.warning(f"json_repair 修复章节JSON失败: {exc}")
+        except Exception as exc:  # pragma: no cover - åºçº§æé
+            logger.warning(f"json_repair ä¿®å¤ç« èJSONå¤±è´¥: {exc}")
             return None
         if fixed == text:
             return None
-        logger.warning("已使用json_repair自动修复章节JSON语法")
+        logger.warning("å·²ä½¿ç¨json_repairèªå¨ä¿®å¤ç« èJSONè¯­æ³")
         return fixed
 
     def _attempt_llm_structural_repair(
@@ -990,7 +990,7 @@ class ChapterGenerationNode(BaseNode):
         validation_errors: List[str],
         raw_text: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
-        """将结构性错误的章节交给LLM兜底修复，保持Report Engine相同的API设置�?""
+        """å°ç»ææ§éè¯¯çç« èäº¤ç»LLMååºä¿®å¤ï¼ä¿æReport Engineç¸åçAPIè®¾ç½®""
         if not validation_errors:
             return None
         payload = build_chapter_repair_prompt(chapter, validation_errors, raw_text)
@@ -1001,29 +1001,29 @@ class ChapterGenerationNode(BaseNode):
                 temperature=0.0,
                 top_p=0.05,
             )
-        except Exception as exc:  # pragma: no cover - 网络或API异常仅记�?
-            logger.error(f"章节JSON LLM修复调用失败: {exc}")
+        except Exception as exc:  # pragma: no cover - ç½ç»æAPIå¼å¸¸ä»è®°å½?
+            logger.error(f"ç« èJSON LLMä¿®å¤è°ç¨å¤±è´¥: {exc}")
             return None
         if not response:
             return None
         try:
             repaired = self._parse_chapter(response)
         except Exception as exc:
-            logger.error(f"LLM修复后的章节JSON解析失败: {exc}")
+            logger.error(f"LLMä¿®å¤åçç« èJSONè§£æå¤±è´¥: {exc}")
             return None
-        logger.warning("章节JSON经多次本地修复仍不合规，已成功启用LLM兜底修复")
+        logger.warning("ç« èJSONç»å¤æ¬¡æ¬å°ä¿®å¤ä»ä¸åè§ï¼å·²æåå¯ç¨LLMååºä¿®å¤")
         return repaired
 
     def _sanitize_chapter_blocks(self, chapter: Dict[str, Any], section_outline: Optional[List[Dict[str, Any]]] = None):
         """
-        修正常见的结构性错误（例如list.items嵌套过深），并剔除越权标题�?
+        ä¿®æ­£å¸¸è§çç»ææ§éè¯¯ï¼ä¾å¦list.itemsåµå¥è¿æ·±ï¼ï¼å¹¶åé¤è¶ææ é¢
 
-        参数:
-            chapter: 章节JSON对象，会在原地被清理和规整�?
-            section_outline: 该章节的合法提纲列表，用于剔除越权的 heading 块�?
+        åæ°:
+            chapter: ç« èJSONå¯¹è±¡ï¼ä¼å¨åå°è¢«æ¸çåè§æ´
+            section_outline: è¯¥ç« èçåæ³æçº²åè¡¨ï¼ç¨äºåé¤è¶æç heading å
         """
 
-        # 收集所有合法的标题前缀（例�?"4.1"�?
+        # æ¶éææåæ³çæ é¢åç¼ï¼ä¾å¦?"4.1"ï¼?
         valid_prefixes = []
         if section_outline:
             import re
@@ -1034,33 +1034,33 @@ class ChapterGenerationNode(BaseNode):
                     valid_prefixes.append(m.group(1))
 
         def walk(blocks: List[Dict[str, Any]] | None):
-            """递归检查并修复嵌套结构，保证每个block合法"""
+            """éå½æ£æ¥å¹¶ä¿®å¤åµå¥ç»æï¼ä¿è¯æ¯ä¸ªblockåæ³"""
             if not isinstance(blocks, list):
                 return
-            # 先过滤掉非字典类型的异常 block
+            # åè¿æ»¤æéå­å¸ç±»åçå¼å¸¸ block
             valid_indices = []
             for idx, block in enumerate(blocks):
                 if not isinstance(block, dict):
-                    # 尝试将字符串转换�?paragraph
+                    # å°è¯å°å­ç¬¦ä¸²è½¬æ¢ä¸?paragraph
                     if isinstance(block, str) and block.strip():
                         blocks[idx] = self._as_paragraph_block(block)
                         valid_indices.append(idx)
-                        logger.warning(f"walk: 将字符串 block 转换�?paragraph")
+                        logger.warning(f"walk: å°å­ç¬¦ä¸² block è½¬æ¢ä¸?paragraph")
                     elif isinstance(block, list):
-                        # 尝试提取列表中的有效字典
+                        # å°è¯æååè¡¨ä¸­çææå­å¸
                         for item in block:
                             if isinstance(item, dict):
                                 self._ensure_block_type(item)
                                 blocks[idx] = item
                                 valid_indices.append(idx)
-                                logger.warning(f"walk: 从列表中提取字典 block")
+                                logger.warning(f"walk: ä»åè¡¨ä¸­æåå­å¸ block")
                                 break
                         else:
-                            logger.warning(f"walk: 跳过无效的列�?block: {block}")
+                            logger.warning(f"walk: è·³è¿æ æçåè¡?block: {block}")
                     else:
-                        logger.warning(f"walk: 跳过无效�?block（类�? {type(block).__name__}�?)
+                        logger.warning(f"walk: è·³è¿æ æç?blockï¼ç±»å? {type(block).__name__}ï¼?)
                 else:
-                    # 如果�?heading，校验其是否在合法大纲前缀�?
+                    # å¦ææ?headingï¼æ ¡éªå¶æ¯å¦å¨åæ³å¤§çº²åç¼å?
                     if valid_prefixes and block.get("type") == "heading":
                         heading_text = block.get("text", "")
                         import re
@@ -1068,8 +1068,8 @@ class ChapterGenerationNode(BaseNode):
                         if m:
                             prefix = m.group(1)
                             if prefix not in valid_prefixes:
-                                logger.warning(f"剔除越权生成的标�?block: {heading_text} (将其降级为加粗段�?")
-                                # 将越�?heading 降级为加粗段�?
+                                logger.warning(f"åé¤è¶æçæçæ é¢?block: {heading_text} (å°å¶éçº§ä¸ºå ç²æ®µè?")
+                                # å°è¶æ?heading éçº§ä¸ºå ç²æ®µè?
                                 blocks[idx] = {
                                     "type": "paragraph",
                                     "inlines": [
@@ -1086,7 +1086,7 @@ class ChapterGenerationNode(BaseNode):
                 self._sanitize_block_content(block)
                 block_type = block.get("type")
                 if block_type == "list":
-                    # 自动修复 listType：确保是合法�?
+                    # èªå¨ä¿®å¤ listTypeï¼ç¡®ä¿æ¯åæ³å?
                     self._normalize_list_type(block)
                     items = block.get("items")
                     normalized = self._normalize_list_items(items)
@@ -1116,27 +1116,27 @@ class ChapterGenerationNode(BaseNode):
 
         blocks = chapter.get("blocks")
         if isinstance(blocks, list):
-            # 在合并前先过滤掉所有非字典类型�?block
+            # å¨åå¹¶ååè¿æ»¤æææéå­å¸ç±»åç?block
             filtered_blocks = [b for b in blocks if isinstance(b, dict)]
             chapter["blocks"] = self._merge_fragment_sequences(filtered_blocks)
 
     def _ensure_content_density(self, chapter: Dict[str, Any]):
         """
-        校验章节正文密度�?
+        æ ¡éªç« èæ­£æå¯åº¦
 
-        若blocks缺失、除标题外无有效区块，或正文字符数低于阈值，
-        则视为章节内容异常，触发ChapterContentError以便上游重试�?
+        è¥blocksç¼ºå¤±ãé¤æ é¢å¤æ ææåºåï¼ææ­£æå­ç¬¦æ°ä½äºéå¼ï¼
+        åè§ä¸ºç« èåå®¹å¼å¸¸ï¼è§¦åChapterContentErrorä»¥ä¾¿ä¸æ¸¸éè¯
 
-        参数:
-            chapter: 当前章节JSON�?
+        åæ°:
+            chapter: å½åç« èJSON
 
-        异常:
-            ChapterContentError: 当正文区块数量或字符数达不到下限时抛出�?
+        å¼å¸¸:
+            ChapterContentError: å½æ­£æåºåæ°éæå­ç¬¦æ°è¾¾ä¸å°ä¸éæ¶æåº
         """
         blocks = chapter.get("blocks")
         if not isinstance(blocks, list) or not blocks:
             raise ChapterContentError(
-                "章节缺少正文区块，无法输出内�?,
+                "ç« èç¼ºå°æ­£æåºåï¼æ æ³è¾åºåå®?,
                 chapter=chapter,
                 body_characters=0,
                 narrative_characters=0,
@@ -1159,7 +1159,7 @@ class ChapterGenerationNode(BaseNode):
             or narrative_characters < self._MIN_NARRATIVE_CHARACTERS
         ):
             raise ChapterContentError(
-                f"{chapter.get('title') or '该章�?} 正文不足：有效区�?{valid_block_count} 个，估算字符�?{body_characters}，叙述性字符数 {narrative_characters}",
+                f"{chapter.get('title') or 'è¯¥ç« è?} æ­£æä¸è¶³ï¼ææåºå?{valid_block_count} ä¸ªï¼ä¼°ç®å­ç¬¦æ?{body_characters}ï¼åè¿°æ§å­ç¬¦æ° {narrative_characters}",
                 chapter=chapter,
                 body_characters=body_characters,
                 narrative_characters=narrative_characters,
@@ -1168,21 +1168,21 @@ class ChapterGenerationNode(BaseNode):
 
     def _count_body_characters(self, blocks: Any) -> int:
         """
-        递归统计正文字符数�?
+        éå½ç»è®¡æ­£æå­ç¬¦æ°
 
-        - 忽略heading/divider/widget等非正文类型�?
-        - 对paragraph/list/table/callout等结构抽取嵌套文本；
-        - 仅用于粗粒度判断篇幅是否合理�?
+        - å¿½ç¥heading/divider/widgetç­éæ­£æç±»åï¼?
+        - å¯¹paragraph/list/table/calloutç­ç»ææ½ååµå¥ææ¬ï¼
+        - ä»ç¨äºç²ç²åº¦å¤æ­ç¯å¹æ¯å¦åç
 
-        参数:
-            blocks: 章节�?blocks 列表或子树�?
+        åæ°:
+            blocks: ç« èç?blocks åè¡¨æå­æ 
 
-        返回:
-            int: 估算的正文字符数量�?
+        è¿å:
+            int: ä¼°ç®çæ­£æå­ç¬¦æ°é
         """
 
         def walk(node: Any) -> int:
-            """递归下钻block树并返回字符估算，跳过非正文类型"""
+            """éå½ä¸é»blockæ å¹¶è¿åå­ç¬¦ä¼°ç®ï¼è·³è¿éæ­£æç±»å"""
             if node is None:
                 return 0
             if isinstance(node, list):
@@ -1226,11 +1226,11 @@ class ChapterGenerationNode(BaseNode):
 
     def _count_narrative_characters(self, blocks: Any) -> int:
         """
-        统计paragraph/callout/list/blockquote/engineQuote等叙述性结构的字符数，避免被表�?图表“刷长”�?
+        ç»è®¡paragraph/callout/list/blockquote/engineQuoteç­åè¿°æ§ç»æçå­ç¬¦æ°ï¼é¿åè¢«è¡¨æ ?å¾è¡¨"å·é¿"
         """
 
         def walk(node: Any) -> int:
-            """递归遍历叙述性节点，忽略图表/目录等非正文结构"""
+            """éå½éååè¿°æ§èç¹ï¼å¿½ç¥å¾è¡¨/ç®å½ç­éæ­£æç»æ"""
             if node is None:
                 return 0
             if isinstance(node, list):
@@ -1251,7 +1251,7 @@ class ChapterGenerationNode(BaseNode):
             if block_type in {"callout", "blockquote", "engineQuote"}:
                 return walk(node.get("blocks"))
 
-            # list项可能是匿名dict，兼容性遍�?
+            # listé¡¹å¯è½æ¯å¿ådictï¼å¼å®¹æ§éå?
             if block_type is None:
                 nested = node.get("blocks")
                 if isinstance(nested, list):
@@ -1261,7 +1261,7 @@ class ChapterGenerationNode(BaseNode):
         return walk(blocks)
 
     def _estimate_paragraph_characters(self, block: Dict[str, Any]) -> int:
-        """提取paragraph文本长度，复用在多种统计中�?""
+        """æåparagraphææ¬é¿åº¦ï¼å¤ç¨å¨å¤ç§ç»è®¡ä¸­""
         inlines = block.get("inlines")
         if isinstance(inlines, list):
             total = 0
@@ -1277,7 +1277,7 @@ class ChapterGenerationNode(BaseNode):
         return len(self._extract_block_text(block).strip())
 
     def _sanitize_block_content(self, block: Dict[str, Any]):
-        """根据类型做精细化修复，例如清理paragraph内的非法inline mark"""
+        """æ ¹æ®ç±»ååç²¾ç»åä¿®å¤ï¼ä¾å¦æ¸çparagraphåçéæ³inline mark"""
         block_type = block.get("type")
         if block_type == "paragraph":
             self._normalize_paragraph_block(block)
@@ -1287,40 +1287,40 @@ class ChapterGenerationNode(BaseNode):
             self._sanitize_engine_quote_block(block)
 
     def _sanitize_table_block(self, block: Dict[str, Any]):
-        """保证表格的rows/cells结构合法且每个单元格包含至少一个block"""
+        """ä¿è¯è¡¨æ ¼çrows/cellsç»æåæ³ä¸æ¯ä¸ªååæ ¼åå«è³å°ä¸ä¸ªblock"""
         raw_rows = block.get("rows")
-        # 先检测是否存在嵌套行结构问题（只�?行但cells中有嵌套�?
+        # åæ£æµæ¯å¦å­å¨åµå¥è¡ç»æé®é¢ï¼åªæ?è¡ä½cellsä¸­æåµå¥ï¼?
         if isinstance(raw_rows, list) and len(raw_rows) == 1:
             first_row = raw_rows[0]
             if isinstance(first_row, dict):
                 cells = first_row.get("cells", [])
-                # 检测是否存在嵌套结�?
+                # æ£æµæ¯å¦å­å¨åµå¥ç»æ?
                 has_nested = any(
                     isinstance(cell, dict) and "cells" in cell and "blocks" not in cell
                     for cell in cells
                     if isinstance(cell, dict)
                 )
                 if has_nested:
-                    # 修复嵌套行结�?
+                    # ä¿®å¤åµå¥è¡ç»æ?
                     fixed_rows = self._fix_nested_rows_structure(raw_rows)
                     block["rows"] = fixed_rows
                     return
-        # 正常情况下，使用标准规范�?
+        # æ­£å¸¸æåµä¸ï¼ä½¿ç¨æ åè§èå?
         rows = self._normalize_table_rows(raw_rows)
         block["rows"] = rows
 
     def _fix_nested_rows_structure(self, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        修复嵌套错误的表格行结构�?
+        ä¿®å¤åµå¥éè¯¯çè¡¨æ ¼è¡ç»æ
 
-        当LLM生成的表格只�?行但所有数据被嵌套在cells中时�?
-        本方法会展平所有单元格并重新组织成正确的多行结构�?
+        å½LLMçæçè¡¨æ ¼åªæ?è¡ä½æææ°æ®è¢«åµå¥å¨cellsä¸­æ¶ï¼?
+        æ¬æ¹æ³ä¼å±å¹³ææååæ ¼å¹¶éæ°ç»ç»ææ­£ç¡®çå¤è¡ç»æ
 
-        参数:
-            rows: 原始的表格行数组（应该只�?行）�?
+        åæ°:
+            rows: åå§çè¡¨æ ¼è¡æ°ç»ï¼åºè¯¥åªæ?è¡ï¼
 
-        返回:
-            List[Dict]: 修复后的多行表格结构�?
+        è¿å:
+            List[Dict]: ä¿®å¤åçå¤è¡è¡¨æ ¼ç»æ
         """
         if not rows or len(rows) != 1:
             return self._normalize_table_rows(rows)
@@ -1328,13 +1328,13 @@ class ChapterGenerationNode(BaseNode):
         first_row = rows[0]
         original_cells = first_row.get("cells", [])
 
-        # 递归展平所有嵌套的单元�?
+        # éå½å±å¹³ææåµå¥çååæ ?
         all_cells = self._flatten_all_cells_recursive(original_cells)
 
         if len(all_cells) <= 1:
             return self._normalize_table_rows(rows)
 
-        # 辅助函数：获取单元格文本
+        # è¾å©å½æ°ï¼è·åååæ ¼ææ¬
         def _get_cell_text(cell: Dict[str, Any]) -> str:
             blocks = cell.get("blocks", [])
             for block in blocks:
@@ -1348,12 +1348,12 @@ class ChapterGenerationNode(BaseNode):
             return ""
 
         def _is_placeholder_cell(cell: Dict[str, Any]) -> bool:
-            """判断单元格是否是占位�?""
+            """å¤æ­ååæ ¼æ¯å¦æ¯å ä½ç¬?""
             text = _get_cell_text(cell)
-            return text in ("--", "-", "�?, "—�?, "", "N/A", "n/a")
+            return text in ("--", "-", "â?, "-â?, "", "N/A", "n/a")
 
         def _is_header_cell(cell: Dict[str, Any]) -> bool:
-            """判断单元格是否像表头（通常有加粗标记或是典型表头词�?""
+            """å¤æ­ååæ ¼æ¯å¦åè¡¨å¤´ï¼éå¸¸æå ç²æ è®°ææ¯å¸åè¡¨å¤´è¯ï¼?""
             blocks = cell.get("blocks", [])
             for block in blocks:
                 if isinstance(block, dict) and block.get("type") == "paragraph":
@@ -1363,25 +1363,25 @@ class ChapterGenerationNode(BaseNode):
                             marks = inline.get("marks", [])
                             if any(isinstance(m, dict) and m.get("type") == "bold" for m in marks):
                                 return True
-            # 也检查典型的表头�?
+            # ä¹æ£æ¥å¸åçè¡¨å¤´è¯?
             text = _get_cell_text(cell)
             header_keywords = {
-                "时间", "日期", "名称", "类型", "状�?, "数量", "金额", "比例", "指标",
-                "平台", "渠道", "来源", "描述", "说明", "备注", "序号", "编号",
-                "事件", "关键", "数据", "支撑", "反应", "市场", "情感", "节点",
-                "维度", "要点", "详情", "标签", "影响", "趋势", "权重", "类别",
-                "信息", "内容", "风格", "偏好", "主要", "用户", "核心", "特征",
-                "分类", "范围", "对象", "项目", "阶段", "周期", "频率", "等级",
+                "æ¶é´", "æ¥æ", "åç§°", "ç±»å", "ç¶æ?, "æ°é", "éé¢", "æ¯ä¾", "ææ ",
+                "å¹³å°", "æ¸ é", "æ¥æº", "æè¿°", "è¯´æ", "å¤æ³¨", "åºå·", "ç¼å·",
+                "äºä»¶", "å³é®", "æ°æ®", "æ¯æ", "ååº", "å¸åº", "ææ", "èç¹",
+                "ç»´åº¦", "è¦ç¹", "è¯¦æ", "æ ç­¾", "å½±å", "è¶å¿", "æé", "ç±»å«",
+                "ä¿¡æ¯", "åå®¹", "é£æ ¼", "åå¥½", "ä¸»è¦", "ç¨æ·", "æ ¸å¿", "ç¹å¾",
+                "åç±»", "èå´", "å¯¹è±¡", "é¡¹ç®", "é¶æ®µ", "å¨æ", "é¢ç", "ç­çº§",
             }
             return any(kw in text for kw in header_keywords) and len(text) <= 20
 
-        # 过滤掉占位符单元�?
+        # è¿æ»¤æå ä½ç¬¦ååæ ?
         valid_cells = [c for c in all_cells if not _is_placeholder_cell(c)]
 
         if len(valid_cells) <= 1:
             return self._normalize_table_rows(rows)
 
-        # 检测表头列数：统计连续的表头单元格数量
+        # æ£æµè¡¨å¤´åæ°ï¼ç»è®¡è¿ç»­çè¡¨å¤´ååæ ¼æ°é
         header_count = 0
         for cell in valid_cells:
             if _is_header_cell(cell):
@@ -1389,7 +1389,7 @@ class ChapterGenerationNode(BaseNode):
             else:
                 break
 
-        # 如果没有检测到表头，使用启发式方法
+        # å¦ææ²¡ææ£æµå°è¡¨å¤´ï¼ä½¿ç¨å¯åå¼æ¹æ³
         if header_count == 0:
             total = len(valid_cells)
             for possible_cols in [4, 5, 3, 6, 2]:
@@ -1397,31 +1397,31 @@ class ChapterGenerationNode(BaseNode):
                     header_count = possible_cols
                     break
             else:
-                # 尝试找到最接近的能整除的列�?
+                # å°è¯æ¾å°ææ¥è¿çè½æ´é¤çåæ?
                 for possible_cols in [4, 5, 3, 6, 2]:
                     remainder = total % possible_cols
                     if remainder <= 3:
                         header_count = possible_cols
                         break
                 else:
-                    # 无法确定列数，使用原始数�?
+                    # æ æ³ç¡®å®åæ°ï¼ä½¿ç¨åå§æ°æ?
                     return self._normalize_table_rows(rows)
 
-        # 计算有效的单元格数量
+        # è®¡ç®ææçååæ ¼æ°é
         total = len(valid_cells)
         remainder = total % header_count
         if remainder > 0 and remainder <= 3:
-            # 截断尾部多余的单元格
+            # æªæ­å°¾é¨å¤ä½çååæ ¼
             valid_cells = valid_cells[:total - remainder]
         elif remainder > 3:
-            # 余数太大，可能列数检测错�?
+            # ä½æ°å¤ªå¤§ï¼å¯è½åæ°æ£æµéè¯?
             return self._normalize_table_rows(rows)
 
-        # 重新组织成多�?
+        # éæ°ç»ç»æå¤è¡?
         fixed_rows: List[Dict[str, Any]] = []
         for i in range(0, len(valid_cells), header_count):
             row_cells = valid_cells[i:i + header_count]
-            # 标记第一行为表头
+            # æ è®°ç¬¬ä¸è¡ä¸ºè¡¨å¤´
             if i == 0:
                 for cell in row_cells:
                     cell["header"] = True
@@ -1431,13 +1431,13 @@ class ChapterGenerationNode(BaseNode):
 
     def _flatten_all_cells_recursive(self, cells: List[Any]) -> List[Dict[str, Any]]:
         """
-        递归展平所有嵌套的单元格结构�?
+        éå½å±å¹³ææåµå¥çååæ ¼ç»æ
 
-        参数:
-            cells: 可能包含嵌套结构的单元格数组�?
+        åæ°:
+            cells: å¯è½åå«åµå¥ç»æçååæ ¼æ°ç»
 
-        返回:
-            List[Dict]: 展平后的单元格数组，每个单元格都有blocks�?
+        è¿å:
+            List[Dict]: å±å¹³åçååæ ¼æ°ç»ï¼æ¯ä¸ªååæ ¼é½æblocks
         """
         if not cells:
             return []
@@ -1450,20 +1450,20 @@ class ChapterGenerationNode(BaseNode):
                     flattened.append({"blocks": [self._as_paragraph_block(str(cell_or_list))]})
                 return
 
-            # 如果当前对象�?blocks，说明它是一个有效的单元�?
+            # å¦æå½åå¯¹è±¡æ?blocksï¼è¯´æå®æ¯ä¸ä¸ªææçååæ ?
             if "blocks" in cell_or_list:
-                # 创建单元格副本，移除嵌套�?cells
+                # åå»ºååæ ¼å¯æ¬ï¼ç§»é¤åµå¥ç?cells
                 clean_cell = {
                     k: v for k, v in cell_or_list.items()
                     if k != "cells"
                 }
-                # 确保blocks有效
+                # ç¡®ä¿blocksææ
                 blocks = clean_cell.get("blocks")
                 if not isinstance(blocks, list) or not blocks:
                     clean_cell["blocks"] = [self._as_paragraph_block("")]
                 flattened.append(clean_cell)
 
-            # 如果当前对象有嵌套的 cells，递归处理
+            # å¦æå½åå¯¹è±¡æåµå¥ç cellsï¼éå½å¤ç
             nested_cells = cell_or_list.get("cells")
             if isinstance(nested_cells, list):
                 for nested_cell in nested_cells:
@@ -1475,7 +1475,7 @@ class ChapterGenerationNode(BaseNode):
         return flattened
 
     def _sanitize_engine_quote_block(self, block: Dict[str, Any]):
-        """engineQuote仅用于单Agent发言，内部仅允许paragraph且title需锁定Agent名称"""
+        """engineQuoteä»ç¨äºåAgentåè¨ï¼åé¨ä»åè®¸paragraphä¸titleééå®Agentåç§°"""
         engine_raw = block.get("engine")
         engine = engine_raw.lower() if isinstance(engine_raw, str) else None
         if engine not in ENGINE_AGENT_TITLES:
@@ -1527,7 +1527,7 @@ class ChapterGenerationNode(BaseNode):
         block["blocks"] = sanitized_blocks
 
     def _normalize_table_rows(self, rows: Any) -> List[Dict[str, Any]]:
-        """确保rows始终是由row对象组成的列�?""
+        """ç¡®ä¿rowså§ç»æ¯ç±rowå¯¹è±¡ç»æçåè¡?""
         if rows is None:
             rows_iterable: List[Any] = []
         elif isinstance(rows, list):
@@ -1546,7 +1546,7 @@ class ChapterGenerationNode(BaseNode):
         return normalized_rows
 
     def _normalize_table_row(self, row: Any) -> Dict[str, Any] | None:
-        """将各种行表达统一成{'cells': [...]}结构"""
+        """å°åç§è¡è¡¨è¾¾ç»ä¸æ{'cells': [...]}ç»æ"""
         if row is None:
             return None
         if isinstance(row, dict):
@@ -1563,7 +1563,7 @@ class ChapterGenerationNode(BaseNode):
         return result
 
     def _normalize_table_cells(self, cells: Any) -> List[Dict[str, Any]]:
-        """清洗单元格，保证每个cell下都有非空blocks"""
+        """æ¸æ´ååæ ¼ï¼ä¿è¯æ¯ä¸ªcellä¸é½æéç©ºblocks"""
         if cells is None:
             cell_entries: List[Any] = []
         elif isinstance(cells, list):
@@ -1573,8 +1573,8 @@ class ChapterGenerationNode(BaseNode):
 
         normalized_cells: List[Dict[str, Any]] = []
         for cell in cell_entries:
-            # 检测错误嵌套的 cells 结构：有 cells 但没�?blocks
-            # 需要展平成多个独立�?cells
+            # æ£æµéè¯¯åµå¥ç cells ç»æï¼æ cells ä½æ²¡æ?blocks
+            # éè¦å±å¹³æå¤ä¸ªç¬ç«ç?cells
             if isinstance(cell, dict) and "cells" in cell and "blocks" not in cell:
                 flattened = self._flatten_all_nested_cells(cell)
                 normalized_cells.extend(flattened)
@@ -1587,9 +1587,9 @@ class ChapterGenerationNode(BaseNode):
 
     def _flatten_all_nested_cells(self, cell: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        展平错误嵌套�?cells 结构，返回所有展平后�?cells�?
+        å±å¹³éè¯¯åµå¥ç?cells ç»æï¼è¿åææå±å¹³åç?cells
 
-        LLM 有时会生成类似这样的错误结构�?
+        LLM ææ¶ä¼çæç±»ä¼¼è¿æ ·çéè¯¯ç»æï¼?
         { "cells": [
             { "blocks": [...] },
             { "cells": [
@@ -1600,7 +1600,7 @@ class ChapterGenerationNode(BaseNode):
           ]
         }
 
-        应该展平为独立的 cells 列表�?
+        åºè¯¥å±å¹³ä¸ºç¬ç«ç cells åè¡¨
         """
         nested_cells = cell.get("cells")
         if not isinstance(nested_cells, list) or not nested_cells:
@@ -1610,15 +1610,15 @@ class ChapterGenerationNode(BaseNode):
         for nested in nested_cells:
             if isinstance(nested, dict):
                 if "blocks" in nested and "cells" not in nested:
-                    # 正常�?cell，直接规范化添加
+                    # æ­£å¸¸ç?cellï¼ç´æ¥è§èåæ·»å 
                     sanitized = self._normalize_table_cell(nested)
                     if sanitized:
                         result.append(sanitized)
                 elif "cells" in nested and "blocks" not in nested:
-                    # 继续递归展平嵌套�?cells
+                    # ç»§ç»­éå½å±å¹³åµå¥ç?cells
                     result.extend(self._flatten_all_nested_cells(nested))
                 else:
-                    # 其他情况，尝试规范化
+                    # å¶ä»æåµï¼å°è¯è§èå
                     sanitized = self._normalize_table_cell(nested)
                     if sanitized:
                         result.append(sanitized)
@@ -1628,16 +1628,16 @@ class ChapterGenerationNode(BaseNode):
         return result if result else [{"blocks": [self._as_paragraph_block("")]}]
 
     def _normalize_table_cell(self, cell: Any) -> Dict[str, Any] | None:
-        """把各种单元格写法规整为schema认可的形�?""
+        """æåç§ååæ ¼åæ³è§æ´ä¸ºschemaè®¤å¯çå½¢å¼?""
         if cell is None:
             return {"blocks": [self._as_paragraph_block("")]}
 
         if isinstance(cell, dict):
-            # 检测错误嵌套的 cells 结构：有 cells 但没�?blocks
-            # 这是 LLM 常见的错误，把同�?cell 嵌套进了 cells 数组
+            # æ£æµéè¯¯åµå¥ç cells ç»æï¼æ cells ä½æ²¡æ?blocks
+            # è¿æ¯ LLM å¸¸è§çéè¯¯ï¼æåçº?cell åµå¥è¿äº cells æ°ç»
             if "cells" in cell and "blocks" not in cell:
-                # 展平嵌套�?cells 并返回第一个有�?cell
-                # 注意：其余嵌套的 cells 会在 _normalize_table_cells 中被处理
+                # å±å¹³åµå¥ç?cells å¹¶è¿åç¬¬ä¸ä¸ªææ?cell
+                # æ³¨æï¼å¶ä½åµå¥ç cells ä¼å¨ _normalize_table_cells ä¸­è¢«å¤ç
                 return self._flatten_nested_cell(cell)
 
             normalized = dict(cell)
@@ -1657,31 +1657,31 @@ class ChapterGenerationNode(BaseNode):
 
     def _flatten_nested_cell(self, cell: Dict[str, Any]) -> Dict[str, Any]:
         """
-        展平错误嵌套�?cell 结构�?
+        å±å¹³éè¯¯åµå¥ç?cell ç»æ
 
-        LLM 有时会生成类似这样的错误结构�?
+        LLM ææ¶ä¼çæç±»ä¼¼è¿æ ·çéè¯¯ç»æï¼?
         { "cells": [ { "blocks": [...] }, { "cells": [...] } ] }
 
-        应该返回第一个有效的 cell 内容�?
+        åºè¯¥è¿åç¬¬ä¸ä¸ªææç cell åå®¹
         """
         nested_cells = cell.get("cells")
         if not isinstance(nested_cells, list) or not nested_cells:
-            # 没有有效的嵌套内容，返回�?cell
+            # æ²¡æææçåµå¥åå®¹ï¼è¿åç©?cell
             return {"blocks": [self._as_paragraph_block("")]}
 
-        # 递归查找第一个包�?blocks 的有�?cell
+        # éå½æ¥æ¾ç¬¬ä¸ä¸ªåå?blocks çææ?cell
         for nested in nested_cells:
             if isinstance(nested, dict):
                 if "blocks" in nested:
-                    # 找到有效 cell，递归规范�?
+                    # æ¾å°ææ cellï¼éå½è§èå?
                     return self._normalize_table_cell(nested)
                 elif "cells" in nested:
-                    # 继续递归展平
+                    # ç»§ç»­éå½å±å¹³
                     result = self._flatten_nested_cell(nested)
                     if result:
                         return result
 
-        # 没有找到有效内容，尝试从第一个嵌套元素提取文�?
+        # æ²¡ææ¾å°ææåå®¹ï¼å°è¯ä»ç¬¬ä¸ä¸ªåµå¥åç´ æåææ?
         first_nested = nested_cells[0]
         if isinstance(first_nested, dict):
             text = self._extract_block_text(first_nested)
@@ -1692,7 +1692,7 @@ class ChapterGenerationNode(BaseNode):
     def _coerce_cell_blocks(
         self, blocks: Any, source: Dict[str, Any] | None
     ) -> List[Dict[str, Any]]:
-        """将cell.blocks字段强制转换为合法的block数组"""
+        """å°cell.blockså­æ®µå¼ºå¶è½¬æ¢ä¸ºåæ³çblockæ°ç»"""
         if isinstance(blocks, list):
             entries = blocks
         elif blocks is None:
@@ -1722,11 +1722,11 @@ class ChapterGenerationNode(BaseNode):
         return [self._as_paragraph_block(text_hint or "--")]
 
     def _build_default_table_cell(self) -> Dict[str, Any]:
-        """生成一个最小可渲染的空白单元格"""
+        """çæä¸ä¸ªæå°å¯æ¸²æçç©ºç½ååæ ¼"""
         return {"blocks": [self._as_paragraph_block("--")]}
 
     def _normalize_paragraph_block(self, block: Dict[str, Any]):
-        """将paragraph的inlines统一规整，剔除非法marks"""
+        """å°paragraphçinlinesç»ä¸è§æ´ï¼åé¤éæ³marks"""
         inlines = block.get("inlines")
         normalized_runs: List[Dict[str, Any]] = []
         if isinstance(inlines, list) and inlines:
@@ -1739,7 +1739,7 @@ class ChapterGenerationNode(BaseNode):
         block["inlines"] = self._strip_inline_artifacts(normalized_runs)
 
     def _strip_inline_artifacts(self, inlines: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """移除被LLM误写入的JSON哨兵文本，防止渲染出`{\"type\": \"\"}`等垃圾字�?""
+        """ç§»é¤è¢«LLMè¯¯åå¥çJSONå¨åµææ¬ï¼é²æ­¢æ¸²æåº`{\"type\": \"\"}`ç­åå¾å­ç¬?""
         cleaned: List[Dict[str, Any]] = []
         for run in inlines or []:
             if not isinstance(run, dict):
@@ -1758,7 +1758,7 @@ class ChapterGenerationNode(BaseNode):
         return cleaned or [self._as_inline_run("")]
 
     def _merge_fragment_sequences(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """合并被LLM拆成多段的句子片段，避免HTML出现大量孤立<p>"""
+        """åå¹¶è¢«LLMææå¤æ®µçå¥å­çæ®µï¼é¿åHTMLåºç°å¤§éå­¤ç«<p>"""
         if not isinstance(blocks, list):
             return blocks
 
@@ -1766,7 +1766,7 @@ class ChapterGenerationNode(BaseNode):
         fragment_buffer: List[Dict[str, Any]] = []
 
         def flush_buffer():
-            """将当前片段缓冲写入merged列表，必要时合并为单段paragraph"""
+            """å°å½åçæ®µç¼å²åå¥mergedåè¡¨ï¼å¿è¦æ¶åå¹¶ä¸ºåæ®µparagraph"""
             nonlocal fragment_buffer
             if not fragment_buffer:
                 return
@@ -1777,16 +1777,16 @@ class ChapterGenerationNode(BaseNode):
             fragment_buffer = []
 
         for block in blocks:
-            # 类型检查：跳过非字典类型的异常 block，避�?AttributeError
+            # ç±»åæ£æ¥ï¼è·³è¿éå­å¸ç±»åçå¼å¸¸ blockï¼é¿å?AttributeError
             if not isinstance(block, dict):
-                # 尝试将非字典类型转换�?paragraph
+                # å°è¯å°éå­å¸ç±»åè½¬æ¢ä¸?paragraph
                 if isinstance(block, str) and block.strip():
                     converted = self._as_paragraph_block(block)
-                    logger.warning(f"检测到非字典类型的 block（字符串），已转换为 paragraph: {block[:50]}...")
+                    logger.warning(f"æ£æµå°éå­å¸ç±»åç blockï¼å­ç¬¦ä¸²ï¼ï¼å·²è½¬æ¢ä¸º paragraph: {block[:50]}...")
                     merged.append(converted)
                 elif isinstance(block, list):
-                    # 列表类型�?block 可能�?LLM 输出错误，尝试提取有效内�?
-                    logger.warning(f"检测到列表类型�?block，尝试提取有效内�? {block}")
+                    # åè¡¨ç±»åç?block å¯è½æ?LLM è¾åºéè¯¯ï¼å°è¯æåææåå®?
+                    logger.warning(f"æ£æµå°åè¡¨ç±»åç?blockï¼å°è¯æåææåå®? {block}")
                     for item in block:
                         if isinstance(item, dict):
                             self._ensure_block_type(item)
@@ -1794,7 +1794,7 @@ class ChapterGenerationNode(BaseNode):
                         elif isinstance(item, str) and item.strip():
                             merged.append(self._as_paragraph_block(item))
                 else:
-                    logger.warning(f"跳过无效�?block（类�? {type(block).__name__}�? {block}")
+                    logger.warning(f"è·³è¿æ æç?blockï¼ç±»å? {type(block).__name__}ï¼? {block}")
                 continue
             if self._is_paragraph_fragment(block):
                 fragment_buffer.append(block)
@@ -1806,23 +1806,23 @@ class ChapterGenerationNode(BaseNode):
         return merged
 
     def _merge_nested_fragments(self, block: Dict[str, Any]) -> Dict[str, Any]:
-        """对嵌套结构（callout/blockquote/engineQuote/list/table）递归处理片段合并"""
-        # 类型检查：确保 block 是字典类�?
+        """å¯¹åµå¥ç»æï¼callout/blockquote/engineQuote/list/tableï¼éå½å¤ççæ®µåå¹¶"""
+        # ç±»åæ£æ¥ï¼ç¡®ä¿ block æ¯å­å¸ç±»å?
         if not isinstance(block, dict):
-            # 尝试将非字典类型转换�?paragraph
+            # å°è¯å°éå­å¸ç±»åè½¬æ¢ä¸?paragraph
             if isinstance(block, str) and block.strip():
-                logger.warning(f"_merge_nested_fragments 收到字符串类型，已转换为 paragraph")
+                logger.warning(f"_merge_nested_fragments æ¶å°å­ç¬¦ä¸²ç±»åï¼å·²è½¬æ¢ä¸º paragraph")
                 return self._as_paragraph_block(block)
             elif isinstance(block, list):
-                # 尝试提取列表中的第一个有效字�?
+                # å°è¯æååè¡¨ä¸­çç¬¬ä¸ä¸ªææå­å?
                 for item in block:
                     if isinstance(item, dict):
                         self._ensure_block_type(item)
                         return self._merge_nested_fragments(item)
-                logger.warning(f"_merge_nested_fragments 收到无效列表，返回空 paragraph")
+                logger.warning(f"_merge_nested_fragments æ¶å°æ æåè¡¨ï¼è¿åç©º paragraph")
                 return self._as_paragraph_block("")
             else:
-                logger.warning(f"_merge_nested_fragments 收到无效类型（{type(block).__name__}），返回�?paragraph")
+                logger.warning(f"_merge_nested_fragments æ¶å°æ æç±»åï¼{type(block).__name__}ï¼ï¼è¿åç©?paragraph")
                 return self._as_paragraph_block("")
 
         block_type = block.get("type")
@@ -1851,7 +1851,7 @@ class ChapterGenerationNode(BaseNode):
         return block
 
     def _combine_paragraph_fragments(self, fragments: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """将多个句子片段合并为单个paragraph block"""
+        """å°å¤ä¸ªå¥å­çæ®µåå¹¶ä¸ºåä¸ªparagraph block"""
         template = dict(fragments[0])
         combined_inlines: List[Dict[str, Any]] = []
         for fragment in fragments:
@@ -1867,7 +1867,7 @@ class ChapterGenerationNode(BaseNode):
         return template
 
     def _is_paragraph_fragment(self, block: Dict[str, Any]) -> bool:
-        """判断paragraph是否为被错误拆分的短片段"""
+        """å¤æ­paragraphæ¯å¦ä¸ºè¢«éè¯¯æåçç­çæ®µ"""
         if not isinstance(block, dict) or block.get("type") != "paragraph":
             return False
         inlines = block.get("inlines")
@@ -1908,7 +1908,7 @@ class ChapterGenerationNode(BaseNode):
         return True
 
     def _coerce_inline_run(self, run: Any) -> List[Dict[str, Any]]:
-        """将任意inline写法规整为合法run"""
+        """å°ä»»æinlineåæ³è§æ´ä¸ºåæ³run"""
         if isinstance(run, dict):
             normalized_run = dict(run)
             text = normalized_run.get("text")
@@ -1931,7 +1931,7 @@ class ChapterGenerationNode(BaseNode):
         return [self._as_inline_run("" if run is None else str(run))]
 
     def _sanitize_inline_marks(self, marks: Any) -> Tuple[List[Dict[str, Any]], str]:
-        """过滤非法marks并将break类控制符转成文本"""
+        """è¿æ»¤éæ³markså¹¶å°breakç±»æ§å¶ç¬¦è½¬æææ¬"""
         text_suffix = ""
         if marks is None:
             return [], text_suffix
@@ -1946,7 +1946,7 @@ class ChapterGenerationNode(BaseNode):
         return sanitized, text_suffix
 
     def _normalize_inline_mark(self, mark: Any) -> Tuple[Dict[str, Any] | None, str]:
-        """对单个mark做兼容映射，或者在必要时转换为文本"""
+        """å¯¹åä¸ªmarkåå¼å®¹æ å°ï¼æèå¨å¿è¦æ¶è½¬æ¢ä¸ºææ¬"""
         if not isinstance(mark, dict):
             return None, ""
         canonical_type = self._canonical_inline_mark_type(mark.get("type"))
@@ -1959,7 +1959,7 @@ class ChapterGenerationNode(BaseNode):
         return None, ""
 
     def _canonical_inline_mark_type(self, mark_type: Any) -> str | None:
-        """将mark type映射为Schema所支持的取�?""
+        """å°mark typeæ å°ä¸ºSchemaææ¯æçåå?""
         if not isinstance(mark_type, str):
             return None
         normalized = mark_type.strip()
@@ -1971,7 +1971,7 @@ class ChapterGenerationNode(BaseNode):
         return self._INLINE_MARK_ALIASES.get(lowered, lowered)
 
     def _extract_block_text(self, block: Dict[str, Any]) -> str:
-        """优先从text/content等字段提取fallback文本"""
+        """ä¼åä»text/contentç­å­æ®µæåfallbackææ¬"""
         for key in ("text", "content", "value", "title"):
             value = block.get(key)
             if isinstance(value, str):
@@ -1980,9 +1980,9 @@ class ChapterGenerationNode(BaseNode):
                 return str(value)
         return ""
 
-    # 合法�?listType �?
+    # åæ³ç?listType å?
     _ALLOWED_LIST_TYPES = {"ordered", "bullet", "task"}
-    # listType 的别名映�?
+    # listType çå«åæ å°?
     _LIST_TYPE_ALIASES = {
         "unordered": "bullet",
         "ul": "bullet",
@@ -1995,29 +1995,29 @@ class ChapterGenerationNode(BaseNode):
 
     def _normalize_list_type(self, block: Dict[str, Any]):
         """
-        确保 list block �?listType 是合法值�?
+        ç¡®ä¿ list block ç?listType æ¯åæ³å¼
 
-        如果 listType 缺失或非法，自动修复�?bullet�?
+        å¦æ listType ç¼ºå¤±æéæ³ï¼èªå¨ä¿®å¤ä¸?bullet
         """
         list_type = block.get("listType")
         if list_type in self._ALLOWED_LIST_TYPES:
             return
-        # 尝试别名映射
+        # å°è¯å«åæ å°
         if isinstance(list_type, str):
             lowered = list_type.strip().lower()
             if lowered in self._LIST_TYPE_ALIASES:
                 block["listType"] = self._LIST_TYPE_ALIASES[lowered]
-                logger.warning(f"已将 listType '{list_type}' 映射�?'{block['listType']}'")
+                logger.warning(f"å·²å° listType '{list_type}' æ å°ä¸?'{block['listType']}'")
                 return
             if lowered in self._ALLOWED_LIST_TYPES:
                 block["listType"] = lowered
                 return
-        # 无法识别，默认使�?bullet
-        logger.warning(f"检测到非法 listType: {list_type}，已修复�?bullet")
+        # æ æ³è¯å«ï¼é»è®¤ä½¿ç?bullet
+        logger.warning(f"æ£æµå°éæ³ listType: {list_type}ï¼å·²ä¿®å¤ä¸?bullet")
         block["listType"] = "bullet"
 
     def _normalize_list_items(self, items: Any) -> List[List[Dict[str, Any]]]:
-        """确保list block的items为[[block, block], ...]结构"""
+        """ç¡®ä¿list blockçitemsä¸º[[block, block], ...]ç»æ"""
         if not isinstance(items, list):
             return []
         normalized: List[List[Dict[str, Any]]] = []
@@ -2026,7 +2026,7 @@ class ChapterGenerationNode(BaseNode):
         return [entry for entry in normalized if entry]
 
     def _coerce_list_item(self, item: Any) -> List[List[Dict[str, Any]]]:
-        """将各种嵌套写法统一折算为区块数�?""
+        """å°åç§åµå¥åæ³ç»ä¸æç®ä¸ºåºåæ°ç»?""
         result: List[List[Dict[str, Any]]] = []
         if isinstance(item, dict):
             self._ensure_block_type(item)
@@ -2054,7 +2054,7 @@ class ChapterGenerationNode(BaseNode):
         return result
 
     def _normalize_widget_block(self, block: Dict[str, Any]):
-        """确保widget具备顶层data或dataRef"""
+        """ç¡®ä¿widgetå·å¤é¡¶å±dataædataRef"""
         has_data = block.get("data") is not None or block.get("dataRef") is not None
         if has_data:
             return
@@ -2065,7 +2065,7 @@ class ChapterGenerationNode(BaseNode):
         block["data"] = {"labels": [], "datasets": []}
 
     def _ensure_block_type(self, block: Dict[str, Any]):
-        """若block缺少合法type，则降级为paragraph"""
+        """è¥blockç¼ºå°åæ³typeï¼åéçº§ä¸ºparagraph"""
         block_type = block.get("type")
         if isinstance(block_type, str) and block_type in ALLOWED_BLOCK_TYPES:
             return
@@ -2086,7 +2086,7 @@ class ChapterGenerationNode(BaseNode):
 
     @staticmethod
     def _as_paragraph_block(text: str) -> Dict[str, Any]:
-        """将字符串快速包装成paragraph block，方便统一处理"""
+        """å°å­ç¬¦ä¸²å¿«éåè£æparagraph blockï¼æ¹ä¾¿ç»ä¸å¤ç"""
         return {
             "type": "paragraph",
             "inlines": [ChapterGenerationNode._as_inline_run(text)],
@@ -2094,12 +2094,12 @@ class ChapterGenerationNode(BaseNode):
 
     @staticmethod
     def _as_inline_run(text: str) -> Dict[str, Any]:
-        """构造基础inline run，保证marks字段存在"""
+        """æé åºç¡inline runï¼ä¿è¯markså­æ®µå­å¨"""
         return {"text": text or "", "marks": []}
 
     @staticmethod
     def _parse_with_candidates(payloads: List[str]) -> Dict[str, Any]:
-        """按顺序尝试多个payload，直到解析成�?""
+        """æé¡ºåºå°è¯å¤ä¸ªpayloadï¼ç´å°è§£ææå?""
         last_exc: json.JSONDecodeError | None = None
         for payload in payloads:
             try:

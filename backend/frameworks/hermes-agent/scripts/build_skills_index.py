@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Hermes Skills Index �?a centralized JSON catalog of all skills.
+"""Build the Hermes Skills Index é¥?a centralized JSON catalog of all skills.
 
 This script crawls every skill source (skills.sh, GitHub taps, official,
 clawhub, lobehub, claude-marketplace) and writes a JSON index with resolved
@@ -140,7 +140,7 @@ def _fetch_repo_tree(repo: str, auth: GitHubAuth) -> list:
 def batch_resolve_paths(skills: list, auth: GitHubAuth) -> list:
     """Resolve GitHub paths for skills.sh entries using batch tree lookups.
 
-    Instead of resolving each skill individually (N×M API calls), we:
+    Instead of resolving each skill individually (Nè³M API calls), we:
     1. Group skills by repo
     2. Fetch one tree per repo (2 API calls per repo)
     3. Find all SKILL.md files in the tree
@@ -249,7 +249,7 @@ def main():
     auth = GitHubAuth()
     print(f"GitHub auth: {auth.auth_method()}")
     if auth.auth_method() == "anonymous":
-        print("WARNING: No GitHub authentication �?rate limit is 60/hr. "
+        print("WARNING: No GitHub authentication é¥?rate limit is 60/hr. "
               "Set GITHUB_TOKEN for better results.", file=sys.stderr)
 
     skills_sh_source = SkillsShSource(auth=auth)

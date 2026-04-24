@@ -1,11 +1,11 @@
 """Tests for Modal sandbox infrastructure fixes (TBLite baseline).
 
 Covers the bugs discovered while setting up TBLite evaluation:
-1. Tool resolution �?terminal + file tools load correctly
-2. CWD fix �?host paths get replaced with /root for container backends
+1. Tool resolution é¥?terminal + file tools load correctly
+2. CWD fix é¥?host paths get replaced with /root for container backends
 3. ephemeral_disk version check
 4. ensurepip fix in Modal image builder
-5. No swe-rex dependency �?uses native Modal SDK
+5. No swe-rex dependency é¥?uses native Modal SDK
 6. /home/ added to host prefix check
 """
 

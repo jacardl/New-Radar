@@ -2,7 +2,7 @@
 
 Prior to this check, the warning fired on any model whose name contained
 ``"hermes"`` anywhere (case-insensitive). That false-positived on unrelated
-local Modelfiles such as ``hermes-brain:qwen3-14b-ctx16k`` �?a tool-capable
+local Modelfiles such as ``hermes-brain:qwen3-14b-ctx16k`` é¥?a tool-capable
 Qwen3 wrapper that happens to live under the "hermes" tag namespace.
 
 ``is_nous_hermes_non_agentic`` should only match the actual Nous Research
@@ -46,7 +46,7 @@ def test_matches_real_nous_hermes_chat_models(model_name: str) -> None:
 @pytest.mark.parametrize(
     "model_name",
     [
-        # Kyle's local Modelfile �?qwen3:14b under a custom tag
+        # Kyle's local Modelfile é¥?qwen3:14b under a custom tag
         "hermes-brain:qwen3-14b-ctx16k",
         "hermes-brain:qwen3-14b-ctx32k",
         "hermes-honcho:qwen3-8b-ctx8k",

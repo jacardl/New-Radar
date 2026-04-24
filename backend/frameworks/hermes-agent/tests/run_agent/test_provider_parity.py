@@ -20,7 +20,7 @@ sys.modules.setdefault("fal_client", types.SimpleNamespace())
 from run_agent import AIAgent
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# -- Helpers ------------------------------------------------------------------
 
 def _tool_defs(*names):
     return [
@@ -63,7 +63,7 @@ def _make_agent(monkeypatch, provider, api_mode="chat_completions", base_url="ht
     return AIAgent(**kwargs)
 
 
-# ── _build_api_kwargs tests ─────────────────────────────────────────────────
+# -- _build_api_kwargs tests -------------------------------------------------
 
 class TestBuildApiKwargsOpenRouter:
     def test_uses_chat_completions_format(self, monkeypatch):
@@ -417,7 +417,7 @@ class TestBuildApiKwargsCodex:
         assert "function" not in tools[0]
 
 
-# ── Message conversion tests ────────────────────────────────────────────────
+# -- Message conversion tests ------------------------------------------------
 
 class TestChatMessagesToResponsesInput:
     """Verify _chat_messages_to_responses_input for Codex mode."""
@@ -500,7 +500,7 @@ class TestChatMessagesToResponsesInput:
         assert len(reasoning_items) == 0
 
 
-# ── Response normalization tests ─────────────────────────────────────────────
+# -- Response normalization tests ---------------------------------------------
 
 class TestNormalizeCodexResponse:
     """Verify _normalize_codex_response extracts all fields correctly."""
@@ -591,7 +591,7 @@ class TestNormalizeCodexResponse:
         assert msg.tool_calls[0].function.name == "web_search"
 
 
-# ── Chat completions response handling (OpenRouter/Nous) ─────────────────────
+# -- Chat completions response handling (OpenRouter/Nous) ---------------------
 
 class TestBuildAssistantMessage:
     """Verify _build_assistant_message works for all provider response formats."""
@@ -667,7 +667,7 @@ class TestBuildAssistantMessage:
         assert "codex_reasoning_items" not in result
 
 
-# ── Auxiliary client provider resolution ─────────────────────────────────────
+# -- Auxiliary client provider resolution -------------------------------------
 
 class TestAuxiliaryClientProviderPriority:
     """Verify auxiliary client resolution doesn't break for any provider."""
@@ -692,7 +692,7 @@ class TestAuxiliaryClientProviderPriority:
         """Custom endpoint is used when no OpenRouter/Nous keys are available.
 
         Since the March 2026 config refactor, OPENAI_BASE_URL env var is no
-        longer consulted �?base_url comes from config.yaml via
+        longer consulted â?base_url comes from config.yaml via
         resolve_runtime_provider.  Mock _resolve_custom_runtime directly.
         """
         monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
@@ -718,7 +718,7 @@ class TestAuxiliaryClientProviderPriority:
         assert isinstance(client, CodexAuxiliaryClient)
 
 
-# ── Provider routing tests ───────────────────────────────────────────────────
+# -- Provider routing tests ---------------------------------------------------
 
 class TestProviderRouting:
     """Verify provider_routing config flows into extra_body.provider."""
@@ -787,7 +787,7 @@ class TestProviderRouting:
         assert "provider" not in kwargs or kwargs.get("provider") is None
 
 
-# ── Codex reasoning items preflight tests ────────────────────────────────────
+# -- Codex reasoning items preflight tests ------------------------------------
 
 class TestCodexReasoningPreflight:
     """Verify reasoning items pass through preflight normalization."""
@@ -851,7 +851,7 @@ class TestCodexReasoningPreflight:
         assert reasoning_items[0]["encrypted_content"] == "enc123"
 
 
-# ── Reasoning effort consistency tests ───────────────────────────────────────
+# -- Reasoning effort consistency tests ---------------------------------------
 
 class TestReasoningEffortDefaults:
     """Verify reasoning effort defaults to medium across all provider paths."""

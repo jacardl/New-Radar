@@ -1,0 +1,54 @@
+Length: 260
+pos 18: '�' (ord=65533)
+pos 24: '一' (ord=19968)
+pos 25: '个' (ord=20010)
+pos 26: '智' (ord=26234)
+pos 27: '能' (ord=33021)
+pos 28: '报' (ord=25253)
+pos 29: '告' (ord=21578)
+pos 30: '生' (ord=29983)
+pos 31: '成' (ord=25104)
+pos 34: '代' (ord=20195)
+pos 35: '理' (ord=29702)
+pos 36: '实' (ord=23454)
+pos 37: '现' (ord=29616)
+pos 38: '，' (ord=65292)
+pos 39: '聚' (ord=32858)
+pos 40: '�' (ord=65533)
+pos 62: '三' (ord=19977)
+pos 63: '个' (ord=20010)
+pos 64: '子' (ord=23376)
+pos 65: '引' (ord=24341)
+pos 66: '擎' (ord=25806)
+pos 67: '的' (ord=30340)
+pos 79: '与' (ord=19982)
+pos 80: '论' (ord=35770)
+pos 81: '坛' (ord=22363)
+pos 82: '讨' (ord=35752)
+pos 83: '论' (ord=35770)
+pos 84: '，' (ord=65292)
+pos 85: '最' (ord=26368)
+pos 86: '终' (ord=32456)
+pos 87: '落' (ord=33853)
+pos 88: '地' (ord=22320)
+pos 89: '结' (ord=32467)
+pos 90: '构' (ord=26500)
+pos 91: '化' (ord=21270)
+pos 96: '报' (ord=25253)
+pos 97: '告' (ord=21578)
+pos 98: '�' (ord=65533)
+
+Full text:
+"""
+Report Engine�?
+
+一个智能报告生成AI代理实现，聚�?Query/Media/Insight 三个子引擎的
+Markdown 与论坛讨论，最终落地结构化HTML报告�?
+"""
+
+from .agent import ReportAgent, create_agent
+
+__version__ = "1.0.0"
+__author__ = "Report Engine Team"
+
+__all__ = ["ReportAgent", "create_agent"]

@@ -1,7 +1,7 @@
 """Tests for config.get() null-coalescing in tool configuration.
 
 YAML ``null`` values (or ``~``) for a present key make ``dict.get(key, default)``
-return ``None`` instead of the default �?calling ``.lower()`` on that raises
+return ``None`` instead of the default â?calling ``.lower()`` on that raises
 ``AttributeError``.  These tests verify the ``or`` coalescing guards.
 """
 
@@ -9,10 +9,10 @@ from unittest.mock import patch
 import pytest
 
 
-# ── TTS tool ──────────────────────────────────────────────────────────────
+# -- TTS tool --------------------------------------------------------------
 
 class TestTTSProviderNullGuard:
-    """tools/tts_tool.py �?_get_provider()"""
+    """tools/tts_tool.py â?_get_provider()"""
 
     def test_explicit_null_provider_returns_default(self):
         """YAML ``tts: {provider: null}`` should fall back to default."""
@@ -35,17 +35,17 @@ class TestTTSProviderNullGuard:
         assert result == "openai"
 
 
-# ── Web tools ─────────────────────────────────────────────────────────────
+# -- Web tools -------------------------------------------------------------
 
 class TestWebBackendNullGuard:
-    """tools/web_tools.py �?_get_backend()"""
+    """tools/web_tools.py â?_get_backend()"""
 
     @patch("tools.web_tools._load_web_config", return_value={"backend": None})
     def test_explicit_null_backend_does_not_crash(self, _cfg):
         """YAML ``web: {backend: null}`` should not raise AttributeError."""
         from tools.web_tools import _get_backend
 
-        # Should not raise �?the exact return depends on env key fallback
+        # Should not raise â?the exact return depends on env key fallback
         result = _get_backend()
         assert isinstance(result, str)
 
@@ -57,14 +57,14 @@ class TestWebBackendNullGuard:
         assert isinstance(result, str)
 
 
-# ── MCP tool ──────────────────────────────────────────────────────────────
+# -- MCP tool --------------------------------------------------------------
 
 class TestMCPAuthNullGuard:
-    """tools/mcp_tool.py �?MCPServerTask.__init__() auth config line"""
+    """tools/mcp_tool.py â?MCPServerTask.__init__() auth config line"""
 
     def test_explicit_null_auth_does_not_crash(self):
         """YAML ``auth: null`` in MCP server config should not raise."""
-        # Test the expression directly �?MCPServerTask.__init__ has many deps
+        # Test the expression directly â?MCPServerTask.__init__ has many deps
         config = {"auth": None, "timeout": 30}
         auth_type = (config.get("auth") or "").lower().strip()
         assert auth_type == ""
@@ -80,10 +80,10 @@ class TestMCPAuthNullGuard:
         assert auth_type == "oauth"
 
 
-# ── Trajectory compressor ─────────────────────────────────────────────────
+# -- Trajectory compressor -------------------------------------------------
 
 class TestTrajectoryCompressorNullGuard:
-    """trajectory_compressor.py �?_detect_provider() and config loading"""
+    """trajectory_compressor.py â?_detect_provider() and config loading"""
 
     def test_null_base_url_does_not_crash(self):
         """base_url=None should not crash _detect_provider()."""

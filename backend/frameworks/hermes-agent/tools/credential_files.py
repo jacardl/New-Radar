@@ -5,10 +5,10 @@ This module ensures that credential files, skill directories, and host-side
 cache directories (documents, images, audio, screenshots) are mounted or
 synced into those sandboxes so the agent can access them.
 
-**Credentials and skills** �?session-scoped registry fed by skill declarations
+**Credentials and skills** é¥?session-scoped registry fed by skill declarations
 (``required_credential_files``) and user config (``terminal.credential_files``).
 
-**Cache directories** �?gateway-cached uploads, browser screenshots, TTS
+**Cache directories** é¥?gateway-cached uploads, browser screenshots, TTS
 audio, and processed images.  Mounted read-only so the remote terminal can
 reference files the host side created (e.g. ``unzip`` an uploaded archive).
 
@@ -68,7 +68,7 @@ def register_credential_file(
     """
     hermes_home = _resolve_hermes_home()
 
-    # Reject absolute paths �?they bypass the HERMES_HOME sandbox entirely.
+    # Reject absolute paths é¥?they bypass the HERMES_HOME sandbox entirely.
     if os.path.isabs(relative_path):
         logger.warning(
             "credential_files: rejected absolute path %r (must be relative to HERMES_HOME)",

@@ -40,12 +40,12 @@ class TestManagedServerAPI:
         assert "tokenizer" in params
         assert "track_tree" in params
 
-        # tool_call_parser �?required for tool_call_support branch
+        # tool_call_parser é¥?required for tool_call_support branch
         # If this fails, atroposlib hasn't been updated to tool_call_support
         has_tool_parser = "tool_call_parser" in params
         if not has_tool_parser:
             pytest.skip(
-                "ManagedServer does not have tool_call_parser param �?"
+                "ManagedServer does not have tool_call_parser param é¥?"
                 "baseline atroposlib (pre tool_call_support branch)"
             )
 
@@ -62,7 +62,7 @@ class TestManagedServerAPI:
         has_tool_parser = "tool_call_parser" in params
         if not has_tool_parser:
             pytest.skip(
-                "ServerManager.managed_server() does not have tool_call_parser param �?"
+                "ServerManager.managed_server() does not have tool_call_parser param é¥?"
                 "baseline atroposlib (pre tool_call_support branch)"
             )
 
@@ -72,7 +72,7 @@ class TestManagedServerAPI:
 
         if not hasattr(ManagedServer, "CHAT_TEMPLATE_KWARGS"):
             pytest.skip(
-                "ManagedServer does not have CHAT_TEMPLATE_KWARGS �?"
+                "ManagedServer does not have CHAT_TEMPLATE_KWARGS é¥?"
                 "baseline atroposlib (pre tool_call_support branch)"
             )
 
@@ -84,11 +84,11 @@ class TestManagedServerAPI:
         from atroposlib.envs.server_handling.managed_server import ManagedServer
 
         # In baseline, get_logprobs exists. In tool_call_support, it's removed.
-        # We just note the state �?not a hard fail either way.
+        # We just note the state é¥?not a hard fail either way.
         has_get_logprobs = hasattr(ManagedServer, "get_logprobs")
         if has_get_logprobs:
             pytest.skip(
-                "ManagedServer still has get_logprobs �?baseline atroposlib"
+                "ManagedServer still has get_logprobs é¥?baseline atroposlib"
             )
 
 
@@ -117,7 +117,7 @@ class TestParserCompatibility:
         assert hasattr(tc.function, "arguments")
 
     def test_parser_no_tools_returns_none(self):
-        """ManagedServer checks `if parsed_tool_calls:` �?None should be falsy."""
+        """ManagedServer checks `if parsed_tool_calls:` é¥?None should be falsy."""
         from environments.tool_call_parsers import get_parser
 
         parser = get_parser("hermes")
@@ -125,7 +125,7 @@ class TestParserCompatibility:
         assert tool_calls is None
 
     def test_parser_content_is_string_or_none(self):
-        """ManagedServer uses `parsed_content or ""` �?must be str or None."""
+        """ManagedServer uses `parsed_content or ""` é¥?must be str or None."""
         from environments.tool_call_parsers import get_parser
 
         parser = get_parser("hermes")

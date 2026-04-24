@@ -21,15 +21,15 @@ Actions:
 
 Directory layout for user skills:
     ~/.hermes/skills/
-    ├── my-skill/
-    �?  ├── SKILL.md
-    �?  ├── references/
-    �?  ├── templates/
-    �?  ├── scripts/
-    �?  └── assets/
-    └── category-name/
-        └── another-skill/
-            └── SKILL.md
+    â-- my-skill/
+    â?  â-- SKILL.md
+    â?  â-- references/
+    â?  â-- templates/
+    â?  â-- scripts/
+    â?  â-- assets/
+    â-- category-name/
+        â-- another-skill/
+            â-- SKILL.md
 """
 
 import json
@@ -44,7 +44,7 @@ from typing import Dict, Any, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Import security scanner �?agent-created skills get the same scrutiny as
+# Import security scanner â?agent-created skills get the same scrutiny as
 # community hub installs.
 try:
     from tools.skills_guard import scan_skill, should_allow_install, format_scan_report
@@ -64,10 +64,10 @@ def _security_scan_skill(skill_dir: Path) -> Optional[str]:
             report = format_scan_report(result)
             return f"Security scan blocked this skill ({reason}):\n{report}"
         if allowed is None:
-            # "ask" �?allow but include the warning so the user sees the findings
+            # "ask" â?allow but include the warning so the user sees the findings
             report = format_scan_report(result)
             logger.warning("Agent-created skill has security findings: %s", reason)
-            # Don't block �?return None to allow, but log the warning
+            # Don't block â?return None to allow, but log the warning
             return None
     except Exception as e:
         logger.warning("Security scan failed for %s: %s", skill_dir, e, exc_info=True)
@@ -325,7 +325,7 @@ def _create_skill(name: str, content: str, category: str = None) -> Dict[str, An
     skill_md = skill_dir / "SKILL.md"
     _atomic_write_text(skill_md, content)
 
-    # Security scan �?roll back on block
+    # Security scan â?roll back on block
     scan_error = _security_scan_skill(skill_dir)
     if scan_error:
         shutil.rmtree(skill_dir, ignore_errors=True)
@@ -365,7 +365,7 @@ def _edit_skill(name: str, content: str) -> Dict[str, Any]:
     original_content = skill_md.read_text(encoding="utf-8") if skill_md.exists() else None
     _atomic_write_text(skill_md, content)
 
-    # Security scan �?roll back on block
+    # Security scan â?roll back on block
     scan_error = _security_scan_skill(existing["path"])
     if scan_error:
         if original_content is not None:
@@ -421,7 +421,7 @@ def _patch_skill(
 
     # Use the same fuzzy matching engine as the file patch tool.
     # This handles whitespace normalization, indentation differences,
-    # escape sequences, and block-anchor matching �?saving the agent
+    # escape sequences, and block-anchor matching â?saving the agent
     # from exact-match failures on minor formatting mismatches.
     from tools.fuzzy_match import fuzzy_find_and_replace
 
@@ -455,7 +455,7 @@ def _patch_skill(
     original_content = content  # for rollback
     _atomic_write_text(target, new_content)
 
-    # Security scan �?roll back on block
+    # Security scan â?roll back on block
     scan_error = _security_scan_skill(skill_dir)
     if scan_error:
         _atomic_write_text(target, original_content)
@@ -523,7 +523,7 @@ def _write_file(name: str, file_path: str, file_content: str) -> Dict[str, Any]:
     original_content = target.read_text(encoding="utf-8") if target.exists() else None
     _atomic_write_text(target, file_content)
 
-    # Security scan �?roll back on block
+    # Security scan â?roll back on block
     scan_error = _security_scan_skill(existing["path"])
     if scan_error:
         if original_content is not None:
@@ -654,11 +654,11 @@ SKILL_MANAGE_SCHEMA = {
     "name": "skill_manage",
     "description": (
         "Manage skills (create, update, delete). Skills are your procedural "
-        "memory �?reusable approaches for recurring task types. "
+        "memory â?reusable approaches for recurring task types. "
         "New skills go to ~/.hermes/skills/; existing skills can be modified wherever they live.\n\n"
         "Actions: create (full SKILL.md + optional category), "
-        "patch (old_string/new_string �?preferred for fixes), "
-        "edit (full SKILL.md rewrite �?major overhauls only), "
+        "patch (old_string/new_string â?preferred for fixes), "
+        "edit (full SKILL.md rewrite â?major overhauls only), "
         "delete, write_file, remove_file.\n\n"
         "Create when: complex task succeeded (5+ calls), errors overcome, "
         "user-corrected approach worked, non-trivial workflow discovered, "
@@ -757,5 +757,5 @@ registry.register(
         old_string=args.get("old_string"),
         new_string=args.get("new_string"),
         replace_all=args.get("replace_all", False)),
-    emoji="📝",
+    emoji="ð",
 )

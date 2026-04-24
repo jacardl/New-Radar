@@ -11,28 +11,28 @@ from agent.subdirectory_hints import SubdirectoryHintTracker
 @pytest.fixture
 def project(tmp_path):
     """Create a mock project tree with hint files in subdirectories."""
-    # Root �?already loaded at startup
+    # Root é¥?already loaded at startup
     (tmp_path / "AGENTS.md").write_text("Root project instructions")
 
-    # backend/ �?has its own AGENTS.md
+    # backend/ é¥?has its own AGENTS.md
     backend = tmp_path / "backend"
     backend.mkdir()
     (backend / "AGENTS.md").write_text("Backend-specific instructions:\n- Use FastAPI\n- Always add type hints")
 
-    # backend/src/ �?no hints
+    # backend/src/ é¥?no hints
     (backend / "src").mkdir()
     (backend / "src" / "main.py").write_text("print('hello')")
 
-    # frontend/ �?has CLAUDE.md
+    # frontend/ é¥?has CLAUDE.md
     frontend = tmp_path / "frontend"
     frontend.mkdir()
     (frontend / "CLAUDE.md").write_text("Frontend rules:\n- Use TypeScript\n- No any types")
 
-    # docs/ �?no hints
+    # docs/ é¥?no hints
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "README.md").write_text("Documentation")
 
-    # deep/nested/path/ �?has .cursorrules
+    # deep/nested/path/ é¥?has .cursorrules
     deep = tmp_path / "deep" / "nested" / "path"
     deep.mkdir(parents=True)
     (deep / ".cursorrules").write_text("Cursor rules for nested path")
@@ -226,9 +226,9 @@ class TestPermissionErrorHandling:
                 raise PermissionError("Permission denied")
             return original_is_dir(self)
         with patch.object(Path, "is_dir", patched_is_dir):
-            # Should not raise �?gracefully skip the inaccessible directory
+            # Should not raise é¥?gracefully skip the inaccessible directory
             result = tracker.check_tool_call(
                 "read_file", {"path": str(project / "backend" / "src" / "main.py")}
             )
-            # Result may be None (backend skipped) �?the key point is no crash
+            # Result may be None (backend skipped) é¥?the key point is no crash
             assert result is None or isinstance(result, str)

@@ -792,7 +792,7 @@ class MCPServerTask:
         Called when the server sends ``notifications/tools/list_changed``.
         The lock prevents overlapping refreshes from rapid-fire notifications.
         After the initial ``await`` (list_tools), all mutations are synchronous
-        �?atomic from the event loop's perspective.
+        é¥?atomic from the event loop's perspective.
         """
         from tools.registry import registry, tool_error
         from toolsets import TOOLSETS
@@ -868,7 +868,7 @@ class MCPServerTask:
                 await self._discover_tools()
                 self._ready.set()
                 await self._shutdown_event.wait()
-        # Context exited cleanly �?subprocess was terminated by the SDK.
+        # Context exited cleanly é¥?subprocess was terminated by the SDK.
         if new_pids:
             with _lock:
                 _stdio_pids.difference_update(new_pids)
@@ -919,7 +919,7 @@ class MCPServerTask:
             if _oauth_auth is not None:
                 client_kwargs["auth"] = _oauth_auth
 
-            # Caller owns the client lifecycle �?the SDK skips cleanup when
+            # Caller owns the client lifecycle é¥?the SDK skips cleanup when
             # http_client is provided, so we wrap in async-with.
             async with httpx.AsyncClient(**client_kwargs) as http_client:
                 async with streamable_http_client(url, http_client=http_client) as (
@@ -1147,7 +1147,7 @@ def _mcp_loop_exception_handler(loop, context):
     """
     exc = context.get("exception")
     if isinstance(exc, RuntimeError) and "Event loop is closed" in str(exc):
-        return  # benign shutdown race �?suppress
+        return  # benign shutdown race é¥?suppress
     loop.default_exception_handler(context)
 
 
@@ -1631,7 +1631,7 @@ def _sync_mcp_toolsets(server_names: Optional[List[str]] = None) -> None:
         existing_ts = TOOLSETS.get(server_name)
         if existing_ts and not str(existing_ts.get("description", "")).startswith("MCP server '"):
             logger.warning(
-                "Skipping MCP toolset alias '%s' �?a built-in toolset already uses that name",
+                "Skipping MCP toolset alias '%s' é¥?a built-in toolset already uses that name",
                 server_name,
             )
             continue
@@ -1819,10 +1819,10 @@ def _register_server_tools(name: str, server: MCPServerTask, config: dict) -> Li
 
     # Selective tool loading: honour include/exclude lists from config.
     # Rules (matching issue #690 spec):
-    #   tools.include �?whitelist: only these tool names are registered
-    #   tools.exclude �?blacklist: all tools EXCEPT these are registered
+    #   tools.include é¥?whitelist: only these tool names are registered
+    #   tools.exclude é¥?blacklist: all tools EXCEPT these are registered
     #   include takes precedence over exclude
-    #   Neither set �?register all tools (backward-compatible default)
+    #   Neither set é«?register all tools (backward-compatible default)
     tools_filter = config.get("tools") or {}
     include_set = _normalize_name_filter(tools_filter.get("include"), f"mcp_servers.{name}.tools.include")
     exclude_set = _normalize_name_filter(tools_filter.get("exclude"), f"mcp_servers.{name}.tools.exclude")
@@ -1845,8 +1845,8 @@ def _register_server_tools(name: str, server: MCPServerTask, config: dict) -> Li
         existing_toolset = registry.get_toolset_for_tool(tool_name_prefixed)
         if existing_toolset and not existing_toolset.startswith("mcp-"):
             logger.warning(
-                "MCP server '%s': tool '%s' (�?'%s') collides with built-in "
-                "tool in toolset '%s' �?skipping to preserve built-in",
+                "MCP server '%s': tool '%s' (é«?'%s') collides with built-in "
+                "tool in toolset '%s' é¥?skipping to preserve built-in",
                 name, mcp_tool.name, tool_name_prefixed, existing_toolset,
             )
             continue
@@ -1882,7 +1882,7 @@ def _register_server_tools(name: str, server: MCPServerTask, config: dict) -> Li
         if existing_toolset and not existing_toolset.startswith("mcp-"):
             logger.warning(
                 "MCP server '%s': utility tool '%s' collides with built-in "
-                "tool in toolset '%s' �?skipping to preserve built-in",
+                "tool in toolset '%s' é¥?skipping to preserve built-in",
                 name, util_name, existing_toolset,
             )
             continue
@@ -2116,7 +2116,7 @@ def get_mcp_status() -> List[dict]:
 def probe_mcp_server_tools() -> Dict[str, List[tuple]]:
     """Temporarily connect to configured MCP servers and list their tools.
 
-    Designed for ``hermes tools`` interactive configuration �?connects to each
+    Designed for ``hermes tools`` interactive configuration é¥?connects to each
     enabled server, grabs tool names and descriptions, then disconnects.
     Does NOT register tools in the Hermes registry.
 
@@ -2226,7 +2226,7 @@ def _kill_orphaned_mcp_children() -> None:
     have been terminated by the SDK's context-manager cleanup.  If the loop
     was stuck or the shutdown timed out, orphaned children may remain.
 
-    Only kills PIDs tracked in ``_stdio_pids`` �?never arbitrary children.
+    Only kills PIDs tracked in ``_stdio_pids`` é¥?never arbitrary children.
     """
     import signal as _signal
     kill_signal = getattr(_signal, "SIGKILL", _signal.SIGTERM)

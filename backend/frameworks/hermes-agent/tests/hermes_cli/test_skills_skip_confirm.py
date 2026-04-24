@@ -46,7 +46,7 @@ class TestHandleSkillsSlashInstallFlags:
             assert kwargs.get("skip_confirm") is True
 
     def test_no_flags_still_skips_confirm(self):
-        """Slash commands always skip confirmation �?input() hangs in TUI."""
+        """Slash commands always skip confirmation é¥?input() hangs in TUI."""
         from hermes_cli.skills_hub import handle_skills_slash
         with patch("hermes_cli.skills_hub.do_install") as mock_install:
             handle_skills_slash("/skills install test/skill")
@@ -94,7 +94,7 @@ class TestHandleSkillsSlashUninstallFlags:
             assert kwargs.get("skip_confirm") is True
 
     def test_no_flags_still_skips_confirm(self):
-        """Slash commands always skip confirmation �?input() hangs in TUI."""
+        """Slash commands always skip confirmation é¥?input() hangs in TUI."""
         from hermes_cli.skills_hub import handle_skills_slash
         with patch("hermes_cli.skills_hub.do_uninstall") as mock_uninstall:
             handle_skills_slash("/skills uninstall test-skill")

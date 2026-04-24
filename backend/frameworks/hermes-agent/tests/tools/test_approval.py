@@ -111,7 +111,7 @@ class TestSafeCommand:
 
 
 def _clear_session(key):
-    """Replace for removed clear_session() �?directly clear internal state."""
+    """Replace for removed clear_session() é¥?directly clear internal state."""
     approval_module._session_approved.pop(key, None)
     approval_module._pending.pop(key, None)
 
@@ -427,7 +427,7 @@ class TestPatternKeyUniqueness:
         _, key_exec, _ = detect_dangerous_command("find . -exec rm {} \\;")
         _, key_delete, _ = detect_dangerous_command("find . -name '*.tmp' -delete")
         assert key_exec != key_delete, (
-            f"find -exec rm and find -delete share key {key_exec!r} �?"
+            f"find -exec rm and find -delete share key {key_exec!r} é¥?"
             "approving one silently approves the other"
         )
 
@@ -585,19 +585,19 @@ class TestNormalizationBypass:
     """Obfuscation techniques must not bypass dangerous command detection."""
 
     def test_fullwidth_unicode_rm(self):
-        """Fullwidth Unicode 'ｒｍ -ｒｆ /' must be caught after NFKC normalization."""
-        cmd = "\uff52\uff4d -\uff52\uff46 /"  # ｒｍ -ｒｆ /
+        """Fullwidth Unicode 'éæç¶ -éæçµ¾ /' must be caught after NFKC normalization."""
+        cmd = "\uff52\uff4d -\uff52\uff46 /"  # éæç¶ -éæçµ¾ /
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True, f"Fullwidth 'rm -rf /' was not detected: {cmd!r}"
 
     def test_fullwidth_unicode_dd(self):
-        """Fullwidth 'ｄｄ if=/dev/zero' must be caught."""
+        """Fullwidth 'éå¶çµ¼ if=/dev/zero' must be caught."""
         cmd = "\uff44\uff44 if=/dev/zero of=/dev/sda"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
 
     def test_fullwidth_unicode_chmod(self):
-        """Fullwidth 'ｃｈｍｏ�?777' must be caught."""
+        """Fullwidth 'éå¿ç¶éå¶ç¶é?777' must be caught."""
         cmd = "\uff43\uff48\uff4d\uff4f\uff44 777 /tmp/test"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
@@ -645,7 +645,7 @@ class TestNormalizationBypass:
         assert dangerous is False
 
     def test_fullwidth_safe_command_not_flagged(self):
-        """Fullwidth 'ｌｓ -ｌａ' is safe and must not be flagged."""
+        """Fullwidth 'éå²ç¶ -éå²çµ¹' is safe and must not be flagged."""
         cmd = "\uff4c\uff53 -\uff4c\uff41 /tmp"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is False
@@ -661,7 +661,7 @@ class TestHeredocScriptExecution:
     def test_python3_heredoc_detected(self):
         # The heredoc body also contains `rm -rf /` which fires the
         # "delete in root path" pattern first (patterns are ordered).
-        # The heredoc pattern also matches �?either detection is correct.
+        # The heredoc pattern also matches é¥?either detection is correct.
         cmd = "python3 << 'EOF'\nimport os; os.system('rm -rf /')\nEOF"
         dangerous, _, desc = detect_dangerous_command(cmd)
         assert dangerous is True
@@ -782,7 +782,7 @@ class TestGitDestructiveOps:
         assert dangerous is False
 
     def test_git_branch_lowercase_d_also_flagged(self):
-        """git branch -d triggers approval too �?IGNORECASE is global.
+        """git branch -d triggers approval too é¥?IGNORECASE is global.
 
         This is intentional: -d is safer than -D but an approval prompt
         for branch deletion is reasonable. The user can still approve.
@@ -809,7 +809,7 @@ class TestChmodExecuteCombo:
     def test_chmod_semicolon_execute_detected(self):
         cmd = "chmod +x script.sh; ./script.sh"
         dangerous, _, _ = detect_dangerous_command(cmd)
-        # Semicolon variant �?pattern uses && but full-string match
+        # Semicolon variant é¥?pattern uses && but full-string match
         # on chmod +x should still trigger even without the && ./
         assert dangerous is True
 

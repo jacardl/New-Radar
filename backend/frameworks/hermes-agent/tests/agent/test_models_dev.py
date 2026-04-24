@@ -1,4 +1,4 @@
-"""Tests for agent.models_dev �?models.dev registry integration."""
+"""Tests for agent.models_dev é¥?models.dev registry integration."""
 import json
 from unittest.mock import patch, MagicMock
 
@@ -202,7 +202,7 @@ class TestFetchModelsDev:
 
 
 # ---------------------------------------------------------------------------
-# get_model_capabilities �?vision via modalities.input
+# get_model_capabilities é¥?vision via modalities.input
 # ---------------------------------------------------------------------------
 
 

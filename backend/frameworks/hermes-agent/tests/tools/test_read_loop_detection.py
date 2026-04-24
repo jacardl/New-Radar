@@ -95,7 +95,7 @@ class TestReadLoopDetection(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops", return_value=_make_fake_file_ops())
     def test_fourth_consecutive_read_is_blocked(self, _mock_ops):
-        """4th consecutive read of the same region is BLOCKED �?no content."""
+        """4th consecutive read of the same region is BLOCKED é¥?no content."""
         for _ in range(3):
             read_file_tool("/tmp/test.py", task_id="t1")
         result = json.loads(read_file_tool("/tmp/test.py", task_id="t1"))
@@ -118,7 +118,7 @@ class TestReadLoopDetection(unittest.TestCase):
         """Reading a different region of the same file resets consecutive count."""
         read_file_tool("/tmp/test.py", offset=1, limit=500, task_id="t1")
         read_file_tool("/tmp/test.py", offset=1, limit=500, task_id="t1")
-        # Now read a different region �?this resets the consecutive counter
+        # Now read a different region é¥?this resets the consecutive counter
         result = json.loads(
             read_file_tool("/tmp/test.py", offset=501, limit=500, task_id="t1")
         )

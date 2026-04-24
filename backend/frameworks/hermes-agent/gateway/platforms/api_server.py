@@ -2,14 +2,14 @@
 OpenAI-compatible API server platform adapter.
 
 Exposes an HTTP server with endpoints:
-- POST /v1/chat/completions        �?OpenAI Chat Completions format (stateless; opt-in session continuity via X-Hermes-Session-Id header)
-- POST /v1/responses               �?OpenAI Responses API format (stateful via previous_response_id)
-- GET  /v1/responses/{response_id} �?Retrieve a stored response
-- DELETE /v1/responses/{response_id} �?Delete a stored response
-- GET  /v1/models                  �?lists hermes-agent as an available model
-- POST /v1/runs                    �?start a run, returns run_id immediately (202)
-- GET  /v1/runs/{run_id}/events    �?SSE stream of structured lifecycle events
-- GET  /health                     �?health check
+- POST /v1/chat/completions        é¥?OpenAI Chat Completions format (stateless; opt-in session continuity via X-Hermes-Session-Id header)
+- POST /v1/responses               é¥?OpenAI Responses API format (stateful via previous_response_id)
+- GET  /v1/responses/{response_id} é¥?Retrieve a stored response
+- DELETE /v1/responses/{response_id} é¥?Delete a stored response
+- GET  /v1/models                  é¥?lists hermes-agent as an available model
+- POST /v1/runs                    é¥?start a run, returns run_id immediately (202)
+- GET  /v1/runs/{run_id}/events    é¥?SSE stream of structured lifecycle events
+- GET  /health                     é¥?health check
 
 Any OpenAI-compatible frontend (Open WebUI, LobeChat, LibreChat,
 AnythingLLM, NextChat, ChatBox, etc.) can connect to hermes-agent
@@ -473,7 +473,7 @@ class APIServerAdapter(BasePlatformAdapter):
         server is local).
         """
         if not self._api_key:
-            return None  # No key configured �?allow all (local-only use)
+            return None  # No key configured é¥?allow all (local-only use)
 
         auth_header = request.headers.get("Authorization", "")
         if auth_header.startswith("Bearer "):
@@ -562,11 +562,11 @@ class APIServerAdapter(BasePlatformAdapter):
     # ------------------------------------------------------------------
 
     async def _handle_health(self, request: "web.Request") -> "web.Response":
-        """GET /health �?simple health check."""
+        """GET /health é¥?simple health check."""
         return web.json_response({"status": "ok", "platform": "hermes-agent"})
 
     async def _handle_models(self, request: "web.Request") -> "web.Response":
-        """GET /v1/models �?return hermes-agent as an available model."""
+        """GET /v1/models é¥?return hermes-agent as an available model."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -587,7 +587,7 @@ class APIServerAdapter(BasePlatformAdapter):
         })
 
     async def _handle_chat_completions(self, request: "web.Request") -> "web.Response":
-        """POST /v1/chat/completions �?OpenAI Chat Completions format."""
+        """POST /v1/chat/completions é¥?OpenAI Chat Completions format."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -694,7 +694,7 @@ class APIServerAdapter(BasePlatformAdapter):
             _stream_q: _q.Queue = _q.Queue()
 
             def _on_delta(delta):
-                # Filter out None �?the agent fires stream_delta_callback(None)
+                # Filter out None é¥?the agent fires stream_delta_callback(None)
                 # to signal the CLI display to close its response box before
                 # tool execution, but the SSE writer uses None as end-of-stream
                 # sentinel.  Forwarding it would prematurely close the HTTP
@@ -707,12 +707,12 @@ class APIServerAdapter(BasePlatformAdapter):
             def _on_tool_progress(event_type, name, preview, args, **kwargs):
                 """Send tool progress as a separate SSE event.
 
-                Previously, progress markers like ``�?list`` were injected
+                Previously, progress markers like ``é´?list`` were injected
                 directly into ``delta.content``.  OpenAI-compatible frontends
-                (Open WebUI, LobeChat, �? store ``delta.content`` verbatim as
+                (Open WebUI, LobeChat, é¥? store ``delta.content`` verbatim as
                 the assistant message and send it back on subsequent requests.
                 After enough turns the model learns to *emit* the markers as
-                plain text instead of issuing real tool calls �?silently
+                plain text instead of issuing real tool calls é¥?silently
                 hallucinating tool results.  See #6972.
 
                 The fix: push a tagged tuple ``("__tool_progress__", payload)``
@@ -851,7 +851,7 @@ class APIServerAdapter(BasePlatformAdapter):
             await response.write(f"data: {json.dumps(role_chunk)}\n\n".encode())
             last_activity = time.monotonic()
 
-            # Helper �?route a queue item to the correct SSE event.
+            # Helper é¥?route a queue item to the correct SSE event.
             async def _emit(item):
                 """Write a single queue item to the SSE stream.
 
@@ -944,7 +944,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return response
 
     async def _handle_responses(self, request: "web.Request") -> "web.Response":
-        """POST /v1/responses �?OpenAI Responses API format."""
+        """POST /v1/responses é¥?OpenAI Responses API format."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -974,7 +974,7 @@ class APIServerAdapter(BasePlatformAdapter):
         # Resolve conversation name to latest response_id
         if conversation:
             previous_response_id = self._response_store.get_conversation(conversation)
-            # No error if conversation doesn't exist yet �?it's a new conversation
+            # No error if conversation doesn't exist yet é¥?it's a new conversation
 
         # Normalize input to message list
         input_messages: List[Dict[str, str]] = []
@@ -1124,7 +1124,7 @@ class APIServerAdapter(BasePlatformAdapter):
     # ------------------------------------------------------------------
 
     async def _handle_get_response(self, request: "web.Request") -> "web.Response":
-        """GET /v1/responses/{response_id} �?retrieve a stored response."""
+        """GET /v1/responses/{response_id} é¥?retrieve a stored response."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1137,7 +1137,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return web.json_response(stored["response"])
 
     async def _handle_delete_response(self, request: "web.Request") -> "web.Response":
-        """DELETE /v1/responses/{response_id} �?delete a stored response."""
+        """DELETE /v1/responses/{response_id} é¥?delete a stored response."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1170,7 +1170,7 @@ class APIServerAdapter(BasePlatformAdapter):
             resume_job as _cron_resume,
             trigger_job as _cron_trigger,
         )
-        # Wrap as staticmethod to prevent descriptor binding �?these are plain
+        # Wrap as staticmethod to prevent descriptor binding é¥?these are plain
         # module functions, not instance methods.  Without this, self._cron_*()
         # injects ``self`` as the first positional argument and every call
         # raises TypeError.
@@ -1187,7 +1187,7 @@ class APIServerAdapter(BasePlatformAdapter):
         pass
 
     _JOB_ID_RE = __import__("re").compile(r"[a-f0-9]{12}")
-    # Allowed fields for update �?prevents clients injecting arbitrary keys
+    # Allowed fields for update é¥?prevents clients injecting arbitrary keys
     _UPDATE_ALLOWED_FIELDS = {"name", "schedule", "prompt", "deliver", "skills", "skill", "repeat", "enabled"}
     _MAX_NAME_LENGTH = 200
     _MAX_PROMPT_LENGTH = 5000
@@ -1210,7 +1210,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return job_id, None
 
     async def _handle_list_jobs(self, request: "web.Request") -> "web.Response":
-        """GET /api/jobs �?list all cron jobs."""
+        """GET /api/jobs é¥?list all cron jobs."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1225,7 +1225,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_create_job(self, request: "web.Request") -> "web.Response":
-        """POST /api/jobs �?create a new cron job."""
+        """POST /api/jobs é¥?create a new cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1245,13 +1245,13 @@ class APIServerAdapter(BasePlatformAdapter):
                 return web.json_response({"error": "Name is required"}, status=400)
             if len(name) > self._MAX_NAME_LENGTH:
                 return web.json_response(
-                    {"error": f"Name must be �?{self._MAX_NAME_LENGTH} characters"}, status=400,
+                    {"error": f"Name must be é®?{self._MAX_NAME_LENGTH} characters"}, status=400,
                 )
             if not schedule:
                 return web.json_response({"error": "Schedule is required"}, status=400)
             if len(prompt) > self._MAX_PROMPT_LENGTH:
                 return web.json_response(
-                    {"error": f"Prompt must be �?{self._MAX_PROMPT_LENGTH} characters"}, status=400,
+                    {"error": f"Prompt must be é®?{self._MAX_PROMPT_LENGTH} characters"}, status=400,
                 )
             if repeat is not None and (not isinstance(repeat, int) or repeat < 1):
                 return web.json_response({"error": "Repeat must be a positive integer"}, status=400)
@@ -1273,7 +1273,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_get_job(self, request: "web.Request") -> "web.Response":
-        """GET /api/jobs/{job_id} �?get a single cron job."""
+        """GET /api/jobs/{job_id} é¥?get a single cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1292,7 +1292,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_update_job(self, request: "web.Request") -> "web.Response":
-        """PATCH /api/jobs/{job_id} �?update a cron job."""
+        """PATCH /api/jobs/{job_id} é¥?update a cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1311,11 +1311,11 @@ class APIServerAdapter(BasePlatformAdapter):
             # Validate lengths if present
             if "name" in sanitized and len(sanitized["name"]) > self._MAX_NAME_LENGTH:
                 return web.json_response(
-                    {"error": f"Name must be �?{self._MAX_NAME_LENGTH} characters"}, status=400,
+                    {"error": f"Name must be é®?{self._MAX_NAME_LENGTH} characters"}, status=400,
                 )
             if "prompt" in sanitized and len(sanitized["prompt"]) > self._MAX_PROMPT_LENGTH:
                 return web.json_response(
-                    {"error": f"Prompt must be �?{self._MAX_PROMPT_LENGTH} characters"}, status=400,
+                    {"error": f"Prompt must be é®?{self._MAX_PROMPT_LENGTH} characters"}, status=400,
                 )
             job = self._cron_update(job_id, sanitized)
             if not job:
@@ -1325,7 +1325,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_delete_job(self, request: "web.Request") -> "web.Response":
-        """DELETE /api/jobs/{job_id} �?delete a cron job."""
+        """DELETE /api/jobs/{job_id} é¥?delete a cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1344,7 +1344,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_pause_job(self, request: "web.Request") -> "web.Response":
-        """POST /api/jobs/{job_id}/pause �?pause a cron job."""
+        """POST /api/jobs/{job_id}/pause é¥?pause a cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1363,7 +1363,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_resume_job(self, request: "web.Request") -> "web.Response":
-        """POST /api/jobs/{job_id}/resume �?resume a paused cron job."""
+        """POST /api/jobs/{job_id}/resume é¥?resume a paused cron job."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1382,7 +1382,7 @@ class APIServerAdapter(BasePlatformAdapter):
             return web.json_response({"error": str(e)}, status=500)
 
     async def _handle_run_job(self, request: "web.Request") -> "web.Response":
-        """POST /api/jobs/{job_id}/run �?trigger immediate execution."""
+        """POST /api/jobs/{job_id}/run é¥?trigger immediate execution."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1503,7 +1503,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return await loop.run_in_executor(None, _run)
 
     # ------------------------------------------------------------------
-    # /v1/runs �?structured event streaming
+    # /v1/runs é¥?structured event streaming
     # ------------------------------------------------------------------
 
     _MAX_CONCURRENT_RUNS = 10  # Prevent unbounded resource allocation
@@ -1551,7 +1551,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return _callback
 
     async def _handle_runs(self, request: "web.Request") -> "web.Response":
-        """POST /v1/runs �?start an agent run, return run_id immediately."""
+        """POST /v1/runs é¥?start an agent run, return run_id immediately."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1705,7 +1705,7 @@ class APIServerAdapter(BasePlatformAdapter):
         return web.json_response({"run_id": run_id, "status": "started"}, status=202)
 
     async def _handle_run_events(self, request: "web.Request") -> "web.StreamResponse":
-        """GET /v1/runs/{run_id}/events �?SSE stream of structured agent lifecycle events."""
+        """GET /v1/runs/{run_id}/events é¥?SSE stream of structured agent lifecycle events."""
         auth_err = self._check_auth(request)
         if auth_err:
             return auth_err
@@ -1740,7 +1740,7 @@ class APIServerAdapter(BasePlatformAdapter):
                     await response.write(b": keepalive\n\n")
                     continue
                 if event is None:
-                    # Run finished �?send final SSE comment and close
+                    # Run finished é¥?send final SSE comment and close
                     await response.write(b": stream closed\n\n")
                     break
                 payload = f"data: {json.dumps(event)}\n\n"
@@ -1836,7 +1836,7 @@ class APIServerAdapter(BasePlatformAdapter):
                 except ImportError:
                     pass
 
-            # Port conflict detection �?fail fast if port is already in use
+            # Port conflict detection é¥?fail fast if port is already in use
             try:
                 with _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM) as _s:
                     _s.settimeout(1)
@@ -1854,7 +1854,7 @@ class APIServerAdapter(BasePlatformAdapter):
             self._mark_connected()
             if not self._api_key:
                 logger.warning(
-                    "[%s] ⚠️  No API key configured (API_SERVER_KEY / platforms.api_server.key). "
+                    "[%s] é¿çç¬  No API key configured (API_SERVER_KEY / platforms.api_server.key). "
                     "All requests will be accepted without authentication. "
                     "Set an API key for production deployments to prevent "
                     "unauthorized access to sessions, responses, and cron jobs.",
@@ -1890,7 +1890,7 @@ class APIServerAdapter(BasePlatformAdapter):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> SendResult:
         """
-        Not used �?HTTP request/response cycle handles delivery directly.
+        Not used é¥?HTTP request/response cycle handles delivery directly.
         """
         return SendResult(success=False, error="API server uses HTTP request/response, not send()")
 

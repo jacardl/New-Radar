@@ -1,4 +1,4 @@
-"""Honcho memory plugin �?MemoryProvider for Honcho AI-native memory.
+"""Honcho memory plugin é¥?MemoryProvider for Honcho AI-native memory.
 
 Provides cross-session user modeling with dialectic Q&A, semantic search,
 peer cards, and persistent conclusions via the Honcho SDK. Honcho provides AI-native cross-session user
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 PROFILE_SCHEMA = {
     "name": "honcho_profile",
     "description": (
-        "Retrieve the user's peer card from Honcho �?a curated list of key facts "
+        "Retrieve the user's peer card from Honcho é¥?a curated list of key facts "
         "about them (name, role, preferences, communication style, patterns). "
         "Fast, no LLM reasoning, minimal cost. "
         "Use this at conversation start or when you need a quick factual snapshot."
@@ -45,7 +45,7 @@ SEARCH_SCHEMA = {
     "name": "honcho_search",
     "description": (
         "Semantic search over Honcho's stored context about the user. "
-        "Returns raw excerpts ranked by relevance �?no LLM synthesis. "
+        "Returns raw excerpts ranked by relevance é¥?no LLM synthesis. "
         "Cheaper and faster than honcho_context. "
         "Good when you want to find specific past facts and reason over them yourself."
     ),
@@ -69,7 +69,7 @@ CONTEXT_SCHEMA = {
     "name": "honcho_context",
     "description": (
         "Ask Honcho a natural language question and get a synthesized answer. "
-        "Uses Honcho's LLM (dialectic reasoning) �?higher cost than honcho_profile or honcho_search. "
+        "Uses Honcho's LLM (dialectic reasoning) é¥?higher cost than honcho_profile or honcho_search. "
         "Can query about any peer: the user (default) or the AI assistant."
     ),
     "parameters": {
@@ -128,7 +128,7 @@ class HonchoMemoryProvider(MemoryProvider):
         self._prefetch_thread: Optional[threading.Thread] = None
         self._sync_thread: Optional[threading.Thread] = None
 
-        # B1: recall_mode �?set during initialize from config
+        # B1: recall_mode é¥?set during initialize from config
         self._recall_mode = "hybrid"  # "context", "tools", or "hybrid"
 
         # B4: First-turn context baking
@@ -149,7 +149,7 @@ class HonchoMemoryProvider(MemoryProvider):
         self._lazy_init_kwargs: Optional[dict] = None
         self._lazy_init_session_id: Optional[str] = None
 
-        # Port #4053: cron guard �?when True, plugin is fully inactive
+        # Port #4053: cron guard é¥?when True, plugin is fully inactive
         self._cron_skipped = False
 
     @property
@@ -161,7 +161,7 @@ class HonchoMemoryProvider(MemoryProvider):
         try:
             from plugins.memory.honcho.client import HonchoClientConfig
             cfg = HonchoClientConfig.from_global_config()
-            # Port #2645: baseUrl-only verification �?api_key OR base_url suffices
+            # Port #2645: baseUrl-only verification é¥?api_key OR base_url suffices
             return cfg.enabled and bool(cfg.api_key or cfg.base_url)
         except Exception:
             return False
@@ -214,11 +214,11 @@ class HonchoMemoryProvider(MemoryProvider):
 
             cfg = HonchoClientConfig.from_global_config()
             if not cfg.enabled or not (cfg.api_key or cfg.base_url):
-                logger.debug("Honcho not configured �?plugin inactive")
+                logger.debug("Honcho not configured é¥?plugin inactive")
                 return
 
             # Override peer_name with gateway user_id for per-user memory scoping.
-            # Only when no explicit peerName was configured �?an explicit peerName
+            # Only when no explicit peerName was configured é¥?an explicit peerName
             # means the user chose their identity; a raw user_id (e.g. Telegram
             # chat ID) should not silently replace it.
             _gw_user_id = kwargs.get("user_id")
@@ -243,7 +243,7 @@ class HonchoMemoryProvider(MemoryProvider):
             except Exception as e:
                 logger.debug("Honcho cost-awareness config parse error: %s", e)
 
-            # ----- Port #1969: aiPeer sync from SOUL.md �?REMOVED -----
+            # ----- Port #1969: aiPeer sync from SOUL.md é¥?REMOVED -----
             # SOUL.md is persona content, not identity config. aiPeer should
             # only come from honcho.json (host block or root) or the default.
             # See scratch/memory-plugin-ux-specs.md #10 for rationale.
@@ -252,8 +252,8 @@ class HonchoMemoryProvider(MemoryProvider):
             if self._recall_mode == "tools":
                 if cfg.init_on_session_start:
                     # Eager init: create session now so sync_turn() works from turn 1.
-                    # Does NOT enable auto-injection �?prefetch() still returns empty.
-                    logger.debug("Honcho tools-only mode �?eager session init (initOnSessionStart=true)")
+                    # Does NOT enable auto-injection é¥?prefetch() still returns empty.
+                    logger.debug("Honcho tools-only mode é¥?eager session init (initOnSessionStart=true)")
                     self._do_session_init(cfg, session_id, **kwargs)
                     return
                 # Defer actual session creation until first tool call
@@ -261,14 +261,14 @@ class HonchoMemoryProvider(MemoryProvider):
                 self._lazy_init_session_id = session_id
                 # Still need a client reference for _ensure_session
                 self._config = cfg
-                logger.debug("Honcho tools-only mode �?deferring session init until first tool call")
+                logger.debug("Honcho tools-only mode é¥?deferring session init until first tool call")
                 return
 
             # ----- Eager init (context or hybrid mode) -----
             self._do_session_init(cfg, session_id, **kwargs)
 
         except ImportError:
-            logger.debug("honcho-ai package not installed �?plugin inactive")
+            logger.debug("honcho-ai package not installed é¥?plugin inactive")
         except Exception as e:
             logger.warning("Honcho init failed: %s", e)
             self._manager = None
@@ -391,7 +391,7 @@ class HonchoMemoryProvider(MemoryProvider):
         if self._recall_mode in ("context", "hybrid"):
             with self._first_turn_lock:
                 if self._first_turn_context is None:
-                    # First call �?fetch and cache
+                    # First call é¥?fetch and cache
                     try:
                         ctx = self._manager.get_prefetch_context(self._session_key)
                         self._first_turn_context = self._format_first_turn_context(ctx) if ctx else ""
@@ -405,7 +405,7 @@ class HonchoMemoryProvider(MemoryProvider):
             header = (
                 "# Honcho Memory\n"
                 "Active (context-injection mode). Relevant user context is automatically "
-                "injected before each turn. No memory tools are available �?context is "
+                "injected before each turn. No memory tools are available é¥?context is "
                 "managed automatically."
             )
         elif self._recall_mode == "tools":
@@ -414,7 +414,7 @@ class HonchoMemoryProvider(MemoryProvider):
                 "Active (tools-only mode). Use honcho_profile for a quick factual snapshot, "
                 "honcho_search for raw excerpts, honcho_context for synthesized answers, "
                 "honcho_conclude to save facts about the user. "
-                "No automatic context injection �?you must use tools to access memory."
+                "No automatic context injection é¥?you must use tools to access memory."
             )
         else:  # hybrid
             header = (
@@ -433,17 +433,17 @@ class HonchoMemoryProvider(MemoryProvider):
         """Return prefetched dialectic context from background thread.
 
         B1: Returns empty when recall_mode is "tools" (no injection).
-        B5: Respects injection_frequency �?"first-turn" returns cached/empty after turn 0.
+        B5: Respects injection_frequency é¥?"first-turn" returns cached/empty after turn 0.
         Port #3265: Truncates to context_tokens budget.
         """
         if self._cron_skipped:
             return ""
 
-        # B1: tools-only mode �?no auto-injection
+        # B1: tools-only mode é¥?no auto-injection
         if self._recall_mode == "tools":
             return ""
 
-        # B5: injection_frequency �?if "first-turn" and past first turn, return empty
+        # B5: injection_frequency é¥?if "first-turn" and past first turn, return empty
         if self._injection_frequency == "first-turn" and self._turn_count > 0:
             return ""
 
@@ -472,7 +472,7 @@ class HonchoMemoryProvider(MemoryProvider):
         last_space = truncated.rfind(" ")
         if last_space > budget_chars * 0.8:
             truncated = truncated[:last_space]
-        return truncated + " �?
+        return truncated + " é¥?
 
     def queue_prefetch(self, query: str, *, session_id: str = "") -> None:
         """Fire a background dialectic query for the upcoming turn.
@@ -484,11 +484,11 @@ class HonchoMemoryProvider(MemoryProvider):
         if not self._manager or not self._session_key or not query:
             return
 
-        # B1: tools-only mode �?no prefetch
+        # B1: tools-only mode é¥?no prefetch
         if self._recall_mode == "tools":
             return
 
-        # B5: cadence check �?skip if too soon since last dialectic call
+        # B5: cadence check é¥?skip if too soon since last dialectic call
         if self._dialectic_cadence > 1:
             if (self._turn_count - self._last_dialectic_turn) < self._dialectic_cadence:
                 logger.debug("Honcho dialectic prefetch skipped: cadence %d, turns since last: %d",

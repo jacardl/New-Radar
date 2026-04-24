@@ -168,7 +168,7 @@ class TestFormatMessageCodeBlocks:
         r"""Already-escaped backslashes should not be quadruple-escaped."""
         text = r"Use `\\server\share`"
         result = adapter.format_message(text)
-        # \\ in input �?\\\\ in output (each \ escaped once)
+        # \\ in input é«?\\\\ in output (each \ escaped once)
         assert r"`\\\\server\\share`" in result
 
 
@@ -477,7 +477,7 @@ class TestFormatMessageComplex:
 
 
 # =========================================================================
-# _strip_mdv2 �?plaintext fallback
+# _strip_mdv2 é¥?plaintext fallback
 # =========================================================================
 
 

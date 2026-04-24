@@ -1,7 +1,7 @@
 """Tests for delegate_tool toolset scoping.
 
 Verifies that subagents cannot gain tools that the parent does not have.
-The LLM controls the `toolsets` parameter �?without intersection with the
+The LLM controls the `toolsets` parameter é¥?without intersection with the
 parent's enabled_toolsets, it can escalate privileges by requesting
 arbitrary toolsets.
 """
@@ -16,7 +16,7 @@ class TestToolsetIntersection:
     """Subagent toolsets must be a subset of parent's enabled_toolsets."""
 
     def test_requested_toolsets_intersected_with_parent(self):
-        """LLM requests toolsets parent doesn't have �?extras are dropped."""
+        """LLM requests toolsets parent doesn't have é¥?extras are dropped."""
         parent = SimpleNamespace(enabled_toolsets=["terminal", "file"])
 
         # Simulate the intersection logic from _build_child_agent
@@ -30,7 +30,7 @@ class TestToolsetIntersection:
         assert "rl" not in scoped
 
     def test_all_requested_toolsets_available_on_parent(self):
-        """LLM requests subset of parent tools �?all pass through."""
+        """LLM requests subset of parent tools é¥?all pass through."""
         parent = SimpleNamespace(enabled_toolsets=["terminal", "file", "web", "browser"])
 
         parent_toolsets = set(parent.enabled_toolsets)

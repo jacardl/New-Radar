@@ -1,4 +1,4 @@
-"""Tests for hermes_cli.skin_engine â€?the data-driven skin/theme system."""
+"""Tests for hermes_cli.skin_engine Ã©Â¥?the data-driven skin/theme system."""
 
 import json
 import os
@@ -23,7 +23,7 @@ class TestSkinConfig:
         from hermes_cli.skin_engine import load_skin
         skin = load_skin("default")
         assert skin.name == "default"
-        assert skin.tool_prefix == "â”?
+        assert skin.tool_prefix == "Ã©Â¹?
         assert "banner_title" in skin.colors
         assert "banner_border" in skin.colors
         assert "agent_name" in skin.branding
@@ -51,7 +51,7 @@ class TestBuiltinSkins:
         from hermes_cli.skin_engine import load_skin
         skin = load_skin("ares")
         assert skin.name == "ares"
-        assert skin.tool_prefix == "â•?
+        assert skin.tool_prefix == "Ã©Âº?
         assert skin.get_color("banner_border") == "#9F1C1C"
         assert skin.get_color("response_border") == "#C7A96B"
         assert skin.get_color("session_label") == "#C7A96B"
@@ -83,7 +83,7 @@ class TestBuiltinSkins:
 
         skin = load_skin("daylight")
         assert skin.name == "daylight"
-        assert skin.tool_prefix == "â”?
+        assert skin.tool_prefix == "Ã©Â¹?
         assert skin.get_color("banner_title") == "#0F172A"
         assert skin.get_color("status_bar_bg") == "#E5EDF8"
         assert skin.get_color("voice_status_bg") == "#E5EDF8"
@@ -165,7 +165,7 @@ class TestUserSkins:
             "description": "A custom test skin",
             "colors": {"banner_title": "#FF0000"},
             "branding": {"agent_name": "Custom Agent"},
-            "tool_prefix": "â–?,
+            "tool_prefix": "Ã©Â»?,
         }
         import yaml
         skin_file.write_text(yaml.dump(skin_data))
@@ -177,7 +177,7 @@ class TestUserSkins:
         assert skin.name == "custom"
         assert skin.get_color("banner_title") == "#FF0000"
         assert skin.get_branding("agent_name") == "Custom Agent"
-        assert skin.tool_prefix == "â–?
+        assert skin.tool_prefix == "Ã©Â»?
         # Should inherit defaults for unspecified colors
         assert skin.get_color("banner_border") == "#CD7F32"  # from default
 
@@ -202,51 +202,51 @@ class TestUserSkins:
 class TestDisplayIntegration:
     def test_get_skin_tool_prefix_default(self):
         from agent.display import get_skin_tool_prefix
-        assert get_skin_tool_prefix() == "â”?
+        assert get_skin_tool_prefix() == "Ã©Â¹?
 
     def test_get_skin_tool_prefix_custom(self):
         from hermes_cli.skin_engine import set_active_skin
         from agent.display import get_skin_tool_prefix
         set_active_skin("ares")
-        assert get_skin_tool_prefix() == "â•?
+        assert get_skin_tool_prefix() == "Ã©Âº?
 
     def test_tool_message_uses_skin_prefix(self):
         from hermes_cli.skin_engine import set_active_skin
         from agent.display import get_cute_tool_message
         set_active_skin("ares")
         msg = get_cute_tool_message("terminal", {"command": "ls"}, 0.5)
-        assert msg.startswith("â•?)
-        assert "â”? not in msg
+        assert msg.startswith("Ã©Âº?)
+        assert "Ã©Â¹? not in msg
 
     def test_tool_message_default_prefix(self):
         from agent.display import get_cute_tool_message
         msg = get_cute_tool_message("terminal", {"command": "ls"}, 0.5)
-        assert msg.startswith("â”?)
+        assert msg.startswith("Ã©Â¹?)
 
 
 class TestCliBrandingHelpers:
     def test_active_prompt_symbol_default(self):
         from hermes_cli.skin_engine import get_active_prompt_symbol
 
-        assert get_active_prompt_symbol() == "â?"
+        assert get_active_prompt_symbol() == "Ã©?"
 
     def test_active_prompt_symbol_ares(self):
         from hermes_cli.skin_engine import set_active_skin, get_active_prompt_symbol
 
         set_active_skin("ares")
-        assert get_active_prompt_symbol() == "âš?â?"
+        assert get_active_prompt_symbol() == "Ã©Â¿?Ã©?"
 
     def test_active_help_header_ares(self):
         from hermes_cli.skin_engine import set_active_skin, get_active_help_header
 
         set_active_skin("ares")
-        assert get_active_help_header() == "(âš? Available Commands"
+        assert get_active_help_header() == "(Ã©Â¿? Available Commands"
 
     def test_active_goodbye_ares(self):
         from hermes_cli.skin_engine import set_active_skin, get_active_goodbye
 
         set_active_skin("ares")
-        assert get_active_goodbye() == "Farewell, warrior! âš?
+        assert get_active_goodbye() == "Farewell, warrior! Ã©Â¿?
 
     def test_prompt_toolkit_style_overrides_cover_tui_classes(self):
         from hermes_cli.skin_engine import set_active_skin, get_prompt_toolkit_style_overrides

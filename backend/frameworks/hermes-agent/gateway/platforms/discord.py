@@ -89,7 +89,7 @@ class VoiceReceiver:
     completed utterances via a callback.
     """
 
-    SILENCE_THRESHOLD = 1.5    # seconds of silence ‚Ü?end of utterance
+    SILENCE_THRESHOLD = 1.5    # seconds of silence √¢?end of utterance
     MIN_SPEECH_DURATION = 0.5  # minimum seconds to process (skip noise)
     SAMPLE_RATE = 48000        # Discord native rate
     CHANNELS = 2               # Discord sends stereo
@@ -266,7 +266,7 @@ class VoiceReceiver:
         encrypted = bytes(payload_with_nonce[:-4])
 
         try:
-            import nacl.secret  # noqa: delayed import ‚Ä?only in voice path
+            import nacl.secret  # noqa: delayed import √¢?only in voice path
             box = nacl.secret.Aead(self._secret_key)
             decrypted = box.decrypt(encrypted, header, bytes(nonce))
         except Exception as e:
@@ -289,13 +289,13 @@ class VoiceReceiver:
                         user_id, davey.MediaType.audio, decrypted
                     )
                 except Exception as e:
-                    # Unencrypted passthrough ‚Ä?use NaCl-decrypted data as-is
+                    # Unencrypted passthrough √¢?use NaCl-decrypted data as-is
                     if "Unencrypted" not in str(e):
                         if self._packet_debug_count <= 10:
                             logger.warning("DAVE decrypt failed for ssrc=%d: %s", ssrc, e)
                         return
             # If SSRC unknown (no SPEAKING event yet), skip DAVE and try
-            # Opus decode directly ‚Ä?audio may be in passthrough mode.
+            # Opus decode directly √¢?audio may be in passthrough mode.
             # Buffer will get a user_id when SPEAKING event arrives later.
 
         # --- Opus decode -> PCM ---
@@ -367,7 +367,7 @@ class VoiceReceiver:
                     self._buffers[ssrc] = bytearray()
                     self._last_packet_time.pop(ssrc, None)
                 elif silence_duration >= self.SILENCE_THRESHOLD * 2:
-                    # Stale buffer with no valid user ‚Ä?discard
+                    # Stale buffer with no valid user √¢?discard
                     self._buffers.pop(ssrc, None)
                     self._last_packet_time.pop(ssrc, None)
 
@@ -492,7 +492,7 @@ class DiscordAdapter(BasePlatformAdapter):
                 except Exception:
                     logger.warning("Opus codec found at %s but failed to load", opus_path)
             if not discord.opus.is_loaded():
-                logger.warning("Opus codec not found ‚Ä?voice channel playback disabled")
+                logger.warning("Opus codec not found √¢?voice channel playback disabled")
 
         if not self.config.token:
             logger.error("[%s] No bot token configured", self.name)
@@ -530,7 +530,7 @@ class DiscordAdapter(BasePlatformAdapter):
             if proxy_url:
                 logger.info("[%s] Using proxy for Discord: %s", self.name, proxy_url)
 
-            # Create bot ‚Ä?proxy= for HTTP, connector= for SOCKS
+            # Create bot √¢?proxy= for HTTP, connector= for SOCKS
             self._client = commands.Bot(
                 command_prefix="!",  # Not really used, we handle raw messages
                 intents=intents,
@@ -564,7 +564,7 @@ class DiscordAdapter(BasePlatformAdapter):
                     return
 
                 # Ignore Discord system messages (thread renames, pins, member joins, etc.)
-                # Allow both default and reply types ‚Ä?replies have a distinct MessageType.
+                # Allow both default and reply types √¢?replies have a distinct MessageType.
                 if message.type not in (discord.MessageType.default, discord.MessageType.reply):
                     return
 
@@ -573,9 +573,9 @@ class DiscordAdapter(BasePlatformAdapter):
                     return
 
                 # Bot message filtering (DISCORD_ALLOW_BOTS):
-                #   "none"     ‚Ä?ignore all other bots (default)
-                #   "mentions" ‚Ä?accept bot messages only when they @mention us
-                #   "all"      ‚Ä?accept all bot messages
+                #   "none"     √¢?ignore all other bots (default)
+                #   "mentions" √¢?accept bot messages only when they @mention us
+                #   "all"      √¢?accept all bot messages
                 if getattr(message.author, "bot", False):
                     allow_bots = os.getenv("DISCORD_ALLOW_BOTS", "none").lower().strip()
                     if allow_bots == "none":
@@ -586,7 +586,7 @@ class DiscordAdapter(BasePlatformAdapter):
                     # "all" falls through to handle_message
                 
                 # Multi-agent filtering: if the message mentions specific bots
-                # but NOT this bot, the sender is talking to another agent ‚Ä?
+                # but NOT this bot, the sender is talking to another agent √¢?
                 # stay silent.  Messages with no bot mentions (general chat)
                 # still fall through to _handle_message for the existing
                 # DISCORD_REQUIRE_MENTION check.
@@ -603,10 +603,10 @@ class DiscordAdapter(BasePlatformAdapter):
                         m.bot and m != self._client.user
                         for m in message.mentions
                     )
-                    # If other bots are mentioned but we're not ‚Ü?not for us
+                    # If other bots are mentioned but we're not √¢?not for us
                     if _other_bots_mentioned and not _self_mentioned:
                         return
-                    # If humans are mentioned but we're not ‚Ü?not for us
+                    # If humans are mentioned but we're not √¢?not for us
                     # (preserves old DISCORD_IGNORE_NO_MENTION=true behavior)
                     _ignore_no_mention = os.getenv(
                         "DISCORD_IGNORE_NO_MENTION", "true"
@@ -747,7 +747,7 @@ class DiscordAdapter(BasePlatformAdapter):
             return
         message = event.raw_message
         if hasattr(message, "add_reaction"):
-            await self._add_reaction(message, "üëÄ")
+            await self._add_reaction(message, "√∞")
 
     async def on_processing_complete(self, event: MessageEvent, outcome: ProcessingOutcome) -> None:
         """Swap the in-progress reaction for a final success/failure reaction."""
@@ -755,11 +755,11 @@ class DiscordAdapter(BasePlatformAdapter):
             return
         message = event.raw_message
         if hasattr(message, "add_reaction"):
-            await self._remove_reaction(message, "üëÄ")
+            await self._remove_reaction(message, "√∞")
             if outcome == ProcessingOutcome.SUCCESS:
-                await self._add_reaction(message, "‚ú?)
+                await self._add_reaction(message, "√¢?)
             elif outcome == ProcessingOutcome.FAILURE:
-                await self._add_reaction(message, "‚ù?)
+                await self._add_reaction(message, "√¢?)
 
     async def send(
         self,
@@ -783,7 +783,7 @@ class DiscordAdapter(BasePlatformAdapter):
                 thread_id = metadata["thread_id"]
 
             if thread_id:
-                # Fetch the thread directly ‚Ä?threads are addressed by their own ID.
+                # Fetch the thread directly √¢?threads are addressed by their own ID.
                 channel = self._client.get_channel(int(thread_id))
                 if not channel:
                     channel = await self._client.fetch_channel(int(thread_id))
@@ -1202,7 +1202,7 @@ class DiscordAdapter(BasePlatformAdapter):
         if not info:
             return ""
 
-        parts = [f"[Voice channel: #{info['channel_name']} ‚Ä?{info['member_count']} participant(s)]"]
+        parts = [f"[Voice channel: #{info['channel_name']} √¢?{info['member_count']} participant(s)]"]
         for m in info["members"]:
             status = " (speaking)" if m["is_speaking"] else ""
             parts.append(f"  - {m['display_name']}{status}")
@@ -1213,7 +1213,7 @@ class DiscordAdapter(BasePlatformAdapter):
     # Voice listening (Phase 2)
     # ------------------------------------------------------------------
 
-    # UDP keepalive interval in seconds ‚Ä?prevents Discord from dropping
+    # UDP keepalive interval in seconds √¢?prevents Discord from dropping
     # the UDP route after ~60s of silence.
     _KEEPALIVE_INTERVAL = 15
 
@@ -1682,12 +1682,12 @@ class DiscordAdapter(BasePlatformAdapter):
         @tree.command(name="voice", description="Toggle voice reply mode")
         @discord.app_commands.describe(mode="Voice mode: on, off, tts, channel, leave, or status")
         @discord.app_commands.choices(mode=[
-            discord.app_commands.Choice(name="channel ‚Ä?join your voice channel", value="channel"),
-            discord.app_commands.Choice(name="leave ‚Ä?leave voice channel", value="leave"),
-            discord.app_commands.Choice(name="on ‚Ä?voice reply to voice messages", value="on"),
-            discord.app_commands.Choice(name="tts ‚Ä?voice reply to all messages", value="tts"),
-            discord.app_commands.Choice(name="off ‚Ä?text only", value="off"),
-            discord.app_commands.Choice(name="status ‚Ä?show current mode", value="status"),
+            discord.app_commands.Choice(name="channel √¢?join your voice channel", value="channel"),
+            discord.app_commands.Choice(name="leave √¢?leave voice channel", value="leave"),
+            discord.app_commands.Choice(name="on √¢?voice reply to voice messages", value="on"),
+            discord.app_commands.Choice(name="tts √¢?voice reply to all messages", value="tts"),
+            discord.app_commands.Choice(name="off √¢?text only", value="off"),
+            discord.app_commands.Choice(name="status √¢?show current mode", value="status"),
         ])
         async def slash_voice(interaction: discord.Interaction, mode: str = ""):
             await self._run_simple_slash(interaction, f"/voice {mode}".strip())
@@ -2047,13 +2047,13 @@ class DiscordAdapter(BasePlatformAdapter):
         Send a button-based exec approval prompt for a dangerous command.
 
         The buttons call ``resolve_gateway_approval()`` to unblock the waiting
-        agent thread ‚Ä?this replaces the text-based ``/approve`` flow on Discord.
+        agent thread √¢?this replaces the text-based ``/approve`` flow on Discord.
         """
         if not self._client or not DISCORD_AVAILABLE:
             return SendResult(success=False, error="Not connected")
 
         try:
-            # Resolve channel ‚Ä?use thread_id from metadata if present
+            # Resolve channel √¢?use thread_id from metadata if present
             target_id = chat_id
             if metadata and metadata.get("thread_id"):
                 target_id = metadata["thread_id"]
@@ -2066,7 +2066,7 @@ class DiscordAdapter(BasePlatformAdapter):
             max_desc = 4088
             cmd_display = command if len(command) <= max_desc else command[: max_desc - 3] + "..."
             embed = discord.Embed(
-                title="‚ö†Ô∏è Command Approval Required",
+                title="√¢¬†√Ø¬∏ Command Approval Required",
                 description=f"```\n{cmd_display}\n```",
                 color=discord.Color.orange(),
             )
@@ -2101,7 +2101,7 @@ class DiscordAdapter(BasePlatformAdapter):
 
             default_hint = f" (default: {default})" if default else ""
             embed = discord.Embed(
-                title="‚ö?Update Needs Your Input",
+                title="√¢?Update Needs Your Input",
                 description=f"{prompt}{default_hint}",
                 color=discord.Color.gold(),
             )
@@ -2126,7 +2126,7 @@ class DiscordAdapter(BasePlatformAdapter):
     ) -> SendResult:
         """Send an interactive select-menu model picker.
 
-        Two-step drill-down: provider dropdown ‚Ü?model dropdown.
+        Two-step drill-down: provider dropdown √¢?model dropdown.
         Uses Discord embeds + Select menus via ``ModelPickerView``.
         """
         if not self._client or not DISCORD_AVAILABLE:
@@ -2149,7 +2149,7 @@ class DiscordAdapter(BasePlatformAdapter):
                 provider_label = current_provider
 
             embed = discord.Embed(
-                title="‚ö?Model Configuration",
+                title="√¢?Model Configuration",
                 description=(
                     f"Current model: `{current_model or 'unknown'}`\n"
                     f"Provider: {provider_label}\n\n"
@@ -2492,7 +2492,7 @@ class DiscordAdapter(BasePlatformAdapter):
         if thread_id:
             self._threads.mark(thread_id)
 
-        # Only batch plain text messages ‚Ä?commands, media, etc. dispatch
+        # Only batch plain text messages √¢?commands, media, etc. dispatch
         # immediately since they won't be split by the Discord client.
         if msg_type == MessageType.TEXT and self._text_batch_delay_seconds > 0:
             self._enqueue_text_event(event)
@@ -2580,7 +2580,7 @@ if DISCORD_AVAILABLE:
 
         Shows four buttons: Allow Once, Allow Session, Always Allow, Deny.
         Clicking a button calls ``resolve_gateway_approval()`` to unblock the
-        waiting agent thread ‚Ä?the same mechanism as the text ``/approve`` flow.
+        waiting agent thread √¢?the same mechanism as the text ``/approve`` flow.
         Only users in the allowed list can click.  Times out after 5 minutes.
         """
 
@@ -2730,13 +2730,13 @@ if DISCORD_AVAILABLE:
             except Exception as exc:
                 logger.error("Failed to write update response: %s", exc)
 
-        @discord.ui.button(label="Yes", style=discord.ButtonStyle.green, emoji="‚ú?)
+        @discord.ui.button(label="Yes", style=discord.ButtonStyle.green, emoji="√¢?)
         async def yes_btn(
             self, interaction: discord.Interaction, button: discord.ui.Button
         ):
             await self._respond(interaction, "y", discord.Color.green(), "Yes")
 
-        @discord.ui.button(label="No", style=discord.ButtonStyle.red, emoji="‚ú?)
+        @discord.ui.button(label="No", style=discord.ButtonStyle.red, emoji="√¢?)
         async def no_btn(
             self, interaction: discord.Interaction, button: discord.ui.Button
         ):
@@ -2750,7 +2750,7 @@ if DISCORD_AVAILABLE:
     class ModelPickerView(discord.ui.View):
         """Interactive select-menu view for model switching.
 
-        Two-step drill-down: provider dropdown ‚Ü?model dropdown.
+        Two-step drill-down: provider dropdown √¢?model dropdown.
         Edits the original message in-place as the user navigates.
         Times out after 2 minutes.
         """
@@ -2844,7 +2844,7 @@ if DISCORD_AVAILABLE:
             self.add_item(select)
 
             back_btn = discord.ui.Button(
-                label="‚óÄ Back", style=discord.ButtonStyle.grey, custom_id="model_back"
+                label="√¢ Back", style=discord.ButtonStyle.grey, custom_id="model_back"
             )
             back_btn.callback = self._on_back
             self.add_item(back_btn)
@@ -2873,11 +2873,11 @@ if DISCORD_AVAILABLE:
 
             total = provider.get("total_models", 0) if provider else 0
             shown = min(len(provider.get("models", [])), 25) if provider else 0
-            extra = f"\n*{total - shown} more available ‚Ä?type `/model <name>` directly*" if total > shown else ""
+            extra = f"\n*{total - shown} more available √¢?type `/model <name>` directly*" if total > shown else ""
 
             await interaction.response.edit_message(
                 embed=discord.Embed(
-                    title="‚ö?Model Configuration",
+                    title="√¢?Model Configuration",
                     description=f"Provider: **{pname}**\nSelect a model:{extra}",
                     color=discord.Color.blue(),
                 ),
@@ -2911,7 +2911,7 @@ if DISCORD_AVAILABLE:
             self.clear_items()
             await interaction.response.edit_message(
                 embed=discord.Embed(
-                    title="‚ö?Model Switched",
+                    title="√¢?Model Switched",
                     description=result_text,
                     color=discord.Color.green(),
                 ),
@@ -2935,7 +2935,7 @@ if DISCORD_AVAILABLE:
 
             await interaction.response.edit_message(
                 embed=discord.Embed(
-                    title="‚ö?Model Configuration",
+                    title="√¢?Model Configuration",
                     description=(
                         f"Current model: `{self.current_model or 'unknown'}`\n"
                         f"Provider: {provider_label}\n\n"
@@ -2951,7 +2951,7 @@ if DISCORD_AVAILABLE:
             self.clear_items()
             await interaction.response.edit_message(
                 embed=discord.Embed(
-                    title="‚ö?Model Configuration",
+                    title="√¢?Model Configuration",
                     description="Model selection cancelled.",
                     color=discord.Color.greyple(),
                 ),

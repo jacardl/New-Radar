@@ -44,8 +44,8 @@ def _hash_sender_id(value: str) -> str:
 def _hash_chat_id(value: str) -> str:
     """Hash the numeric portion of a chat ID, preserving platform prefix.
 
-    ``telegram:12345`` â†?``telegram:<hash>``
-    ``12345``          â†?``<hash>``
+    ``telegram:12345`` Ã©Â«?``telegram:<hash>``
+    ``12345``          Ã©Â«?``<hash>``
     """
     colon = value.find(":")
     if colon > 0:
@@ -57,7 +57,7 @@ def _hash_chat_id(value: str) -> str:
 from .config import (
     Platform,
     GatewayConfig,
-    SessionResetPolicy,  # noqa: F401 â€?re-exported via gateway/__init__.py
+    SessionResetPolicy,  # noqa: F401 Ã©Â¥?re-exported via gateway/__init__.py
     HomeChannel,
 )
 
@@ -241,7 +241,7 @@ def build_session_context_prompt(
     # User identity.
     # In shared thread sessions (non-DM with thread_id), multiple users
     # contribute to the same conversation.  Don't pin a single user name
-    # in the system prompt â€?it changes per-turn and would bust the prompt
+    # in the system prompt Ã©Â¥?it changes per-turn and would bust the prompt
     # cache.  Instead, note that this is a multi-user thread; individual
     # sender names are prefixed on each user message by the gateway.
     _is_shared_thread = (
@@ -250,7 +250,7 @@ def build_session_context_prompt(
     )
     if _is_shared_thread:
         lines.append(
-            "**Session type:** Multi-user thread â€?messages are prefixed "
+            "**Session type:** Multi-user thread Ã©Â¥?messages are prefixed "
             "with [sender name]. Multiple users may participate."
         )
     elif context.source.user_name:
@@ -266,7 +266,7 @@ def build_session_context_prompt(
         lines.append("")
         lines.append(
             "**Platform notes:** You are running inside Slack. "
-            "You do NOT have access to Slack-specific APIs â€?you cannot search "
+            "You do NOT have access to Slack-specific APIs Ã©Â¥?you cannot search "
             "channel history, pin/unpin messages, manage channels, or list users. "
             "Do not promise to perform these actions. If the user asks, explain "
             "that you can only read messages sent directly to you and respond."
@@ -275,7 +275,7 @@ def build_session_context_prompt(
         lines.append("")
         lines.append(
             "**Platform notes:** You are running inside Discord. "
-            "You do NOT have access to Discord-specific APIs â€?you cannot search "
+            "You do NOT have access to Discord-specific APIs Ã©Â¥?you cannot search "
             "channel history, pin messages, manage roles, or list server members. "
             "Do not promise to perform these actions. If the user asks, explain "
             "that you can only read messages sent directly to you and respond."
@@ -285,7 +285,7 @@ def build_session_context_prompt(
     platforms_list = ["local (files on this machine)"]
     for p in context.connected_platforms:
         if p != Platform.LOCAL:
-            platforms_list.append(f"{p.value}: Connected âœ?)
+            platforms_list.append(f"{p.value}: Connected Ã©?)
     
     lines.append(f"**Connected Platforms:** {', '.join(platforms_list)}")
     
@@ -303,19 +303,19 @@ def build_session_context_prompt(
     
     # Origin delivery
     if context.source.platform == Platform.LOCAL:
-        lines.append("- `\"origin\"` â†?Local output (saved to files)")
+        lines.append("- `\"origin\"` Ã©Â«?Local output (saved to files)")
     else:
         _origin_label = context.source.chat_name or (
             _hash_chat_id(context.source.chat_id) if redact_pii else context.source.chat_id
         )
-        lines.append(f"- `\"origin\"` â†?Back to this chat ({_origin_label})")
+        lines.append(f"- `\"origin\"` Ã©Â«?Back to this chat ({_origin_label})")
     
     # Local always available
-    lines.append("- `\"local\"` â†?Save to local files only (~/.hermes/cron/output/)")
+    lines.append("- `\"local\"` Ã©Â«?Save to local files only (~/.hermes/cron/output/)")
     
     # Platform home channels
     for platform, home in context.home_channels.items():
-        lines.append(f"- `\"{platform.value}\"` â†?Home channel ({home.name})")
+        lines.append(f"- `\"{platform.value}\"` Ã©Â«?Home channel ({home.name})")
     
     # Note about explicit targeting
     lines.append("")
@@ -453,7 +453,7 @@ def build_session_key(
         ``group_sessions_per_user`` is enabled.
       - thread_id differentiates threads within that parent chat.  When
         ``thread_sessions_per_user`` is False (default), threads are *shared* across all
-        participants â€?user_id is NOT appended, so every user in the thread
+        participants Ã©Â¥?user_id is NOT appended, so every user in the thread
         shares a single session.  This is the expected UX for threaded
         conversations (Telegram forum topics, Discord threads, Slack threads).
       - Without participant identifiers, or when isolation is disabled, messages fall back to one
@@ -578,7 +578,7 @@ class SessionStore:
     def _is_session_expired(self, entry: SessionEntry) -> bool:
         """Check if a session has expired based on its reset policy.
         
-        Works from the entry alone â€?no SessionSource needed.
+        Works from the entry alone Ã©Â¥?no SessionSource needed.
         Used by the background expiry watcher to proactively flush memories.
         Sessions with active background processes are never considered expired.
         """
@@ -663,7 +663,7 @@ class SessionStore:
         Uses the SQLite database as the source of truth because it preserves
         historical session records (ended sessions still count).  The in-memory
         ``_entries`` dict replaces entries on reset, so ``len(_entries)`` would
-        stay at 1 for single-platform users â€?which is the bug this fixes.
+        stay at 1 for single-platform users Ã©Â¥?which is the bug this fixes.
 
         The current session is already in the DB by the time this is called
         (get_or_create_session runs first), so we check ``> 1``.
@@ -705,7 +705,7 @@ class SessionStore:
                 entry = self._entries[session_key]
 
                 # Auto-reset sessions marked as suspended (e.g. after /stop
-                # broke a stuck loop â€?#7536).
+                # broke a stuck loop Ã©Â¥?#7536).
                 if entry.suspended:
                     reset_reason = "suspended"
                 else:
@@ -1039,12 +1039,12 @@ class SessionStore:
         # (because _flush_messages_to_session_db skips messages already in
         # conversation_history, assuming they're persisted).  On the *next*
         # turn load_transcript returns those few SQLite rows and ignores the
-        # full JSONL history â€?the model sees a context of 1-4 messages instead
+        # full JSONL history Ã©Â¥?the model sees a context of 1-4 messages instead
         # of hundreds.  Using the longer source prevents this silent truncation.
         if len(jsonl_messages) > len(db_messages):
             if db_messages:
                 logger.debug(
-                    "Session %s: JSONL has %d messages vs SQLite %d â€?"
+                    "Session %s: JSONL has %d messages vs SQLite %d Ã©Â¥?"
                     "using JSONL (legacy session not yet fully migrated)",
                     session_id, len(jsonl_messages), len(db_messages),
                 )

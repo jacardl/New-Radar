@@ -1,4 +1,4 @@
-"""Gateway streaming consumer �?bridges sync agent callbacks to async platform delivery.
+"""Gateway streaming consumer â?bridges sync agent callbacks to async platform delivery.
 
 The agent fires stream_delta_callback(text) synchronously from its worker thread.
 GatewayStreamConsumer:
@@ -28,7 +28,7 @@ logger = logging.getLogger("gateway.stream_consumer")
 # Sentinel to signal the stream is complete
 _DONE = object()
 
-# Sentinel to signal a tool boundary �?finalize current message and start a
+# Sentinel to signal a tool boundary â?finalize current message and start a
 # new one so that subsequent text appears below tool progress messages.
 _NEW_SEGMENT = object()
 
@@ -42,7 +42,7 @@ class StreamConsumerConfig:
     """Runtime config for a single stream consumer instance."""
     edit_interval: float = 1.0
     buffer_threshold: int = 40
-    cursor: str = " �?
+    cursor: str = " â?
 
 
 class GatewayStreamConsumer:
@@ -133,7 +133,7 @@ class GatewayStreamConsumer:
         self._fallback_prefix = ""
 
     def on_delta(self, text: str) -> None:
-        """Thread-safe callback �?called from the agent's worker thread.
+        """Thread-safe callback â?called from the agent's worker thread.
 
         When *text* is ``None``, signals a tool boundary: the current message
         is finalized and subsequent text will be sent as a new message so it
@@ -148,7 +148,7 @@ class GatewayStreamConsumer:
         """Signal that the stream is complete."""
         self._queue.put(_DONE)
 
-    # ── Think-block filtering ────────────────────────────────────────
+    # -- Think-block filtering ----------------------------------------
     # Models like MiniMax emit inline <think>...</think> blocks in their
     # content.  The CLI's _stream_delta suppresses these via a state
     # machine; we do the same here so gateway users never see raw
@@ -179,11 +179,11 @@ class GatewayStreamConsumer:
                         best_len = len(tag)
 
                 if best_len:
-                    # Found closing tag �?discard block, process remainder
+                    # Found closing tag â?discard block, process remainder
                     self._in_think_block = False
                     buf = buf[best_idx + best_len:]
                 else:
-                    # No closing tag yet �?hold tail that could be a
+                    # No closing tag yet â?hold tail that could be a
                     # partial closing tag prefix, discard the rest.
                     max_tag = max(len(t) for t in self._CLOSE_THINK_TAGS)
                     self._think_buffer = buf[-max_tag:] if len(buf) > max_tag else buf
@@ -192,7 +192,7 @@ class GatewayStreamConsumer:
                 # Look for earliest opening tag at a block boundary
                 # (start of text / preceded by newline + optional whitespace).
                 # This prevents false positives when models *mention* tags
-                # in prose (e.g. "the <think> tag is used for�?).
+                # in prose (e.g. "the <think> tag is used forâ?).
                 best_idx = -1
                 best_len = 0
                 for tag in self._OPEN_THINK_TAGS:
@@ -231,7 +231,7 @@ class GatewayStreamConsumer:
                     self._in_think_block = True
                     buf = buf[best_idx + best_len:]
                 else:
-                    # No opening tag �?check for a partial tag at the tail
+                    # No opening tag â?check for a partial tag at the tail
                     held_back = 0
                     for tag in self._OPEN_THINK_TAGS:
                         for i in range(1, len(tag)):
@@ -256,7 +256,7 @@ class GatewayStreamConsumer:
 
     async def run(self) -> None:
         """Async task that drains the queue and edits the platform message."""
-        # Platform message length limit �?leave room for cursor + formatting
+        # Platform message length limit â?leave room for cursor + formatting
         _raw_limit = getattr(self.adapter, "MAX_MESSAGE_LENGTH", 4096)
         _safe_limit = max(500, _raw_limit - len(self.cfg.cursor) - 100)
 
@@ -309,8 +309,8 @@ class GatewayStreamConsumer:
                         and self._message_id is None
                     ):
                         # No existing message to edit (first message or after a
-                        # segment break).  Use truncate_message �?the same
-                        # helper the non-streaming path uses �?to split with
+                        # segment break).  Use truncate_message â?the same
+                        # helper the non-streaming path uses â?to split with
                         # proper word/code-fence boundaries and chunk
                         # indicators like "(1/2)".
                         chunks = self.adapter.truncate_message(
@@ -389,7 +389,7 @@ class GatewayStreamConsumer:
                 # never returned a real message ID (e.g. Signal, webhook with
                 # github_comment delivery).  Resetting to None would re-enter
                 # the "first send" path on every tool boundary and post one
-                # platform message per tool call �?that is what caused 155
+                # platform message per tool call â?that is what caused 155
                 # comments under a single PR.  Instead, preserve the sentinel
                 # so the full continuation is delivered once via
                 # _send_fallback_final.
@@ -412,7 +412,7 @@ class GatewayStreamConsumer:
             # final response as sent so the gateway's already_sent check
             # doesn't trigger a duplicate message.  The 5-second
             # stream_task timeout (gateway/run.py) can cancel us while
-            # waiting on a slow Telegram API call �?without this flag the
+            # waiting on a slow Telegram API call â?without this flag the
             # gateway falls through to the normal send path.
             if self._already_sent:
                 self._final_response_sent = True
@@ -432,7 +432,7 @@ class GatewayStreamConsumer:
         ``MEDIA:<path>`` tags and ``[[audio_as_voice]]`` directives meant for
         the platform adapter's post-processing.  The actual media files are
         delivered separately via ``_deliver_media_from_response()`` after the
-        stream finishes �?we just need to hide the raw directives from the
+        stream finishes â?we just need to hide the raw directives from the
         user.
         """
         if "MEDIA:" not in text and "[[audio_as_voice]]" not in text:
@@ -512,7 +512,7 @@ class GatewayStreamConsumer:
         continuation = self._continuation_text(final_text)
         self._fallback_final_send = False
         if not continuation.strip():
-            # Nothing new to send �?the visible partial already matches final text.
+            # Nothing new to send â?the visible partial already matches final text.
             self._already_sent = True
             self._final_response_sent = True
             return
@@ -554,7 +554,7 @@ class GatewayStreamConsumer:
                     self._last_sent_text = last_successful_chunk
                     self._fallback_prefix = ""
                     return
-                # No fallback chunk reached the user �?allow the normal gateway
+                # No fallback chunk reached the user â?allow the normal gateway
                 # final-send path to try one more time.
                 self._already_sent = False
                 self._message_id = None
@@ -581,7 +581,7 @@ class GatewayStreamConsumer:
         """Best-effort edit to remove the cursor from the last visible message.
 
         Called when entering fallback mode so the user doesn't see a stuck
-        cursor (�? in the partial message.
+        cursor (â? in the partial message.
         """
         if not self._message_id or self._message_id == "__no_edit__":
             return
@@ -596,7 +596,7 @@ class GatewayStreamConsumer:
             )
             self._last_sent_text = prefix
         except Exception:
-            pass  # best-effort �?don't let this block the fallback path
+            pass  # best-effort â?don't let this block the fallback path
 
     async def _send_commentary(self, text: str) -> bool:
         """Send a completed interim assistant commentary message."""
@@ -640,18 +640,18 @@ class GatewayStreamConsumer:
         # Guard: do not create a brand-new standalone message when the only
         # visible content is a handful of characters alongside the streaming
         # cursor.  During rapid tool-calling the model often emits 1-2 tokens
-        # before switching to tool calls; the resulting "X �? message risks
+        # before switching to tool calls; the resulting "X â? message risks
         # leaving the cursor permanently visible if the follow-up edit (to
         # strip the cursor on segment break) is rate-limited by the platform.
         # This was reported on Telegram, Matrix, and other clients where the
-        # �?block character renders as a visible white box ("tofu").
-        # Existing messages (edits) are unaffected �?only first sends gated.
+        # â?block character renders as a visible white box ("tofu").
+        # Existing messages (edits) are unaffected â?only first sends gated.
         _MIN_NEW_MSG_CHARS = 4
         if (self._message_id is None
                 and self.cfg.cursor
                 and self.cfg.cursor in text
                 and len(_visible_stripped) < _MIN_NEW_MSG_CHARS):
-            return True  # too short for a standalone message �?accumulate more
+            return True  # too short for a standalone message â?accumulate more
         try:
             if self._message_id is not None:
                 if self._edit_supported:
@@ -667,7 +667,7 @@ class GatewayStreamConsumer:
                     if result.success:
                         self._already_sent = True
                         self._last_sent_text = text
-                        # Successful edit �?reset flood strike counter
+                        # Successful edit â?reset flood strike counter
                         self._flood_strikes = 0
                         return True
                     else:
@@ -682,20 +682,20 @@ class GatewayStreamConsumer:
                             )
                             logger.debug(
                                 "Flood control on edit (strike %d/%d), "
-                                "backoff interval �?%.1fs",
+                                "backoff interval â?%.1fs",
                                 self._flood_strikes,
                                 self._MAX_FLOOD_STRIKES,
                                 self._current_edit_interval,
                             )
                             if self._flood_strikes < self._MAX_FLOOD_STRIKES:
-                                # Don't disable edits yet �?just slow down.
+                                # Don't disable edits yet â?just slow down.
                                 # Update _last_edit_time so the next edit
                                 # respects the new interval.
                                 self._last_edit_time = time.monotonic()
                                 return False
 
                         # Non-flood error OR flood strikes exhausted: enter
-                        # fallback mode �?send only the missing tail once the
+                        # fallback mode â?send only the missing tail once the
                         # final response is available.
                         logger.debug(
                             "Edit failed (strikes=%d), entering fallback mode",
@@ -706,15 +706,15 @@ class GatewayStreamConsumer:
                         self._edit_supported = False
                         self._already_sent = True
                         # Best-effort: strip the cursor from the last visible
-                        # message so the user doesn't see a stuck �?
+                        # message so the user doesn't see a stuck â?
                         await self._try_strip_cursor()
                         return False
                 else:
-                    # Editing not supported �?skip intermediate updates.
+                    # Editing not supported â?skip intermediate updates.
                     # The final response will be sent by the fallback path.
                     return False
             else:
-                # First message �?send new
+                # First message â?send new
                 result = await self.adapter.send(
                     chat_id=self.chat_id,
                     content=text,
@@ -736,7 +736,7 @@ class GatewayStreamConsumer:
                         self._message_id = "__no_edit__"
                     return True
                 else:
-                    # Initial send failed �?disable streaming for this session
+                    # Initial send failed â?disable streaming for this session
                     self._edit_supported = False
                     return False
         except Exception as e:

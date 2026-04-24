@@ -131,7 +131,7 @@ def _mint_payload(api_key: str = "agent-key") -> dict:
 
 def test_get_nous_auth_status_checks_credential_pool(tmp_path, monkeypatch):
     """get_nous_auth_status() should find Nous credentials in the pool
-    even when the auth store has no Nous provider entry �?this is the
+    even when the auth store has no Nous provider entry é¥?this is the
     case when login happened via the dashboard device-code flow which
     saves to the pool only.
     """
@@ -139,7 +139,7 @@ def test_get_nous_auth_status_checks_credential_pool(tmp_path, monkeypatch):
 
     hermes_home = tmp_path / "hermes"
     hermes_home.mkdir(parents=True, exist_ok=True)
-    # Empty auth store �?no Nous provider entry
+    # Empty auth store é¥?no Nous provider entry
     (hermes_home / "auth.json").write_text(json.dumps({
         "version": 1, "providers": {},
     }))

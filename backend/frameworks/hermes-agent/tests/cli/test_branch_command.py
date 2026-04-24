@@ -1,4 +1,4 @@
-"""Tests for the /branch (/fork) command �?session branching.
+"""Tests for the /branch (/fork) command é¥?session branching.
 
 Verifies that:
 - Branching creates a new session with copied conversation history

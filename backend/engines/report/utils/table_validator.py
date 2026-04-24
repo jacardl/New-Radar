@@ -1,12 +1,12 @@
 """
-表格验证和修复工具�?
+è¡¨æ ¼éªè¯åä¿®å¤å·¥å·
 
-提供�?IR 表格数据的验证和修复能力�?
-1. 验证表格数据格式是否符合 IR schema 要求
-2. 检测嵌�?cells 结构问题
-3. 验证 rows/cells 基本格式
-4. 检查数据完整�?
-5. 本地规则修复常见问题
+æä¾å¯?IR è¡¨æ ¼æ°æ®çéªè¯åä¿®å¤è½åï¼?
+1. éªè¯è¡¨æ ¼æ°æ®æ ¼å¼æ¯å¦ç¬¦å IR schema è¦æ±
+2. æ£æµåµå¥?cells ç»æé®é¢
+3. éªè¯ rows/cells åºæ¬æ ¼å¼
+4. æ£æ¥æ°æ®å®æ´æ?
+5. æ¬å°è§åä¿®å¤å¸¸è§é®é¢
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from loguru import logger
 
 @dataclass
 class TableValidationResult:
-    """表格验证结果"""
+    """è¡¨æ ¼éªè¯ç»æ"""
     is_valid: bool
     errors: List[str]
     warnings: List[str]
@@ -28,47 +28,47 @@ class TableValidationResult:
     total_cells_count: int = 0
 
     def has_critical_errors(self) -> bool:
-        """是否有严重错误（会导致渲染失败）"""
+        """æ¯å¦æä¸¥ééè¯¯ï¼ä¼å¯¼è´æ¸²æå¤±è´¥ï¼"""
         return not self.is_valid and len(self.errors) > 0
 
 
 @dataclass
 class TableRepairResult:
-    """表格修复结果"""
+    """è¡¨æ ¼ä¿®å¤ç»æ"""
     success: bool
     repaired_block: Optional[Dict[str, Any]]
     changes: List[str]
 
     def has_changes(self) -> bool:
-        """是否有修�?""
+        """æ¯å¦æä¿®æ?""
         return len(self.changes) > 0
 
 
 class TableValidator:
     """
-    表格验证�?- 验证 IR 表格数据格式是否正确�?
+    è¡¨æ ¼éªè¯å?- éªè¯ IR è¡¨æ ¼æ°æ®æ ¼å¼æ¯å¦æ­£ç¡®
 
-    验证规则�?
-    1. 基本结构验证：type, rows 字段
-    2. 行结构验证：每行必须�?cells 数组
-    3. 单元格结构验证：每个 cell 必须�?blocks 数组
-    4. 嵌套 cells 检测：检测错误的嵌套 cells 结构
-    5. 数据完整性验证：检查空单元格和缺失数据
+    éªè¯è§åï¼?
+    1. åºæ¬ç»æéªè¯ï¼type, rows å­æ®µ
+    2. è¡ç»æéªè¯ï¼æ¯è¡å¿é¡»æ?cells æ°ç»
+    3. ååæ ¼ç»æéªè¯ï¼æ¯ä¸ª cell å¿é¡»æ?blocks æ°ç»
+    4. åµå¥ cells æ£æµï¼æ£æµéè¯¯çåµå¥ cells ç»æ
+    5. æ°æ®å®æ´æ§éªè¯ï¼æ£æ¥ç©ºååæ ¼åç¼ºå¤±æ°æ®
     """
 
     def __init__(self):
-        """初始化验证器"""
+        """åå§åéªè¯å¨"""
         pass
 
     def validate(self, table_block: Dict[str, Any]) -> TableValidationResult:
         """
-        验证表格格式�?
+        éªè¯è¡¨æ ¼æ ¼å¼
 
         Args:
-            table_block: table 类型�?block，包�?type, rows 等字�?
+            table_block: table ç±»åç?blockï¼åå?type, rows ç­å­æ®?
 
         Returns:
-            TableValidationResult: 验证结果
+            TableValidationResult: éªè¯ç»æ
         """
         errors: List[str] = []
         warnings: List[str] = []
@@ -76,39 +76,39 @@ class TableValidator:
         empty_cells_count = 0
         total_cells_count = 0
 
-        # 1. 基本结构验证
+        # 1. åºæ¬ç»æéªè¯
         if not isinstance(table_block, dict):
-            errors.append("table_block 必须是字典类�?)
+            errors.append("table_block å¿é¡»æ¯å­å¸ç±»å?)
             return TableValidationResult(
                 False, errors, warnings, nested_cells_detected,
                 empty_cells_count, total_cells_count
             )
 
-        # 2. 检�?type
+        # 2. æ£æ?type
         block_type = table_block.get('type')
         if block_type != 'table':
-            errors.append(f"block type 应为 'table'，实际为 '{block_type}'")
+            errors.append(f"block type åºä¸º 'table'ï¼å®éä¸º '{block_type}'")
 
-        # 3. 验证 rows 字段
+        # 3. éªè¯ rows å­æ®µ
         rows = table_block.get('rows')
         if rows is None:
-            errors.append("缺少 rows 字段")
+            errors.append("ç¼ºå° rows å­æ®µ")
             return TableValidationResult(
                 False, errors, warnings, nested_cells_detected,
                 empty_cells_count, total_cells_count
             )
 
         if not isinstance(rows, list):
-            errors.append("rows 必须是数组类�?)
+            errors.append("rows å¿é¡»æ¯æ°ç»ç±»å?)
             return TableValidationResult(
                 False, errors, warnings, nested_cells_detected,
                 empty_cells_count, total_cells_count
             )
 
         if len(rows) == 0:
-            warnings.append("rows 数组为空，表格可能无法正常显�?)
+            warnings.append("rows æ°ç»ä¸ºç©ºï¼è¡¨æ ¼å¯è½æ æ³æ­£å¸¸æ¾ç¤?)
 
-        # 4. 验证每一�?
+        # 4. éªè¯æ¯ä¸è¡?
         for row_idx, row in enumerate(rows):
             row_result = self._validate_row(row, row_idx)
             errors.extend(row_result['errors'])
@@ -118,7 +118,7 @@ class TableValidator:
             empty_cells_count += row_result['empty_cells_count']
             total_cells_count += row_result['total_cells_count']
 
-        # 5. 检查列数一致�?
+        # 5. æ£æ¥åæ°ä¸è´æ?
         column_counts = []
         for row in rows:
             if isinstance(row, dict):
@@ -134,14 +134,14 @@ class TableValidator:
 
         if column_counts and len(set(column_counts)) > 1:
             warnings.append(
-                f"各行列数不一�? {column_counts}，可能导致渲染问�?
+                f"åè¡åæ°ä¸ä¸è? {column_counts}ï¼å¯è½å¯¼è´æ¸²æé®é¢?
             )
 
-        # 6. 空单元格警告
+        # 6. ç©ºååæ ¼è­¦å
         if total_cells_count > 0 and empty_cells_count > total_cells_count * 0.5:
             warnings.append(
-                f"超过50%的单元格为空 ({empty_cells_count}/{total_cells_count})�?
-                "表格可能缺少数据"
+                f"è¶è¿50%çååæ ¼ä¸ºç©º ({empty_cells_count}/{total_cells_count})ï¼?
+                "è¡¨æ ¼å¯è½ç¼ºå°æ°æ®"
             )
 
         is_valid = len(errors) == 0
@@ -151,7 +151,7 @@ class TableValidator:
         )
 
     def _validate_row(self, row: Any, row_idx: int) -> Dict[str, Any]:
-        """验证单行"""
+        """éªè¯åè¡"""
         result = {
             'errors': [],
             'warnings': [],
@@ -161,22 +161,22 @@ class TableValidator:
         }
 
         if not isinstance(row, dict):
-            result['errors'].append(f"rows[{row_idx}] 必须是对象类�?)
+            result['errors'].append(f"rows[{row_idx}] å¿é¡»æ¯å¯¹è±¡ç±»å?)
             return result
 
         cells = row.get('cells')
         if cells is None:
-            result['errors'].append(f"rows[{row_idx}] 缺少 cells 字段")
+            result['errors'].append(f"rows[{row_idx}] ç¼ºå° cells å­æ®µ")
             return result
 
         if not isinstance(cells, list):
-            result['errors'].append(f"rows[{row_idx}].cells 必须是数组类�?)
+            result['errors'].append(f"rows[{row_idx}].cells å¿é¡»æ¯æ°ç»ç±»å?)
             return result
 
         if len(cells) == 0:
-            result['warnings'].append(f"rows[{row_idx}].cells 数组为空")
+            result['warnings'].append(f"rows[{row_idx}].cells æ°ç»ä¸ºç©º")
 
-        # 验证每个单元�?
+        # éªè¯æ¯ä¸ªååæ ?
         for cell_idx, cell in enumerate(cells):
             cell_result = self._validate_cell(cell, row_idx, cell_idx)
             result['errors'].extend(cell_result['errors'])
@@ -190,7 +190,7 @@ class TableValidator:
         return result
 
     def _validate_cell(self, cell: Any, row_idx: int, cell_idx: int) -> Dict[str, Any]:
-        """验证单个单元�?""
+        """éªè¯åä¸ªååæ ?""
         result = {
             'errors': [],
             'warnings': [],
@@ -200,42 +200,42 @@ class TableValidator:
 
         if not isinstance(cell, dict):
             result['errors'].append(
-                f"rows[{row_idx}].cells[{cell_idx}] 必须是对象类�?
+                f"rows[{row_idx}].cells[{cell_idx}] å¿é¡»æ¯å¯¹è±¡ç±»å?
             )
             return result
 
-        # 检测嵌�?cells 结构（这是常见的 LLM 错误�?
+        # æ£æµåµå¥?cells ç»æï¼è¿æ¯å¸¸è§ç LLM éè¯¯ï¼?
         if 'cells' in cell and 'blocks' not in cell:
             result['nested_cells_detected'] = True
             result['errors'].append(
-                f"rows[{row_idx}].cells[{cell_idx}] 检测到错误的嵌�?cells 结构�?
-                "应该�?blocks 而不�?cells"
+                f"rows[{row_idx}].cells[{cell_idx}] æ£æµå°éè¯¯çåµå¥?cells ç»æï¼?
+                "åºè¯¥æ?blocks èä¸æ?cells"
             )
             return result
 
-        # 验证 blocks 字段
+        # éªè¯ blocks å­æ®µ
         blocks = cell.get('blocks')
         if blocks is None:
             result['errors'].append(
-                f"rows[{row_idx}].cells[{cell_idx}] 缺少 blocks 字段"
+                f"rows[{row_idx}].cells[{cell_idx}] ç¼ºå° blocks å­æ®µ"
             )
             return result
 
         if not isinstance(blocks, list):
             result['errors'].append(
-                f"rows[{row_idx}].cells[{cell_idx}].blocks 必须是数组类�?
+                f"rows[{row_idx}].cells[{cell_idx}].blocks å¿é¡»æ¯æ°ç»ç±»å?
             )
             return result
 
-        # 检查是否为�?
+        # æ£æ¥æ¯å¦ä¸ºç©?
         if len(blocks) == 0:
             result['is_empty'] = True
         else:
-            # 检�?blocks 内容是否有效
+            # æ£æ?blocks åå®¹æ¯å¦ææ
             has_content = False
             for block in blocks:
                 if isinstance(block, dict):
-                    # 检�?paragraph �?inlines
+                    # æ£æ?paragraph ç?inlines
                     if block.get('type') == 'paragraph':
                         inlines = block.get('inlines', [])
                         for inline in inlines:
@@ -244,7 +244,7 @@ class TableValidator:
                                 if text and text.strip():
                                     has_content = True
                                     break
-                    # 检查其他类型的 text/content
+                    # æ£æ¥å¶ä»ç±»åç text/content
                     elif block.get('text') or block.get('content'):
                         has_content = True
                         break
@@ -254,45 +254,45 @@ class TableValidator:
             if not has_content:
                 result['is_empty'] = True
 
-        # 验证 colspan/rowspan
+        # éªè¯ colspan/rowspan
         colspan = cell.get('colspan')
         if colspan is not None:
             if not isinstance(colspan, int) or colspan < 1:
                 result['warnings'].append(
-                    f"rows[{row_idx}].cells[{cell_idx}].colspan 值无�? {colspan}"
+                    f"rows[{row_idx}].cells[{cell_idx}].colspan å¼æ æ? {colspan}"
                 )
 
         rowspan = cell.get('rowspan')
         if rowspan is not None:
             if not isinstance(rowspan, int) or rowspan < 1:
                 result['warnings'].append(
-                    f"rows[{row_idx}].cells[{cell_idx}].rowspan 值无�? {rowspan}"
+                    f"rows[{row_idx}].cells[{cell_idx}].rowspan å¼æ æ? {rowspan}"
                 )
 
         return result
 
     def can_render(self, table_block: Dict[str, Any]) -> bool:
         """
-        判断表格是否能正常渲染（快速检查）�?
+        å¤æ­è¡¨æ ¼æ¯å¦è½æ­£å¸¸æ¸²æï¼å¿«éæ£æ¥ï¼
 
         Args:
-            table_block: table 类型�?block
+            table_block: table ç±»åç?block
 
         Returns:
-            bool: 是否能正常渲�?
+            bool: æ¯å¦è½æ­£å¸¸æ¸²æ?
         """
         result = self.validate(table_block)
         return result.is_valid
 
     def has_nested_cells(self, table_block: Dict[str, Any]) -> bool:
         """
-        检测表格是否包含嵌�?cells 结构�?
+        æ£æµè¡¨æ ¼æ¯å¦åå«åµå¥?cells ç»æ
 
         Args:
-            table_block: table 类型�?block
+            table_block: table ç±»åç?block
 
         Returns:
-            bool: 是否包含嵌套 cells
+            bool: æ¯å¦åå«åµå¥ cells
         """
         result = self.validate(table_block)
         return result.nested_cells_detected
@@ -300,21 +300,21 @@ class TableValidator:
 
 class TableRepairer:
     """
-    表格修复�?- 尝试修复表格数据�?
+    è¡¨æ ¼ä¿®å¤å?- å°è¯ä¿®å¤è¡¨æ ¼æ°æ®
 
-    修复策略�?
-    1. 展平嵌套 cells 结构
-    2. 补充缺失�?blocks 字段
-    3. 规范化单元格结构
-    4. 验证修复结果
+    ä¿®å¤ç­ç¥ï¼?
+    1. å±å¹³åµå¥ cells ç»æ
+    2. è¡¥åç¼ºå¤±ç?blocks å­æ®µ
+    3. è§èåååæ ¼ç»æ
+    4. éªè¯ä¿®å¤ç»æ
     """
 
     def __init__(self, validator: Optional[TableValidator] = None):
         """
-        初始化修复器�?
+        åå§åä¿®å¤å¨
 
         Args:
-            validator: 表格验证器实�?
+            validator: è¡¨æ ¼éªè¯å¨å®ä¾?
         """
         self.validator = validator or TableValidator()
 
@@ -324,37 +324,37 @@ class TableRepairer:
         validation_result: Optional[TableValidationResult] = None
     ) -> TableRepairResult:
         """
-        尝试修复表格数据�?
+        å°è¯ä¿®å¤è¡¨æ ¼æ°æ®
 
         Args:
-            table_block: table 类型�?block
-            validation_result: 验证结果（可选，如果没有会先进行验证�?
+            table_block: table ç±»åç?block
+            validation_result: éªè¯ç»æï¼å¯éï¼å¦ææ²¡æä¼åè¿è¡éªè¯ï¼?
 
         Returns:
-            TableRepairResult: 修复结果
+            TableRepairResult: ä¿®å¤ç»æ
         """
-        # 1. 如果没有验证结果，先验证
+        # 1. å¦ææ²¡æéªè¯ç»æï¼åéªè¯
         if validation_result is None:
             validation_result = self.validator.validate(table_block)
 
-        # 2. 如果已经有效，返回原数据
+        # 2. å¦æå·²ç»ææï¼è¿ååæ°æ®
         if validation_result.is_valid and not validation_result.nested_cells_detected:
             return TableRepairResult(True, table_block, [])
 
-        # 3. 尝试修复
+        # 3. å°è¯ä¿®å¤
         repaired = copy.deepcopy(table_block)
         changes: List[str] = []
 
-        # 确保基本结构
+        # ç¡®ä¿åºæ¬ç»æ
         if 'type' not in repaired:
             repaired['type'] = 'table'
-            changes.append("添加缺失�?type 字段")
+            changes.append("æ·»å ç¼ºå¤±ç?type å­æ®µ")
 
         if 'rows' not in repaired or not isinstance(repaired.get('rows'), list):
             repaired['rows'] = []
-            changes.append("添加缺失�?rows 字段")
+            changes.append("æ·»å ç¼ºå¤±ç?rows å­æ®µ")
 
-        # 修复每一�?
+        # ä¿®å¤æ¯ä¸è¡?
         repaired_rows: List[Dict[str, Any]] = []
         for row_idx, row in enumerate(repaired.get('rows', [])):
             repaired_row, row_changes = self._repair_row(row, row_idx)
@@ -363,13 +363,13 @@ class TableRepairer:
 
         repaired['rows'] = repaired_rows
 
-        # 4. 验证修复结果
+        # 4. éªè¯ä¿®å¤ç»æ
         repaired_validation = self.validator.validate(repaired)
         success = repaired_validation.is_valid
 
         if not success:
             logger.warning(
-                f"表格修复后仍有问�? {repaired_validation.errors}"
+                f"è¡¨æ ¼ä¿®å¤åä»æé®é¢? {repaired_validation.errors}"
             )
 
         return TableRepairResult(success, repaired, changes)
@@ -377,31 +377,31 @@ class TableRepairer:
     def _repair_row(
         self, row: Any, row_idx: int
     ) -> Tuple[Dict[str, Any], List[str]]:
-        """修复单行"""
+        """ä¿®å¤åè¡"""
         changes: List[str] = []
 
         if not isinstance(row, dict):
             return {'cells': [self._default_cell()]}, [
-                f"rows[{row_idx}] 类型错误，已重建"
+                f"rows[{row_idx}] ç±»åéè¯¯ï¼å·²éå»º"
             ]
 
         repaired_row = dict(row)
 
-        # 确保�?cells 字段
+        # ç¡®ä¿æ?cells å­æ®µ
         if 'cells' not in repaired_row or not isinstance(repaired_row.get('cells'), list):
             repaired_row['cells'] = [self._default_cell()]
-            changes.append(f"rows[{row_idx}] 添加缺失�?cells 字段")
+            changes.append(f"rows[{row_idx}] æ·»å ç¼ºå¤±ç?cells å­æ®µ")
             return repaired_row, changes
 
-        # 修复每个单元�?
+        # ä¿®å¤æ¯ä¸ªååæ ?
         repaired_cells: List[Dict[str, Any]] = []
         for cell_idx, cell in enumerate(repaired_row.get('cells', [])):
             if isinstance(cell, dict) and 'cells' in cell and 'blocks' not in cell:
-                # 展平嵌套 cells
+                # å±å¹³åµå¥ cells
                 flattened = self._flatten_nested_cells(cell)
                 repaired_cells.extend(flattened)
                 changes.append(
-                    f"rows[{row_idx}].cells[{cell_idx}] 展平嵌套 cells 结构"
+                    f"rows[{row_idx}].cells[{cell_idx}] å±å¹³åµå¥ cells ç»æ"
                 )
             else:
                 repaired_cell, cell_changes = self._repair_cell(cell, row_idx, cell_idx)
@@ -414,23 +414,23 @@ class TableRepairer:
     def _repair_cell(
         self, cell: Any, row_idx: int, cell_idx: int
     ) -> Tuple[Dict[str, Any], List[str]]:
-        """修复单个单元�?""
+        """ä¿®å¤åä¸ªååæ ?""
         changes: List[str] = []
 
         if not isinstance(cell, dict):
             if isinstance(cell, (str, int, float)):
                 return {
                     'blocks': [self._text_to_paragraph(str(cell))]
-                }, [f"rows[{row_idx}].cells[{cell_idx}] 转换为标准格�?]
+                }, [f"rows[{row_idx}].cells[{cell_idx}] è½¬æ¢ä¸ºæ åæ ¼å¼?]
             return self._default_cell(), [
-                f"rows[{row_idx}].cells[{cell_idx}] 类型错误，已重建"
+                f"rows[{row_idx}].cells[{cell_idx}] ç±»åéè¯¯ï¼å·²éå»º"
             ]
 
         repaired_cell = dict(cell)
 
-        # 确保�?blocks 字段
+        # ç¡®ä¿æ?blocks å­æ®µ
         if 'blocks' not in repaired_cell:
-            # 尝试从其他字段提取内�?
+            # å°è¯ä»å¶ä»å­æ®µæååå®?
             text = ''
             for key in ('text', 'content', 'value'):
                 if key in repaired_cell and repaired_cell[key]:
@@ -439,23 +439,23 @@ class TableRepairer:
 
             repaired_cell['blocks'] = [self._text_to_paragraph(text or '')]
             changes.append(
-                f"rows[{row_idx}].cells[{cell_idx}] 添加缺失�?blocks 字段"
+                f"rows[{row_idx}].cells[{cell_idx}] æ·»å ç¼ºå¤±ç?blocks å­æ®µ"
             )
         elif not isinstance(repaired_cell['blocks'], list):
             repaired_cell['blocks'] = [self._text_to_paragraph('')]
             changes.append(
-                f"rows[{row_idx}].cells[{cell_idx}].blocks 类型错误，已重建"
+                f"rows[{row_idx}].cells[{cell_idx}].blocks ç±»åéè¯¯ï¼å·²éå»º"
             )
         elif len(repaired_cell['blocks']) == 0:
             repaired_cell['blocks'] = [self._text_to_paragraph('')]
             changes.append(
-                f"rows[{row_idx}].cells[{cell_idx}].blocks 为空，添加默认内�?
+                f"rows[{row_idx}].cells[{cell_idx}].blocks ä¸ºç©ºï¼æ·»å é»è®¤åå®?
             )
 
         return repaired_cell, changes
 
     def _flatten_nested_cells(self, cell: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """展平嵌套�?cells 结构"""
+        """å±å¹³åµå¥ç?cells ç»æ"""
         nested_cells = cell.get('cells', [])
         if not isinstance(nested_cells, list):
             return [self._default_cell()]
@@ -464,13 +464,13 @@ class TableRepairer:
         for nested in nested_cells:
             if isinstance(nested, dict):
                 if 'blocks' in nested and 'cells' not in nested:
-                    # 正常�?cell
+                    # æ­£å¸¸ç?cell
                     result.append(nested)
                 elif 'cells' in nested and 'blocks' not in nested:
-                    # 继续递归展平
+                    # ç»§ç»­éå½å±å¹³
                     result.extend(self._flatten_nested_cells(nested))
                 else:
-                    # 尝试修复
+                    # å°è¯ä¿®å¤
                     repaired, _ = self._repair_cell(nested, 0, 0)
                     result.append(repaired)
             elif isinstance(nested, (str, int, float)):
@@ -481,13 +481,13 @@ class TableRepairer:
         return result if result else [self._default_cell()]
 
     def _default_cell(self) -> Dict[str, Any]:
-        """创建默认单元�?""
+        """åå»ºé»è®¤ååæ ?""
         return {
             'blocks': [self._text_to_paragraph('')]
         }
 
     def _text_to_paragraph(self, text: str) -> Dict[str, Any]:
-        """将文本转换为 paragraph block"""
+        """å°ææ¬è½¬æ¢ä¸º paragraph block"""
         return {
             'type': 'paragraph',
             'inlines': [{'text': text, 'marks': []}]
@@ -495,14 +495,14 @@ class TableRepairer:
 
 
 def create_table_validator() -> TableValidator:
-    """创建表格验证器实�?""
+    """åå»ºè¡¨æ ¼éªè¯å¨å®ä¾?""
     return TableValidator()
 
 
 def create_table_repairer(
     validator: Optional[TableValidator] = None
 ) -> TableRepairer:
-    """创建表格修复器实�?""
+    """åå»ºè¡¨æ ¼ä¿®å¤å¨å®ä¾?""
     return TableRepairer(validator)
 
 

@@ -1,6 +1,6 @@
 """
-Deep Search Agent状态管�?
-定义所有状态数据结构和操作方法
+Deep Search Agentç¶æç®¡ç?
+å®ä¹ææç¶ææ°æ®ç»æåæä½æ¹æ³
 """
 
 from dataclasses import dataclass, field
@@ -11,19 +11,19 @@ from datetime import datetime
 
 @dataclass
 class Search:
-    """单个搜索结果的状�?""
-    query: str = ""                    # 搜索查询
-    url: str = ""                      # 搜索结果的链�?
-    title: str = ""                    # 搜索结果标题
-    content: str = ""                  # 搜索返回的内�?
-    score: Optional[float] = None      # 相关度评�?
-    paragraph_title: str = ""          # 段落标题，便于展示归�?
-    search_tool: str = ""              # 使用的搜索工�?
-    has_result: bool = True            # 是否有返回结�?
+    """åä¸ªæç´¢ç»æçç¶æ?""
+    query: str = ""                    # æç´¢æ¥è¯¢
+    url: str = ""                      # æç´¢ç»æçé¾æ?
+    title: str = ""                    # æç´¢ç»ææ é¢
+    content: str = ""                  # æç´¢è¿åçåå®?
+    score: Optional[float] = None      # ç¸å³åº¦è¯å?
+    paragraph_title: str = ""          # æ®µè½æ é¢ï¼ä¾¿äºå±ç¤ºå½å±?
+    search_tool: str = ""              # ä½¿ç¨çæç´¢å·¥å?
+    has_result: bool = True            # æ¯å¦æè¿åç»æ?
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格�?""
+        """è½¬æ¢ä¸ºå­å¸æ ¼å¼?""
         return {
             "query": self.query,
             "url": self.url,
@@ -38,7 +38,7 @@ class Search:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Search":
-        """从字典创建Search对象"""
+        """ä»å­å¸åå»ºSearchå¯¹è±¡"""
         return cls(
             query=data.get("query", ""),
             url=data.get("url", ""),
@@ -54,25 +54,25 @@ class Search:
 
 @dataclass
 class Research:
-    """段落研究过程的状�?""
-    search_history: List[Search] = field(default_factory=list)     # 搜索记录列表
-    latest_summary: str = ""                                       # 当前段落的最新总结
-    reflection_iteration: int = 0                                  # 反思迭代次�?
-    is_completed: bool = False                                     # 是否完成研究
+    """æ®µè½ç ç©¶è¿ç¨çç¶æ?""
+    search_history: List[Search] = field(default_factory=list)     # æç´¢è®°å½åè¡¨
+    latest_summary: str = ""                                       # å½åæ®µè½çææ°æ»ç»
+    reflection_iteration: int = 0                                  # åæè¿­ä»£æ¬¡æ?
+    is_completed: bool = False                                     # æ¯å¦å®æç ç©¶
     
     def add_search(self, search: Search):
-        """添加搜索记录"""
+        """æ·»å æç´¢è®°å½"""
         self.search_history.append(search)
     
     def add_search_results(self, query: str, results: List[Dict[str, Any]], search_tool: str = "", paragraph_title: str = ""):
-        """批量添加搜索结果"""
+        """æ¹éæ·»å æç´¢ç»æ"""
         if not results:
-            # 记录一次“无结果”搜索，方便前端显示搜索轨迹
+            # è®°å½ä¸æ¬¡"æ ç»æ"æç´¢ï¼æ¹ä¾¿åç«¯æ¾ç¤ºæç´¢è½¨è¿¹
             self.add_search(
                 Search(
                     query=query or "",
-                    title="未找到结�?,
-                    content="本次搜索未返回结果或调用失败",
+                    title="æªæ¾å°ç»æ?,
+                    content="æ¬æ¬¡æç´¢æªè¿åç»ææè°ç¨å¤±è´¥",
                     url="",
                     score=None,
                     paragraph_title=paragraph_title,
@@ -102,19 +102,19 @@ class Research:
             )
     
     def get_search_count(self) -> int:
-        """获取搜索次数"""
+        """è·åæç´¢æ¬¡æ°"""
         return len(self.search_history)
     
     def increment_reflection(self):
-        """增加反思次�?""
+        """å¢å åææ¬¡æ?""
         self.reflection_iteration += 1
     
     def mark_completed(self):
-        """标记为完�?""
+        """æ è®°ä¸ºå®æ?""
         self.is_completed = True
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格�?""
+        """è½¬æ¢ä¸ºå­å¸æ ¼å¼?""
         return {
             "search_history": [search.to_dict() for search in self.search_history],
             "latest_summary": self.latest_summary,
@@ -124,7 +124,7 @@ class Research:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Research":
-        """从字典创建Research对象"""
+        """ä»å­å¸åå»ºResearchå¯¹è±¡"""
         search_history = [Search.from_dict(search_data) for search_data in data.get("search_history", [])]
         return cls(
             search_history=search_history,
@@ -136,22 +136,22 @@ class Research:
 
 @dataclass
 class Paragraph:
-    """报告中单个段落的状�?""
-    title: str = ""                                                # 段落标题
-    content: str = ""                                              # 段落的预期内容（初始规划�?
-    research: Research = field(default_factory=Research)          # 研究进度
-    order: int = 0                                                 # 段落顺序
+    """æ¥åä¸­åä¸ªæ®µè½çç¶æ?""
+    title: str = ""                                                # æ®µè½æ é¢
+    content: str = ""                                              # æ®µè½çé¢æåå®¹ï¼åå§è§åï¼?
+    research: Research = field(default_factory=Research)          # ç ç©¶è¿åº¦
+    order: int = 0                                                 # æ®µè½é¡ºåº
     
     def is_completed(self) -> bool:
-        """检查段落是否完�?""
+        """æ£æ¥æ®µè½æ¯å¦å®æ?""
         return self.research.is_completed and bool(self.research.latest_summary)
     
     def get_final_content(self) -> str:
-        """获取最终内�?""
+        """è·åæç»åå®?""
         return self.research.latest_summary or self.content
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格�?""
+        """è½¬æ¢ä¸ºå­å¸æ ¼å¼?""
         return {
             "title": self.title,
             "content": self.content,
@@ -161,7 +161,7 @@ class Paragraph:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Paragraph":
-        """从字典创建Paragraph对象"""
+        """ä»å­å¸åå»ºParagraphå¯¹è±¡"""
         research_data = data.get("research", {})
         research = Research.from_dict(research_data) if research_data else Research()
         
@@ -175,27 +175,27 @@ class Paragraph:
 
 @dataclass
 class State:
-    """整个报告的状�?""
-    query: str = ""                                                # 原始查询
-    report_title: str = ""                                         # 报告标题
+    """æ´ä¸ªæ¥åçç¶æ?""
+    query: str = ""                                                # åå§æ¥è¯¢
+    report_title: str = ""                                         # æ¥åæ é¢
     task_id: str = ""
     seed_id: str = ""
-    paragraphs: List[Paragraph] = field(default_factory=list)     # 段落列表
-    final_report: str = ""                                         # 最终报告内�?
-    is_completed: bool = False                                     # 是否完成
+    paragraphs: List[Paragraph] = field(default_factory=list)     # æ®µè½åè¡¨
+    final_report: str = ""                                         # æç»æ¥ååå®?
+    is_completed: bool = False                                     # æ¯å¦å®æ
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
     
     def add_paragraph(self, title: str, content: str) -> int:
         """
-        添加段落
+        æ·»å æ®µè½
         
         Args:
-            title: 段落标题
-            content: 段落内容
+            title: æ®µè½æ é¢
+            content: æ®µè½åå®¹
             
         Returns:
-            段落索引
+            æ®µè½ç´¢å¼
         """
         order = len(self.paragraphs)
         paragraph = Paragraph(title=title, content=content, order=order)
@@ -204,34 +204,34 @@ class State:
         return order
     
     def get_paragraph(self, index: int) -> Optional[Paragraph]:
-        """获取指定索引的段�?""
+        """è·åæå®ç´¢å¼çæ®µè?""
         if 0 <= index < len(self.paragraphs):
             return self.paragraphs[index]
         return None
     
     def get_completed_paragraphs_count(self) -> int:
-        """获取已完成段落数�?""
+        """è·åå·²å®ææ®µè½æ°é?""
         return sum(1 for p in self.paragraphs if p.is_completed())
     
     def get_total_paragraphs_count(self) -> int:
-        """获取总段落数�?""
+        """è·åæ»æ®µè½æ°é?""
         return len(self.paragraphs)
     
     def is_all_paragraphs_completed(self) -> bool:
-        """检查是否所有段落都完成"""
+        """æ£æ¥æ¯å¦æææ®µè½é½å®æ"""
         return all(p.is_completed() for p in self.paragraphs) if self.paragraphs else False
     
     def mark_completed(self):
-        """标记整个报告为完�?""
+        """æ è®°æ´ä¸ªæ¥åä¸ºå®æ?""
         self.is_completed = True
         self.update_timestamp()
     
     def update_timestamp(self):
-        """更新时间�?""
+        """æ´æ°æ¶é´æ?""
         self.updated_at = datetime.now().isoformat()
     
     def get_progress_summary(self) -> Dict[str, Any]:
-        """获取进度摘要"""
+        """è·åè¿åº¦æè¦"""
         completed = self.get_completed_paragraphs_count()
         total = self.get_total_paragraphs_count()
         
@@ -245,7 +245,7 @@ class State:
         }
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格�?""
+        """è½¬æ¢ä¸ºå­å¸æ ¼å¼?""
         return {
             "query": self.query,
             "report_title": self.report_title,
@@ -257,12 +257,12 @@ class State:
         }
     
     def to_json(self, indent: int = 2) -> str:
-        """转换为JSON字符�?""
+        """è½¬æ¢ä¸ºJSONå­ç¬¦ä¸?""
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "State":
-        """从字典创建State对象"""
+        """ä»å­å¸åå»ºStateå¯¹è±¡"""
         paragraphs = [Paragraph.from_dict(p_data) for p_data in data.get("paragraphs", [])]
         
         return cls(
@@ -277,18 +277,18 @@ class State:
     
     @classmethod
     def from_json(cls, json_str: str) -> "State":
-        """从JSON字符串创建State对象"""
+        """ä»JSONå­ç¬¦ä¸²åå»ºStateå¯¹è±¡"""
         data = json.loads(json_str)
         return cls.from_dict(data)
     
     def save_to_file(self, filepath: str):
-        """保存状态到文件"""
+        """ä¿å­ç¶æå°æä»¶"""
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(self.to_json())
     
     @classmethod
     def load_from_file(cls, filepath: str) -> "State":
-        """从文件加载状�?""
+        """ä»æä»¶å è½½ç¶æ?""
         with open(filepath, 'r', encoding='utf-8') as f:
             json_str = f.read()
         return cls.from_json(json_str)

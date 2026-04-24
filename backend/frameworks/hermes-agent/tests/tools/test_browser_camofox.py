@@ -249,7 +249,7 @@ class TestCamofoxGetImages:
 
 
 # ---------------------------------------------------------------------------
-# Routing integration �?verify browser_tool routes to camofox
+# Routing integration é¥?verify browser_tool routes to camofox
 # ---------------------------------------------------------------------------
 
 

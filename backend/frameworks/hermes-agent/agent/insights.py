@@ -2,7 +2,7 @@
 Session Insights Engine for Hermes Agent.
 
 Analyzes historical session data from the SQLite state database to produce
-comprehensive usage insights �?token consumption, cost estimates, tool usage
+comprehensive usage insights â?token consumption, cost estimates, tool usage
 patterns, activity trends, model/platform breakdowns, and session metrics.
 
 Inspired by Claude Code's /insights command, adapted for Hermes Agent's
@@ -87,7 +87,7 @@ def _bar_chart(values: List[int], max_width: int = 20) -> List[str]:
     peak = max(values) if values else 1
     if peak == 0:
         return ["" for _ in values]
-    return ["�? * max(1, int(v / peak * max_width)) if v > 0 else "" for v in values]
+    return ["â? * max(1, int(v / peak * max_width)) if v > 0 else "" for v in values]
 
 
 class InsightsEngine:
@@ -171,7 +171,7 @@ class InsightsEngine:
                      "billing_base_url, billing_mode, estimated_cost_usd, "
                      "actual_cost_usd, cost_status, cost_source")
 
-    # Pre-computed query strings �?f-string evaluated once at class definition,
+    # Pre-computed query strings â?f-string evaluated once at class definition,
     # not at runtime, so no user-controlled value can alter the query structure.
     _GET_SESSIONS_WITH_SOURCE = (
         f"SELECT {_SESSION_COLS} FROM sessions"
@@ -267,10 +267,10 @@ class InsightsEngine:
         # Merge: prefer tool_name source, supplement with tool_calls source
         # for tools not already counted
         if not tool_counts and tool_calls_counts:
-            # No tool_name data at all �?use tool_calls exclusively
+            # No tool_name data at all â?use tool_calls exclusively
             tool_counts = tool_calls_counts
         elif tool_counts and tool_calls_counts:
-            # Both sources have data �?use whichever has the higher count per tool
+            # Both sources have data â?use whichever has the higher count per tool
             # (they may overlap, so take the max to avoid double-counting)
             all_tools = set(tool_counts) | set(tool_calls_counts)
             merged = Counter()
@@ -609,28 +609,28 @@ class InsightsEngine:
 
         # Header
         lines.append("")
-        lines.append("  ╔══════════════════════════════════════════════════════════╗")
-        lines.append("  �?                   📊 Hermes Insights                    �?)
+        lines.append("  ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ")
+        lines.append("  â?                   ð Hermes Insights                    â?)
         period_label = f"Last {days} days"
         if src_filter:
             period_label += f" ({src_filter})"
         padding = 58 - len(period_label) - 2
         left_pad = padding // 2
         right_pad = padding - left_pad
-        lines.append(f"  ║{' ' * left_pad} {period_label} {' ' * right_pad}�?)
-        lines.append("  ╚══════════════════════════════════════════════════════════╝")
+        lines.append(f"  â{' ' * left_pad} {period_label} {' ' * right_pad}â?)
+        lines.append("  ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ")
         lines.append("")
 
         # Date range
         if o.get("date_range_start") and o.get("date_range_end"):
             start_str = datetime.fromtimestamp(o["date_range_start"]).strftime("%b %d, %Y")
             end_str = datetime.fromtimestamp(o["date_range_end"]).strftime("%b %d, %Y")
-            lines.append(f"  Period: {start_str} �?{end_str}")
+            lines.append(f"  Period: {start_str} â?{end_str}")
             lines.append("")
 
         # Overview
-        lines.append("  📋 Overview")
-        lines.append("  " + "─" * 56)
+        lines.append("  ð Overview")
+        lines.append("  " + "-" * 56)
         lines.append(f"  Sessions:          {o['total_sessions']:<12}  Messages:        {o['total_messages']:,}")
         lines.append(f"  Tool calls:        {o['total_tool_calls']:<12,}  User messages:   {o['user_messages']:,}")
         lines.append(f"  Input tokens:      {o['total_input_tokens']:<12,}  Output tokens:   {o['total_output_tokens']:,}")
@@ -648,8 +648,8 @@ class InsightsEngine:
 
         # Model breakdown
         if report["models"]:
-            lines.append("  🤖 Models Used")
-            lines.append("  " + "─" * 56)
+            lines.append("  ð¤ Models Used")
+            lines.append("  " + "-" * 56)
             lines.append(f"  {'Model':<30} {'Sessions':>8} {'Tokens':>12} {'Cost':>8}")
             for m in report["models"]:
                 model_name = m["model"][:28]
@@ -664,8 +664,8 @@ class InsightsEngine:
 
         # Platform breakdown
         if len(report["platforms"]) > 1 or (report["platforms"] and report["platforms"][0]["platform"] != "cli"):
-            lines.append("  📱 Platforms")
-            lines.append("  " + "─" * 56)
+            lines.append("  ð± Platforms")
+            lines.append("  " + "-" * 56)
             lines.append(f"  {'Platform':<14} {'Sessions':>8} {'Messages':>10} {'Tokens':>14}")
             for p in report["platforms"]:
                 lines.append(f"  {p['platform']:<14} {p['sessions']:>8} {p['messages']:>10,} {p['total_tokens']:>14,}")
@@ -673,8 +673,8 @@ class InsightsEngine:
 
         # Tool usage
         if report["tools"]:
-            lines.append("  🔧 Top Tools")
-            lines.append("  " + "─" * 56)
+            lines.append("  ð§ Top Tools")
+            lines.append("  " + "-" * 56)
             lines.append(f"  {'Tool':<28} {'Calls':>8} {'%':>8}")
             for t in report["tools"][:15]:  # Top 15
                 lines.append(f"  {t['tool']:<28} {t['count']:>8,} {t['percentage']:>7.1f}%")
@@ -685,8 +685,8 @@ class InsightsEngine:
         # Activity patterns
         act = report.get("activity", {})
         if act.get("by_day"):
-            lines.append("  📅 Activity Patterns")
-            lines.append("  " + "─" * 56)
+            lines.append("  ð Activity Patterns")
+            lines.append("  " + "-" * 56)
 
             # Day of week chart
             day_values = [d["count"] for d in act["by_day"]]
@@ -717,8 +717,8 @@ class InsightsEngine:
 
         # Notable sessions
         if report.get("top_sessions"):
-            lines.append("  🏆 Notable Sessions")
-            lines.append("  " + "─" * 56)
+            lines.append("  ð Notable Sessions")
+            lines.append("  " + "-" * 56)
             for ts in report["top_sessions"]:
                 lines.append(f"  {ts['label']:<20} {ts['value']:<18} ({ts['date']}, {ts['session_id']})")
             lines.append("")
@@ -735,7 +735,7 @@ class InsightsEngine:
         o = report["overview"]
         days = report["days"]
 
-        lines.append(f"📊 **Hermes Insights** �?Last {days} days\n")
+        lines.append(f"ð **Hermes Insights** â?Last {days} days\n")
 
         # Overview
         lines.append(f"**Sessions:** {o['total_sessions']} | **Messages:** {o['total_messages']:,} | **Tool calls:** {o['total_tool_calls']:,}")
@@ -754,24 +754,24 @@ class InsightsEngine:
 
         # Models (top 5)
         if report["models"]:
-            lines.append("**🤖 Models:**")
+            lines.append("**ð¤ Models:**")
             for m in report["models"][:5]:
                 cost_str = f"${m['cost']:.2f}" if m.get("has_pricing") else "N/A"
-                lines.append(f"  {m['model'][:25]} �?{m['sessions']} sessions, {m['total_tokens']:,} tokens, {cost_str}")
+                lines.append(f"  {m['model'][:25]} â?{m['sessions']} sessions, {m['total_tokens']:,} tokens, {cost_str}")
             lines.append("")
 
         # Platforms (if multi-platform)
         if len(report["platforms"]) > 1:
-            lines.append("**📱 Platforms:**")
+            lines.append("**ð± Platforms:**")
             for p in report["platforms"]:
-                lines.append(f"  {p['platform']} �?{p['sessions']} sessions, {p['messages']:,} msgs")
+                lines.append(f"  {p['platform']} â?{p['sessions']} sessions, {p['messages']:,} msgs")
             lines.append("")
 
         # Tools (top 8)
         if report["tools"]:
-            lines.append("**🔧 Top Tools:**")
+            lines.append("**ð§ Top Tools:**")
             for t in report["tools"][:8]:
-                lines.append(f"  {t['tool']} �?{t['count']:,} calls ({t['percentage']:.1f}%)")
+                lines.append(f"  {t['tool']} â?{t['count']:,} calls ({t['percentage']:.1f}%)")
             lines.append("")
 
         # Activity summary
@@ -780,7 +780,7 @@ class InsightsEngine:
             hr = act["busiest_hour"]["hour"]
             ampm = "AM" if hr < 12 else "PM"
             display_hr = hr % 12 or 12
-            lines.append(f"**📅 Busiest:** {act['busiest_day']['day']}s ({act['busiest_day']['count']} sessions), {display_hr}{ampm} ({act['busiest_hour']['count']} sessions)")
+            lines.append(f"**ð Busiest:** {act['busiest_day']['day']}s ({act['busiest_day']['count']} sessions), {display_hr}{ampm} ({act['busiest_hour']['count']} sessions)")
             if act.get("active_days"):
                 lines.append(f"**Active days:** {act['active_days']}", )
             if act.get("max_streak", 0) > 1:

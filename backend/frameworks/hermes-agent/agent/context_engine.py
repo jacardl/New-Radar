@@ -22,7 +22,7 @@ Lifecycle:
   4. should_compress() checked after each turn
   5. compress() called when should_compress() returns True
   6. on_session_end() called at real session boundaries (CLI exit, /reset,
-     gateway session expiry) �?NOT per-turn
+     gateway session expiry) é¥?NOT per-turn
 """
 
 from abc import ABC, abstractmethod
@@ -84,7 +84,7 @@ class ContextEngine(ABC):
         This is the main entry point. The engine receives the full message
         list and returns a (possibly shorter) list that fits within the
         context budget. The implementation is free to summarize, build a
-        DAG, or do anything else �?as long as the returned list is a valid
+        DAG, or do anything else é¥?as long as the returned list is a valid
         OpenAI-format message sequence.
         """
 
@@ -111,7 +111,7 @@ class ContextEngine(ABC):
         """Called at real session boundaries (CLI exit, /reset, gateway expiry).
 
         Use this to flush state, close DB connections, etc.
-        NOT called per-turn �?only when the session truly ends.
+        NOT called per-turn é¥?only when the session truly ends.
         """
 
     def on_session_reset(self) -> None:

@@ -91,14 +91,14 @@ def test_get_session_env_falls_back_to_os_environ(monkeypatch):
     """get_session_env should fall back to os.environ when contextvar is unset."""
     monkeypatch.setenv("HERMES_SESSION_PLATFORM", "discord")
 
-    # No contextvar set �?should read from os.environ
+    # No contextvar set é¥?should read from os.environ
     assert get_session_env("HERMES_SESSION_PLATFORM") == "discord"
 
-    # Now set a contextvar �?should prefer it
+    # Now set a contextvar é¥?should prefer it
     tokens = set_session_vars(platform="telegram")
     assert get_session_env("HERMES_SESSION_PLATFORM") == "telegram"
 
-    # Restore �?should fall back to os.environ again
+    # Restore é¥?should fall back to os.environ again
     clear_session_vars(tokens)
     assert get_session_env("HERMES_SESSION_PLATFORM") == "discord"
 
@@ -157,14 +157,14 @@ def test_session_key_falls_back_to_os_environ(monkeypatch):
     """get_session_env for SESSION_KEY should fall back to os.environ."""
     monkeypatch.setenv("HERMES_SESSION_KEY", "env-session-123")
 
-    # No contextvar set �?should read from os.environ
+    # No contextvar set é¥?should read from os.environ
     assert get_session_env("HERMES_SESSION_KEY") == "env-session-123"
 
-    # Set contextvar �?should prefer it
+    # Set contextvar é¥?should prefer it
     tokens = set_session_vars(session_key="ctx-session-456")
     assert get_session_env("HERMES_SESSION_KEY") == "ctx-session-456"
 
-    # Restore �?should fall back to os.environ
+    # Restore é¥?should fall back to os.environ
     clear_session_vars(tokens)
     assert get_session_env("HERMES_SESSION_KEY") == "env-session-123"
 
@@ -225,8 +225,8 @@ def test_session_key_no_race_condition_with_contextvars(monkeypatch):
 
     # Both tasks must read back their own session key
     assert results["session-A"] == "session-A", (
-        f"Session A got '{results['session-A']}' instead of 'session-A' �?race condition!"
+        f"Session A got '{results['session-A']}' instead of 'session-A' é¥?race condition!"
     )
     assert results["session-B"] == "session-B", (
-        f"Session B got '{results['session-B']}' instead of 'session-B' �?race condition!"
+        f"Session B got '{results['session-B']}' instead of 'session-B' é¥?race condition!"
     )

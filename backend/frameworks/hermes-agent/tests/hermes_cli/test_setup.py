@@ -261,7 +261,7 @@ def test_setup_cancel_preserves_existing_config(tmp_path, monkeypatch):
     assert config["model"]["provider"] == "openrouter"
 
     def fake_select():
-        pass  # user cancelled �?nothing written to disk
+        pass  # user cancelled é¥?nothing written to disk
 
     monkeypatch.setattr("hermes_cli.main.select_provider_and_model", fake_select)
 

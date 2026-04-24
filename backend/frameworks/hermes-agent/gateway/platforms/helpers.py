@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# ─── Message Deduplication ────────────────────────────────────────────────────
+# --- Message Deduplication ----------------------------------------------------
 
 
 class MessageDeduplicator:
@@ -61,7 +61,7 @@ class MessageDeduplicator:
         self._seen.clear()
 
 
-# ─── Text Batch Aggregation ──────────────────────────────────────────────────
+# --- Text Batch Aggregation --------------------------------------------------
 
 
 class TextBatchAggregator:
@@ -149,7 +149,7 @@ class TextBatchAggregator:
         self._pending.clear()
 
 
-# ─── Markdown Stripping ──────────────────────────────────────────────────────
+# --- Markdown Stripping ------------------------------------------------------
 
 # Pre-compiled regexes for performance
 _RE_BOLD = re.compile(r"\*\*(.+?)\*\*", re.DOTALL)
@@ -181,7 +181,7 @@ def strip_markdown(text: str) -> str:
     return text.strip()
 
 
-# ─── Thread Participation Tracking ───────────────────────────────────────────
+# --- Thread Participation Tracking -------------------------------------------
 
 
 class ThreadParticipationTracker:
@@ -245,7 +245,7 @@ class ThreadParticipationTracker:
         self._threads.clear()
 
 
-# ─── Phone Number Redaction ──────────────────────────────────────────────────
+# --- Phone Number Redaction --------------------------------------------------
 
 
 def redact_phone(phone: str) -> str:

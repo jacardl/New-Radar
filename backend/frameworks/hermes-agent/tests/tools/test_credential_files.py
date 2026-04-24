@@ -46,7 +46,7 @@ class TestRegisterCredentialFiles:
         assert mounts[0]["container_path"] == "/root/.hermes/token.json"
 
     def test_dict_with_name_key_fallback(self, tmp_path):
-        """Skills use 'name' instead of 'path' �?both should work."""
+        """Skills use 'name' instead of 'path' é¥?both should work."""
         hermes_home = tmp_path / ".hermes"
         hermes_home.mkdir()
         (hermes_home / "google_token.json").write_text("{}")
@@ -123,7 +123,7 @@ class TestSkillsDirectoryMount:
         with patch.dict(os.environ, {"HERMES_HOME": str(hermes_home)}):
             mounts = get_skills_directory_mount()
 
-        # No local skills dir �?no local mount (external dirs may still appear)
+        # No local skills dir é«?no local mount (external dirs may still appear)
         local_mounts = [m for m in mounts if m["container_path"].endswith("/skills")]
         assert local_mounts == []
 
@@ -306,13 +306,13 @@ class TestPathTraversalSecurity:
 
         result = register_credential_file("evil_link.json")
 
-        # The resolved path escapes HERMES_HOME �?must be rejected
+        # The resolved path escapes HERMES_HOME é¥?must be rejected
         assert result is False
         assert get_credential_file_mounts() == []
 
 
 # ---------------------------------------------------------------------------
-# Config-based credential files �?same containment checks
+# Config-based credential files é¥?same containment checks
 # ---------------------------------------------------------------------------
 
 class TestConfigPathTraversal:
@@ -401,7 +401,7 @@ class TestCacheDirectoryMounts:
         """Old-style dir names (e.g. document_cache) are resolved correctly."""
         hermes_home = tmp_path / ".hermes"
         hermes_home.mkdir()
-        # Use legacy dir name �?get_hermes_dir prefers old if it exists
+        # Use legacy dir name é¥?get_hermes_dir prefers old if it exists
         (hermes_home / "document_cache").mkdir()
         (hermes_home / "image_cache").mkdir()
         monkeypatch.setenv("HERMES_HOME", str(hermes_home))
@@ -416,7 +416,7 @@ class TestCacheDirectoryMounts:
         assert "/root/.hermes/cache/images" in container_paths
 
     def test_empty_hermes_home(self, tmp_path, monkeypatch):
-        """No cache dirs �?empty list."""
+        """No cache dirs é«?empty list."""
         hermes_home = tmp_path / ".hermes"
         hermes_home.mkdir()
         monkeypatch.setenv("HERMES_HOME", str(hermes_home))
@@ -470,7 +470,7 @@ class TestIterCacheFiles:
         assert entries[0]["container_path"] == "/root/.hermes/cache/screenshots/session_abc/screen1.png"
 
     def test_empty_cache(self, tmp_path, monkeypatch):
-        """No cache dirs �?empty list."""
+        """No cache dirs é«?empty list."""
         hermes_home = tmp_path / ".hermes"
         hermes_home.mkdir()
         monkeypatch.setenv("HERMES_HOME", str(hermes_home))

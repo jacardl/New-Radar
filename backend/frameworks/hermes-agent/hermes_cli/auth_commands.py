@@ -293,7 +293,7 @@ def auth_list_command(args) -> None:
         for idx, entry in enumerate(entries, start=1):
             marker = "  "
             if current is not None and entry.id == current.id:
-                marker = "�?"
+                marker = "é«?"
             status = _format_exhausted_status(entry)
             source = _display_source(entry.source)
             print(f"  #{idx}  {entry.label:<20} {entry.auth_type:<7} {source}{status} {marker}".rstrip())
@@ -349,7 +349,7 @@ def auth_remove_command(args) -> None:
     elif removed.source == "claude_code" and provider == "anthropic":
         from hermes_cli.auth import suppress_credential_source
         suppress_credential_source(provider, "claude_code")
-        print("Suppressed claude_code credential �?it will not be re-seeded.")
+        print("Suppressed claude_code credential é¥?it will not be re-seeded.")
         print("Note: Claude Code credentials still live in ~/.claude/.credentials.json")
         print("Run `hermes auth add anthropic` to re-enable if needed.")
 
@@ -495,8 +495,8 @@ def _interactive_strategy() -> None:
         STRATEGY_RANDOM: "Random selection",
     }
     for i, s in enumerate(strategies, 1):
-        marker = " �? if s == current else ""
-        print(f"  {i}. {s:15s} �?{descriptions.get(s, '')}{marker}")
+        marker = " é«? if s == current else ""
+        print(f"  {i}. {s:15s} é¥?{descriptions.get(s, '')}{marker}")
 
     try:
         raw = input("\nStrategy [1-4]: ").strip()
@@ -537,5 +537,5 @@ def auth_command(args) -> None:
     if action == "reset":
         auth_reset_command(args)
         return
-    # No subcommand �?launch interactive mode
+    # No subcommand é¥?launch interactive mode
     _interactive_auth()

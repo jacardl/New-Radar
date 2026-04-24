@@ -14,7 +14,7 @@ from tqdm import tqdm
 from adapter import AdapterLayer
 from gpt2_adapter import GPT2BlockWithAdapter
 
-# 设置随机种子
+# è®¾ç½®éæºç§å­
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -24,7 +24,7 @@ def set_seed(seed):
 
 set_seed(42)
 
-# 定义微博情感分析数据�?
+# å®ä¹å¾®åææåææ°æ®é?
 class WeiboSentimentDataset(Dataset):
     def __init__(self, reviews, labels, tokenizer, max_length=128):
         self.reviews = reviews
@@ -53,40 +53,40 @@ class WeiboSentimentDataset(Dataset):
             'labels': torch.tensor(label, dtype=torch.long)
         }
 
-# 定义GPT2分类模型，带Adapter
+# å®ä¹GPT2åç±»æ¨¡åï¼å¸¦Adapter
 class GPT2ClassifierWithAdapter(nn.Module):
     def __init__(self, pretrained_model_name, num_labels=2):
         super(GPT2ClassifierWithAdapter, self).__init__()
-        # 加载预训练模�?
+        # å è½½é¢è®­ç»æ¨¡å?
         self.gpt2 = GPT2ForSequenceClassification.from_pretrained(
             pretrained_model_name,
             num_labels=num_labels
         )
         
-        # 确保模型配置中设置了pad_token_id
+        # ç¡®ä¿æ¨¡åéç½®ä¸­è®¾ç½®äºpad_token_id
         self.gpt2.config.pad_token_id = self.gpt2.config.eos_token_id
         
-        # 替换原始的GPT2Block为带Adapter的版�?
+        # æ¿æ¢åå§çGPT2Blockä¸ºå¸¦Adapterççæ?
         config = self.gpt2.config
         for i in range(len(self.gpt2.transformer.h)):
-            # 保存原始权重
+            # ä¿å­åå§æé
             old_block = self.gpt2.transformer.h[i]
-            # 创建带Adapter的新Block
+            # åå»ºå¸¦Adapterçæ°Block
             new_block = GPT2BlockWithAdapter(config)
-            # 复制原始权重
+            # å¤å¶åå§æé
             new_block.load_state_dict(old_block.state_dict(), strict=False)
-            # 替换
+            # æ¿æ¢
             self.gpt2.transformer.h[i] = new_block
             
-        # 冻结原始GPT2参数
+        # å»ç»åå§GPT2åæ°
         for param in self.gpt2.parameters():
             param.requires_grad = False
             
-        # 解冻分类器层和Adapter层参�?
+        # è§£å»åç±»å¨å±åAdapterå±åæ?
         for param in self.gpt2.score.parameters():
             param.requires_grad = True
             
-        # 解冻所有Adapter�?
+        # è§£å»ææAdapterå±?
         for i in range(len(self.gpt2.transformer.h)):
             for param in self.gpt2.transformer.h[i].adapter.parameters():
                 param.requires_grad = True
@@ -98,7 +98,7 @@ class GPT2ClassifierWithAdapter(nn.Module):
             labels=labels
         )
 
-# 训练函数
+# è®­ç»å½æ°
 def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, device, epochs=3):
     best_f1 = 0.0
     
@@ -107,16 +107,16 @@ def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, d
         model.train()
         total_loss = 0
         
-        # 训练循环
+        # è®­ç»å¾ªç¯
         progress_bar = tqdm(train_dataloader, desc="Training", position=0, leave=True)
         for batch in progress_bar:
-            # 将数据移到GPU
+            # å°æ°æ®ç§»å°GPU
             batch = {k: v.to(device) for k, v in batch.items()}
             
-            # 清零梯度
+            # æ¸é¶æ¢¯åº¦
             optimizer.zero_grad()
             
-            # 前向传播
+            # ååä¼ æ­
             outputs = model(
                 input_ids=batch['input_ids'],
                 attention_mask=batch['attention_mask'],
@@ -126,36 +126,36 @@ def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, d
             loss = outputs.loss
             total_loss += loss.item()
             
-            # 反向传播
+            # ååä¼ æ­
             loss.backward()
             
-            # 梯度裁剪，防止梯度爆�?
+            # æ¢¯åº¦è£åªï¼é²æ­¢æ¢¯åº¦çç?
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             
-            # 参数更新
+            # åæ°æ´æ°
             optimizer.step()
             scheduler.step()
             
-            # 更新进度�?
+            # æ´æ°è¿åº¦æ?
             progress_bar.set_postfix({"loss": loss.item()})
         
-        # 计算平均训练损失
+        # è®¡ç®å¹³åè®­ç»æå¤±
         avg_train_loss = total_loss / len(train_dataloader)
         print(f"Average training loss: {avg_train_loss:.4f}")
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         val_metrics = evaluate_model(model, val_dataloader, device)
         print(f"Validation Loss: {val_metrics['loss']:.4f}")
         print(f"Validation Accuracy: {val_metrics['accuracy']:.4f}")
         print(f"Validation F1 Score: {val_metrics['f1']:.4f}")
         
-        # 保存最佳模�?
+        # ä¿å­æä½³æ¨¡å?
         if val_metrics['f1'] > best_f1:
             best_f1 = val_metrics['f1']
             torch.save(model.state_dict(), "best_weibo_sentiment_model.pth")
             print("Saved best model!")
 
-# 评估函数
+# è¯ä¼°å½æ°
 def evaluate_model(model, dataloader, device):
     model.eval()
     total_loss = 0
@@ -175,7 +175,7 @@ def evaluate_model(model, dataloader, device):
             loss = outputs.loss
             total_loss += loss.item()
             
-            # 获取预测结果
+            # è·åé¢æµç»æ
             logits = outputs.logits
             preds = torch.argmax(logits, dim=1).cpu().numpy()
             labels = batch['labels'].cpu().numpy()
@@ -183,7 +183,7 @@ def evaluate_model(model, dataloader, device):
             all_preds.extend(preds)
             all_labels.extend(labels)
     
-    # 计算评估指标
+    # è®¡ç®è¯ä¼°ææ 
     accuracy = accuracy_score(all_labels, all_preds)
     f1 = f1_score(all_labels, all_preds, average='macro')
     avg_loss = total_loss / len(dataloader)
@@ -195,42 +195,42 @@ def evaluate_model(model, dataloader, device):
     }
 
 def main():
-    # 设置模型本地保存路径
+    # è®¾ç½®æ¨¡åæ¬å°ä¿å­è·¯å¾
     model_name = 'uer/gpt2-chinese-cluecorpussmall'
     local_model_path = './models/gpt2-chinese'
     
-    # 确保目录存在
+    # ç¡®ä¿ç®å½å­å¨
     os.makedirs(local_model_path, exist_ok=True)
     
-    # 加载数据�?
-    print("加载微博情感数据�?..")
+    # å è½½æ°æ®é?
+    print("å è½½å¾®åæææ°æ®é?..")
     df = pd.read_csv('dataset/weibo_senti_100k.csv')
     
-    # 分割数据�?
+    # åå²æ°æ®é?
     train_df, val_df = train_test_split(df, test_size=0.1, random_state=42, stratify=df['label'])
     
-    # 加载tokenizer和模�?
-    print("加载预训练模型和tokenizer...")
+    # å è½½tokenizeråæ¨¡å?
+    print("å è½½é¢è®­ç»æ¨¡ååtokenizer...")
     
-    # 检查本地是否已有模�?
+    # æ£æ¥æ¬å°æ¯å¦å·²ææ¨¡å?
     if os.path.exists(os.path.join(local_model_path, 'config.json')):
-        print(f"从本地路径加载模�? {local_model_path}")
+        print(f"ä»æ¬å°è·¯å¾å è½½æ¨¡å? {local_model_path}")
         tokenizer = BertTokenizer.from_pretrained(local_model_path)
     else:
-        print(f"从Hugging Face下载模型�? {local_model_path}")
+        print(f"ä»Hugging Faceä¸è½½æ¨¡åå? {local_model_path}")
         tokenizer = BertTokenizer.from_pretrained(model_name, cache_dir=local_model_path)
-        # 保存tokenizer到本�?
+        # ä¿å­tokenizerå°æ¬å?
         tokenizer.save_pretrained(local_model_path)
     
-    # 设置padding token (BertTokenizer通常已有[PAD]作为padding token)
+    # è®¾ç½®padding token (BertTokenizeréå¸¸å·²æ[PAD]ä½ä¸ºpadding token)
     if tokenizer.pad_token is None:
-        # 如果没有，显式设置为[PAD]
+        # å¦ææ²¡æï¼æ¾å¼è®¾ç½®ä¸º[PAD]
         tokenizer.pad_token = '[PAD]'
     
-    # 记录pad_token的ID，确保模型和tokenizer使用相同的pad_token_id
+    # è®°å½pad_tokençIDï¼ç¡®ä¿æ¨¡ååtokenizerä½¿ç¨ç¸åçpad_token_id
     pad_token_id = tokenizer.pad_token_id
     
-    # 创建数据�?
+    # åå»ºæ°æ®é?
     train_dataset = WeiboSentimentDataset(
         train_df['review'].values,
         train_df['label'].values,
@@ -243,48 +243,48 @@ def main():
         tokenizer
     )
     
-    # 创建数据加载�?
+    # åå»ºæ°æ®å è½½å?
     train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=16)
     
-    # 设置设备
+    # è®¾ç½®è®¾å¤
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"使用设备: {device}")
+    print(f"ä½¿ç¨è®¾å¤: {device}")
     
-    # 初始化模�?
+    # åå§åæ¨¡å?
     if (os.path.exists(os.path.join(local_model_path, 'pytorch_model.bin')) or 
         os.path.exists(os.path.join(local_model_path, 'model.safetensors'))):
-        print(f"从本地路径加载模型权�? {local_model_path}")
+        print(f"ä»æ¬å°è·¯å¾å è½½æ¨¡åæé? {local_model_path}")
         model = GPT2ClassifierWithAdapter(local_model_path)
     else:
-        print(f"从Hugging Face下载模型权重�? {local_model_path}")
-        # 直接从Hugging Face下载并保存完整模�?
+        print(f"ä»Hugging Faceä¸è½½æ¨¡åæéå? {local_model_path}")
+        # ç´æ¥ä»Hugging Faceä¸è½½å¹¶ä¿å­å®æ´æ¨¡å?
         temp_model = GPT2ForSequenceClassification.from_pretrained(model_name)
         temp_model.save_pretrained(local_model_path)
-        # 然后用保存的模型创建GPT2ClassifierWithAdapter
+        # ç¶åç¨ä¿å­çæ¨¡ååå»ºGPT2ClassifierWithAdapter
         model = GPT2ClassifierWithAdapter(local_model_path)
     
-    # 确保模型使用与tokenizer相同的pad_token_id
+    # ç¡®ä¿æ¨¡åä½¿ç¨ä¸tokenizerç¸åçpad_token_id
     model.gpt2.config.pad_token_id = pad_token_id
     model.to(device)
     
-    # 统计需要训练的参数
+    # ç»è®¡éè¦è®­ç»çåæ°
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     
-    print(f"模型总参数量: {total_params}")
-    print(f"需要训练的参数�? {trainable_params} ({trainable_params/total_params*100:.2f}%)")
+    print(f"æ¨¡åæ»åæ°é: {total_params}")
+    print(f"éè¦è®­ç»çåæ°é? {trainable_params} ({trainable_params/total_params*100:.2f}%)")
     
-    # 设置优化器和学习率调度器
+    # è®¾ç½®ä¼åå¨åå­¦ä¹ çè°åº¦å¨
     optimizer = AdamW(
         [p for p in model.parameters() if p.requires_grad],
         lr=5e-5,
         eps=1e-8
     )
     
-    # 设置总训练步数和warmup步数
-    total_steps = len(train_dataloader) * 2  # 2个epoch
-    warmup_steps = int(total_steps * 0.1)  # 10%的warmup
+    # è®¾ç½®æ»è®­ç»æ­¥æ°åwarmupæ­¥æ°
+    total_steps = len(train_dataloader) * 2  # 2ä¸ªepoch
+    warmup_steps = int(total_steps * 0.1)  # 10%çwarmup
     
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
@@ -292,8 +292,8 @@ def main():
         num_training_steps=total_steps
     )
     
-    # 训练模型
-    print("开始训�?..")
+    # è®­ç»æ¨¡å
+    print("å¼å§è®­ç»?..")
     train_model(
         model=model,
         train_dataloader=train_dataloader,
@@ -304,7 +304,7 @@ def main():
         epochs=2
     )
     
-    print("训练完成!")
+    print("è®­ç»å®æ!")
 
 if __name__ == "__main__":
     main() 

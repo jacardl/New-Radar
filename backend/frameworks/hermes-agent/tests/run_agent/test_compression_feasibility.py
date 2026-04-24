@@ -1,10 +1,10 @@
-"""Tests for _check_compression_model_feasibility() �?warns when the
+"""Tests for _check_compression_model_feasibility() â?warns when the
 auxiliary compression model's context is smaller than the main model's
 compression threshold.
 
 Two-phase design:
-  1. __init__  �?runs the check, prints via _vprint (CLI), stores warning
-  2. run_conversation (first call) �?replays stored warning through
+  1. __init__  â?runs the check, prints via _vprint (CLI), stores warning
+  2. run_conversation (first call) â?replays stored warning through
      status_callback (gateway platforms)
 """
 
@@ -48,7 +48,7 @@ def _make_agent(
     return agent
 
 
-# ── Core warning logic ──────────────────────────────────────────────
+# -- Core warning logic ----------------------------------------------
 
 
 @patch("agent.model_metadata.get_model_context_length", return_value=32_768)
@@ -56,7 +56,7 @@ def _make_agent(
 def test_warns_when_aux_context_below_threshold(mock_get_client, mock_ctx_len):
     """Warning emitted when aux model context < main model threshold."""
     agent = _make_agent(main_context=200_000, threshold_percent=0.50)
-    # threshold = 100,000 �?aux has only 32,768
+    # threshold = 100,000 â?aux has only 32,768
     mock_client = MagicMock()
     mock_client.base_url = "https://openrouter.ai/api/v1"
     mock_client.api_key = "sk-aux"
@@ -86,7 +86,7 @@ def test_warns_when_aux_context_below_threshold(mock_get_client, mock_ctx_len):
 def test_no_warning_when_aux_context_sufficient(mock_get_client, mock_ctx_len):
     """No warning when aux model context >= main model threshold."""
     agent = _make_agent(main_context=200_000, threshold_percent=0.50)
-    # threshold = 100,000 �?aux has 200,000 (sufficient)
+    # threshold = 100,000 â?aux has 200,000 (sufficient)
     mock_client = MagicMock()
     mock_client.base_url = "https://openrouter.ai/api/v1"
     mock_client.api_key = "sk-aux"
@@ -220,7 +220,7 @@ def test_skips_check_when_compression_disabled():
 
 @patch("agent.auxiliary_client.get_text_auxiliary_client")
 def test_exception_does_not_crash(mock_get_client):
-    """Exceptions in the check are caught �?never blocks startup."""
+    """Exceptions in the check are caught â?never blocks startup."""
     agent = _make_agent()
     mock_get_client.side_effect = RuntimeError("boom")
 
@@ -271,7 +271,7 @@ def test_just_below_threshold_warns(mock_get_client, mock_ctx_len):
     assert "small-model" in messages[0]
 
 
-# ── Two-phase: __init__ + run_conversation replay ───────────────────
+# -- Two-phase: __init__ + run_conversation replay -------------------
 
 
 @patch("agent.model_metadata.get_model_context_length", return_value=32_768)
@@ -284,7 +284,7 @@ def test_warning_stored_for_gateway_replay(mock_get_client, mock_ctx_len):
     mock_client.api_key = "sk-aux"
     mock_get_client.return_value = (mock_client, "google/gemini-3-flash-preview")
 
-    # Phase 1: __init__ �?_emit_status prints (CLI) but callback is None
+    # Phase 1: __init__ â?_emit_status prints (CLI) but callback is None
     vprint_messages = []
     agent._emit_status = lambda msg: vprint_messages.append(msg)
     agent._check_compression_model_feasibility()
@@ -360,7 +360,7 @@ def test_run_conversation_clears_warning_after_replay(mock_get_client, mock_ctx_
 
     assert len(callback_events) == 1
 
-    # Second turn �?nothing replayed
+    # Second turn â?nothing replayed
     callback_events.clear()
     if agent._compression_warning:
         agent._replay_compression_warning()

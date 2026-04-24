@@ -81,7 +81,7 @@ def gmail_modify(args):
 
 def calendar_list(args):
     if args.start or args.end:
-        # Specific date range �?use raw Calendar API for precise timeMin/timeMax
+        # Specific date range é¥?use raw Calendar API for precise timeMin/timeMax
         from datetime import datetime, timedelta, timezone as tz
         now = datetime.now(tz.utc)
         time_min = args.start or now.isoformat()
@@ -99,7 +99,7 @@ def calendar_list(args):
             "--format", "json",
         )
     else:
-        # No date range �?use +agenda helper (defaults to 7 days)
+        # No date range é¥?use +agenda helper (defaults to 7 days)
         cmd = ["calendar", "+agenda", "--days", "7", "--format", "json"]
         if args.calendar != "primary":
             cmd += ["--calendar", args.calendar]

@@ -63,7 +63,7 @@ SANDBOX_ALLOWED_TOOLS = frozenset([
     "terminal",
 ])
 
-# Resource limit defaults (overridable via config.yaml �?code_execution.*)
+# Resource limit defaults (overridable via config.yaml é«?code_execution.*)
 DEFAULT_TIMEOUT = 300        # 5 minutes
 DEFAULT_MAX_TOOL_CALLS = 50
 MAX_STDOUT_BYTES = 50_000    # 50 KB
@@ -531,7 +531,7 @@ def _get_or_create_env(task_id: str):
 def _ship_file_to_remote(env, remote_path: str, content: str) -> None:
     """Write *content* to *remote_path* on the remote environment.
 
-    Uses ``echo �?| base64 -d`` rather than stdin piping because some
+    Uses ``echo é¥?| base64 -d`` rather than stdin piping because some
     backends (Modal) don't reliably deliver stdin_data to chained
     commands.  Base64 output is shell-safe ([A-Za-z0-9+/=]) so single
     quotes are fine.
@@ -874,7 +874,7 @@ def _execute_remote(
         result["error"] = f"Script timed out after {timeout}s and was killed."
     elif status == "interrupted":
         result["output"] = (
-            stdout_text + "\n[execution interrupted �?user sent a new message]"
+            stdout_text + "\n[execution interrupted é¥?user sent a new message]"
         )
     elif exit_code != 0:
         result["status"] = "error"
@@ -955,7 +955,7 @@ def execute_code(
     try:
         # Write the auto-generated hermes_tools module
         # sandbox_tools is already the correct set (intersection with session
-        # tools, or SANDBOX_ALLOWED_TOOLS as fallback �?see lines above).
+        # tools, or SANDBOX_ALLOWED_TOOLS as fallback é¥?see lines above).
         tools_src = generate_hermes_tools_module(list(sandbox_tools))
         with open(os.path.join(tmpdir, "hermes_tools.py"), "w") as f:
             f.write(tools_src)
@@ -1153,7 +1153,7 @@ def execute_code(
         rpc_thread.join(timeout=3)
 
         # Strip ANSI escape sequences so the model never sees terminal
-        # formatting �?prevents it from copying escapes into file writes.
+        # formatting é¥?prevents it from copying escapes into file writes.
         from tools.ansi_strip import strip_ansi
         stdout_text = strip_ansi(stdout_text)
         stderr_text = strip_ansi(stderr_text)
@@ -1177,7 +1177,7 @@ def execute_code(
         if status == "timeout":
             result["error"] = f"Script timed out after {timeout}s and was killed."
         elif status == "interrupted":
-            result["output"] = stdout_text + "\n[execution interrupted �?user sent a new message]"
+            result["output"] = stdout_text + "\n[execution interrupted é¥?user sent a new message]"
         elif exit_code != 0:
             result["status"] = "error"
             result["error"] = stderr_text or f"Script exited with code {exit_code}"
@@ -1295,7 +1295,7 @@ def build_execute_code_schema(enabled_sandbox_tools: set = None) -> dict:
     """Build the execute_code schema with description listing only enabled tools.
 
     When tools are disabled via ``hermes tools`` (e.g. web is turned off),
-    the schema description should NOT mention web_search / web_extract �?
+    the schema description should NOT mention web_search / web_extract é¥?
     otherwise the model thinks they are available and keeps trying to use them.
     """
     if enabled_sandbox_tools is None:
@@ -1330,10 +1330,10 @@ def build_execute_code_schema(enabled_sandbox_tools: set = None) -> dict:
         "terminal() is foreground-only (no background or pty).\n\n"
         "Print your final result to stdout. Use Python stdlib (json, re, math, csv, "
         "datetime, collections, etc.) for processing between tool calls.\n\n"
-        "Also available (no import needed �?built into hermes_tools):\n"
-        "  json_parse(text: str) �?json.loads with strict=False; use for terminal() output with control chars\n"
-        "  shell_quote(s: str) �?shlex.quote(); use when interpolating dynamic strings into shell commands\n"
-        "  retry(fn, max_attempts=3, delay=2) �?retry with exponential backoff for transient failures"
+        "Also available (no import needed é¥?built into hermes_tools):\n"
+        "  json_parse(text: str) é¥?json.loads with strict=False; use for terminal() output with control chars\n"
+        "  shell_quote(s: str) é¥?shlex.quote(); use when interpolating dynamic strings into shell commands\n"
+        "  retry(fn, max_attempts=3, delay=2) é¥?retry with exponential backoff for transient failures"
     )
 
     return {
@@ -1372,6 +1372,6 @@ registry.register(
         task_id=kw.get("task_id"),
         enabled_tools=kw.get("enabled_tools")),
     check_fn=check_sandbox_requirements,
-    emoji="🐍",
+    emoji="é¦æ",
     max_result_size_chars=100_000,
 )

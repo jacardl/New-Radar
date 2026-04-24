@@ -86,7 +86,7 @@ def test_is_available_false_when_import_missing(monkeypatch):
 def test_load_and_save_config_round_trip(tmp_path):
     _save_supermemory_config({"container_tag": "demo-tag", "auto_capture": False}, str(tmp_path))
     cfg = _load_supermemory_config(str(tmp_path))
-    # container_tag is kept raw �?sanitization happens in initialize() after template resolution
+    # container_tag is kept raw é¥?sanitization happens in initialize() after template resolution
     assert cfg["container_tag"] == "demo-tag"
     assert cfg["auto_capture"] is False
     assert cfg["auto_recall"] is True

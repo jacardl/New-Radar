@@ -1,4 +1,4 @@
-"""Tests for hermes_cli.logs �?log viewing and filtering."""
+"""Tests for hermes_cli.logs é¥?log viewing and filtering."""
 
 import os
 from datetime import datetime, timedelta

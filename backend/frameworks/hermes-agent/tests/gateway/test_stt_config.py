@@ -1,4 +1,4 @@
-"""Gateway STT config tests �?honor stt.enabled: false from config.yaml."""
+"""Gateway STT config tests é¥?honor stt.enabled: false from config.yaml."""
 
 from pathlib import Path
 from unittest.mock import AsyncMock, patch

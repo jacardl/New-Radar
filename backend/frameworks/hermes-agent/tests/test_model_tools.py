@@ -1,4 +1,4 @@
-"""Tests for model_tools.py �?function call dispatch, agent-loop interception, legacy toolsets."""
+"""Tests for model_tools.py é¥?function call dispatch, agent-loop interception, legacy toolsets."""
 
 import json
 from unittest.mock import call, patch
@@ -138,7 +138,7 @@ class TestPreToolCallBlocking:
         assert notifications == []
 
     def test_invalid_hook_returns_do_not_block(self, monkeypatch):
-        """Malformed hook returns should be ignored �?tool executes normally."""
+        """Malformed hook returns should be ignored é¥?tool executes normally."""
         def fake_invoke_hook(hook_name, **kwargs):
             if hook_name == "pre_tool_call":
                 return [
@@ -171,7 +171,7 @@ class TestPreToolCallBlocking:
                              skip_pre_tool_call_hook=True)
 
         # Hook still fires for observer notification, but get_pre_tool_call_block_message
-        # is not called �?invoke_hook fires directly in the skip=True branch.
+        # is not called é¥?invoke_hook fires directly in the skip=True branch.
         assert "pre_tool_call" in hook_calls
         assert "post_tool_call" in hook_calls
 

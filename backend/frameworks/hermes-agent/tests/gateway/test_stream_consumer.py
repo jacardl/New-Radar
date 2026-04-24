@@ -1,4 +1,4 @@
-"""Tests for GatewayStreamConsumer �?media directive stripping in streaming."""
+"""Tests for GatewayStreamConsumer â?media directive stripping in streaming."""
 
 import asyncio
 from types import SimpleNamespace
@@ -9,7 +9,7 @@ import pytest
 from gateway.stream_consumer import GatewayStreamConsumer, StreamConsumerConfig
 
 
-# ── _clean_for_display unit tests ────────────────────────────────────────
+# -- _clean_for_display unit tests ----------------------------------------
 
 
 class TestCleanForDisplay:
@@ -85,7 +85,7 @@ class TestCleanForDisplay:
         assert result == text
 
 
-# ── Integration: _send_or_edit strips MEDIA: ─────────────────────────────
+# -- Integration: _send_or_edit strips MEDIA: -----------------------------
 
 
 class TestSendOrEditMediaStripping:
@@ -149,9 +149,9 @@ class TestSendOrEditMediaStripping:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(cursor=" �?),
+            StreamConsumerConfig(cursor=" â?),
         )
-        await consumer._send_or_edit(" �?)
+        await consumer._send_or_edit(" â?)
 
         adapter.send.assert_not_called()
 
@@ -160,7 +160,7 @@ class TestSendOrEditMediaStripping:
         """Short text + cursor should not create a standalone new message.
 
         During rapid tool-calling the model often emits 1-2 tokens before
-        switching to tool calls.  Sending 'I �? as a new message risks
+        switching to tool calls.  Sending 'I â? as a new message risks
         leaving the cursor permanently visible if the follow-up edit is
         rate-limited.  The guard should skip the first send and let the
         text accumulate into the next segment.
@@ -172,16 +172,16 @@ class TestSendOrEditMediaStripping:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(cursor=" �?),
+            StreamConsumerConfig(cursor=" â?),
         )
-        # No message_id yet (first send) �?short text + cursor should be skipped
+        # No message_id yet (first send) â?short text + cursor should be skipped
         assert consumer._message_id is None
-        result = await consumer._send_or_edit("I �?)
+        result = await consumer._send_or_edit("I â?)
         assert result is True
         adapter.send.assert_not_called()
 
         # 3 chars is still under the threshold
-        result = await consumer._send_or_edit("Hi! �?)
+        result = await consumer._send_or_edit("Hi! â?)
         assert result is True
         adapter.send.assert_not_called()
 
@@ -196,9 +196,9 @@ class TestSendOrEditMediaStripping:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(cursor=" �?),
+            StreamConsumerConfig(cursor=" â?),
         )
-        result = await consumer._send_or_edit("Hello �?)
+        result = await consumer._send_or_edit("Hello â?)
         assert result is True
         adapter.send.assert_called_once()
 
@@ -213,9 +213,9 @@ class TestSendOrEditMediaStripping:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(cursor=" �?),
+            StreamConsumerConfig(cursor=" â?),
         )
-        # No cursor in text �?even short text should be sent
+        # No cursor in text â?even short text should be sent
         result = await consumer._send_or_edit("OK")
         assert result is True
         adapter.send.assert_called_once()
@@ -231,16 +231,16 @@ class TestSendOrEditMediaStripping:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(cursor=" �?),
+            StreamConsumerConfig(cursor=" â?),
         )
-        consumer._message_id = "msg_1"  # Existing message �?guard should not fire
+        consumer._message_id = "msg_1"  # Existing message â?guard should not fire
         consumer._last_sent_text = ""
-        result = await consumer._send_or_edit("I �?)
+        result = await consumer._send_or_edit("I â?)
         assert result is True
         adapter.edit_message.assert_called_once()
 
 
-# ── Integration: full stream run ─────────────────────────────────────────
+# -- Integration: full stream run -----------------------------------------
 
 
 class TestStreamRunMediaStripping:
@@ -279,7 +279,7 @@ class TestStreamRunMediaStripping:
         assert consumer.already_sent
 
 
-# ── Segment break (tool boundary) tests ──────────────────────────────────
+# -- Segment break (tool boundary) tests ----------------------------------
 
 
 class TestSegmentBreakOnToolBoundary:
@@ -302,7 +302,7 @@ class TestSegmentBreakOnToolBoundary:
 
         # Phase 1: intermediate text before tool calls
         consumer.on_delta("Let me search for that...")
-        # Tool boundary �?model is about to call tools
+        # Tool boundary â?model is about to call tools
         consumer.on_delta(None)
         # Phase 2: final response text after tools finished
         consumer.on_delta("Here are the results.")
@@ -330,7 +330,7 @@ class TestSegmentBreakOnToolBoundary:
         config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
-        # No text before the boundary �?model went straight to tool calls
+        # No text before the boundary â?model went straight to tool calls
         consumer.on_delta(None)
         consumer.on_delta("Final answer.")
         consumer.finish()
@@ -351,7 +351,7 @@ class TestSegmentBreakOnToolBoundary:
         adapter.edit_message = AsyncMock(return_value=edit_result)
         adapter.MAX_MESSAGE_LENGTH = 4096
 
-        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" �?)
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" â?)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
         consumer.on_delta("Thinking...")
@@ -370,12 +370,12 @@ class TestSegmentBreakOnToolBoundary:
         for call in adapter.edit_message.call_args_list:
             all_texts.append(call[1].get("content", ""))
 
-        # Find the text(s) that contain "Thinking" �?the finalized version
+        # Find the text(s) that contain "Thinking" â?the finalized version
         # should not have the cursor.
         thinking_texts = [t for t in all_texts if "Thinking" in t]
         assert thinking_texts, "Expected at least one message with 'Thinking'"
         # The LAST occurrence is the finalized version
-        assert "�? not in thinking_texts[-1], (
+        assert "â? not in thinking_texts[-1], (
             f"Cursor found in finalized segment: {thinking_texts[-1]!r}"
         )
 
@@ -437,7 +437,7 @@ class TestSegmentBreakOnToolBoundary:
         adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=False, error="flood_control:6"))
         adapter.MAX_MESSAGE_LENGTH = 4096
 
-        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" �?)
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" â?)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
         consumer.on_delta("Hello")
@@ -467,7 +467,7 @@ class TestSegmentBreakOnToolBoundary:
         adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=False, error="flood_control:6"))
         adapter.MAX_MESSAGE_LENGTH = 4096
 
-        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" �?)
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" â?)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
         consumer.on_delta("Hello")
@@ -481,11 +481,11 @@ class TestSegmentBreakOnToolBoundary:
         await task
 
         sent_texts = [call[1]["content"] for call in adapter.send.call_args_list]
-        assert sent_texts == ["Hello �?, "Next segment"]
+        assert sent_texts == ["Hello â?, "Next segment"]
 
     @pytest.mark.asyncio
     async def test_no_message_id_enters_fallback_mode(self):
-        """Platform returns success but no message_id (Signal) �?must not
+        """Platform returns success but no message_id (Signal) â?must not
         re-send on every delta.  Should enter fallback mode and send only
         the continuation at finish."""
         adapter = MagicMock()
@@ -555,7 +555,7 @@ class TestSegmentBreakOnToolBoundary:
         config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
-        # Simulate: text �?tool boundary �?text �?tool boundary �?text (3 segments)
+        # Simulate: text â?tool boundary â?text â?tool boundary â?text (3 segments)
         consumer.on_delta("Phase 1 text")
         consumer.on_delta(None)   # tool call boundary
         consumer.on_delta("Phase 2 text")
@@ -588,7 +588,7 @@ class TestSegmentBreakOnToolBoundary:
         adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=False, error="flood_control:6"))
         adapter.MAX_MESSAGE_LENGTH = 610
 
-        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" �?)
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" â?)
         consumer = GatewayStreamConsumer(adapter, "chat_123", config)
 
         prefix = "Hello world"
@@ -668,7 +668,7 @@ class TestInterimCommentaryMessages:
         consumer = GatewayStreamConsumer(
             adapter,
             "chat_123",
-            StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" �?),
+            StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5, cursor=" â?),
         )
 
         consumer.on_delta("Hello")
@@ -680,7 +680,7 @@ class TestInterimCommentaryMessages:
         await task
 
         sent_texts = [call[1]["content"] for call in adapter.send.call_args_list]
-        assert sent_texts == ["Hello �?, "world"]
+        assert sent_texts == ["Hello â?, "world"]
         assert consumer.already_sent is True
         assert consumer.final_response_sent is True
 
@@ -712,7 +712,7 @@ class TestCancelledConsumerSetsFlags:
             StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5),
         )
 
-        # Stream some text �?the consumer sends it and sets already_sent
+        # Stream some text â?the consumer sends it and sets already_sent
         consumer.on_delta("Hello world")
         task = asyncio.create_task(consumer.run())
         await asyncio.sleep(0.08)
@@ -748,7 +748,7 @@ class TestCancelledConsumerSetsFlags:
             StreamConsumerConfig(edit_interval=0.01, buffer_threshold=5),
         )
 
-        # Send fails �?already_sent stays False
+        # Send fails â?already_sent stays False
         consumer.on_delta("x")
         task = asyncio.create_task(consumer.run())
         await asyncio.sleep(0.08)
@@ -766,7 +766,7 @@ class TestCancelledConsumerSetsFlags:
         assert consumer.final_response_sent is False
 
 
-# ── Think-block filtering unit tests ─────────────────────────────────────
+# -- Think-block filtering unit tests -------------------------------------
 
 
 def _make_consumer() -> GatewayStreamConsumer:
@@ -816,7 +816,7 @@ class TestFilterAndAccumulate:
 
     def test_multiple_think_blocks(self):
         c = _make_consumer()
-        # Consecutive blocks with no text between them �?both stripped
+        # Consecutive blocks with no text between them â?both stripped
         c._filter_and_accumulate(
             "<think>block1</think><think>block2</think>visible"
         )
@@ -828,7 +828,7 @@ class TestFilterAndAccumulate:
         c._filter_and_accumulate(
             "<think>block1</think>A<think>block2</think>B"
         )
-        # Second <think> follows 'A' (not a block boundary) �?treated as prose
+        # Second <think> follows 'A' (not a block boundary) â?treated as prose
         assert "A" in c._accumulated
         assert "B" in c._accumulated
 
@@ -914,7 +914,7 @@ class TestFilterAndAccumulate:
         c = _make_consumer()
         c._filter_and_accumulate("<think>start")
         c._reset_segment_state()
-        # Still inside think block �?subsequent text should be suppressed
+        # Still inside think block â?subsequent text should be suppressed
         c._filter_and_accumulate("still hidden</think>visible")
         assert c._accumulated == "visible"
 

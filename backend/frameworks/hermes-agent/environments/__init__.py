@@ -23,7 +23,7 @@ try:
     from environments.tool_context import ToolContext
     from environments.hermes_base_env import HermesAgentBaseEnv, HermesAgentEnvConfig
 except ImportError:
-    # atroposlib not installed �?environments are unavailable but
+    # atroposlib not installed é¥?environments are unavailable but
     # submodules like tool_call_parsers can still be imported directly.
     pass
 

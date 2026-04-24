@@ -116,7 +116,7 @@ DANGEROUS_PATTERNS = [
     (r'\b(cp|mv|install)\b.*\s/etc/', "copy/move file into /etc/"),
     (r'\bsed\s+-[^\s]*i.*\s/etc/', "in-place edit of system config"),
     (r'\bsed\s+--in-place\b.*\s/etc/', "in-place edit of system config (long flag)"),
-    # Script execution via heredoc ‚Ä?bypasses the -e/-c flag patterns above.
+    # Script execution via heredoc √¢?bypasses the -e/-c flag patterns above.
     # `python3 << 'EOF'` feeds arbitrary code via stdin without -c/-e flags.
     (r'\b(python[23]?|perl|ruby|node)\s+<<', "script execution via heredoc"),
     # Git destructive operations that can lose uncommitted work or rewrite
@@ -126,7 +126,7 @@ DANGEROUS_PATTERNS = [
     (r'\bgit\s+push\b.*-f\b', "git force push short flag (rewrites remote history)"),
     (r'\bgit\s+clean\s+-[^\s]*f', "git clean with force (deletes untracked files)"),
     (r'\bgit\s+branch\s+-D\b', "git branch force delete"),
-    # Script execution after chmod +x ‚Ä?catches the two-step pattern where
+    # Script execution after chmod +x √¢?catches the two-step pattern where
     # a script is first made executable then immediately run. The script
     # content may contain dangerous commands that individual patterns miss.
     (r'\bchmod\s+\+x\b.*[;&|]+\s*\./', "chmod +x followed by immediate execution"),
@@ -206,7 +206,7 @@ _permanent_approved: set = set()
 # Blocking gateway approval (mirrors CLI's synchronous input() flow)
 # =========================================================================
 # Per-session QUEUE of pending approvals.  Multiple threads (parallel
-# subagents, execute_code RPC handlers) can block concurrently ‚Ä?each gets
+# subagents, execute_code RPC handlers) can block concurrently √¢?each gets
 # its own threading.Event.  /approve resolves the oldest, /approve all
 # resolves every pending approval in the session.
 
@@ -217,12 +217,12 @@ class _ApprovalEntry:
 
     def __init__(self, data: dict):
         self.event = threading.Event()
-        self.data = data          # command, description, pattern_keys, ‚Ä?
+        self.data = data          # command, description, pattern_keys, √¢?
         self.result: Optional[str] = None  # "once"|"session"|"always"|"deny"
 
 
-_gateway_queues: dict[str, list] = {}        # session_key ‚Ü?[_ApprovalEntry, ‚Ä¶]
-_gateway_notify_cbs: dict[str, object] = {}  # session_key ‚Ü?callable(approval_data)
+_gateway_queues: dict[str, list] = {}        # session_key √¢?[_ApprovalEntry, √¢¬¶]
+_gateway_notify_cbs: dict[str, object] = {}  # session_key √¢?callable(approval_data)
 
 
 def register_gateway_notify(session_key: str, cb) -> None:
@@ -230,7 +230,7 @@ def register_gateway_notify(session_key: str, cb) -> None:
 
     The callback signature is ``cb(approval_data: dict) -> None`` where
     *approval_data* contains ``command``, ``description``, and
-    ``pattern_keys``.  The callback bridges sync‚Üíasync (runs in the agent
+    ``pattern_keys``.  The callback bridges sync->async (runs in the agent
     thread, must schedule the actual send on the event loop).
     """
     with _lock:
@@ -432,7 +432,7 @@ def prompt_dangerous_approval(command: str, description: str,
     try:
         while True:
             print()
-            print(f"  ‚ö†Ô∏è  DANGEROUS COMMAND: {description}")
+            print(f"  √¢¬†√Ø¬∏  DANGEROUS COMMAND: {description}")
             print(f"      {command}")
             print()
             if allow_permanent:
@@ -456,28 +456,28 @@ def prompt_dangerous_approval(command: str, description: str,
             thread.join(timeout=timeout_seconds)
 
             if thread.is_alive():
-                print("\n      ‚è?Timeout - denying command")
+                print("\n      √¢?Timeout - denying command")
                 return "deny"
 
             choice = result["choice"]
             if choice in ('o', 'once'):
-                print("      ‚ú?Allowed once")
+                print("      √¢?Allowed once")
                 return "once"
             elif choice in ('s', 'session'):
-                print("      ‚ú?Allowed for this session")
+                print("      √¢?Allowed for this session")
                 return "session"
             elif choice in ('a', 'always'):
                 if not allow_permanent:
-                    print("      ‚ú?Allowed for this session")
+                    print("      √¢?Allowed for this session")
                     return "session"
-                print("      ‚ú?Added to permanent allowlist")
+                print("      √¢?Added to permanent allowlist")
                 return "always"
             else:
-                print("      ‚ú?Denied")
+                print("      √¢?Denied")
                 return "deny"
 
     except (EOFError, KeyboardInterrupt):
-        print("\n      ‚ú?Cancelled")
+        print("\n      √¢?Cancelled")
         return "deny"
     finally:
         if "HERMES_SPINNER_PAUSE" in os.environ:
@@ -548,7 +548,7 @@ def _smart_approve(command: str, description: str) -> str:
 Command: {command}
 Flagged reason: {description}
 
-Assess the ACTUAL risk of this command. Many flagged commands are false positives ‚Ä?for example, `python -c "print('hello')"` is flagged as "script execution via -c flag" but is completely harmless.
+Assess the ACTUAL risk of this command. Many flagged commands are false positives √¢?for example, `python -c "print('hello')"` is flagged as "script execution via -c flag" but is completely harmless.
 
 Rules:
 - APPROVE if the command is clearly safe (benign script execution, safe file operations, development tools, package installs, git operations, etc.)
@@ -628,7 +628,7 @@ def check_dangerous_command(command: str, env_type: str,
             "command": command,
             "description": description,
             "message": (
-                f"‚ö†Ô∏è This command is potentially dangerous ({description}). "
+                f"√¢¬†√Ø¬∏ This command is potentially dangerous ({description}). "
                 f"Asking the user for approval.\n\n**Command:**\n```\n{command}\n```"
             ),
         }
@@ -682,7 +682,7 @@ def _format_tirith_description(tirith_result: dict) -> str:
         summary = tirith_result.get("summary") or "security issue detected"
         return f"Security scan: {summary}"
 
-    return "Security scan ‚Ä?" + "; ".join(parts)
+    return "Security scan √¢?" + "; ".join(parts)
 
 
 def check_all_command_guards(command: str, env_type: str,
@@ -715,14 +715,14 @@ def check_all_command_guards(command: str, env_type: str,
 
     # --- Phase 1: Gather findings from both checks ---
 
-    # Tirith check ‚Ä?wrapper guarantees no raise for expected failures.
+    # Tirith check √¢?wrapper guarantees no raise for expected failures.
     # Only catch ImportError (module not installed).
     tirith_result = {"action": "allow", "findings": [], "summary": ""}
     try:
         from tools.tirith_security import check_command_security
         tirith_result = check_command_security(command)
     except ImportError:
-        pass  # tirith module not installed ‚Ä?allow
+        pass  # tirith module not installed √¢?allow
 
     # Dangerous command check (detection only, no approval)
     is_dangerous, pattern_key, description = detect_dangerous_command(command)
@@ -734,7 +734,7 @@ def check_all_command_guards(command: str, env_type: str,
 
     session_key = get_current_session_key()
 
-    # Tirith block/warn ‚Ü?approvable warning with rich findings.
+    # Tirith block/warn √¢?approvable warning with rich findings.
     # Previously, tirith "block" was a hard block with no approval prompt.
     # Now both block and warn go through the approval flow so users can
     # inspect the explanation and approve if they understand the risk.
@@ -778,7 +778,7 @@ def check_all_command_guards(command: str, env_type: str,
                            "The command was assessed as genuinely dangerous. Do NOT retry.",
                 "smart_denied": True,
             }
-        # verdict == "escalate" ‚Ü?fall through to manual prompt
+        # verdict == "escalate" √¢?fall through to manual prompt
 
     # --- Phase 3: Approval ---
 
@@ -788,7 +788,7 @@ def check_all_command_guards(command: str, env_type: str,
     all_keys = [key for key, _, _ in warnings]
     has_tirith = any(is_t for _, _, is_t in warnings)
 
-    # Gateway/async approval ‚Ä?block the agent thread until the user
+    # Gateway/async approval √¢?block the agent thread until the user
     # responds with /approve or /deny, mirroring the CLI's synchronous
     # input() flow.  The agent never sees "approval_required"; it either
     # gets the command output (approved) or a definitive "BLOCKED" message.
@@ -811,7 +811,7 @@ def check_all_command_guards(command: str, env_type: str,
             with _lock:
                 _gateway_queues.setdefault(session_key, []).append(entry)
 
-            # Notify the user (bridges sync agent thread ‚Ü?async gateway)
+            # Notify the user (bridges sync agent thread √¢?async gateway)
             try:
                 notify_cb(approval_data)
             except Exception as exc:
@@ -855,7 +855,7 @@ def check_all_command_guards(command: str, env_type: str,
                     "description": combined_desc,
                 }
 
-            # User approved ‚Ä?persist based on scope (same logic as CLI)
+            # User approved √¢?persist based on scope (same logic as CLI)
             for key, _, is_tirith in warnings:
                 if choice == "session" or (choice == "always" and is_tirith):
                     approve_session(session_key, key)
@@ -863,7 +863,7 @@ def check_all_command_guards(command: str, env_type: str,
                     approve_session(session_key, key)
                     approve_permanent(key)
                     save_permanent_allowlist(_permanent_approved)
-                # choice == "once": no persistence ‚Ä?command allowed this
+                # choice == "once": no persistence √¢?command allowed this
                 # single time only, matching the CLI's behavior.
 
             return {"approved": True, "message": None,
@@ -884,7 +884,7 @@ def check_all_command_guards(command: str, env_type: str,
             "command": command,
             "description": combined_desc,
             "message": (
-                f"‚ö†Ô∏è {combined_desc}. Asking the user for approval.\n\n**Command:**\n```\n{command}\n```"
+                f"√¢¬†√Ø¬∏ {combined_desc}. Asking the user for approval.\n\n**Command:**\n```\n{command}\n```"
             ),
         }
 

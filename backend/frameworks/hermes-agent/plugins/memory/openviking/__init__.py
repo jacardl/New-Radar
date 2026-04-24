@@ -1,4 +1,4 @@
-"""OpenViking memory plugin �?full bidirectional MemoryProvider interface.
+"""OpenViking memory plugin é¥?full bidirectional MemoryProvider interface.
 
 Context database by Volcengine (ByteDance) that organizes agent knowledge
 into a filesystem hierarchy (viking:// URIs) with tiered context loading,
@@ -8,10 +8,10 @@ Original PR #3369 by Mibayy, rewritten to use the full OpenViking session
 lifecycle instead of read-only search endpoints.
 
 Config via environment variables (profile-scoped via each profile's .env):
-  OPENVIKING_ENDPOINT  �?Server URL (default: http://127.0.0.1:1933)
-  OPENVIKING_API_KEY   �?API key (required for authenticated servers)
-  OPENVIKING_ACCOUNT   �?Tenant account (default: root)
-  OPENVIKING_USER      �?Tenant user (default: default)
+  OPENVIKING_ENDPOINT  é¥?Server URL (default: http://127.0.0.1:1933)
+  OPENVIKING_API_KEY   é¥?API key (required for authenticated servers)
+  OPENVIKING_ACCOUNT   é¥?Tenant account (default: root)
+  OPENVIKING_USER      é¥?Tenant user (default: default)
 
 Capabilities:
   - Automatic memory extraction on session commit (6 categories)
@@ -40,7 +40,7 @@ _TIMEOUT = 30.0
 
 
 # ---------------------------------------------------------------------------
-# Process-level atexit safety net �?ensures pending sessions are committed
+# Process-level atexit safety net é¥?ensures pending sessions are committed
 # even if shutdown_memory_provider is never called (e.g. gateway crash,
 # SIGKILL, or exception in _async_flush_memories preventing shutdown).
 # ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ atexit.register(_atexit_commit_sessions)
 
 
 # ---------------------------------------------------------------------------
-# HTTP helper �?uses httpx to avoid requiring the openviking SDK
+# HTTP helper é¥?uses httpx to avoid requiring the openviking SDK
 # ---------------------------------------------------------------------------
 
 def _get_httpx():
@@ -161,9 +161,9 @@ READ_SCHEMA = {
     "name": "viking_read",
     "description": (
         "Read content at a viking:// URI. Three detail levels:\n"
-        "  abstract �?~100 token summary (L0)\n"
-        "  overview �?~2k token key points (L1)\n"
-        "  full �?complete content (L2)\n"
+        "  abstract é¥?~100 token summary (L0)\n"
+        "  overview é¥?~2k token key points (L1)\n"
+        "  full é¥?complete content (L2)\n"
         "Start with abstract/overview, only use full when you need details."
     ),
     "parameters": {
@@ -183,9 +183,9 @@ BROWSE_SCHEMA = {
     "name": "viking_browse",
     "description": (
         "Browse the OpenViking knowledge store like a filesystem.\n"
-        "  list �?show directory contents\n"
-        "  tree �?show hierarchy\n"
-        "  stat �?show metadata for a URI"
+        "  list é¥?show directory contents\n"
+        "  tree é¥?show hierarchy\n"
+        "  stat é¥?show metadata for a URI"
     ),
     "parameters": {
         "type": "object",
@@ -300,7 +300,7 @@ class OpenVikingMemoryProvider(MemoryProvider):
                 logger.warning("OpenViking server at %s is not reachable", self._endpoint)
                 self._client = None
         except ImportError:
-            logger.warning("httpx not installed �?OpenViking plugin disabled")
+            logger.warning("httpx not installed é¥?OpenViking plugin disabled")
             self._client = None
 
         # Register as the last active provider for atexit safety net
@@ -420,7 +420,7 @@ class OpenVikingMemoryProvider(MemoryProvider):
         if not self._client:
             return
 
-        # Wait for any pending sync to finish first �?do this before the
+        # Wait for any pending sync to finish first é¥?do this before the
         # turn_count check so the last turn's messages are flushed even if
         # the count hasn't been incremented yet.
         if self._sync_thread and self._sync_thread.is_alive():
@@ -448,7 +448,7 @@ class OpenVikingMemoryProvider(MemoryProvider):
                 client.post(f"/api/v1/sessions/{self._session_id}/messages", {
                     "role": "user",
                     "parts": [
-                        {"type": "text", "text": f"[Memory note �?{target}] {content}"},
+                        {"type": "text", "text": f"[Memory note é¥?{target}] {content}"},
                     ],
                 })
             except Exception as e:
@@ -508,7 +508,7 @@ class OpenVikingMemoryProvider(MemoryProvider):
         resp = self._client.post("/api/v1/search/find", payload)
         result = resp.get("result", {})
 
-        # Format results for the model �?keep it concise
+        # Format results for the model é¥?keep it concise
         formatted = []
         for ctx_type in ("memories", "resources", "skills"):
             items = result.get(ctx_type, [])
@@ -590,7 +590,7 @@ class OpenVikingMemoryProvider(MemoryProvider):
         category = args.get("category", "")
         text = f"[Remember] {content}"
         if category:
-            text = f"[Remember �?{category}] {content}"
+            text = f"[Remember é¥?{category}] {content}"
 
         self._client.post(f"/api/v1/sessions/{self._session_id}/messages", {
             "role": "user",

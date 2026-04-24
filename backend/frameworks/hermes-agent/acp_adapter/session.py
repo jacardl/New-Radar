@@ -1,4 +1,4 @@
-"""ACP session manager �?maps ACP sessions to Hermes AIAgent instances.
+"""ACP session manager é¥?maps ACP sessions to Hermes AIAgent instances.
 
 Sessions are persisted to the shared SessionDB (``~/.hermes/state.db``) so they
 survive process restarts and appear in ``session_search``.  When the editor
@@ -87,7 +87,7 @@ class SessionManager:
         self._sessions: Dict[str, SessionState] = {}
         self._lock = Lock()
         self._agent_factory = agent_factory
-        self._db_instance = db  # None �?lazy-init on first use
+        self._db_instance = db  # None é«?lazy-init on first use
 
     # ---- public API ---------------------------------------------------------
 

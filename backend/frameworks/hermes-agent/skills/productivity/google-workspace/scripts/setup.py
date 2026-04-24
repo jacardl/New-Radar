@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Google Workspace OAuth2 setup for Hermes Agent.
 
-Fully non-interactive �?designed to be driven by the agent via terminal commands.
+Fully non-interactive é¥?designed to be driven by the agent via terminal commands.
 The agent mediates between this script and the user (works on CLI, Telegram, Discord, etc.)
 
 Commands:
@@ -13,7 +13,7 @@ Commands:
   setup.py --install-deps                   # Install Python dependencies only
 
 Agent workflow:
-  1. Run --check. If exit 0, auth is good �?skip setup.
+  1. Run --check. If exit 0, auth is good é¥?skip setup.
   2. Ask user for client_secret.json path. Run --client-secret PATH.
   3. Run --auth-url. Send the printed URL to the user.
   4. User opens URL, authorizes, gets redirected to a page with a code.
@@ -129,7 +129,7 @@ def check_auth():
     from google.auth.transport.requests import Request
 
     try:
-        # Don't pass scopes �?user may have authorized only a subset.
+        # Don't pass scopes é¥?user may have authorized only a subset.
         # Passing scopes forces google-auth to validate them on refresh,
         # which fails with invalid_scope if the token has fewer scopes
         # than requested.
@@ -304,7 +304,7 @@ def exchange_auth_code(code: str):
     )
 
     try:
-        # Accept partial scopes �?user may deselect some permissions in the consent screen
+        # Accept partial scopes é¥?user may deselect some permissions in the consent screen
         os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
         flow.fetch_token(code=code)
     except Exception as e:

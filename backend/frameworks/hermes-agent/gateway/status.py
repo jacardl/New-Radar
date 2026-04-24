@@ -6,7 +6,7 @@ used by send_message's check_fn to gate availability in the CLI.
 
 The PID file lives at ``{HERMES_HOME}/gateway.pid``.  HERMES_HOME defaults to
 ``~/.hermes`` but can be overridden via the environment variable.  This means
-separate HERMES_HOME directories naturally get separate PID files �?a property
+separate HERMES_HOME directories naturally get separate PID files é¥?a property
 that will be useful when we add named profiles (multiple agents running
 concurrently under distinct configurations).
 """
@@ -291,7 +291,7 @@ def acquire_scoped_lock(scope: str, identity: str, metadata: Optional[dict[str, 
 
     existing = _read_json_file(lock_path)
     if existing is None and lock_path.exists():
-        # Lock file exists but is empty or contains invalid JSON �?treat as
+        # Lock file exists but is empty or contains invalid JSON é¥?treat as
         # stale.  This happens when a previous process was killed between
         # O_CREAT|O_EXCL and the subsequent json.dump() (e.g. DNS failure
         # during rapid Slack reconnect retries).
@@ -323,7 +323,7 @@ def acquire_scoped_lock(scope: str, identity: str, metadata: Optional[dict[str, 
                     and current_start != existing.get("start_time")
                 ):
                     stale = True
-                # Check if process is stopped (Ctrl+Z / SIGTSTP) �?stopped
+                # Check if process is stopped (Ctrl+Z / SIGTSTP) é¥?stopped
                 # processes still respond to os.kill(pid, 0) but are not
                 # actually running. Treat them as stale so --replace works.
                 if not stale:

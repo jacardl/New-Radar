@@ -1,4 +1,4 @@
-"""Tests for agent/prompt_builder.py �?context scanning, truncation, skills index."""
+"""Tests for agent/prompt_builder.py é¥?context scanning, truncation, skills index."""
 
 import builtins
 import importlib
@@ -141,7 +141,7 @@ class TestTruncateContent:
 
 
 # =========================================================================
-# _parse_skill_file �?single-pass skill file reading
+# _parse_skill_file é¥?single-pass skill file reading
 # =========================================================================
 
 
@@ -537,7 +537,7 @@ class TestBuildContextFilesPrompt:
         assert "ESLint" in result
 
     def test_agents_md_top_level_only(self, tmp_path):
-        """AGENTS.md is loaded from cwd only �?subdirectory copies are ignored."""
+        """AGENTS.md is loaded from cwd only é¥?subdirectory copies are ignored."""
         (tmp_path / "AGENTS.md").write_text("Top level instructions.")
         sub = tmp_path / "src"
         sub.mkdir()

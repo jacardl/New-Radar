@@ -42,7 +42,7 @@ class TestPlatformTokenPlaceholderGuard:
     """Verify that _validate_gateway_config disables platforms with placeholder tokens."""
 
     def test_rejects_triple_asterisk(self, caplog):
-        """'***' is the .env.example placeholder �?should be rejected."""
+        """'***' is the .env.example placeholder é¥?should be rejected."""
         config = _make_gateway_config(Platform.TELEGRAM, "***")
         with caplog.at_level(logging.ERROR):
             _validate_and_return(config)
@@ -82,7 +82,7 @@ class TestPlatformTokenPlaceholderGuard:
         config = _make_gateway_config(Platform.TELEGRAM, "")
         with caplog.at_level(logging.WARNING):
             _validate_and_return(config)
-        # Empty token doesn't trigger placeholder rejection �?enabled stays True
+        # Empty token doesn't trigger placeholder rejection é¥?enabled stays True
         # (the existing empty-token warning is separate)
         assert config.platforms[Platform.TELEGRAM].enabled is True
 
@@ -130,7 +130,7 @@ class TestAPIServerPlaceholderKeyGuard:
         assert result is False
 
     def test_allows_loopback_with_placeholder_key(self):
-        """Loopback with a placeholder key is fine �?not network-exposed."""
+        """Loopback with a placeholder key is fine é¥?not network-exposed."""
         from gateway.platforms.api_server import APIServerAdapter
         from gateway.platforms.base import is_network_accessible
 

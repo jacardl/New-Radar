@@ -116,6 +116,6 @@ async def test_compress_command_explains_when_token_estimate_rises():
     ):
         result = await runner._handle_compress_command(_make_event())
 
-    assert "Compressed: 4 �?3 messages" in result
-    assert "Rough transcript estimate: ~100 �?~120 tokens" in result
+    assert "Compressed: 4 é«?3 messages" in result
+    assert "Rough transcript estimate: ~100 é«?~120 tokens" in result
     assert "denser summaries" in result

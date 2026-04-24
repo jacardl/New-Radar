@@ -1,6 +1,6 @@
 """Tests for Discord incoming document/file attachment handling.
 
-Covers the document branch in DiscordAdapter._handle_message() �?
+Covers the document branch in DiscordAdapter._handle_message() é¥?
 the `else` clause of the attachment content-type loop that was added
 to download, cache, and optionally inject text from non-image/audio files.
 """
@@ -228,7 +228,7 @@ class TestIncomingDocumentHandling:
 
     @pytest.mark.asyncio
     async def test_oversized_document_skipped(self, adapter):
-        """A document over 32MB should be skipped �?media_urls stays empty."""
+        """A document over 32MB should be skipped é¥?media_urls stays empty."""
         msg = make_message([
             make_attachment(
                 filename="huge.pdf",

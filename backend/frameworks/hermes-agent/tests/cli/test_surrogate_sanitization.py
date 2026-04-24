@@ -19,7 +19,7 @@ class TestSanitizeSurrogates:
     """Test the _sanitize_surrogates() helper."""
 
     def test_normal_text_unchanged(self):
-        text = "Hello, this is normal text with unicode: café ñ 日本�?🎉"
+        text = "Hello, this is normal text with unicode: cafè å¸½ éã¦æ¹°ç¾?é¦å¸"
         assert _sanitize_surrogates(text) == text
 
     def test_empty_string(self):

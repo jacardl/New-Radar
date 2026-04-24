@@ -1,6 +1,6 @@
-﻿"""
-PDF渲染�?- 使用WeasyPrint从HTML生成PDF
-支持完整的CSS样式和中文字�?
+ï»¿"""
+PDFæ¸²æï¿½?- ä½¿ç¨WeasyPrintä»HTMLçæPDF
+æ¯æå®æ´çCSSæ ·å¼åä¸­æå­ï¿½?
 """
 
 from __future__ import annotations
@@ -20,8 +20,8 @@ from backend.engines.report.utils.dependency_check import (
     check_pango_available,
 )
 
-# 在导入WeasyPrint之前，尝试补充常见的macOS Homebrew动态库路径�?
-# 避免因未设置DYLD_LIBRARY_PATH而找不到pango/cairo等依赖�?
+# å¨å¯¼å¥WeasyPrintä¹åï¼å°è¯è¡¥åå¸¸è§çmacOS Homebrewå¨æåºè·¯å¾ï¿½?
+# é¿åå æªè®¾ç½®DYLD_LIBRARY_PATHèæ¾ä¸å°pango/cairoç­ä¾èµï¿½?
 if sys.platform == 'darwin':
     mac_libs = [Path('/opt/homebrew/lib'), Path('/usr/local/lib')]
     current = os.environ.get('DYLD_LIBRARY_PATH', '')
@@ -32,11 +32,11 @@ if sys.platform == 'darwin':
     if inserts:
         os.environ['DYLD_LIBRARY_PATH'] = ":".join(inserts + ([current] if current else []))
 
-# Windows: 自动补充常见 GTK/Pango 运行时路径，避免 DLL 加载失败
+# Windows: èªå¨è¡¥åå¸¸è§ GTK/Pango è¿è¡æ¶è·¯å¾ï¼é¿å DLL å è½½å¤±è´¥
 if sys.platform.startswith('win'):
     added = prepare_pango_environment()
     if added:
-        logger.debug(f"已自动添�?GTK 运行时路�? {added}")
+        logger.debug(f"å·²èªå¨æ·»ï¿½?GTK è¿è¡æ¶è·¯ï¿½? {added}")
 
 try:
     from weasyprint import HTML, CSS
@@ -45,7 +45,7 @@ try:
     PDF_DEP_STATUS = "OK"
 except (ImportError, OSError) as e:
     WEASYPRINT_AVAILABLE = False
-    # 判断错误类型以提供更友好的提示，并尝试输出缺失依赖的详细信息
+    # å¤æ­éè¯¯ç±»åä»¥æä¾æ´åå¥½çæç¤ºï¼å¹¶å°è¯è¾åºç¼ºå¤±ä¾èµçè¯¦ç»ä¿¡æ¯
     try:
         _, dep_message = check_pango_available()
     except Exception:
@@ -53,18 +53,18 @@ except (ImportError, OSError) as e:
 
     if isinstance(e, OSError):
         msg = dep_message or (
-            "PDF 导出依赖缺失（系统库未安装或环境变量未设置）�?
-            "PDF 导出功能将不可用。其他功能不受影响�?
+            "PDF å¯¼åºä¾èµç¼ºå¤±ï¼ç³»ç»åºæªå®è£æç¯å¢åéæªè®¾ç½®ï¼ï¿½?
+            "PDF å¯¼åºåè½å°ä¸å¯ç¨ãå¶ä»åè½ä¸åå½±åï¿½?
         )
         logger.warning(msg)
         PDF_DEP_STATUS = msg
     else:
-        msg = dep_message or "WeasyPrint未安装，PDF导出功能将不可用"
+        msg = dep_message or "WeasyPrintæªå®è£ï¼PDFå¯¼åºåè½å°ä¸å¯ç¨"
         logger.warning(msg)
         PDF_DEP_STATUS = msg
 except Exception as e:
     WEASYPRINT_AVAILABLE = False
-    PDF_DEP_STATUS = f"WeasyPrint 加载失败: {e}，PDF导出功能将不可用"
+    PDF_DEP_STATUS = f"WeasyPrint å è½½å¤±è´¥: {e}ï¼PDFå¯¼åºåè½å°ä¸å¯ç¨"
     logger.warning(PDF_DEP_STATUS)
 
 from .html_renderer import HTMLRenderer
@@ -82,11 +82,11 @@ except ImportError:
 
 class PDFRenderer:
     """
-    基于WeasyPrint的PDF渲染�?
+    åºäºWeasyPrintçPDFæ¸²æï¿½?
 
-    - 直接从HTML生成PDF，保留所有CSS样式
-    - 完美支持中文字体
-    - 自动处理分页和布局
+    - ç´æ¥ä»HTMLçæPDFï¼ä¿çææCSSæ ·å¼
+    - å®ç¾æ¯æä¸­æå­ä½
+    - èªå¨å¤çåé¡µåå¸å±
     """
 
     def __init__(
@@ -95,11 +95,11 @@ class PDFRenderer:
         layout_optimizer: PDFLayoutOptimizer | None = None
     ):
         """
-        初始化PDF渲染�?
+        åå§åPDFæ¸²æï¿½?
 
-        参数:
-            config: 渲染器配�?
-            layout_optimizer: PDF布局优化器（可选）
+        åæ°:
+            config: æ¸²æå¨éï¿½?
+            layout_optimizer: PDFå¸å±ä¼åå¨ï¼å¯éï¼
         """
         self.config = config or {}
         self.html_renderer = HTMLRenderer(config)
@@ -109,50 +109,50 @@ class PDFRenderer:
             raise RuntimeError(
                 PDF_DEP_STATUS
                 if 'PDF_DEP_STATUS' in globals() else
-                "WeasyPrint未安装，请运�? pip install weasyprint"
+                "WeasyPrintæªå®è£ï¼è¯·è¿ï¿½? pip install weasyprint"
             )
 
-        # 初始化图表转换器
+        # åå§åå¾è¡¨è½¬æ¢å¨
         try:
             font_path = self._get_font_path()
             self.chart_converter = create_chart_converter(font_path=str(font_path))
-            logger.info("图表SVG转换器初始化成功")
+            logger.info("å¾è¡¨SVGè½¬æ¢å¨åå§åæå")
         except Exception as e:
-            logger.warning(f"图表SVG转换器初始化失败: {e}，将使用表格降级")
+            logger.warning(f"å¾è¡¨SVGè½¬æ¢å¨åå§åå¤±è´¥: {e}ï¼å°ä½¿ç¨è¡¨æ ¼éçº§")
 
-        # 初始化数学公式转换器
+        # åå§åæ°å­¦å¬å¼è½¬æ¢å¨
         try:
             self.math_converter = MathToSVG(font_size=16, color='black')
-            logger.info("数学公式SVG转换器初始化成功")
+            logger.info("æ°å­¦å¬å¼SVGè½¬æ¢å¨åå§åæå")
         except Exception as e:
-            logger.warning(f"数学公式SVG转换器初始化失败: {e}，公式将显示为文�?)
+            logger.warning(f"æ°å­¦å¬å¼SVGè½¬æ¢å¨åå§åå¤±è´¥: {e}ï¼å¬å¼å°æ¾ç¤ºä¸ºæï¿½?)
             self.math_converter = None
 
     @staticmethod
     def _get_font_path() -> Path:
-        """获取字体文件路径"""
-        # 优先使用完整字体以确保字符覆�?
+        """è·åå­ä½æä»¶è·¯å¾"""
+        # ä¼åä½¿ç¨å®æ´å­ä½ä»¥ç¡®ä¿å­ç¬¦è¦ï¿½?
         fonts_dir = Path(__file__).parent / "assets" / "fonts"
 
-        # 检查完整字�?
+        # æ£æ¥å®æ´å­ï¿½?
         full_font = fonts_dir / "SourceHanSerifSC-Medium.otf"
         if full_font.exists():
-            logger.info(f"使用完整字体: {full_font}")
+            logger.info(f"ä½¿ç¨å®æ´å­ä½: {full_font}")
             return full_font
 
-        # 检查TTF子集字体
+        # æ£æ¥TTFå­éå­ä½
         subset_ttf = fonts_dir / "SourceHanSerifSC-Medium-Subset.ttf"
         if subset_ttf.exists():
-            logger.info(f"使用TTF子集字体: {subset_ttf}")
+            logger.info(f"ä½¿ç¨TTFå­éå­ä½: {subset_ttf}")
             return subset_ttf
 
-        # 检查OTF子集字体
+        # æ£æ¥OTFå­éå­ä½
         subset_otf = fonts_dir / "SourceHanSerifSC-Medium-Subset.otf"
         if subset_otf.exists():
-            logger.info(f"使用OTF子集字体: {subset_otf}")
+            logger.info(f"ä½¿ç¨OTFå­éå­ä½: {subset_otf}")
             return subset_otf
 
-        raise FileNotFoundError(f"未找到字体文件，请检�?{fonts_dir} 目录")
+        raise FileNotFoundError(f"æªæ¾å°å­ä½æä»¶ï¼è¯·æ£ï¿½?{fonts_dir} ç®å½")
 
     def _preprocess_charts(
         self,
@@ -160,20 +160,20 @@ class PDFRenderer:
         ir_file_path: str | None = None
     ) -> Dict[str, Any]:
         """
-        预处理图表：使用 ChartReviewService 验证并修复所有图表数据�?
+        é¢å¤çå¾è¡¨ï¼ä½¿ç¨ ChartReviewService éªè¯å¹¶ä¿®å¤ææå¾è¡¨æ°æ®ï¿½?
 
-        使用统一�?ChartReviewService 进行图表审查，修复结果直接写回传入的 IR�?
-        如果提供 ir_file_path，修复后会自动保存到文件�?
+        ä½¿ç¨ç»ä¸ï¿½?ChartReviewService è¿è¡å¾è¡¨å®¡æ¥ï¼ä¿®å¤ç»æç´æ¥ååä¼ å¥ç IRï¿½?
+        å¦ææä¾ ir_file_pathï¼ä¿®å¤åä¼èªå¨ä¿å­å°æä»¶ï¿½?
 
-        参数:
-            document_ir: Document IR数据
-            ir_file_path: 可选，IR 文件路径，提供时修复后会自动保存
+        åæ°:
+            document_ir: Document IRæ°æ®
+            ir_file_path: å¯éï¼IR æä»¶è·¯å¾ï¼æä¾æ¶ä¿®å¤åä¼èªå¨ä¿å­
 
-        返回:
-            Dict[str, Any]: 修复后的Document IR（深拷贝�?
+        è¿å:
+            Dict[str, Any]: ä¿®å¤åçDocument IRï¼æ·±æ·è´ï¿½?
         """
-        # 使用统一�?ChartReviewService
-        # review_document 返回本次会话的统计信息（线程安全�?
+        # ä½¿ç¨ç»ä¸ï¿½?ChartReviewService
+        # review_document è¿åæ¬æ¬¡ä¼è¯çç»è®¡ä¿¡æ¯ï¼çº¿ç¨å®å¨ï¿½?
         chart_service = get_chart_review_service()
         review_stats = chart_service.review_document(
             document_ir,
@@ -182,61 +182,61 @@ class PDFRenderer:
             save_on_repair=bool(ir_file_path)
         )
 
-        # 使用返回�?ReviewStats 对象，而非共享�?chart_service.stats
+        # ä½¿ç¨è¿åï¿½?ReviewStats å¯¹è±¡ï¼èéå±äº«ï¿½?chart_service.stats
         if review_stats.total > 0:
             logger.info(
-                f"PDF图表预处理完�? "
-                f"总计 {review_stats.total} 个图�? "
-                f"修复 {review_stats.repaired_total} �? "
-                f"失败 {review_stats.failed} �?
+                f"PDFå¾è¡¨é¢å¤çå®ï¿½? "
+                f"æ»è®¡ {review_stats.total} ä¸ªå¾ï¿½? "
+                f"ä¿®å¤ {review_stats.repaired_total} ï¿½? "
+                f"å¤±è´¥ {review_stats.failed} ï¿½?
             )
 
-        # 返回深拷贝，避免后续 SVG 转换过程影响回写后的原始 IR
+        # è¿åæ·±æ·è´ï¼é¿ååç»­ SVG è½¬æ¢è¿ç¨å½±ååååçåå§ IR
         return copy.deepcopy(document_ir)
 
     def _convert_charts_to_svg(self, document_ir: Dict[str, Any]) -> Dict[str, str]:
         """
-        将document_ir中的所有图表转换为SVG
+        å°document_irä¸­çææå¾è¡¨è½¬æ¢ä¸ºSVG
 
-        参数:
-            document_ir: Document IR数据
+        åæ°:
+            document_ir: Document IRæ°æ®
 
-        返回:
-            Dict[str, str]: widgetId到SVG字符串的映射
+        è¿å:
+            Dict[str, str]: widgetIdå°SVGå­ç¬¦ä¸²çæ å°
         """
         svg_map = {}
 
         if not hasattr(self, 'chart_converter') or not self.chart_converter:
-            logger.warning("图表转换器未初始化，跳过图表转换")
+            logger.warning("å¾è¡¨è½¬æ¢å¨æªåå§åï¼è·³è¿å¾è¡¨è½¬æ¢")
             return svg_map
 
-        # 遍历所有章�?
+        # éåææç« ï¿½?
         chapters = document_ir.get('chapters', [])
         for chapter in chapters:
             blocks = chapter.get('blocks', [])
             self._extract_and_convert_widgets(blocks, svg_map)
 
-        logger.info(f"成功转换 {len(svg_map)} 个图表为SVG")
+        logger.info(f"æåè½¬æ¢ {len(svg_map)} ä¸ªå¾è¡¨ä¸ºSVG")
         return svg_map
 
     def _convert_wordclouds_to_images(self, document_ir: Dict[str, Any]) -> Dict[str, str]:
         """
-        将document_ir中的词云widget转换为PNG并返回data URI映射
+        å°document_irä¸­çè¯äºwidgetè½¬æ¢ä¸ºPNGå¹¶è¿ådata URIæ å°
         """
         img_map: Dict[str, str] = {}
 
         if not WORDCLOUD_AVAILABLE:
-            logger.debug("wordcloud库未安装，词云将使用表格兜底")
+            logger.debug("wordcloudåºæªå®è£ï¼è¯äºå°ä½¿ç¨è¡¨æ ¼ååº")
             return img_map
 
-        # 遍历所有章�?
+        # éåææç« ï¿½?
         chapters = document_ir.get('chapters', [])
         for chapter in chapters:
             blocks = chapter.get('blocks', [])
             self._extract_wordcloud_widgets(blocks, img_map)
 
         if img_map:
-            logger.info(f"成功转换 {len(img_map)} 个词云为图片")
+            logger.info(f"æåè½¬æ¢ {len(img_map)} ä¸ªè¯äºä¸ºå¾ç")
         return img_map
 
     def _extract_and_convert_widgets(
@@ -245,11 +245,11 @@ class PDFRenderer:
         svg_map: Dict[str, str]
     ) -> None:
         """
-        递归遍历blocks，找到所有widget并转换为SVG
+        éå½éåblocksï¼æ¾å°ææwidgetå¹¶è½¬æ¢ä¸ºSVG
 
-        参数:
-            blocks: block列表
-            svg_map: 用于存储转换结果的字�?
+        åæ°:
+            blocks: blockåè¡¨
+            svg_map: ç¨äºå­å¨è½¬æ¢ç»æçå­ï¿½?
         """
         for block in blocks:
             if not isinstance(block, dict):
@@ -257,25 +257,25 @@ class PDFRenderer:
 
             block_type = block.get('type')
 
-            # 处理widget类型
+            # å¤çwidgetç±»å
             if block_type == 'widget':
                 widget_id = block.get('widgetId')
                 widget_type = block.get('widgetType', '')
 
-                # 只处理chart.js类型的widget
+                # åªå¤çchart.jsç±»åçwidget
                 if widget_id and widget_type.startswith('chart.js'):
                     widget_type_lower = widget_type.lower()
                     props = block.get('props')
                     props_type = str(props.get('type') or '').lower() if isinstance(props, dict) else ''
                     if 'wordcloud' in widget_type_lower or 'wordcloud' in props_type:
-                        logger.debug(f"检测到词云 {widget_id}，跳过SVG转换并使用图片注入流�?)
+                        logger.debug(f"æ£æµå°è¯äº {widget_id}ï¼è·³è¿SVGè½¬æ¢å¹¶ä½¿ç¨å¾çæ³¨å¥æµï¿½?)
                         continue
 
                     failed, fail_reason = self.html_renderer._has_chart_failure(block)
                     if block.get("_chart_renderable") is False or failed:
                         logger.debug(
-                            f"跳过转换失败的图�?{widget_id}"
-                            f"{f'，原�? {fail_reason}' if fail_reason else ''}"
+                            f"è·³è¿è½¬æ¢å¤±è´¥çå¾ï¿½?{widget_id}"
+                            f"{f'ï¼åï¿½? {fail_reason}' if fail_reason else ''}"
                         )
                         continue
                     try:
@@ -287,25 +287,25 @@ class PDFRenderer:
                         )
                         if svg_content:
                             svg_map[widget_id] = svg_content
-                            logger.debug(f"图表 {widget_id} 转换为SVG成功")
+                            logger.debug(f"å¾è¡¨ {widget_id} è½¬æ¢ä¸ºSVGæå")
                         else:
-                            logger.warning(f"图表 {widget_id} 转换为SVG失败")
+                            logger.warning(f"å¾è¡¨ {widget_id} è½¬æ¢ä¸ºSVGå¤±è´¥")
                     except Exception as e:
-                        logger.error(f"转换图表 {widget_id} 时出�? {e}")
+                        logger.error(f"è½¬æ¢å¾è¡¨ {widget_id} æ¶åºï¿½? {e}")
 
-            # 递归处理嵌套的blocks
+            # éå½å¤çåµå¥çblocks
             nested_blocks = block.get('blocks')
             if isinstance(nested_blocks, list):
                 self._extract_and_convert_widgets(nested_blocks, svg_map)
 
-            # 处理列表�?
+            # å¤çåè¡¨ï¿½?
             if block_type == 'list':
                 items = block.get('items', [])
                 for item in items:
                     if isinstance(item, list):
                         self._extract_and_convert_widgets(item, svg_map)
 
-            # 处理表格单元�?
+            # å¤çè¡¨æ ¼ååï¿½?
             if block_type == 'table':
                 rows = block.get('rows', [])
                 for row in rows:
@@ -321,7 +321,7 @@ class PDFRenderer:
         img_map: Dict[str, str]
     ) -> None:
         """
-        递归遍历blocks，找到词云widget并生成图�?
+        éå½éåblocksï¼æ¾å°è¯äºwidgetå¹¶çæå¾ï¿½?
         """
         for block in blocks:
             if not isinstance(block, dict):
@@ -343,9 +343,9 @@ class PDFRenderer:
                         data_uri = self._generate_wordcloud_image(block)
                         if data_uri:
                             img_map[widget_id] = data_uri
-                            logger.debug(f"词云 {widget_id} 转换为图片成�?)
+                            logger.debug(f"è¯äº {widget_id} è½¬æ¢ä¸ºå¾çæï¿½?)
                     except Exception as exc:
-                        logger.warning(f"生成词云图片失败 {widget_id}: {exc}")
+                        logger.warning(f"çæè¯äºå¾çå¤±è´¥ {widget_id}: {exc}")
 
             nested_blocks = block.get('blocks')
             if isinstance(nested_blocks, list):
@@ -368,7 +368,7 @@ class PDFRenderer:
 
     def _normalize_wordcloud_items(self, block: Dict[str, Any]) -> list:
         """
-        从widget block中提取词云数�?
+        ä»widget blockä¸­æåè¯äºæ°ï¿½?
         """
         props = block.get('props') or {}
         raw_items = props.get('data')
@@ -394,17 +394,17 @@ class PDFRenderer:
 
     def _generate_wordcloud_image(self, block: Dict[str, Any]) -> str | None:
         """
-        生成词云PNG并返回data URI
+        çæè¯äºPNGå¹¶è¿ådata URI
         """
         items = self._normalize_wordcloud_items(block)
         if not items:
             return None
 
-        # 使用频次形式馈入wordcloud�?
+        # ä½¿ç¨é¢æ¬¡å½¢å¼é¦å¥wordcloudï¿½?
         frequencies = {}
         for item in items:
             weight = item['weight']
-            # 兼容权重�?-1的小数，放大以体现差�?
+            # å¼å®¹æéï¿½?-1çå°æ°ï¼æ¾å¤§ä»¥ä½ç°å·®ï¿½?
             freq = weight * 100 if 0 < weight <= 1.5 else weight
             frequencies[item['word']] = max(1, freq)
 
@@ -428,28 +428,28 @@ class PDFRenderer:
 
     def _convert_math_to_svg(self, document_ir: Dict[str, Any]) -> Dict[str, str]:
         """
-        将document_ir中的所有数学公式转换为SVG
+        å°document_irä¸­çæææ°å­¦å¬å¼è½¬æ¢ä¸ºSVG
 
-        参数:
-            document_ir: Document IR数据
+        åæ°:
+            document_ir: Document IRæ°æ®
 
-        返回:
-            Dict[str, str]: 公式块ID到SVG字符串的映射
+        è¿å:
+            Dict[str, str]: å¬å¼åIDå°SVGå­ç¬¦ä¸²çæ å°
         """
         svg_map = {}
 
         if not hasattr(self, 'math_converter') or not self.math_converter:
-            logger.warning("数学公式转换器未初始化，跳过公式转换")
+            logger.warning("æ°å­¦å¬å¼è½¬æ¢å¨æªåå§åï¼è·³è¿å¬å¼è½¬æ¢")
             return svg_map
 
-        # 遍历所有章节，保持全局计数器避免ID重复
+        # éåææç« èï¼ä¿æå¨å±è®¡æ°å¨é¿åIDéå¤
         block_counter = [0]
         chapters = document_ir.get('chapters', [])
         for chapter in chapters:
             blocks = chapter.get('blocks', [])
             self._extract_and_convert_math_blocks(blocks, svg_map, block_counter)
 
-        logger.info(f"成功转换 {len(svg_map)} 个数学公式为SVG")
+        logger.info(f"æåè½¬æ¢ {len(svg_map)} ä¸ªæ°å­¦å¬å¼ä¸ºSVG")
         return svg_map
 
     def _extract_and_convert_math_blocks(
@@ -459,18 +459,18 @@ class PDFRenderer:
         block_counter: list = None
     ) -> None:
         """
-        递归遍历blocks，找到所有math块并转换为SVG
+        éå½éåblocksï¼æ¾å°ææmathåå¹¶è½¬æ¢ä¸ºSVG
 
-        参数:
-            blocks: block列表
-            svg_map: 用于存储转换结果的字�?
-            block_counter: 用于生成唯一ID的计数器
+        åæ°:
+            blocks: blockåè¡¨
+            svg_map: ç¨äºå­å¨è½¬æ¢ç»æçå­ï¿½?
+            block_counter: ç¨äºçæå¯ä¸IDçè®¡æ°å¨
         """
         if block_counter is None:
             block_counter = [0]
 
         def _extract_inline_math_from_inlines(inlines: list):
-            """从段落内联节点中提取数学公式"""
+            """ä»æ®µè½åèèç¹ä¸­æåæ°å­¦å¬å¼"""
             if not isinstance(inlines, list):
                 return
             for run in inlines:
@@ -480,10 +480,10 @@ class PDFRenderer:
                 math_mark = next((m for m in marks if m.get('type') == 'math'), None)
 
                 if math_mark:
-                    # 仅单个math mark
+                    # ä»åä¸ªmath mark
                     raw = math_mark.get('value') or run.get('text') or ''
                     latex = self._normalize_latex(raw)
-                    # 行内mark统一按inline处理，避免误将行内公式当成display
+                    # è¡åmarkç»ä¸æinlineå¤çï¼é¿åè¯¯å°è¡åå¬å¼å½ædisplay
                     is_display = False
                     if not latex:
                         continue
@@ -498,14 +498,14 @@ class PDFRenderer:
                         )
                         if svg_content:
                             svg_map[math_id] = svg_content
-                            logger.debug(f"公式 {math_id} 转换为SVG成功")
+                            logger.debug(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGæå")
                         else:
-                            logger.warning(f"公式 {math_id} 转换为SVG失败: {latex[:50]}...")
+                            logger.warning(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGå¤±è´¥: {latex[:50]}...")
                     except Exception as exc:
-                        logger.error(f"转换内联公式 {latex[:50]}... 时出�? {exc}")
+                        logger.error(f"è½¬æ¢åèå¬å¼ {latex[:50]}... æ¶åºï¿½? {exc}")
                     continue
 
-                # 无math mark，尝试解析文本中的多个公�?
+                # æ math markï¼å°è¯è§£æææ¬ä¸­çå¤ä¸ªå¬ï¿½?
                 text_val = run.get('text')
                 if not isinstance(text_val, str):
                     continue
@@ -527,13 +527,13 @@ class PDFRenderer:
                         )
                         if svg_content:
                             svg_map[math_id] = svg_content
-                            logger.debug(f"公式 {math_id} 转换为SVG成功")
+                            logger.debug(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGæå")
                         else:
-                            logger.warning(f"公式 {math_id} 转换为SVG失败: {latex[:50]}...")
+                            logger.warning(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGå¤±è´¥: {latex[:50]}...")
                     except Exception as exc:
-                        logger.error(f"转换内联公式 {latex[:50]}... 时出�? {exc}")
+                        logger.error(f"è½¬æ¢åèå¬å¼ {latex[:50]}... æ¶åºï¿½? {exc}")
                 if ids_for_html:
-                    # 将ID列表写回run，便于HTML渲染时使用相同ID（顺序对应segments�?
+                    # å°IDåè¡¨åårunï¼ä¾¿äºHTMLæ¸²ææ¶ä½¿ç¨ç¸åIDï¼é¡ºåºå¯¹åºsegmentsï¿½?
                     run['mathIds'] = ids_for_html
 
         for block in blocks:
@@ -542,7 +542,7 @@ class PDFRenderer:
 
             block_type = block.get('type')
 
-            # 处理math类型
+            # å¤çmathç±»å
             if block_type == 'math':
                 latex = self._normalize_latex(block.get('latex', ''))
                 if latex:
@@ -552,32 +552,32 @@ class PDFRenderer:
                         svg_content = self.math_converter.convert_display_to_svg(latex)
                         if svg_content:
                             svg_map[math_id] = svg_content
-                            # 将ID添加到block中，以便后续注入时识�?
+                            # å°IDæ·»å å°blockä¸­ï¼ä»¥ä¾¿åç»­æ³¨å¥æ¶è¯ï¿½?
                             block['mathId'] = math_id
-                            logger.debug(f"公式 {math_id} 转换为SVG成功")
+                            logger.debug(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGæå")
                         else:
-                            logger.warning(f"公式 {math_id} 转换为SVG失败: {latex[:50]}...")
+                            logger.warning(f"å¬å¼ {math_id} è½¬æ¢ä¸ºSVGå¤±è´¥: {latex[:50]}...")
                     except Exception as e:
-                        logger.error(f"转换公式 {latex[:50]}... 时出�? {e}")
+                        logger.error(f"è½¬æ¢å¬å¼ {latex[:50]}... æ¶åºï¿½? {e}")
             else:
-                # 提取段落、表格等内部的内联公�?
+                # æåæ®µè½ãè¡¨æ ¼ç­åé¨çåèå¬ï¿½?
                 inlines = block.get('inlines')
                 if inlines:
                     _extract_inline_math_from_inlines(inlines)
 
-            # 递归处理嵌套的blocks
+            # éå½å¤çåµå¥çblocks
             nested_blocks = block.get('blocks')
             if isinstance(nested_blocks, list):
                 self._extract_and_convert_math_blocks(nested_blocks, svg_map, block_counter)
 
-            # 处理列表�?
+            # å¤çåè¡¨ï¿½?
             if block_type == 'list':
                 items = block.get('items', [])
                 for item in items:
                     if isinstance(item, list):
                         self._extract_and_convert_math_blocks(item, svg_map, block_counter)
 
-            # 处理表格单元�?
+            # å¤çè¡¨æ ¼ååï¿½?
             if block_type == 'table':
                 rows = block.get('rows', [])
                 for row in rows:
@@ -587,7 +587,7 @@ class PDFRenderer:
                         if isinstance(cell_blocks, list):
                             self._extract_and_convert_math_blocks(cell_blocks, svg_map, block_counter)
 
-            # 处理callout内部的blocks
+            # å¤çcalloutåé¨çblocks
             if block_type == 'callout':
                 callout_blocks = block.get('blocks', [])
                 if isinstance(callout_blocks, list):
@@ -595,53 +595,53 @@ class PDFRenderer:
 
     def _inject_svg_into_html(self, html: str, svg_map: Dict[str, str]) -> str:
         """
-        将SVG内容直接注入到HTML中（不使用JavaScript�?
+        å°SVGåå®¹ç´æ¥æ³¨å¥å°HTMLä¸­ï¼ä¸ä½¿ç¨JavaScriptï¿½?
 
-        参数:
-            html: 原始HTML内容
-            svg_map: widgetId到SVG内容的映�?
+        åæ°:
+            html: åå§HTMLåå®¹
+            svg_map: widgetIdå°SVGåå®¹çæ ï¿½?
 
-        返回:
-            str: 注入SVG后的HTML
+        è¿å:
+            str: æ³¨å¥SVGåçHTML
         """
         if not svg_map:
             return html
 
         import re
 
-        # 为每个widgetId查找对应的canvas并替换为SVG
+        # ä¸ºæ¯ä¸ªwidgetIdæ¥æ¾å¯¹åºçcanvaså¹¶æ¿æ¢ä¸ºSVG
         for widget_id, svg_content in svg_map.items():
-            # 清理SVG内容（移除XML声明，因为SVG将嵌入HTML�?
+            # æ¸çSVGåå®¹ï¼ç§»é¤XMLå£°æï¼å ä¸ºSVGå°åµå¥HTMLï¿½?
             svg_content = re.sub(r'<\?xml[^>]+\?>', '', svg_content)
             svg_content = re.sub(r'<!DOCTYPE[^>]+>', '', svg_content)
             svg_content = svg_content.strip()
 
-            # 创建SVG容器HTML
+            # åå»ºSVGå®¹å¨HTML
             svg_html = f'<div class="chart-svg-container">{svg_content}</div>'
 
-            # 查找包含此widgetId的配置脚本（限制在同一�?/script>内，避免跨标签误配）
+            # æ¥æ¾åå«æ­¤widgetIdçéç½®èæ¬ï¼éå¶å¨åä¸ï¿½?/script>åï¼é¿åè·¨æ ç­¾è¯¯éï¼
             config_pattern = rf'<script[^>]+id="([^"]+)"[^>]*>(?:(?!</script>).)*?"widgetId"\s*:\s*"{re.escape(widget_id)}"(?:(?!</script>).)*?</script>'
             match = re.search(config_pattern, html, re.DOTALL)
 
             if match:
                 config_id = match.group(1)
 
-                # 查找对应的canvas元素
-                # 格式: <canvas id="chart-N" data-config-id="chart-config-N"></canvas>
+                # æ¥æ¾å¯¹åºçcanvasåç´ 
+                # æ ¼å¼: <canvas id="chart-N" data-config-id="chart-config-N"></canvas>
                 canvas_pattern = rf'<canvas[^>]+data-config-id="{re.escape(config_id)}"[^>]*></canvas>'
 
-                # 【修复】替换canvas为SVG，使用lambda避免反斜杠转义问�?
+                # ãä¿®å¤ãæ¿æ¢canvasä¸ºSVGï¼ä½¿ç¨lambdaé¿ååææ è½¬ä¹é®ï¿½?
                 html, replaced = re.subn(canvas_pattern, lambda m: svg_html, html, count=1)
                 if replaced:
-                    logger.debug(f"已替换图�?{widget_id} 的canvas为SVG")
+                    logger.debug(f"å·²æ¿æ¢å¾ï¿½?{widget_id} çcanvasä¸ºSVG")
                 else:
-                    logger.warning(f"未找到图�?{widget_id} 的canvas进行替换")
+                    logger.warning(f"æªæ¾å°å¾ï¿½?{widget_id} çcanvasè¿è¡æ¿æ¢")
 
-                # 将对应fallback标记为隐藏，避免PDF中出现重复表�?
+                # å°å¯¹åºfallbackæ è®°ä¸ºéèï¼é¿åPDFä¸­åºç°éå¤è¡¨ï¿½?
                 fallback_pattern = rf'<div class="chart-fallback"([^>]*data-widget-id="{re.escape(widget_id)}"[^>]*)>'
 
                 def _hide_fallback(m: re.Match) -> str:
-                    """为匹配到的图表fallback添加隐藏类，防止PDF中重复渲�?""
+                    """ä¸ºå¹éå°çå¾è¡¨fallbackæ·»å éèç±»ï¼é²æ­¢PDFä¸­éå¤æ¸²ï¿½?""
                     tag = m.group(0)
                     if 'svg-hidden' in tag:
                         return tag
@@ -649,13 +649,13 @@ class PDFRenderer:
 
                 html = re.sub(fallback_pattern, _hide_fallback, html, count=1)
             else:
-                logger.warning(f"未找到图�?{widget_id} 对应的配置脚�?)
+                logger.warning(f"æªæ¾å°å¾ï¿½?{widget_id} å¯¹åºçéç½®èï¿½?)
 
         return html
 
     @staticmethod
     def _normalize_latex(raw: Any) -> str:
-        """去除外层数学定界符，兼容 $...$�?$...$$、\\(\\)、\\[\\] 等格�?""
+        """å»é¤å¤å±æ°å­¦å®çç¬¦ï¼å¼å®¹ $...$ï¿½?$...$$\(\\)\[\\] ç­æ ¼ï¿½?""
         if not isinstance(raw, str):
             return ""
         latex = raw.strip()
@@ -670,15 +670,15 @@ class PDFRenderer:
             if m:
                 latex = m.group(1).strip()
                 break
-        # 清理控制字符、防止mathtext解析失败
+        # æ¸çæ§å¶å­ç¬¦ãé²æ­¢mathtextè§£æå¤±è´¥
         latex = re.sub(r'[\x00-\x1f\x7f]', '', latex)
-        # 常见兼容：\tfrac/\dfrac -> \frac
+        # å¸¸è§å¼å®¹ï¼\tfrac/\dfrac -> \frac
         latex = latex.replace(r'\tfrac', r'\frac').replace(r'\dfrac', r'\frac')
         return latex
 
     @staticmethod
     def _find_first_math_in_text(text: Any) -> tuple[str, bool] | None:
-        """从纯文本中提取首个数学片段，返回(内容, 是否display)"""
+        """ä»çº¯ææ¬ä¸­æåé¦ä¸ªæ°å­¦çæ®µï¼è¿å(åå®¹, æ¯å¦display)"""
         if not isinstance(text, str):
             return None
         pattern = re.compile(r'\$\$(.+?)\$\$|\$(.+?)\$|\\\((.+?)\\\)|\\\[(.+?)\\\]', re.S)
@@ -698,7 +698,7 @@ class PDFRenderer:
 
     @staticmethod
     def _find_all_math_in_text(text: Any) -> list[tuple[str, bool]]:
-        """从纯文本中提取所有数学片段，返回[(内容, 是否display)]"""
+        """ä»çº¯ææ¬ä¸­æåæææ°å­¦çæ®µï¼è¿å[(åå®¹, æ¯å¦display)]"""
         if not isinstance(text, str):
             return []
         pattern = re.compile(r'\$\$(.+?)\$\$|\$(.+?)\$|\\\((.+?)\\\)|\\\[(.+?)\\\]', re.S)
@@ -723,7 +723,7 @@ class PDFRenderer:
 
     def _inject_wordcloud_images(self, html: str, img_map: Dict[str, str]) -> str:
         """
-        将词云PNG data URI注入HTML，替换对应canvas
+        å°è¯äºPNG data URIæ³¨å¥HTMLï¼æ¿æ¢å¯¹åºcanvas
         """
         if not img_map:
             return html
@@ -733,14 +733,14 @@ class PDFRenderer:
         for widget_id, data_uri in img_map.items():
             img_html = (
                 f'<div class="chart-svg-container wordcloud-img">'
-                f'<img src="{data_uri}" alt="词云" />'
+                f'<img src="{data_uri}" alt="è¯äº" />'
                 f'</div>'
             )
 
             config_pattern = rf'<script[^>]+id="([^"]+)"[^>]*>(?:(?!</script>).)*?"widgetId"\s*:\s*"{re.escape(widget_id)}"(?:(?!</script>).)*?</script>'
             match = re.search(config_pattern, html, re.DOTALL)
             if not match:
-                logger.debug(f"未找到词�?{widget_id} 的配置脚本，跳过注入")
+                logger.debug(f"æªæ¾å°è¯ï¿½?{widget_id} çéç½®èæ¬ï¼è·³è¿æ³¨å¥")
                 continue
 
             config_id = match.group(1)
@@ -748,14 +748,14 @@ class PDFRenderer:
 
             html, replaced = re.subn(canvas_pattern, lambda m: img_html, html, count=1)
             if replaced:
-                logger.debug(f"已替换词�?{widget_id} 的canvas为PNG图片")
+                logger.debug(f"å·²æ¿æ¢è¯ï¿½?{widget_id} çcanvasä¸ºPNGå¾ç")
             else:
-                logger.warning(f"未找到词�?{widget_id} 的canvas进行替换")
+                logger.warning(f"æªæ¾å°è¯ï¿½?{widget_id} çcanvasè¿è¡æ¿æ¢")
 
             fallback_pattern = rf'<div class="chart-fallback"([^>]*data-widget-id="{re.escape(widget_id)}"[^>]*)>'
 
             def _hide_fallback(m: re.Match) -> str:
-                """匹配词云表格兜底并打上隐藏标记，避免SVG/图片重复显示"""
+                """å¹éè¯äºè¡¨æ ¼ååºå¹¶æä¸éèæ è®°ï¼é¿åSVG/å¾çéå¤æ¾ç¤º"""
                 tag = m.group(0)
                 if 'svg-hidden' in tag:
                     return tag
@@ -767,23 +767,23 @@ class PDFRenderer:
 
     def _inject_math_svg_into_html(self, html: str, svg_map: Dict[str, str]) -> str:
         """
-        将数学公式SVG内容注入到HTML�?
+        å°æ°å­¦å¬å¼SVGåå®¹æ³¨å¥å°HTMLï¿½?
 
-        参数:
-            html: 原始HTML内容
-            svg_map: 公式ID到SVG内容的映�?
+        åæ°:
+            html: åå§HTMLåå®¹
+            svg_map: å¬å¼IDå°SVGåå®¹çæ ï¿½?
 
-        返回:
-            str: 注入SVG后的HTML
+        è¿å:
+            str: æ³¨å¥SVGåçHTML
         """
         if not svg_map:
             return html
 
         import re
 
-        # 优先替换内联公式，再替换块级公式，保持顺序一�?
+        # ä¼åæ¿æ¢åèå¬å¼ï¼åæ¿æ¢åçº§å¬å¼ï¼ä¿æé¡ºåºä¸ï¿½?
         for math_id, svg_content in svg_map.items():
-            # 清理SVG内容（移除XML声明，因为SVG将嵌入HTML�?
+            # æ¸çSVGåå®¹ï¼ç§»é¤XMLå£°æï¼å ä¸ºSVGå°åµå¥HTMLï¿½?
             svg_content = re.sub(r'<\?xml[^>]+\?>', '', svg_content)
             svg_content = re.sub(r'<!DOCTYPE[^>]+>', '', svg_content)
             svg_content = svg_content.strip()
@@ -792,7 +792,7 @@ class PDFRenderer:
             svg_inline_html = f'<span class="math-svg-inline">{svg_content}</span>'
 
             replaced = False
-            # 优先�?data-math-id 精确替换
+            # ä¼åï¿½?data-math-id ç²¾ç¡®æ¿æ¢
             inline_pattern = rf'<span class="math-inline"[^>]*data-math-id="{re.escape(math_id)}"[^>]*>.*?</span>'
             if re.search(inline_pattern, html, re.DOTALL):
                 html = re.sub(inline_pattern, lambda m: svg_inline_html, html, count=1)
@@ -803,7 +803,7 @@ class PDFRenderer:
                     html = re.sub(block_pattern, lambda m: svg_block_html, html, count=1)
                     replaced = True
 
-            # 如果没有找到特定ID，按出现顺序兜底替换
+            # å¦ææ²¡ææ¾å°ç¹å®IDï¼æåºç°é¡ºåºååºæ¿æ¢
             if not replaced:
                 html, sub_inline = re.subn(r'<span class="math-inline">[^<]*</span>', lambda m: svg_inline_html, html, count=1)
                 if sub_inline:
@@ -814,7 +814,7 @@ class PDFRenderer:
                         replaced = True
 
             if replaced:
-                logger.debug(f"已替换公�?{math_id} 为SVG")
+                logger.debug(f"å·²æ¿æ¢å¬ï¿½?{math_id} ä¸ºSVG")
 
         return html
 
@@ -825,33 +825,33 @@ class PDFRenderer:
         ir_file_path: str | None = None
     ) -> str:
         """
-        生成适用于PDF的HTML内容
+        çæéç¨äºPDFçHTMLåå®¹
 
-        - 移除交互式元素（按钮、导航等�?
-        - 添加PDF专用样式
-        - 嵌入字体文件
-        - 应用布局优化
-        - 将图表转换为SVG矢量图形
+        - ç§»é¤äº¤äºå¼åç´ ï¼æé®ãå¯¼èªç­ï¿½?
+        - æ·»å PDFä¸ç¨æ ·å¼
+        - åµå¥å­ä½æä»¶
+        - åºç¨å¸å±ä¼å
+        - å°å¾è¡¨è½¬æ¢ä¸ºSVGç¢éå¾å½¢
 
-        参数:
-            document_ir: Document IR数据
-            optimize_layout: 是否启用布局优化
-            ir_file_path: 可选，IR 文件路径，提供时修复后会自动保存
+        åæ°:
+            document_ir: Document IRæ°æ®
+            optimize_layout: æ¯å¦å¯ç¨å¸å±ä¼å
+            ir_file_path: å¯éï¼IR æä»¶è·¯å¾ï¼æä¾æ¶ä¿®å¤åä¼èªå¨ä¿å­
 
-        返回:
-            str: 优化后的HTML内容
+        è¿å:
+            str: ä¼ååçHTMLåå®¹
         """
-        # 如果启用布局优化，先分析文档并生成优化配�?
+        # å¦æå¯ç¨å¸å±ä¼åï¼ååæææ¡£å¹¶çæä¼åéï¿½?
         if optimize_layout:
-            logger.info("启用PDF布局优化...")
+            logger.info("å¯ç¨PDFå¸å±ä¼å...")
             layout_config = self.layout_optimizer.optimize_for_document(document_ir)
 
-            # 保存优化日志
+            # ä¿å­ä¼åæ¥å¿
             log_dir = Path('logs/pdf_layouts')
             log_dir.mkdir(parents=True, exist_ok=True)
             log_file = log_dir / f"layout_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-            # 保存配置和优化日�?
+            # ä¿å­éç½®åä¼åæ¥ï¿½?
             optimization_log = self.layout_optimizer._log_optimization(
                 self.layout_optimizer._analyze_document(document_ir),
                 layout_config
@@ -861,54 +861,54 @@ class PDFRenderer:
         else:
             layout_config = self.layout_optimizer.config
 
-        # 关键修复：先预处理图表，确保数据有效
-        logger.info("预处理图表数�?..")
+        # å³é®ä¿®å¤ï¼åé¢å¤çå¾è¡¨ï¼ç¡®ä¿æ°æ®ææ
+        logger.info("é¢å¤çå¾è¡¨æ°ï¿½?..")
         preprocessed_ir = self._preprocess_charts(document_ir, ir_file_path)
 
-        # 转换图表为SVG（使用预处理后的IR�?
-        logger.info("开始转换图表为SVG矢量图形...")
+        # è½¬æ¢å¾è¡¨ä¸ºSVGï¼ä½¿ç¨é¢å¤çåçIRï¿½?
+        logger.info("å¼å§è½¬æ¢å¾è¡¨ä¸ºSVGç¢éå¾å½¢...")
         svg_map = self._convert_charts_to_svg(preprocessed_ir)
 
-        # 转换词云为PNG
-        logger.info("开始转换词云为图片...")
+        # è½¬æ¢è¯äºä¸ºPNG
+        logger.info("å¼å§è½¬æ¢è¯äºä¸ºå¾ç...")
         wordcloud_map = self._convert_wordclouds_to_images(preprocessed_ir)
 
-        # 转换数学公式为SVG
-        logger.info("开始转换数学公式为SVG矢量图形...")
+        # è½¬æ¢æ°å­¦å¬å¼ä¸ºSVG
+        logger.info("å¼å§è½¬æ¢æ°å­¦å¬å¼ä¸ºSVGç¢éå¾å½¢...")
         math_svg_map = self._convert_math_to_svg(preprocessed_ir)
 
-        # 使用HTML渲染器生成基础HTML（使用预处理后的IR，以便复用mathId等标记）
+        # ä½¿ç¨HTMLæ¸²æå¨çæåºç¡HTMLï¼ä½¿ç¨é¢å¤çåçIRï¼ä»¥ä¾¿å¤ç¨mathIdç­æ è®°ï¼
         html = self.html_renderer.render(preprocessed_ir, ir_file_path=ir_file_path)
 
-        # 注入图表SVG
+        # æ³¨å¥å¾è¡¨SVG
         if svg_map:
             html = self._inject_svg_into_html(html, svg_map)
-            logger.info(f"已注�?{len(svg_map)} 个SVG图表")
+            logger.info(f"å·²æ³¨ï¿½?{len(svg_map)} ä¸ªSVGå¾è¡¨")
 
         if wordcloud_map:
             html = self._inject_wordcloud_images(html, wordcloud_map)
-            logger.info(f"已注�?{len(wordcloud_map)} 个词云图�?)
+            logger.info(f"å·²æ³¨ï¿½?{len(wordcloud_map)} ä¸ªè¯äºå¾ï¿½?)
 
-        # 注入数学公式SVG
+        # æ³¨å¥æ°å­¦å¬å¼SVG
         if math_svg_map:
             html = self._inject_math_svg_into_html(html, math_svg_map)
-            logger.info(f"已注�?{len(math_svg_map)} 个SVG公式")
+            logger.info(f"å·²æ³¨ï¿½?{len(math_svg_map)} ä¸ªSVGå¬å¼")
 
-        # 获取字体路径并转换为base64（用于嵌入）
+        # è·åå­ä½è·¯å¾å¹¶è½¬æ¢ä¸ºbase64ï¼ç¨äºåµå¥ï¼
         font_path = self._get_font_path()
         font_data = font_path.read_bytes()
         font_base64 = base64.b64encode(font_data).decode('ascii')
 
-        # 判断字体格式
+        # å¤æ­å­ä½æ ¼å¼
         font_format = 'opentype' if font_path.suffix == '.otf' else 'truetype'
 
-        # 生成优化后的CSS
+        # çæä¼ååçCSS
         optimized_css = self.layout_optimizer.generate_pdf_css()
 
-        # 添加PDF专用CSS
+        # æ·»å PDFä¸ç¨CSS
         pdf_css = f"""
 <style>
-/* PDF专用字体嵌入 */
+/* PDFä¸ç¨å­ä½åµå¥ */
 @font-face {{
     font-family: 'SourceHanSerif';
     src: url(data:font/{font_format};base64,{font_base64}) format('{font_format}');
@@ -916,12 +916,12 @@ class PDFRenderer:
     font-style: normal;
 }}
 
-/* 强制所有文本使用思源宋体 */
+/* å¼ºå¶ææææ¬ä½¿ç¨ææºå®ä½ */
 body, h1, h2, h3, h4, h5, h6, p, li, td, th, div, span {{
     font-family: 'SourceHanSerif', serif !important;
 }}
 
-/* PDF专用样式调整 */
+/* PDFä¸ç¨æ ·å¼è°æ´ */
 .report-header {{
     display: none !important;
 }}
@@ -934,20 +934,20 @@ body {{
     background: white !important;
 }}
 
-/* ========== 修复 WeasyPrint CSS 变量渐变兼容性问�?========== */
-/* WeasyPrint 不支持在 linear-gradient 中使�?var()，需要用静态值覆�?*/
+/* ========== ä¿®å¤ WeasyPrint CSS åéæ¸åå¼å®¹æ§é®ï¿½?========== */
+/* WeasyPrint ä¸æ¯æå¨ linear-gradient ä¸­ä½¿ï¿½?var()ï¼éè¦ç¨éæå¼è¦ï¿½?*/
 
-/* 覆盖按钮渐变 */
+/* è¦çæé®æ¸å */
 .action-btn {{
     background: linear-gradient(135deg, #4a90e2 0%, #17a2b8 100%) !important;
 }}
 
-/* 覆盖进度条渐�?*/
+/* è¦çè¿åº¦æ¡æ¸ï¿½?*/
 .export-progress::after {{
     background: linear-gradient(90deg, #4a90e2, #17a2b8) !important;
 }}
 
-/* 覆盖 PEST 卡片标题渐变 */
+/* è¦ç PEST å¡çæ é¢æ¸å */
 .pest-card__title {{
     background: linear-gradient(135deg, #8e44ad, #2980b9) !important;
     -webkit-background-clip: text !important;
@@ -955,7 +955,7 @@ body {{
     background-clip: text !important;
 }}
 
-/* 覆盖 PEST 条带指示器渐�?*/
+/* è¦ç PEST æ¡å¸¦æç¤ºå¨æ¸ï¿½?*/
 .pest-strip__indicator.political {{
     background: linear-gradient(180deg, #8e44ad, rgba(142,68,173,0.8)) !important;
 }}
@@ -969,7 +969,7 @@ body {{
     background: linear-gradient(180deg, #2980b9, rgba(41,128,185,0.8)) !important;
 }}
 
-/* 覆盖 PEST 条带背景（原来使�?var(--pest-strip-*-bg)，包含渐变和变量�?*/
+/* è¦ç PEST æ¡å¸¦èæ¯ï¼åæ¥ä½¿ï¿½?var(--pest-strip-*-bg)ï¼åå«æ¸åååéï¿½?*/
 .pest-strip {{
     background: #ffffff !important;
 }}
@@ -990,12 +990,12 @@ body {{
     border-color: rgba(41,128,185,0.4) !important;
 }}
 
-/* 覆盖 SWOT 卡片背景（原来使�?var(--swot-card-bg)，包含渐变和变量�?*/
+/* è¦ç SWOT å¡çèæ¯ï¼åæ¥ä½¿ï¿½?var(--swot-card-bg)ï¼åå«æ¸åååéï¿½?*/
 .swot-card {{
     background: linear-gradient(135deg, rgba(76,132,255,0.04), rgba(28,127,110,0.06)), #ffffff !important;
 }}
 
-/* 覆盖 SWOT 单元格背景（原来使用 var(--swot-cell-*-bg)，包含渐变和变量�?*/
+/* è¦ç SWOT ååæ ¼èæ¯ï¼åæ¥ä½¿ç¨ var(--swot-cell-*-bg)ï¼åå«æ¸åååéï¿½?*/
 .swot-cell {{
     background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5)) !important;
 }}
@@ -1016,7 +1016,7 @@ body {{
     border-color: rgba(179,107,22,0.35) !important;
 }}
 
-/* 覆盖 SWOT 图例项和药丸（使用静态颜色） */
+/* è¦ç SWOT å¾ä¾é¡¹åè¯ä¸¸ï¼ä½¿ç¨éæé¢è²ï¼ */
 .swot-legend__item.strength, .swot-pill.strength {{
     background: #1c7f6e !important;
 }}
@@ -1030,7 +1030,7 @@ body {{
     background: #b36b16 !important;
 }}
 
-/* 覆盖其他使用 var() 的元�?*/
+/* è¦çå¶ä»ä½¿ç¨ var() çåï¿½?*/
 .swot-item {{
     background: rgba(255,255,255,0.92) !important;
 }}
@@ -1041,27 +1041,27 @@ body {{
     border-color: #e0e0e0 !important;
 }}
 
-/* 覆盖 PEST 卡片背景 */
+/* è¦ç PEST å¡çèæ¯ */
 .pest-card {{
     background: linear-gradient(145deg, rgba(142,68,173,0.03), rgba(22,160,133,0.04)), #ffffff !important;
 }}
 
-/* 覆盖图表卡片错误状态渐�?*/
+/* è¦çå¾è¡¨å¡çéè¯¯ç¶ææ¸ï¿½?*/
 .chart-card.chart-card--error {{
     background: linear-gradient(135deg, rgba(0,0,0,0.015), rgba(0,0,0,0.04)) !important;
 }}
 
-/* 覆盖词云徽章渐变 */
+/* è¦çè¯äºå¾½ç« æ¸å */
 .wordcloud-badge {{
     background: linear-gradient(135deg, rgba(74, 144, 226, 0.14) 0%, rgba(74, 144, 226, 0.24) 100%) !important;
 }}
 
-/* 覆盖英雄区域渐变 */
+/* è¦çè±éåºåæ¸å */
 .hero-section {{
     background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(23,162,184,0.1)) !important;
 }}
 
-/* ========== 覆盖 hero-actions 按钮样式（无边框样式�?========== */
+/* ========== è¦ç hero-actions æé®æ ·å¼ï¼æ è¾¹æ¡æ ·å¼ï¿½?========== */
 .hero-actions {{
     display: flex !important;
     flex-wrap: wrap !important;
@@ -1102,7 +1102,7 @@ button.ghost-btn {{
     font-family: inherit !important;
 }}
 
-/* SVG图表容器样式 */
+/* SVGå¾è¡¨å®¹å¨æ ·å¼ */
 .chart-svg-container {{
     width: 100%;
     height: auto;
@@ -1120,7 +1120,7 @@ button.ghost-btn {{
     height: auto;
 }}
 
-/* 数学公式SVG容器样式 */
+/* æ°å­¦å¬å¼SVGå®¹å¨æ ·å¼ */
 .math-svg-container {{
     width: 100%;
     height: auto;
@@ -1135,26 +1135,26 @@ button.ghost-btn {{
     height: auto;
 }}
 
-/* 隐藏原始的math-block（因为已被SVG替换�?*/
+/* éèåå§çmath-blockï¼å ä¸ºå·²è¢«SVGæ¿æ¢ï¿½?*/
 .math-block {{
     display: none !important;
 }}
 
-/* 当对应SVG成功注入时隐藏fallback表格，失败时继续显示兜底数据 */
+/* å½å¯¹åºSVGæåæ³¨å¥æ¶éèfallbackè¡¨æ ¼ï¼å¤±è´¥æ¶ç»§ç»­æ¾ç¤ºååºæ°æ® */
 .chart-fallback.svg-hidden {{
     display: none !important;
 }}
 
-/* 确保chart-container显示（用于放置SVG�?*/
+/* ç¡®ä¿chart-containeræ¾ç¤ºï¼ç¨äºæ¾ç½®SVGï¿½?*/
 .chart-container {{
     display: block !important;
     min-height: 400px;
 }}
 
-/* ========== SWOT PDF表格布局 ========== */
-/* 核心策略：PDF中使用表格形式而非卡片形式，更适合分页 */
+/* ========== SWOT PDFè¡¨æ ¼å¸å± ========== */
+/* æ ¸å¿ç­ç¥ï¼PDFä¸­ä½¿ç¨è¡¨æ ¼å½¢å¼èéå¡çå½¢å¼ï¼æ´éååé¡µ */
 
-/* 隐藏HTML卡片布局，显示PDF表格布局 */
+/* éèHTMLå¡çå¸å±ï¼æ¾ç¤ºPDFè¡¨æ ¼å¸å± */
 .swot-card--html {{
     display: none !important;
 }}
@@ -1164,7 +1164,7 @@ button.ghost-btn {{
     margin: 24px 0;
 }}
 
-/* PDF表格整体样式 */
+/* PDFè¡¨æ ¼æ´ä½æ ·å¼ */
 .swot-pdf-table {{
     width: 100% !important;
     border-collapse: collapse !important;
@@ -1173,7 +1173,7 @@ button.ghost-btn {{
     background: white;
 }}
 
-/* 表格标题 */
+/* è¡¨æ ¼æ é¢ */
 .swot-pdf-caption {{
     caption-side: top !important;
     text-align: left !important;
@@ -1185,7 +1185,7 @@ button.ghost-btn {{
     margin-bottom: 8px !important;
 }}
 
-/* 表头样式 */
+/* è¡¨å¤´æ ·å¼ */
 .swot-pdf-thead {{
     break-after: avoid !important;
     page-break-after: avoid !important;
@@ -1207,7 +1207,7 @@ button.ghost-btn {{
 .swot-pdf-th-detail {{ width: auto !important; }}
 .swot-pdf-th-tags {{ width: 80px !important; text-align: center !important; }}
 
-/* 摘要�?*/
+/* æè¦ï¿½?*/
 .swot-pdf-summary {{
     padding: 10px 12px !important;
     background: #f8f8f8 !important;
@@ -1217,19 +1217,19 @@ button.ghost-btn {{
     font-size: 11px !important;
 }}
 
-/* 每个象限区块 - 核心分页控制 */
+/* æ¯ä¸ªè±¡éåºå - æ ¸å¿åé¡µæ§å¶ */
 .swot-pdf-quadrant {{
     break-inside: avoid !important;
     page-break-inside: avoid !important;
 }}
 
-/* 允许在不同象限之间分�?*/
+/* åè®¸å¨ä¸åè±¡éä¹é´åï¿½?*/
 .swot-pdf-quadrant + .swot-pdf-quadrant {{
     break-before: auto;
     page-break-before: auto;
 }}
 
-/* 象限标签单元�?*/
+/* è±¡éæ ç­¾ååï¿½?*/
 .swot-pdf-quadrant-label {{
     text-align: center !important;
     vertical-align: middle !important;
@@ -1239,7 +1239,7 @@ button.ghost-btn {{
     width: 70px !important;
 }}
 
-/* 四个象限的颜色主�?*/
+/* åä¸ªè±¡éçé¢è²ä¸»ï¿½?*/
 .swot-pdf-quadrant-label.swot-pdf-strength {{
     background: #e8f5f2 !important;
     color: #1c7f6e !important;
@@ -1261,7 +1261,7 @@ button.ghost-btn {{
     border-left: 4px solid #b36b16 !important;
 }}
 
-/* 象限代码字母 */
+/* è±¡éä»£ç å­æ¯ */
 .swot-pdf-code {{
     display: block !important;
     font-size: 20px !important;
@@ -1269,7 +1269,7 @@ button.ghost-btn {{
     margin-bottom: 2px !important;
 }}
 
-/* 象限标签文字 */
+/* è±¡éæ ç­¾æå­ */
 .swot-pdf-label-text {{
     display: block !important;
     font-size: 9px !important;
@@ -1277,7 +1277,7 @@ button.ghost-btn {{
     letter-spacing: 0.02em !important;
 }}
 
-/* 数据�?*/
+/* æ°æ®ï¿½?*/
 .swot-pdf-item-row td {{
     padding: 8px 6px !important;
     border: 1px solid #ddd !important;
@@ -1286,13 +1286,13 @@ button.ghost-btn {{
     line-height: 1.4 !important;
 }}
 
-/* 行背景色 */
+/* è¡èæ¯è² */
 .swot-pdf-item-row.swot-pdf-strength td {{ background: #f7fbfa !important; }}
 .swot-pdf-item-row.swot-pdf-weakness td {{ background: #fef9f9 !important; }}
 .swot-pdf-item-row.swot-pdf-opportunity td {{ background: #f7f9fc !important; }}
 .swot-pdf-item-row.swot-pdf-threat td {{ background: #fdfbf7 !important; }}
 
-/* 序号单元�?*/
+/* åºå·ååï¿½?*/
 .swot-pdf-item-num {{
     text-align: center !important;
     font-weight: 600 !important;
@@ -1300,24 +1300,24 @@ button.ghost-btn {{
     width: 40px !important;
 }}
 
-/* 要点标题 */
+/* è¦ç¹æ é¢ */
 .swot-pdf-item-title {{
     font-weight: 600 !important;
     color: #222 !important;
 }}
 
-/* 详情说明 */
+/* è¯¦æè¯´æ */
 .swot-pdf-item-detail {{
     color: #444 !important;
     line-height: 1.5 !important;
 }}
 
-/* 标签单元�?*/
+/* æ ç­¾ååï¿½?*/
 .swot-pdf-item-tags {{
     text-align: center !important;
 }}
 
-/* 标签样式 */
+/* æ ç­¾æ ·å¼ */
 .swot-pdf-tag {{
     display: inline-block !important;
     padding: 2px 6px !important;
@@ -1333,17 +1333,17 @@ button.ghost-btn {{
     color: #856404 !important;
 }}
 
-/* 空数据提�?*/
+/* ç©ºæ°æ®æï¿½?*/
 .swot-pdf-empty {{
     text-align: center !important;
     color: #999 !important;
     font-style: italic !important;
 }}
 
-/* ========== PEST PDF表格布局 ========== */
-/* 核心策略：PDF中使用表格形式而非卡片形式，更适合分页 */
+/* ========== PEST PDFè¡¨æ ¼å¸å± ========== */
+/* æ ¸å¿ç­ç¥ï¼PDFä¸­ä½¿ç¨è¡¨æ ¼å½¢å¼èéå¡çå½¢å¼ï¼æ´éååé¡µ */
 
-/* 隐藏HTML卡片布局，显示PDF表格布局 */
+/* éèHTMLå¡çå¸å±ï¼æ¾ç¤ºPDFè¡¨æ ¼å¸å± */
 .pest-card--html {{
     display: none !important;
 }}
@@ -1353,7 +1353,7 @@ button.ghost-btn {{
     margin: 24px 0;
 }}
 
-/* PDF表格整体样式 */
+/* PDFè¡¨æ ¼æ´ä½æ ·å¼ */
 .pest-pdf-table {{
     width: 100% !important;
     border-collapse: collapse !important;
@@ -1362,7 +1362,7 @@ button.ghost-btn {{
     background: white;
 }}
 
-/* 表格标题 */
+/* è¡¨æ ¼æ é¢ */
 .pest-pdf-caption {{
     caption-side: top !important;
     text-align: left !important;
@@ -1374,7 +1374,7 @@ button.ghost-btn {{
     margin-bottom: 8px !important;
 }}
 
-/* 表头样式 */
+/* è¡¨å¤´æ ·å¼ */
 .pest-pdf-thead {{
     break-after: avoid !important;
     page-break-after: avoid !important;
@@ -1396,7 +1396,7 @@ button.ghost-btn {{
 .pest-pdf-th-detail {{ width: auto !important; }}
 .pest-pdf-th-tags {{ width: 80px !important; text-align: center !important; }}
 
-/* 摘要�?*/
+/* æè¦ï¿½?*/
 .pest-pdf-summary {{
     padding: 10px 12px !important;
     background: #f8f6fa !important;
@@ -1406,19 +1406,19 @@ button.ghost-btn {{
     font-size: 11px !important;
 }}
 
-/* 每个维度区块 - 核心分页控制 */
+/* æ¯ä¸ªç»´åº¦åºå - æ ¸å¿åé¡µæ§å¶ */
 .pest-pdf-dimension {{
     break-inside: avoid !important;
     page-break-inside: avoid !important;
 }}
 
-/* 允许在不同维度之间分�?*/
+/* åè®¸å¨ä¸åç»´åº¦ä¹é´åï¿½?*/
 .pest-pdf-dimension + .pest-pdf-dimension {{
     break-before: auto;
     page-break-before: auto;
 }}
 
-/* 维度标签单元�?*/
+/* ç»´åº¦æ ç­¾ååï¿½?*/
 .pest-pdf-dimension-label {{
     text-align: center !important;
     vertical-align: middle !important;
@@ -1428,7 +1428,7 @@ button.ghost-btn {{
     width: 70px !important;
 }}
 
-/* 四个维度的颜色主�?*/
+/* åä¸ªç»´åº¦çé¢è²ä¸»ï¿½?*/
 .pest-pdf-dimension-label.pest-pdf-political {{
     background: #f5eef8 !important;
     color: #8e44ad !important;
@@ -1450,7 +1450,7 @@ button.ghost-btn {{
     border-left: 4px solid #2980b9 !important;
 }}
 
-/* 维度代码字母 */
+/* ç»´åº¦ä»£ç å­æ¯ */
 .pest-pdf-code {{
     display: block !important;
     font-size: 20px !important;
@@ -1458,7 +1458,7 @@ button.ghost-btn {{
     margin-bottom: 2px !important;
 }}
 
-/* 维度标签文字 */
+/* ç»´åº¦æ ç­¾æå­ */
 .pest-pdf-label-text {{
     display: block !important;
     font-size: 9px !important;
@@ -1466,7 +1466,7 @@ button.ghost-btn {{
     letter-spacing: 0.02em !important;
 }}
 
-/* 数据�?*/
+/* æ°æ®ï¿½?*/
 .pest-pdf-item-row td {{
     padding: 8px 6px !important;
     border: 1px solid #ddd !important;
@@ -1475,13 +1475,13 @@ button.ghost-btn {{
     line-height: 1.4 !important;
 }}
 
-/* 行背景色 */
+/* è¡èæ¯è² */
 .pest-pdf-item-row.pest-pdf-political td {{ background: #faf7fc !important; }}
 .pest-pdf-item-row.pest-pdf-economic td {{ background: #f5fbfa !important; }}
 .pest-pdf-item-row.pest-pdf-social td {{ background: #fef8fb !important; }}
 .pest-pdf-item-row.pest-pdf-technological td {{ background: #f7fafd !important; }}
 
-/* 序号单元�?*/
+/* åºå·ååï¿½?*/
 .pest-pdf-item-num {{
     text-align: center !important;
     font-weight: 600 !important;
@@ -1489,24 +1489,24 @@ button.ghost-btn {{
     width: 40px !important;
 }}
 
-/* 要点标题 */
+/* è¦ç¹æ é¢ */
 .pest-pdf-item-title {{
     font-weight: 600 !important;
     color: #222 !important;
 }}
 
-/* 详情说明 */
+/* è¯¦æè¯´æ */
 .pest-pdf-item-detail {{
     color: #444 !important;
     line-height: 1.5 !important;
 }}
 
-/* 标签单元�?*/
+/* æ ç­¾ååï¿½?*/
 .pest-pdf-item-tags {{
     text-align: center !important;
 }}
 
-/* 标签样式 */
+/* æ ç­¾æ ·å¼ */
 .pest-pdf-tag {{
     display: inline-block !important;
     padding: 2px 6px !important;
@@ -1517,7 +1517,7 @@ button.ghost-btn {{
     margin: 1px !important;
 }}
 
-/* 空数据提�?*/
+/* ç©ºæ°æ®æï¿½?*/
 .pest-pdf-empty {{
     text-align: center !important;
     color: #999 !important;
@@ -1528,7 +1528,7 @@ button.ghost-btn {{
 </style>
 """
 
-        # �?/head>前插入PDF专用CSS
+        # ï¿½?/head>åæå¥PDFä¸ç¨CSS
         html = html.replace('</head>', f'{pdf_css}\n</head>')
 
         return html
@@ -1541,42 +1541,42 @@ button.ghost-btn {{
         ir_file_path: str | None = None
     ) -> Path:
         """
-        将Document IR渲染为PDF文件
+        å°Document IRæ¸²æä¸ºPDFæä»¶
 
-        参数:
-            document_ir: Document IR数据
-            output_path: PDF输出路径
-            optimize_layout: 是否启用布局优化（默认True�?
-            ir_file_path: 可选，IR 文件路径，提供时修复后会自动保存
+        åæ°:
+            document_ir: Document IRæ°æ®
+            output_path: PDFè¾åºè·¯å¾
+            optimize_layout: æ¯å¦å¯ç¨å¸å±ä¼åï¼é»è®¤Trueï¿½?
+            ir_file_path: å¯éï¼IR æä»¶è·¯å¾ï¼æä¾æ¶ä¿®å¤åä¼èªå¨ä¿å­
 
-        返回:
-            Path: 生成的PDF文件路径
+        è¿å:
+            Path: çæçPDFæä»¶è·¯å¾
         """
         output_path = Path(output_path)
 
-        logger.info(f"开始生成PDF: {output_path}")
+        logger.info(f"å¼å§çæPDF: {output_path}")
 
-        # 生成HTML内容
+        # çæHTMLåå®¹
         html_content = self._get_pdf_html(document_ir, optimize_layout, ir_file_path)
 
-        # 配置字体
+        # éç½®å­ä½
         font_config = FontConfiguration()
 
-        # 从HTML字符串创建WeasyPrint HTML对象
+        # ä»HTMLå­ç¬¦ä¸²åå»ºWeasyPrint HTMLå¯¹è±¡
         html_doc = HTML(string=html_content, base_url=str(Path.cwd()))
 
-        # 生成PDF
+        # çæPDF
         try:
             html_doc.write_pdf(
                 output_path,
                 font_config=font_config,
-                presentational_hints=True  # 保留HTML的呈现提�?
+                presentational_hints=True  # ä¿çHTMLçåç°æï¿½?
             )
-            logger.info(f"�?PDF生成成功: {output_path}")
+            logger.info(f"ï¿½?PDFçææå: {output_path}")
             return output_path
 
         except Exception as e:
-            logger.error(f"PDF生成失败: {e}")
+            logger.error(f"PDFçæå¤±è´¥: {e}")
             raise
 
     def render_to_bytes(
@@ -1586,15 +1586,15 @@ button.ghost-btn {{
         ir_file_path: str | None = None
     ) -> bytes:
         """
-        将Document IR渲染为PDF字节�?
+        å°Document IRæ¸²æä¸ºPDFå­èï¿½?
 
-        参数:
-            document_ir: Document IR数据
-            optimize_layout: 是否启用布局优化（默认True�?
-            ir_file_path: 可选，IR 文件路径，提供时修复后会自动保存
+        åæ°:
+            document_ir: Document IRæ°æ®
+            optimize_layout: æ¯å¦å¯ç¨å¸å±ä¼åï¼é»è®¤Trueï¿½?
+            ir_file_path: å¯éï¼IR æä»¶è·¯å¾ï¼æä¾æ¶ä¿®å¤åä¼èªå¨ä¿å­
 
-        返回:
-            bytes: PDF文件的字节内�?
+        è¿å:
+            bytes: PDFæä»¶çå­èåï¿½?
         """
         html_content = self._get_pdf_html(document_ir, optimize_layout, ir_file_path)
         font_config = FontConfiguration()

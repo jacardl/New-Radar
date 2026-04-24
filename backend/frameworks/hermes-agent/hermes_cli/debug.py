@@ -1,4 +1,4 @@
-"""``hermes debug`` �?debug tools for Hermes Agent.
+"""``hermes debug`` â?debug tools for Hermes Agent.
 
 Currently supports:
     hermes debug share    Upload debug report (system info + logs) to a
@@ -17,7 +17,7 @@ from hermes_constants import get_hermes_home
 
 
 # ---------------------------------------------------------------------------
-# Paste services �?try paste.rs first, dpaste.com as fallback.
+# Paste services â?try paste.rs first, dpaste.com as fallback.
 # ---------------------------------------------------------------------------
 
 _PASTE_RS_URL = "https://paste.rs/"
@@ -169,13 +169,13 @@ def _read_full_log(log_name: str, max_bytes: int = _MAX_LOG_BYTES) -> Optional[s
         if size <= max_bytes:
             return log_path.read_text(encoding="utf-8", errors="replace")
 
-        # File is larger than max_bytes �?read the tail.
+        # File is larger than max_bytes â?read the tail.
         with open(log_path, "rb") as f:
             f.seek(size - max_bytes)
             # Skip partial line at the seek point.
             f.readline()
             content = f.read().decode("utf-8", errors="replace")
-        return f"[... truncated �?showing last ~{max_bytes // 1024}KB ...]\n{content}"
+        return f"[... truncated â?showing last ~{max_bytes // 1024}KB ...]\n{content}"
     except Exception:
         return None
 
@@ -222,7 +222,7 @@ def collect_debug_report(*, log_lines: int = 200, dump_text: str = "") -> str:
         dump_text = _capture_dump()
     buf.write(dump_text)
 
-    # ── Recent log tails (summary only) ──────────────────────────────────
+    # -- Recent log tails (summary only) ----------------------------------
     buf.write("\n\n")
     buf.write(f"--- agent.log (last {log_lines} lines) ---\n")
     buf.write(_read_log_tail("agent", log_lines))
@@ -252,7 +252,7 @@ def run_debug_share(args):
 
     print("Collecting debug report...")
 
-    # Capture dump once �?prepended to every paste for context.
+    # Capture dump once â?prepended to every paste for context.
     dump_text = _capture_dump()
 
     report = collect_debug_report(log_lines=log_lines, dump_text=dump_text)
@@ -288,7 +288,7 @@ def run_debug_share(args):
         urls["Report"] = upload_to_pastebin(report, expiry_days=expiry)
     except RuntimeError as exc:
         print(f"\nUpload failed: {exc}", file=sys.stderr)
-        print("\nFull report printed below �?copy-paste it manually:\n")
+        print("\nFull report printed below â?copy-paste it manually:\n")
         print(report)
         sys.exit(1)
 

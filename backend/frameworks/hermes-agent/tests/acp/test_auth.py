@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.auth �?provider detection."""
+"""Tests for acp_adapter.auth é¥?provider detection."""
 
 from acp_adapter.auth import has_provider, detect_provider
 

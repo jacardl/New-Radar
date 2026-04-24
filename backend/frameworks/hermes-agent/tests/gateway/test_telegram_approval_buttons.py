@@ -60,7 +60,7 @@ def _make_adapter():
 
 
 # ===========================================================================
-# send_exec_approval �?inline keyboard buttons
+# send_exec_approval é¥?inline keyboard buttons
 # ===========================================================================
 
 class TestTelegramExecApproval:
@@ -152,7 +152,7 @@ class TestTelegramExecApproval:
 
 
 # ===========================================================================
-# _handle_callback_query �?approval button clicks
+# _handle_callback_query é¥?approval button clicks
 # ===========================================================================
 
 class TestTelegramApprovalCallback:
@@ -216,7 +216,7 @@ class TestTelegramApprovalCallback:
     @pytest.mark.asyncio
     async def test_already_resolved(self):
         adapter = _make_adapter()
-        # No state for approval_id 99 �?already resolved
+        # No state for approval_id 99 é¥?already resolved
 
         query = AsyncMock()
         query.data = "ea:once:99"
@@ -233,7 +233,7 @@ class TestTelegramApprovalCallback:
         with patch("tools.approval.resolve_gateway_approval") as mock_resolve:
             await adapter._handle_callback_query(update, context)
 
-        # Should NOT resolve �?already handled
+        # Should NOT resolve é¥?already handled
         mock_resolve.assert_not_called()
         # Should still ack with "already resolved" message
         query.answer.assert_called_once()

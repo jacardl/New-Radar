@@ -75,7 +75,7 @@ def _make_card_action_data(
 
 
 # ===========================================================================
-# send_exec_approval �?interactive card with buttons
+# send_exec_approval é¥?interactive card with buttons
 # ===========================================================================
 
 class TestFeishuExecApproval:
@@ -203,7 +203,7 @@ class TestFeishuExecApproval:
 
 
 # ===========================================================================
-# _handle_card_action_event �?approval button clicks
+# _handle_card_action_event é¥?approval button clicks
 # ===========================================================================
 
 class TestFeishuApprovalCallback:
@@ -321,7 +321,7 @@ class TestFeishuApprovalCallback:
     @pytest.mark.asyncio
     async def test_already_resolved_drops_silently(self):
         adapter = _make_adapter()
-        # No state for approval_id 99 �?already resolved
+        # No state for approval_id 99 é¥?already resolved
 
         data = _make_card_action_data(
             action_value={"hermes_action": "approve_once", "approval_id": 99},
@@ -331,7 +331,7 @@ class TestFeishuApprovalCallback:
         with patch("tools.approval.resolve_gateway_approval") as mock_resolve:
             await adapter._handle_card_action_event(data)
 
-        # Should NOT resolve �?already handled
+        # Should NOT resolve é¥?already handled
         mock_resolve.assert_not_called()
 
     @pytest.mark.asyncio
@@ -364,7 +364,7 @@ class TestFeishuApprovalCallback:
 
 
 # ===========================================================================
-# _update_approval_card �?card replacement after resolution
+# _update_approval_card é¥?card replacement after resolution
 # ===========================================================================
 
 class TestFeishuUpdateApprovalCard:

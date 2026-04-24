@@ -28,7 +28,7 @@ from unittest.mock import patch
 
 import pytest
 
-# pytestmark removed �?tests skip gracefully via OPENROUTER_API_KEY check on line 59
+# pytestmark removed é¥?tests skip gracefully via OPENROUTER_API_KEY check on line 59
 
 # Ensure repo root is importable
 _repo_root = Path(__file__).resolve().parent.parent.parent

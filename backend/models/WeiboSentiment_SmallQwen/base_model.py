@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Qwen3模型基础类，统一接口
+Qwen3æ¨¡ååºç¡ç±»ï¼ç»ä¸æ¥å£
 """
 import os
 import pickle
@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 
 
 class BaseQwenModel(ABC):
-    """Qwen3情感分析模型基类"""
+    """Qwen3ææåææ¨¡ååºç±»"""
     
     def __init__(self, model_name: str):
         self.model_name = model_name
@@ -21,30 +21,30 @@ class BaseQwenModel(ABC):
         
     @abstractmethod
     def train(self, train_data: List[Tuple[str, int]], **kwargs) -> None:
-        """训练模型"""
+        """è®­ç»æ¨¡å"""
         pass
     
     @abstractmethod
     def predict(self, texts: List[str]) -> List[int]:
-        """预测文本情感"""
+        """é¢æµææ¬ææ"""
         pass
     
     def predict_single(self, text: str) -> Tuple[int, float]:
-        """预测单条文本的情�?
+        """é¢æµåæ¡ææ¬çææ?
         
         Args:
-            text: 待预测文�?
+            text: å¾é¢æµææ?
             
         Returns:
             (predicted_label, confidence)
         """
         predictions = self.predict([text])
-        return predictions[0], 0.0  # 默认置信度为0
+        return predictions[0], 0.0  # é»è®¤ç½®ä¿¡åº¦ä¸º0
     
     def evaluate(self, test_data: List[Tuple[str, int]]) -> Dict[str, float]:
-        """评估模型性能"""
+        """è¯ä¼°æ¨¡åæ§è½"""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，请先调用train方法")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼è¯·åè°ç¨trainæ¹æ³")
             
         texts = [item[0] for item in test_data]
         labels = [item[1] for item in test_data]
@@ -54,10 +54,10 @@ class BaseQwenModel(ABC):
         accuracy = accuracy_score(labels, predictions)
         f1 = f1_score(labels, predictions, average='weighted')
         
-        print(f"\n{self.model_name} 模型评估结果:")
-        print(f"准确�? {accuracy:.4f}")
-        print(f"F1分数: {f1:.4f}")
-        print("\n详细报告:")
+        print(f"\n{self.model_name} æ¨¡åè¯ä¼°ç»æ:")
+        print(f"åç¡®ç? {accuracy:.4f}")
+        print(f"F1åæ°: {f1:.4f}")
+        print("\nè¯¦ç»æ¥å:")
         print(classification_report(labels, predictions))
         
         return {
@@ -68,35 +68,35 @@ class BaseQwenModel(ABC):
     
     @abstractmethod
     def save_model(self, model_path: str = None) -> None:
-        """保存模型到文�?""
+        """ä¿å­æ¨¡åå°æä»?""
         pass
     
     @abstractmethod
     def load_model(self, model_path: str) -> None:
-        """从文件加载模�?""
+        """ä»æä»¶å è½½æ¨¡å?""
         pass
     
     @staticmethod
     def load_data(train_path: str = None, test_path: str = None, csv_path: str = 'dataset/weibo_senti_100k.csv') -> Tuple[List[Tuple[str, int]], List[Tuple[str, int]]]:
-        """加载训练和测试数�?
+        """å è½½è®­ç»åæµè¯æ°æ?
         
         Args:
-            train_path: 训练数据txt文件路径（可选）
-            test_path: 测试数据txt文件路径（可选）
-            csv_path: CSV数据文件路径（默认使用）
+            train_path: è®­ç»æ°æ®txtæä»¶è·¯å¾ï¼å¯éï¼
+            test_path: æµè¯æ°æ®txtæä»¶è·¯å¾ï¼å¯éï¼
+            csv_path: CSVæ°æ®æä»¶è·¯å¾ï¼é»è®¤ä½¿ç¨ï¼
         """
         
-        # 优先尝试使用CSV文件
+        # ä¼åå°è¯ä½¿ç¨CSVæä»¶
         if os.path.exists(csv_path):
-            print(f"从CSV文件加载数据: {csv_path}")
+            print(f"ä»CSVæä»¶å è½½æ°æ®: {csv_path}")
             df = pd.read_csv(csv_path)
             
-            # 检查数据格�?
+            # æ£æ¥æ°æ®æ ¼å¼?
             if 'review' in df.columns and 'label' in df.columns:
-                # 将DataFrame转换为元组列�?
+                # å°DataFrameè½¬æ¢ä¸ºåç»åè¡?
                 data = [(row['review'], row['label']) for _, row in df.iterrows()]
                 
-                # 分割训练和测试数据，固定测试集为5000�?
+                # åå²è®­ç»åæµè¯æ°æ®ï¼åºå®æµè¯éä¸º5000æ?
                 total_samples = len(data)
                 if total_samples > 5000:
                     test_size = 5000
@@ -107,7 +107,7 @@ class BaseQwenModel(ABC):
                         stratify=[label for _, label in data]
                     )
                 else:
-                    # 如果总数据不�?000条，使用20%作为测试�?
+                    # å¦ææ»æ°æ®ä¸è¶?000æ¡ï¼ä½¿ç¨20%ä½ä¸ºæµè¯é?
                     train_data, test_data = train_test_split(
                         data, 
                         test_size=0.2, 
@@ -115,14 +115,14 @@ class BaseQwenModel(ABC):
                         stratify=[label for _, label in data]
                     )
                 
-                print(f"训练数据�? {len(train_data)}")
-                print(f"测试数据�? {len(test_data)}")
+                print(f"è®­ç»æ°æ®é? {len(train_data)}")
+                print(f"æµè¯æ°æ®é? {len(test_data)}")
                 
                 return train_data, test_data
             else:
-                print(f"CSV文件格式不正确，缺少'review'�?label'�?)
+                print(f"CSVæä»¶æ ¼å¼ä¸æ­£ç¡®ï¼ç¼ºå°'review'æ?label'å?)
         
-        # 如果CSV不存在，尝试使用txt文件
+        # å¦æCSVä¸å­å¨ï¼å°è¯ä½¿ç¨txtæä»¶
         elif train_path and test_path and os.path.exists(train_path) and os.path.exists(test_path):
             def load_corpus(path):
                 data = []
@@ -135,37 +135,37 @@ class BaseQwenModel(ABC):
                             data.append((content, sentiment))
                 return data
             
-            print("从txt文件加载训练数据...")
+            print("ä»txtæä»¶å è½½è®­ç»æ°æ®...")
             train_data = load_corpus(train_path)
-            print(f"训练数据�? {len(train_data)}")
+            print(f"è®­ç»æ°æ®é? {len(train_data)}")
             
-            print("从txt文件加载测试数据...")
+            print("ä»txtæä»¶å è½½æµè¯æ°æ®...")
             test_data = load_corpus(test_path)
-            print(f"测试数据�? {len(test_data)}")
+            print(f"æµè¯æ°æ®é? {len(test_data)}")
             
             return train_data, test_data
         
         else:
-            # 如果都没有，提供样例数据创建指导
-            print("未找到数据文�?")
-            print("请确保以下文件之一存在:")
-            print(f"1. CSV文件: {csv_path}")
-            print(f"2. txt文件: {train_path} �?{test_path}")
-            print("\n数据格式要求:")
-            print("CSV文件: 包含'review'�?label'�?)
-            print("txt文件: 每行格式�?文本内容\\t标签'")
+            # å¦æé½æ²¡æï¼æä¾æ ·ä¾æ°æ®åå»ºæå¯¼
+            print("æªæ¾å°æ°æ®æä»?")
+            print("è¯·ç¡®ä¿ä»¥ä¸æä»¶ä¹ä¸å­å¨:")
+            print(f"1. CSVæä»¶: {csv_path}")
+            print(f"2. txtæä»¶: {train_path} å?{test_path}")
+            print("\næ°æ®æ ¼å¼è¦æ±:")
+            print("CSVæä»¶: åå«'review'å?label'å?)
+            print("txtæä»¶: æ¯è¡æ ¼å¼ä¸?ææ¬åå®¹\\tæ ç­¾'")
             
-            # 创建样例数据
+            # åå»ºæ ·ä¾æ°æ®
             sample_data = [
-                ("今天天气真好，心情很�?", 1),
-                ("这部电影太无聊了", 0),
-                ("非常喜欢这个产品", 1),
-                ("服务态度很差", 0),
-                ("质量不错，值得推荐", 1)
+                ("ä»å¤©å¤©æ°çå¥½ï¼å¿æå¾æ£?", 1),
+                ("è¿é¨çµå½±å¤ªæ èäº", 0),
+                ("éå¸¸åæ¬¢è¿ä¸ªäº§å", 1),
+                ("æå¡æåº¦å¾å·®", 0),
+                ("è´¨éä¸éï¼å¼å¾æ¨è", 1)
             ]
             
-            print("使用样例数据进行演示...")
-            train_data = sample_data * 20  # 扩充样例数据
+            print("ä½¿ç¨æ ·ä¾æ°æ®è¿è¡æ¼ç¤º...")
+            train_data = sample_data * 20  # æ©åæ ·ä¾æ°æ®
             test_data = sample_data * 5
             
             return train_data, test_data

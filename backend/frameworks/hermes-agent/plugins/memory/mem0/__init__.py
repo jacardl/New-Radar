@@ -1,4 +1,4 @@
-"""Mem0 memory plugin �?MemoryProvider interface.
+"""Mem0 memory plugin é¥?MemoryProvider interface.
 
 Server-side LLM fact extraction, semantic search with reranking, and
 automatic deduplication via the Mem0 Platform API.
@@ -6,9 +6,9 @@ automatic deduplication via the Mem0 Platform API.
 Original PR #2933 by kartik-mem0, adapted to MemoryProvider ABC.
 
 Config via environment variables:
-  MEM0_API_KEY       �?Mem0 Platform API key (required)
-  MEM0_USER_ID       �?User identifier (default: hermes-user)
-  MEM0_AGENT_ID      �?Agent identifier (default: hermes)
+  MEM0_API_KEY       é¥?Mem0 Platform API key (required)
+  MEM0_USER_ID       é¥?User identifier (default: hermes-user)
+  MEM0_AGENT_ID      é¥?Agent identifier (default: hermes)
 
 Or via $HERMES_HOME/mem0.json.
 """
@@ -73,7 +73,7 @@ def _load_config() -> dict:
 PROFILE_SCHEMA = {
     "name": "mem0_profile",
     "description": (
-        "Retrieve all stored memories about the user �?preferences, facts, "
+        "Retrieve all stored memories about the user é¥?preferences, facts, "
         "project context. Fast, no reranking. Use at conversation start."
     ),
     "parameters": {"type": "object", "properties": {}, "required": []},
@@ -182,7 +182,7 @@ class Mem0MemoryProvider(MemoryProvider):
         if self._consecutive_failures < _BREAKER_THRESHOLD:
             return False
         if time.monotonic() >= self._breaker_open_until:
-            # Cooldown expired �?reset and allow a retry
+            # Cooldown expired é¥?reset and allow a retry
             self._consecutive_failures = 0
             return False
         return True
@@ -210,16 +210,16 @@ class Mem0MemoryProvider(MemoryProvider):
         self._rerank = self._config.get("rerank", True)
 
     def _read_filters(self) -> Dict[str, Any]:
-        """Filters for search/get_all �?scoped to user only for cross-session recall."""
+        """Filters for search/get_all é¥?scoped to user only for cross-session recall."""
         return {"user_id": self._user_id}
 
     def _write_filters(self) -> Dict[str, Any]:
-        """Filters for add �?scoped to user + agent for attribution."""
+        """Filters for add é¥?scoped to user + agent for attribution."""
         return {"user_id": self._user_id, "agent_id": self._agent_id}
 
     @staticmethod
     def _unwrap_results(response: Any) -> list:
-        """Normalize Mem0 API response �?v2 wraps results in {"results": [...]}."""
+        """Normalize Mem0 API response é¥?v2 wraps results in {"results": [...]}."""
         if isinstance(response, dict):
             return response.get("results", [])
         if isinstance(response, list):

@@ -1,5 +1,5 @@
 """
-Hermes MCP Server �?expose messaging conversations as MCP tools.
+Hermes MCP Server é¥?expose messaging conversations as MCP tools.
 
 Starts a stdio MCP server that lets any MCP client (Claude Code, Cursor, Codex,
 etc.) list conversations, read message history, send messages, poll for live
@@ -166,7 +166,7 @@ def _extract_attachments(msg: dict) -> List[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Event Bridge �?polls SessionDB for new messages, maintains event queue
+# Event Bridge é¥?polls SessionDB for new messages, maintains event queue
 # ---------------------------------------------------------------------------
 
 QUEUE_LIMIT = 1000
@@ -200,7 +200,7 @@ class EventBridge:
         self._last_poll_timestamps: Dict[str, float] = {}  # session_key -> unix timestamp
         # In-memory approval tracking (populated from events)
         self._pending_approvals: Dict[str, dict] = {}
-        # mtime cache �?skip expensive work when files haven't changed
+        # mtime cache é¥?skip expensive work when files haven't changed
         self._sessions_json_mtime: float = 0.0
         self._state_db_mtime: float = 0.0
         self._cached_sessions_index: dict = {}
@@ -328,9 +328,9 @@ class EventBridge:
         """Check for new messages across all sessions.
 
         Uses mtime checks on sessions.json and state.db to skip work
-        when nothing has changed �?makes 200ms polling essentially free.
+        when nothing has changed é¥?makes 200ms polling essentially free.
         """
-        # Check if sessions.json has changed (mtime check is ~1μs)
+        # Check if sessions.json has changed (mtime check is ~1æ¸­s)
         sessions_file = _get_sessions_dir() / "sessions.json"
         try:
             sj_mtime = sessions_file.stat().st_mtime if sessions_file.exists() else 0.0
@@ -354,7 +354,7 @@ class EventBridge:
             db_mtime = 0.0
 
         if db_mtime == self._state_db_mtime and sj_mtime == self._sessions_json_mtime:
-            return  # Nothing changed since last poll �?skip entirely
+            return  # Nothing changed since last poll é¥?skip entirely
 
         self._state_db_mtime = db_mtime
         entries = self._cached_sessions_index
@@ -382,7 +382,7 @@ class EventBridge:
                     try:
                         return float(ts)
                     except ValueError:
-                        # ISO string �?parse to epoch
+                        # ISO string é¥?parse to epoch
                         try:
                             from datetime import datetime
                             return datetime.fromisoformat(ts).timestamp()
@@ -707,7 +707,7 @@ def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "FastMCP":
     ) -> str:
         """Send a message to a platform conversation.
 
-        The target format is "platform:chat_id" �?same format used by the
+        The target format is "platform:chat_id" é¥?same format used by the
         channels_list tool. You can also use human-friendly channel names
         that will be resolved automatically.
 
@@ -795,7 +795,7 @@ def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "FastMCP":
         """List pending approval requests observed during this bridge session.
 
         Returns exec and plugin approval requests that the bridge has seen
-        since it started. Approvals are live-session only �?older approvals
+        since it started. Approvals are live-session only é¥?older approvals
         from before the bridge connected are not included.
         """
         approvals = bridge.list_pending_approvals()

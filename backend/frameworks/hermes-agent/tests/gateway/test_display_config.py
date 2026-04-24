@@ -1,4 +1,4 @@
-"""Tests for gateway.display_config �?per-platform display/verbosity resolver."""
+"""Tests for gateway.display_config é¥?per-platform display/verbosity resolver."""
 import pytest
 
 
@@ -39,11 +39,11 @@ class TestResolveDisplaySetting:
         """Falls back to built-in platform default."""
         from gateway.display_config import resolve_display_setting
 
-        # Empty config �?should get built-in defaults
+        # Empty config é¥?should get built-in defaults
         config = {}
-        # Telegram defaults to tier_high �?"all"
+        # Telegram defaults to tier_high é«?"all"
         assert resolve_display_setting(config, "telegram", "tool_progress") == "all"
-        # Email defaults to tier_minimal �?"off"
+        # Email defaults to tier_minimal é«?"off"
         assert resolve_display_setting(config, "email", "tool_progress") == "off"
 
     def test_global_default_for_unknown_platform(self):
@@ -51,7 +51,7 @@ class TestResolveDisplaySetting:
         from gateway.display_config import resolve_display_setting
 
         config = {}
-        # Unknown platform, no config �?global default "all"
+        # Unknown platform, no config é«?global default "all"
         assert resolve_display_setting(config, "unknown_platform", "tool_progress") == "all"
 
     def test_fallback_parameter_used_last(self):
@@ -133,17 +133,17 @@ class TestBackwardCompat:
 # ---------------------------------------------------------------------------
 
 class TestYAMLNormalisation:
-    """YAML 1.1 quirks (bare off �?False, on �?True) are handled."""
+    """YAML 1.1 quirks (bare off é«?False, on é«?True) are handled."""
 
     def test_tool_progress_false_normalised_to_off(self):
-        """YAML's bare `off` parses as False �?normalised to 'off' string."""
+        """YAML's bare `off` parses as False é¥?normalised to 'off' string."""
         from gateway.display_config import resolve_display_setting
 
         config = {"display": {"tool_progress": False}}
         assert resolve_display_setting(config, "telegram", "tool_progress") == "off"
 
     def test_tool_progress_true_normalised_to_all(self):
-        """YAML's bare `on` parses as True �?normalised to 'all'."""
+        """YAML's bare `on` parses as True é¥?normalised to 'all'."""
         from gateway.display_config import resolve_display_setting
 
         config = {"display": {"tool_progress": True}}
@@ -164,7 +164,7 @@ class TestYAMLNormalisation:
         assert resolve_display_setting(config, "slack", "tool_preview_length") == 80
 
     def test_platform_override_false_tool_progress(self):
-        """Per-platform bare off �?normalised."""
+        """Per-platform bare off é«?normalised."""
         from gateway.display_config import resolve_display_setting
 
         config = {"display": {"platforms": {"slack": {"tool_progress": False}}}}
@@ -221,7 +221,7 @@ class TestPlatformDefaults:
 
 
 # ---------------------------------------------------------------------------
-# Config migration: tool_progress_overrides �?display.platforms
+# Config migration: tool_progress_overrides é«?display.platforms
 # ---------------------------------------------------------------------------
 
 class TestConfigMigration:
@@ -293,7 +293,7 @@ class TestStreamingPerPlatform:
         from gateway.display_config import resolve_display_setting
 
         config = {}
-        # Telegram has no streaming override in defaults �?None
+        # Telegram has no streaming override in defaults é«?None
         result = resolve_display_setting(config, "telegram", "streaming")
         assert result is None  # caller should check global StreamingConfig
 

@@ -29,7 +29,7 @@ class TestToOpenaiBaseUrl:
         assert _to_openai_base_url("https://openrouter.ai/api/v1") == "https://openrouter.ai/api/v1"
 
     def test_anthropic_domain_unchanged(self):
-        """api.anthropic.com doesn't end with /anthropic �?should be untouched."""
+        """api.anthropic.com doesn't end with /anthropic é¥?should be untouched."""
         assert _to_openai_base_url("https://api.anthropic.com") == "https://api.anthropic.com"
 
     def test_anthropic_in_subpath_unchanged(self):

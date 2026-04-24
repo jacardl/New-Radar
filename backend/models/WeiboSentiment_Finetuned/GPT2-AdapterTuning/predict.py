@@ -4,42 +4,42 @@ from train import GPT2ClassifierWithAdapter
 import re
 
 def preprocess_text(text):
-    """简单的文本预处�?""
+    """ç®åçææ¬é¢å¤ç?""
     return text
 
 def main():
-    # 设置设备
+    # è®¾ç½®è®¾å¤
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"使用设备: {device}")
+    print(f"ä½¿ç¨è®¾å¤: {device}")
     
-    # 使用本地模型路径而不是在线模型名�?
+    # ä½¿ç¨æ¬å°æ¨¡åè·¯å¾èä¸æ¯å¨çº¿æ¨¡ååç§?
     local_model_path = './models/gpt2-chinese'
     model_path = 'best_weibo_sentiment_model.pth'
     
-    print(f"加载模型: {model_path}")
-    # 从本地加载tokenizer
+    print(f"å è½½æ¨¡å: {model_path}")
+    # ä»æ¬å°å è½½tokenizer
     tokenizer = BertTokenizer.from_pretrained(local_model_path)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = '[PAD]'
     
-    # 加载模型，使用本地模型路�?
+    # å è½½æ¨¡åï¼ä½¿ç¨æ¬å°æ¨¡åè·¯å¾?
     model = GPT2ClassifierWithAdapter(local_model_path)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
     
-    print("\n============= 微博情感分析 =============")
-    print("输入微博内容进行分析 (输入 'q' 退�?:")
+    print("\n============= å¾®åææåæ =============")
+    print("è¾å¥å¾®ååå®¹è¿è¡åæ (è¾å¥ 'q' éå?:")
     
     while True:
-        text = input("\n请输入微博内�? ")
+        text = input("\nè¯·è¾å¥å¾®ååå®? ")
         if text.lower() == 'q':
             break
         
-        # 预处理文�?
+        # é¢å¤çææ?
         processed_text = preprocess_text(text)
         
-        # 对文本进行编�?
+        # å¯¹ææ¬è¿è¡ç¼ç ?
         encoding = tokenizer(
             processed_text,
             max_length=128,
@@ -48,22 +48,22 @@ def main():
             return_tensors='pt'
         )
         
-        # 转移到设�?
+        # è½¬ç§»å°è®¾å¤?
         input_ids = encoding['input_ids'].to(device)
         attention_mask = encoding['attention_mask'].to(device)
         
-        # 预测
+        # é¢æµ
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
             logits = outputs.logits
             probabilities = torch.softmax(logits, dim=1)
             prediction = torch.argmax(probabilities, dim=1).item()
         
-        # 输出结果
+        # è¾åºç»æ
         confidence = probabilities[0][prediction].item()
-        label = "正面情感" if prediction == 1 else "负面情感"
+        label = "æ­£é¢ææ" if prediction == 1 else "è´é¢ææ"
         
-        print(f"预测结果: {label} (置信�? {confidence:.4f})")
+        print(f"é¢æµç»æ: {label} (ç½®ä¿¡åº? {confidence:.4f})")
 
 if __name__ == "__main__":
     main() 

@@ -100,7 +100,7 @@ class TestBuildChildProgressCallback:
         output = buf.getvalue()
         assert "web_search" in output
         assert "quantum computing" in output
-        assert "├─" in output
+        assert "é¹æº¾æ¢" in output
 
     def test_cli_spinner_thinking_event(self):
         """Should print thinking line above spinner for CLI path."""
@@ -117,7 +117,7 @@ class TestBuildChildProgressCallback:
         cb("_thinking", "I'll search for papers first")
         
         output = buf.getvalue()
-        assert "💭" in output
+        assert "é¦æ±" in output
         assert "search for papers" in output
 
     def test_gateway_batched_progress(self):
@@ -129,7 +129,7 @@ class TestBuildChildProgressCallback:
         
         cb = _build_child_progress_callback(0, parent)
         
-        # Send 4 tool calls �?shouldn't flush yet (BATCH_SIZE = 5)
+        # Send 4 tool calls é¥?shouldn't flush yet (BATCH_SIZE = 5)
         for i in range(4):
             cb("tool.started", f"tool_{i}", f"arg_{i}", {})
         parent_cb.assert_not_called()
@@ -163,7 +163,7 @@ class TestBuildChildProgressCallback:
         cb0 = _build_child_progress_callback(0, parent)
         cb1 = _build_child_progress_callback(1, parent)
         
-        # Send 3 calls to each �?neither should flush (batch size = 5)
+        # Send 3 calls to each é¥?neither should flush (batch size = 5)
         for i in range(3):
             cb0(f"tool_{i}")
             cb1(f"other_{i}")
@@ -181,13 +181,13 @@ class TestBuildChildProgressCallback:
         parent._delegate_spinner = spinner
         parent.tool_progress_callback = None
         
-        # task_index=0 in a batch of 3 �?prefix "[1]"
+        # task_index=0 in a batch of 3 é«?prefix "[1]"
         cb0 = _build_child_progress_callback(0, parent, task_count=3)
         cb0("web_search", "test")
         output = buf.getvalue()
         assert "[1]" in output
 
-        # task_index=2 in a batch of 3 �?prefix "[3]"
+        # task_index=2 in a batch of 3 é«?prefix "[3]"
         buf.truncate(0)
         buf.seek(0)
         cb2 = _build_child_progress_callback(2, parent, task_count=3)

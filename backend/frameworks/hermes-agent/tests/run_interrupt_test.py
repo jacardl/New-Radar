@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a real interrupt test with actual AIAgent + delegate child.
 
-Not a pytest test â€?runs directly as a script for live testing.
+Not a pytest test Ã©Â¥?runs directly as a script for live testing.
 """
 
 import threading
@@ -133,11 +133,11 @@ def main() -> int:
         print(f"Status: {result['status']}")
         print(f"Duration: {result['duration_seconds']}s")
         if elapsed < 2.0:
-            print("âœ?PASS: Interrupt detected quickly!")
+            print("Ã©?PASS: Interrupt detected quickly!")
         else:
-            print(f"â?FAIL: Took {elapsed:.2f}s â€?interrupt was too slow or not detected")
+            print(f"Ã©?FAIL: Took {elapsed:.2f}s Ã©Â¥?interrupt was too slow or not detected")
     else:
-        print("â?FAIL: No result!")
+        print("Ã©?FAIL: No result!")
 
     set_interrupt(False)
     return 0

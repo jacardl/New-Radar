@@ -1,6 +1,6 @@
 """
-节点基类
-定义所有处理节点的基础接口
+èç¹åºç±»
+å®ä¹ææå¤çèç¹çåºç¡æ¥å£
 """
 
 from abc import ABC, abstractmethod
@@ -11,15 +11,15 @@ from ..state.state import State
 
 
 class BaseNode(ABC):
-    """节点基类"""
+    """èç¹åºç±»"""
 
     def __init__(self, llm_client: LLMClient, node_name: str = ""):
         """
-        初始化节�?
+        åå§åèç?
 
         Args:
-            llm_client: LLM客户�?
-            node_name: 节点名称
+            llm_client: LLMå®¢æ·ç«?
+            node_name: èç¹åç§°
         """
         self.llm_client = llm_client
         self.node_name = node_name or self.__class__.__name__
@@ -27,68 +27,68 @@ class BaseNode(ABC):
     @abstractmethod
     def run(self, input_data: Any, **kwargs) -> Any:
         """
-        执行节点处理逻辑
+        æ§è¡èç¹å¤çé»è¾
 
         Args:
-            input_data: 输入数据
-            **kwargs: 额外参数
+            input_data: è¾å¥æ°æ®
+            **kwargs: é¢å¤åæ°
 
         Returns:
-            处理结果
+            å¤çç»æ
         """
         pass
 
     def validate_input(self, input_data: Any) -> bool:
         """
-        验证输入数据
+        éªè¯è¾å¥æ°æ®
 
         Args:
-            input_data: 输入数据
+            input_data: è¾å¥æ°æ®
 
         Returns:
-            验证是否通过
+            éªè¯æ¯å¦éè¿
         """
         return True
 
     def process_output(self, output: Any) -> Any:
         """
-        处理输出数据
+        å¤çè¾åºæ°æ®
 
         Args:
-            output: 原始输出
+            output: åå§è¾åº
 
         Returns:
-            处理后的输出
+            å¤çåçè¾åº
         """
         return output
 
     def log_info(self, message: str):
-        """记录信息日志"""
+        """è®°å½ä¿¡æ¯æ¥å¿"""
         logger.info(f"[{self.node_name}] {message}")
     
     def log_warning(self, message: str):
-        """记录警告日志"""
-        logger.warning(f"[{self.node_name}] 警告: {message}")
+        """è®°å½è­¦åæ¥å¿"""
+        logger.warning(f"[{self.node_name}] è­¦å: {message}")
 
     def log_error(self, message: str):
-        """记录错误日志"""
-        logger.error(f"[{self.node_name}] 错误: {message}")
+        """è®°å½éè¯¯æ¥å¿"""
+        logger.error(f"[{self.node_name}] éè¯¯: {message}")
 
 
 class StateMutationNode(BaseNode):
-    """带状态修改功能的节点基类"""
+    """å¸¦ç¶æä¿®æ¹åè½çèç¹åºç±»"""
     
     @abstractmethod
     def mutate_state(self, input_data: Any, state: State, **kwargs) -> State:
         """
-        修改状�?
+        ä¿®æ¹ç¶æ?
         
         Args:
-            input_data: 输入数据
-            state: 当前状�?
-            **kwargs: 额外参数
+            input_data: è¾å¥æ°æ®
+            state: å½åç¶æ?
+            **kwargs: é¢å¤åæ°
             
         Returns:
-            修改后的状�?
+            ä¿®æ¹åçç¶æ?
         """
         pass

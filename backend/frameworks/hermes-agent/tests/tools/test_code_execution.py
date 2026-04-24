@@ -13,7 +13,7 @@ Run with:  python -m pytest tests/test_code_execution.py -v
 """
 
 import pytest
-# pytestmark removed �?tests run fine (61 pass, ~99s)
+# pytestmark removed é¥?tests run fine (61 pass, ~99s)
 
 import json
 import os
@@ -468,7 +468,7 @@ class TestStubSchemaDrift(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestBuildExecuteCodeSchema(unittest.TestCase):
-    """Tests for build_execute_code_schema �?the dynamic schema generator."""
+    """Tests for build_execute_code_schema é¥?the dynamic schema generator."""
 
     def test_default_includes_all_tools(self):
         schema = build_execute_code_schema()

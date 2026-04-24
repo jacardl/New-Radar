@@ -1,4 +1,4 @@
-"""``hermes plugins`` CLI subcommand �?install, update, remove, and list plugins.
+"""``hermes plugins`` CLI subcommand é¥?install, update, remove, and list plugins.
 
 Plugins are installed from Git repositories into ``~/.hermes/plugins/``.
 Supports full URLs and ``owner/repo`` shorthand (resolves to GitHub).
@@ -77,7 +77,7 @@ def _resolve_git_url(identifier: str) -> str:
     - Full URL: https://github.com/owner/repo.git
     - Full URL: git@github.com:owner/repo.git
     - Full URL: ssh://git@github.com/owner/repo.git
-    - Shorthand: owner/repo  �? https://github.com/owner/repo.git
+    - Shorthand: owner/repo  é«? https://github.com/owner/repo.git
 
     NOTE: ``http://`` and ``file://`` schemes are accepted but will trigger a
     security warning at install time.
@@ -199,7 +199,7 @@ def _prompt_plugin_env_vars(manifest: dict, console) -> None:
 
         label = f"  {name}"
         if desc:
-            label += f" �?{desc}"
+            label += f" é¥?{desc}"
         console.print(label)
         if url:
             console.print(f"  [dim]Get yours at: {url}[/dim]")
@@ -217,7 +217,7 @@ def _prompt_plugin_env_vars(manifest: dict, console) -> None:
         if value:
             save_env_value(name, value)
             os.environ[name] = value
-            console.print(f"  [green]✓[/green] Saved to {display_hermes_home()}/.env")
+            console.print(f"  [green]éæ«/green] Saved to {display_hermes_home()}/.env")
         else:
             console.print(f"  [dim]  Skipped (set {name} in {display_hermes_home()}/.env later)[/dim]")
 
@@ -246,7 +246,7 @@ def _display_after_install(plugin_dir: Path, identifier: str) -> None:
                 f"[green bold]Plugin installed:[/] {identifier}\n"
                 f"[dim]Location:[/] {plugin_dir}",
                 border_style="green",
-                title="�?Installed",
+                title="é?Installed",
                 expand=False,
             )
         )
@@ -259,7 +259,7 @@ def _display_removed(name: str, plugins_dir: Path) -> None:
 
     console = Console()
     console.print()
-    console.print(f"[red]✗[/red] Plugin [bold]{name}[/bold] removed from {plugins_dir}")
+    console.print(f"[red]éæ¢/red] Plugin [bold]{name}[/bold] removed from {plugins_dir}")
     console.print()
 
 
@@ -380,7 +380,7 @@ def cmd_install(identifier: str, force: bool = False) -> None:
             f"or __init__.py. It may not be a valid Hermes plugin."
         )
 
-    # Copy .example files to their real names (e.g. config.yaml.example �?config.yaml)
+    # Copy .example files to their real names (e.g. config.yaml.example é«?config.yaml)
     _copy_example_files(target, console)
 
     # Re-read manifest from installed location (for env var prompting)
@@ -443,10 +443,10 @@ def cmd_update(name: str) -> None:
     output = result.stdout.strip()
     if "Already up to date" in output:
         console.print(
-            f"[green]✓[/green] Plugin [bold]{name}[/bold] is already up to date."
+            f"[green]éæ«/green] Plugin [bold]{name}[/bold] is already up to date."
         )
     else:
-        console.print(f"[green]✓[/green] Plugin [bold]{name}[/bold] updated.")
+        console.print(f"[green]éæ«/green] Plugin [bold]{name}[/bold] updated.")
         console.print(f"[dim]{output}[/dim]")
 
 
@@ -508,7 +508,7 @@ def cmd_enable(name: str) -> None:
 
     disabled.discard(name)
     _save_disabled_set(disabled)
-    console.print(f"[green]✓[/green] Plugin [bold]{name}[/bold] enabled. Takes effect on next session.")
+    console.print(f"[green]éæ«/green] Plugin [bold]{name}[/bold] enabled. Takes effect on next session.")
 
 
 def cmd_disable(name: str) -> None:
@@ -739,7 +739,7 @@ def _configure_context_engine() -> bool:
 
 
 def cmd_toggle() -> None:
-    """Interactive composite UI �?general plugins + provider plugin categories."""
+    """Interactive composite UI é¥?general plugins + provider plugin categories."""
     from rich.console import Console
 
     try:
@@ -952,7 +952,7 @@ def _run_composite_ui(curses, plugin_names, plugin_labels, plugin_selected,
                     # Toggle general plugin
                     chosen.symmetric_difference_update({cursor})
                 else:
-                    # Provider category �?launch sub-screen
+                    # Provider category é¥?launch sub-screen
                     ci = cursor - n_plugins
                     if 0 <= ci < n_categories:
                         curses.endwin()
@@ -982,11 +982,11 @@ def _run_composite_ui(curses, plugin_names, plugin_labels, plugin_selected,
                         curses.curs_set(0)
             elif key in (curses.KEY_ENTER, 10, 13):
                 if cursor < n_plugins:
-                    # ENTER on a plugin checkbox �?confirm and exit
+                    # ENTER on a plugin checkbox é¥?confirm and exit
                     result_holder["plugins_changed"] = True
                     return
                 else:
-                    # ENTER on a category �?same as SPACE, launch sub-screen
+                    # ENTER on a category é¥?same as SPACE, launch sub-screen
                     ci = cursor - n_plugins
                     if 0 <= ci < n_categories:
                         curses.endwin()

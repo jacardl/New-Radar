@@ -11,7 +11,22 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 import asyncpg
-from hermes_agent import AIAgent, Tool
+try:
+    from hermes_agent import AIAgent, Tool
+except ImportError:
+    # Fallback mock when hermes_agent is not available
+    import sys
+    from pathlib import Path
+    mock_path = Path(__file__).parent.parent / "hermes_agent.py"
+    if mock_path.exists():
+        sys.path.insert(0, str(mock_path.parent.parent))
+        from backend.hermes_agent import AIAgent, Tool
+    else:
+        # Inline mock
+        class AIAgent:
+            def __init__(self, *args, **kwargs): pass
+        class Tool:
+            def __init__(self, *args, **kwargs): pass
 import logging
 
 from backend.core.external_tools import ExternalSearchTools

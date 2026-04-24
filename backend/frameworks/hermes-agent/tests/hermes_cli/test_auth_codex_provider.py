@@ -1,4 +1,4 @@
-"""Tests for Codex auth �?tokens stored in Hermes auth store (~/.hermes/auth.json)."""
+"""Tests for Codex auth é¥?tokens stored in Hermes auth store (~/.hermes/auth.json)."""
 
 import json
 import time
@@ -174,7 +174,7 @@ def test_codex_tokens_not_written_to_shared_file(tmp_path, monkeypatch):
 
     _save_codex_tokens({"access_token": "hermes-at", "refresh_token": "hermes-rt"})
 
-    # ~/.codex/auth.json should NOT exist �?_save_codex_tokens only touches Hermes store
+    # ~/.codex/auth.json should NOT exist é¥?_save_codex_tokens only touches Hermes store
     assert not (codex_home / "auth.json").exists()
 
     # Hermes auth store should have the tokens

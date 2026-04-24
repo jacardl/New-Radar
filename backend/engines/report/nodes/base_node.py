@@ -1,7 +1,7 @@
 """
-Report Engine节点基类�?
+Report Engineèç¹åºç±»
 
-所有高阶推理节点都继承于此，统一日志、输入校验与状态变更接口�?
+ææé«é¶æ¨çèç¹é½ç»§æ¿äºæ­¤ï¼ç»ä¸æ¥å¿ãè¾å¥æ ¡éªä¸ç¶æåæ´æ¥å£
 """
 
 from abc import ABC, abstractmethod
@@ -12,21 +12,21 @@ from loguru import logger
 
 class BaseNode(ABC):
     """
-    节点基类�?
+    èç¹åºç±»
 
-    统一实现日志工具、输�?输出钩子以及LLM客户端依赖注入，
-    便于所有节点只专注业务逻辑�?
+    ç»ä¸å®ç°æ¥å¿å·¥å·ãè¾å?è¾åºé©å­ä»¥åLLMå®¢æ·ç«¯ä¾èµæ³¨å¥ï¼
+    ä¾¿äºææèç¹åªä¸æ³¨ä¸å¡é»è¾
     """
     
     def __init__(self, llm_client: LLMClient, node_name: str = ""):
         """
-        初始化节�?
+        åå§åèç?
         
         Args:
-            llm_client: LLM客户�?
-            node_name: 节点名称
+            llm_client: LLMå®¢æ·ç«?
+            node_name: èç¹åç§°
 
-        BaseNode 会保存节点名以便统一输出日志前缀�?
+        BaseNode ä¼ä¿å­èç¹åä»¥ä¾¿ç»ä¸è¾åºæ¥å¿åç¼
         """
         self.llm_client = llm_client
         self.node_name = node_name or self.__class__.__name__
@@ -34,74 +34,74 @@ class BaseNode(ABC):
     @abstractmethod
     def run(self, input_data: Any, **kwargs) -> Any:
         """
-        执行节点处理逻辑
+        æ§è¡èç¹å¤çé»è¾
         
         Args:
-            input_data: 输入数据
-            **kwargs: 额外参数
+            input_data: è¾å¥æ°æ®
+            **kwargs: é¢å¤åæ°
             
         Returns:
-            处理结果
+            å¤çç»æ
         """
         pass
     
     def validate_input(self, input_data: Any) -> bool:
         """
-        验证输入数据�?
-        默认直接通过，子类可按需覆写实现字段检查�?
+        éªè¯è¾å¥æ°æ®
+        é»è®¤ç´æ¥éè¿ï¼å­ç±»å¯æéè¦åå®ç°å­æ®µæ£æ¥
         
         Args:
-            input_data: 输入数据
+            input_data: è¾å¥æ°æ®
             
         Returns:
-            验证是否通过
+            éªè¯æ¯å¦éè¿
         """
         return True
     
     def process_output(self, output: Any) -> Any:
         """
-        处理输出数据�?
-        子类可覆写进行结构化或校验�?
+        å¤çè¾åºæ°æ®
+        å­ç±»å¯è¦åè¿è¡ç»æåææ ¡éª
         
         Args:
-            output: 原始输出
+            output: åå§è¾åº
             
         Returns:
-            处理后的输出
+            å¤çåçè¾åº
         """
         return output
     
     def log_info(self, message: str):
-        """记录信息日志，并自动带上节点名作为前缀�?""
+        """è®°å½ä¿¡æ¯æ¥å¿ï¼å¹¶èªå¨å¸¦ä¸èç¹åä½ä¸ºåç¼""
         formatted_message = f"[{self.node_name}] {message}"
         logger.info(formatted_message)
     
     def log_error(self, message: str):
-        """记录错误日志，便于排障�?""
+        """è®°å½éè¯¯æ¥å¿ï¼ä¾¿äºæé""
         formatted_message = f"[{self.node_name}] {message}"
         logger.error(formatted_message)
 
 
 class StateMutationNode(BaseNode):
     """
-    带状态修改功能的节点基类�?
+    å¸¦ç¶æä¿®æ¹åè½çèç¹åºç±»
 
-    适用于节点需要直接写�?ReportState 的场景�?
+    éç¨äºèç¹éè¦ç´æ¥åå?ReportState çåºæ¯
     """
     
     @abstractmethod
     def mutate_state(self, input_data: Any, state: ReportState, **kwargs) -> ReportState:
         """
-        修改状态�?
+        ä¿®æ¹ç¶æ
 
-        子类需返回新的状态对象或在原地修改后回传，供流水线记录�?
+        å­ç±»éè¿åæ°çç¶æå¯¹è±¡æå¨åå°ä¿®æ¹ååä¼ ï¼ä¾æµæ°´çº¿è®°å½
         
         Args:
-            input_data: 输入数据
-            state: 当前状�?
-            **kwargs: 额外参数
+            input_data: è¾å¥æ°æ®
+            state: å½åç¶æ?
+            **kwargs: é¢å¤åæ°
             
         Returns:
-            修改后的状�?
+            ä¿®æ¹åçç¶æ?
         """
         pass

@@ -641,11 +641,11 @@ class TestMatrixDisplayName:
 class TestMatrixModuleImport:
     def test_module_importable_without_mautrix(self):
         """gateway.platforms.matrix must be importable even when mautrix is
-        not installed �?otherwise the gateway crashes for ALL platforms.
+        not installed é¥?otherwise the gateway crashes for ALL platforms.
 
         This test uses a subprocess to avoid polluting the current process's
         sys.modules (reimporting a module creates a second module object whose
-        classes don't share globals with the original �?breaking patch.object
+        classes don't share globals with the original é¥?breaking patch.object
         in subsequent tests).
         """
         import subprocess

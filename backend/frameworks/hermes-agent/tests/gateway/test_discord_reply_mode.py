@@ -198,7 +198,7 @@ class TestSendWithReplyToMode:
 
     @pytest.mark.asyncio
     async def test_invalid_mode_falls_back_to_first_behavior(self):
-        """Invalid mode behaves like 'first' �?only first chunk gets reference."""
+        """Invalid mode behaves like 'first' é¥?only first chunk gets reference."""
         adapter, channel, ref_msg = _make_discord_adapter("banana")
         adapter.truncate_message = lambda content, max_len, **kw: ["chunk1", "chunk2"]
 

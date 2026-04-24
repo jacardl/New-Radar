@@ -1,2 +1,2 @@
 # This file intentionally left empty.
-# minisweagent_path.py was removed �?see PR #2804.
+# minisweagent_path.py was removed é¥?see PR #2804.

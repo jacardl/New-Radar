@@ -17,7 +17,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Imports �?guarded since plugins/memory lives outside the standard test path
+# Imports é¥?guarded since plugins/memory lives outside the standard test path
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(autouse=True)
@@ -205,7 +205,7 @@ class TestWriteQueue:
         db_path = tmp_path / "test_queue.db"
         q = _WriteQueue(client, db_path)
         q.enqueue("user1", "sess1", [{"role": "user", "content": "test"}])
-        # Check SQLite directly �?row should exist since flush is slow
+        # Check SQLite directly é¥?row should exist since flush is slow
         conn = sqlite3.connect(str(db_path))
         rows = conn.execute("SELECT user_id, session_id FROM pending").fetchall()
         conn.close()
@@ -258,7 +258,7 @@ class TestWriteQueue:
         time.sleep(3)
         q1.shutdown()
 
-        # Now create a new queue �?it should replay the pending rows
+        # Now create a new queue é¥?it should replay the pending rows
         client2 = MagicMock()
         client2.ingest_session = MagicMock(return_value={"status": "ok"})
         q2 = _WriteQueue(client2, db_path)
@@ -647,7 +647,7 @@ class TestPrefetch:
             first_threads = list(p._prefetch_threads)
             assert len(first_threads) == 3
 
-            # Call again �?should join first batch before spawning new
+            # Call again é¥?should join first batch before spawning new
             p.queue_prefetch("query 2")
             second_threads = list(p._prefetch_threads)
             assert len(second_threads) == 3

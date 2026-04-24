@@ -120,7 +120,7 @@ async def test_discord_defaults_to_require_mention(adapter, monkeypatch):
 
     await adapter._handle_message(message)
 
-    # Should be ignored �?no mention, require_mention defaults to true
+    # Should be ignored é¥?no mention, require_mention defaults to true
     adapter.handle_message.assert_not_awaited()
 
 

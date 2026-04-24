@@ -7,9 +7,9 @@ but input_tokens + requested max_tokens > context_window), the old code
 incorrectly halved context_length via get_next_probe_tier().
 
 The fix introduces:
-  * parse_available_output_tokens_from_error() �?detects this specific
+  * parse_available_output_tokens_from_error() â?detects this specific
     error class and returns the available output token budget.
-  * _ephemeral_max_output_tokens on AIAgent �?a one-shot override that
+  * _ephemeral_max_output_tokens on AIAgent â?a one-shot override that
     caps the output for one retry without touching context_length.
 
 Naming note
@@ -30,7 +30,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# parse_available_output_tokens_from_error �?unit tests
+# parse_available_output_tokens_from_error â?unit tests
 # ---------------------------------------------------------------------------
 
 class TestParseAvailableOutputTokens:
@@ -40,7 +40,7 @@ class TestParseAvailableOutputTokens:
         from agent.model_metadata import parse_available_output_tokens_from_error
         return parse_available_output_tokens_from_error(msg)
 
-    # ── Should detect and extract ────────────────────────────────────────
+    # -- Should detect and extract ----------------------------------------
 
     def test_anthropic_canonical_format(self):
         """Canonical Anthropic error: max_tokens: X > context_window: Y - input_tokens: Z = available_tokens: W"""
@@ -72,10 +72,10 @@ class TestParseAvailableOutputTokens:
         msg = "max_tokens: 9999 > context_window: 10000 - input_tokens: 9999 = available_tokens: 1"
         assert self._parse(msg) == 1
 
-    # ── Should NOT detect (returns None) ─────────────────────────────────
+    # -- Should NOT detect (returns None) ---------------------------------
 
     def test_prompt_too_long_is_not_output_cap_error(self):
-        """'prompt is too long' errors must NOT be caught �?they need context halving."""
+        """'prompt is too long' errors must NOT be caught â?they need context halving."""
         msg = "prompt is too long: 205000 tokens > 200000 maximum"
         assert self._parse(msg) is None
 
@@ -102,7 +102,7 @@ class TestParseAvailableOutputTokens:
 
 
 # ---------------------------------------------------------------------------
-# build_anthropic_kwargs �?output cap clamping
+# build_anthropic_kwargs â?output cap clamping
 # ---------------------------------------------------------------------------
 
 class TestBuildAnthropicKwargsClamping:
@@ -122,7 +122,7 @@ class TestBuildAnthropicKwargsClamping:
         )
 
     def test_no_clamping_when_output_ceiling_fits_in_window(self):
-        """Opus 4.6 native output (128K) < context window (200K) �?no clamping."""
+        """Opus 4.6 native output (128K) < context window (200K) â?no clamping."""
         kwargs = self._build("claude-opus-4-6", context_length=200_000)
         assert kwargs["max_tokens"] == 128_000
 
@@ -148,7 +148,7 @@ class TestBuildAnthropicKwargsClamping:
 
 
 # ---------------------------------------------------------------------------
-# Ephemeral max_tokens mechanism �?_build_api_kwargs
+# Ephemeral max_tokens mechanism â?_build_api_kwargs
 # ---------------------------------------------------------------------------
 
 class TestEphemeralMaxOutputTokens:
@@ -205,7 +205,7 @@ class TestEphemeralMaxOutputTokens:
         agent.max_tokens = None  # will resolve to native ceiling (128K for Opus 4.6)
 
         agent._build_api_kwargs([{"role": "user", "content": "hi"}])
-        # Second call �?ephemeral is gone
+        # Second call â?ephemeral is gone
         kwargs2 = agent._build_api_kwargs([{"role": "user", "content": "hi"}])
         assert kwargs2["max_tokens"] == 128_000  # Opus 4.6 native ceiling
 

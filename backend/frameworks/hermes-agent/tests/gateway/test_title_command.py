@@ -64,7 +64,7 @@ class TestHandleTitleCommand:
         event = _make_event(text="/title My Research Project")
         result = await runner._handle_title_command(event)
         assert "My Research Project" in result
-        assert "✏️" in result
+        assert "âï¸" in result
 
         # Verify in DB
         assert db.get_session_title("test_session_123") == "My Research Project"
@@ -82,7 +82,7 @@ class TestHandleTitleCommand:
         event = _make_event(text="/title")
         result = await runner._handle_title_command(event)
         assert "Existing Title" in result
-        assert "📌" in result
+        assert "ð" in result
         db.close()
 
     @pytest.mark.asyncio
@@ -112,7 +112,7 @@ class TestHandleTitleCommand:
         event = _make_event(text="/title Taken Title")
         result = await runner._handle_title_command(event)
         assert "already in use" in result
-        assert "⚠️" in result
+        assert "â ï¸" in result
         db.close()
 
     @pytest.mark.asyncio
@@ -135,7 +135,7 @@ class TestHandleTitleCommand:
         event = _make_event(text=f"/title {long_title}")
         result = await runner._handle_title_command(event)
         assert "too long" in result
-        assert "⚠️" in result
+        assert "â ï¸" in result
         db.close()
 
     @pytest.mark.asyncio

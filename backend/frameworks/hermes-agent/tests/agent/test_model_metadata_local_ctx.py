@@ -1,7 +1,7 @@
 """Tests for _query_local_context_length and the local server fallback in
 get_model_context_length.
 
-All tests use synthetic inputs �?no filesystem or live server required.
+All tests use synthetic inputs é¥?no filesystem or live server required.
 """
 
 import sys
@@ -15,7 +15,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# _query_local_context_length �?unit tests with mocked httpx
+# _query_local_context_length é¥?unit tests with mocked httpx
 # ---------------------------------------------------------------------------
 
 class TestQueryLocalContextLengthOllama:
@@ -74,7 +74,7 @@ class TestQueryLocalContextLengthOllama:
         """When both num_ctx (Modelfile) and model_info (GGUF) are present,
         num_ctx wins because it's the *runtime* context Ollama actually
         allocates KV cache for. The GGUF model_info.context_length is the
-        training max �?using it would let Hermes grow conversations past
+        training max é¥?using it would let Hermes grow conversations past
         the runtime limit and Ollama would silently truncate.
 
         Concrete example: hermes-brain:qwen3-14b-ctx32k is a Modelfile
@@ -332,7 +332,7 @@ class TestQueryLocalContextLengthLmStudio:
         """Fuzzy match also works for /v1/models list when exact match fails.
 
         LM Studio's OpenAI-compat /v1/models returns id like
-        "nvidia/nvidia-nemotron-super-49b-v1" �?must match bare slug.
+        "nvidia/nvidia-nemotron-super-49b-v1" é¥?must match bare slug.
         """
         from agent.model_metadata import _query_local_context_length
 
@@ -445,7 +445,7 @@ class TestQueryLocalContextLengthNetworkError:
 
 
 # ---------------------------------------------------------------------------
-# get_model_context_length �?integration-style tests with mocked helpers
+# get_model_context_length é¥?integration-style tests with mocked helpers
 # ---------------------------------------------------------------------------
 
 class TestGetModelContextLengthLocalFallback:

@@ -1,5 +1,5 @@
 ï»¿"""
-Flaskä¸»åº”ç”¨ - ç»Ÿä¸€ç®¡ç†ä¸‰ä¸ªStreamlitåº”ç”¨
+Flaskä¸»åºç¨ - ç»ä¸ç®¡çä¸ä¸ªStreamlitåºç¨
 """
 
 import os
@@ -9,14 +9,14 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 from dotenv import load_dotenv
 
-# åŠ è½½ç¯å¢ƒå˜é‡
+# å è½½ç¯å¢åé
 load_dotenv()
 
-# ã€ä¿®å¤ã€‘æ—¶åŒºåŒæ­¥é—®é¢˜
-# 1. åœ¨ Windows æœ¬åœ°è¿è¡Œæ—¶ï¼Œç§»é™¤å¯èƒ½è¢«é”™è¯¯æ³¨å…¥çš„ UTC æ—¶åŒº
+# ãä¿®å¤ãæ¶åºåæ­¥é®é¢
+# 1. å¨ Windows æ¬å°è¿è¡æ¶ï¼ç§»é¤å¯è½è¢«éè¯¯æ³¨å¥ç UTC æ¶åº
 if os.name == 'nt' and 'TZ' in os.environ:
     del os.environ['TZ']
-# 2. åœ¨ Docker å®¹å™¨ (Linux) ä¸­è¿è¡Œæ—¶ï¼Œå¦‚æœæ²¡æœ‰æ˜ å°„å®¿ä¸»æœºæ—¶åŒºï¼Œé»˜è®¤å°†å…¶è®¾ç½®ä¸ºä¸œå…«åŒºï¼ˆåŒ—äº¬æ—¶é—´ï¼‰
+# 2. å¨ Docker å®¹å¨ (Linux) ä¸­è¿è¡æ¶ï¼å¦ææ²¡ææ å°å®¿ä¸»æºæ¶åºï¼é»è®¤å°å¶è®¾ç½®ä¸ºä¸å«åºï¼åäº¬æ¶é´ï¼
 elif os.name == 'posix':
     if 'TZ' not in os.environ or os.environ['TZ'] == 'UTC':
         os.environ['TZ'] = 'Asia/Shanghai'
@@ -24,18 +24,18 @@ elif os.name == 'posix':
         if hasattr(time, 'tzset'):
             time.tzset()
 
-# ã€ä¿®å¤ã€‘å°½æ—©è®¾ç½®ç¯å¢ƒå˜é‡ï¼Œç¡®ä¿æ‰€æœ‰æ¨¡å—éƒ½ä½¿ç”¨æ— ç¼“å†²æ¨¡å¼
+# ãä¿®å¤ãå°½æ©è®¾ç½®ç¯å¢åéï¼ç¡®ä¿æææ¨¡åé½ä½¿ç¨æ ç¼å²æ¨¡å¼
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 os.environ['PYTHONUTF8'] = '1'
-os.environ['PYTHONUNBUFFERED'] = '1'  # ç¦ç”¨Pythonè¾“å‡ºç¼“å†²ï¼Œç¡®ä¿æ—¥å¿—å®æ—¶è¾“å‡º
+os.environ['PYTHONUNBUFFERED'] = '1'  # ç¦ç¨Pythonè¾åºç¼å²ï¼ç¡®ä¿æ¥å¿å®æ¶è¾åº
 
-# ã€ä¿®å¤ã€‘è®¾ç½® HF_ENDPOINTï¼Œä¿è¯å›½å†…ä¸‹è½½ HuggingFace æ¨¡å‹ä¸å¡æ­»
+# ãä¿®å¤ãè®¾ç½® HF_ENDPOINTï¼ä¿è¯å½åä¸è½½ HuggingFace æ¨¡åä¸å¡æ­»
 if os.getenv("HF_ENDPOINT"):
     os.environ["HF_ENDPOINT"] = os.getenv("HF_ENDPOINT")
 elif "HF_ENDPOINT" not in os.environ:
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
-# ã€ä¿®å¤ã€‘å±è”½ transformers åº“æ¼äººçš„å†…éƒ¨ alias è­¦å‘Š
+# ãä¿®å¤ãå±è½ transformers åºæ¼äººçåé¨ alias è­¦å
 os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = '1'
 import warnings
 warnings.filterwarnings("ignore", module="transformers")
@@ -55,20 +55,20 @@ import importlib
 from pathlib import Path
 from MindSpider.main import MindSpider
 
-# å¯¼å…¥ReportEngine
+# å¯¼å¥ReportEngine
 try:
     from backend.engines.report.flask_interface import report_bp, initialize_report_engine
     REPORT_ENGINE_AVAILABLE = True
-except ImportError as e:
-    logger.error(f"ReportEngineå¯¼å…¥å¤±è´¥: {e}")
+except (ImportError, SyntaxError, UnicodeDecodeError, Exception) as e:
+    logger.error(f"ReportEngineå¯¼å¥å¤±è´¥: {e}")
     REPORT_ENGINE_AVAILABLE = False
 
-# å¯¼å…¥OpenAIå…¼å®¹API Blueprint
+# å¯¼å¥OpenAIå¼å®¹API Blueprint
 try:
     from backend.api.routes.openai_compat import openai_bp
     OPENAI_COMPAT_AVAILABLE = True
-except ImportError as e:
-    logger.error(f"OpenAIå…¼å®¹APIå¯¼å…¥å¤±è´¥: {e}")
+except (ImportError, SyntaxError, UnicodeDecodeError, Exception) as e:
+    logger.error(f"OpenAIå¼å®¹APIå¯¼å¥å¤±è´¥: {e}")
     OPENAI_COMPAT_AVAILABLE = False
 
 app = Flask(__name__)
@@ -76,24 +76,23 @@ app.config['SECRET_KEY'] = 'Dedicated-to-creating-a-concise-and-versatile-public
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
-# eventlet åœ¨å®¢æˆ·ç«¯ä¸»åŠ¨æ–­å¼€æ—¶å¶å°”ä¼šæŠ›å‡º ConnectionAbortedErrorï¼Œè¿™é‡Œåšä¸€æ¬¡é˜²å¾¡æ€§åŒ…è£¹ï¼Œ
-# é¿å…æ— æ„ä¹‰çš„å †æ ˆæ±¡æŸ“æ—¥å¿—ï¼ˆä»…åœ¨ eventlet å¯ç”¨æ—¶å¯ç”¨ï¼‰ã€‚
-def _patch_eventlet_disconnect_logging():
+# eventlet å¨å®¢æ·ç«¯ä¸»å¨æ­å¼æ¶å¶å°ä¼æåº ConnectionAbortedErrorï¼è¿éåä¸æ¬¡é²å¾¡æ§åè£¹ï¼
+# é¿åæ æä¹çå æ æ±¡ææ¥å¿ï¼ä»å¨ eventlet å¯ç¨æ¶å¯ç¨ï¼def _patch_eventlet_disconnect_logging():
     if sys.version_info >= (3, 12):
         return
     try:
         import eventlet.wsgi  # type: ignore
-    except Exception as exc:  # pragma: no cover - ä»…åœ¨ç”Ÿäº§ç¯å¢ƒæœ‰æ•ˆ
-        logger.debug(f"eventlet ä¸å¯ç”¨ï¼Œè·³è¿‡æ–­å¼€è¡¥ä¸: {exc}")
+    except Exception as exc:  # pragma: no cover - ä»å¨çäº§ç¯å¢ææ
+        logger.debug(f"eventlet ä¸å¯ç¨ï¼è·³è¿æ­å¼è¡¥ä¸: {exc}")
         return
 
     try:
         original_finish = eventlet.wsgi.HttpProtocol.finish  # type: ignore[attr-defined]
     except Exception as exc:  # pragma: no cover
-        logger.debug(f"eventlet ç¼ºå°‘ HttpProtocol.finishï¼Œè·³è¿‡æ–­å¼€è¡¥ä¸: {exc}")
+        logger.debug(f"eventlet ç¼ºå° HttpProtocol.finishï¼è·³è¿æ­å¼è¡¥ä¸: {exc}")
         return
 
-    def _safe_finish(self, *args, **kwargs):  # pragma: no cover - è¿è¡Œæ—¶æ‰ä¼šè§¦å‘
+    def _safe_finish(self, *args, **kwargs):  # pragma: no cover - è¿è¡æ¶æä¼è§¦å
         try:
             return original_finish(self, *args, **kwargs)
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError) as exc:
@@ -101,42 +100,42 @@ def _patch_eventlet_disconnect_logging():
                 environ = getattr(self, 'environ', {}) or {}
                 method = environ.get('REQUEST_METHOD', '')
                 path = environ.get('PATH_INFO', '')
-                logger.warning(f"å®¢æˆ·ç«¯å·²ä¸»åŠ¨æ–­å¼€ï¼Œå¿½ç•¥å¼‚å¸¸: {method} {path} ({exc})")
+                logger.warning(f"å®¢æ·ç«¯å·²ä¸»å¨æ­å¼ï¼å¿½ç¥å¼å¸¸: {method} {path} ({exc})")
             except Exception:
-                logger.warning(f"å®¢æˆ·ç«¯å·²ä¸»åŠ¨æ–­å¼€ï¼Œå¿½ç•¥å¼‚å¸¸: {exc}")
+                logger.warning(f"å®¢æ·ç«¯å·²ä¸»å¨æ­å¼ï¼å¿½ç¥å¼å¸¸: {exc}")
             return
 
     eventlet.wsgi.HttpProtocol.finish = _safe_finish  # type: ignore[attr-defined]
-    logger.info("å·²å¯¹ eventlet è¿æ¥ä¸­æ–­è¿›è¡Œå®‰å…¨é˜²æŠ¤")
+    logger.info("å·²å¯¹ eventlet è¿æ¥ä¸­æ­è¿è¡å®å¨é²æ¤")
 
 _patch_eventlet_disconnect_logging()
 
-# æ³¨å†ŒReportEngine Blueprint
+# æ³¨åReportEngine Blueprint
 if REPORT_ENGINE_AVAILABLE:
     app.register_blueprint(report_bp, url_prefix='/api/report')
-    logger.info("ReportEngineæ¥å£å·²æ³¨å†Œ")
+    logger.info("ReportEngineæ¥å£å·²æ³¨å")
 else:
-    logger.info("ReportEngineä¸å¯ç”¨ï¼Œè·³è¿‡æ¥å£æ³¨å†Œå¹¶æ·»åŠ é™çº§è·¯ç”±")
+    logger.info("ReportEngineä¸å¯ç¨ï¼è·³è¿æ¥å£æ³¨åå¹¶æ·»å éçº§è·¯ç±")
     @app.route('/api/report/status', methods=['GET'])
     def fallback_report_status():
-        return jsonify({'success': False, 'initialized': False, 'error': 'ReportEngineä¸å¯ç”¨'})
+        return jsonify({'success': False, 'initialized': False, 'error': 'ReportEngineä¸å¯ç¨'})
 
-# æ³¨å†ŒOpenAIå…¼å®¹API Blueprint
+# æ³¨åOpenAIå¼å®¹API Blueprint
 if OPENAI_COMPAT_AVAILABLE:
     app.register_blueprint(openai_bp, url_prefix='/v1')
-    logger.info("OpenAIå…¼å®¹APIå·²æ³¨å†Œ (POST /v1/chat/completions, GET /v1/models)")
+    logger.info("OpenAIå¼å®¹APIå·²æ³¨å (POST /v1/chat/completions, GET /v1/models)")
 else:
-    logger.info("OpenAIå…¼å®¹APIä¸å¯ç”¨")
+    logger.info("OpenAIå¼å®¹APIä¸å¯ç¨")
 
 
-# åˆ›å»ºæ—¥å¿—ç›®å½•
+# åå»ºæ¥å¿ç®å½
 LOG_DIR = Path('logs')
 LOG_DIR.mkdir(exist_ok=True)
 
 
 @app.route('/')
 def landing_page():
-    """Open WebUI æ˜¯å”¯ä¸€å‰ç«¯ï¼Œæ­¤å¤„ä»…åš API å¥åº·æ£€æŸ¥å…¥å£."""
+    """Open WebUI æ¯å¯ä¸åç«¯ï¼æ­¤å¤ä»å API å¥åº·æ£æ¥å¥å£."""
     return jsonify({
         'name': 'New Radar API',
         'version': '2.0.0',
@@ -217,13 +216,13 @@ def _load_config_module():
 def read_config_values():
     """Return the current configuration values that are exposed to the frontend."""
     try:
-        # é‡æ–°åŠ è½½é…ç½®ä»¥è·å–æœ€æ–°çš„ Settings å®ä¾‹
+        # éæ°å è½½éç½®ä»¥è·åææ°ç Settings å®ä¾
         from backend.config import reload_settings, settings
         reload_settings()
         
         values = {}
         for key in CONFIG_KEYS:
-            # ä» Pydantic Settings å®ä¾‹è¯»å–å€¼
+            # ä» Pydantic Settings å®ä¾è¯»åå¼
             value = getattr(settings, key, None)
             # Convert to string for uniform handling on the frontend.
             if value is None:
@@ -232,7 +231,7 @@ def read_config_values():
                 values[key] = str(value)
         return values
     except Exception as exc:
-        logger.exception(f"è¯»å–é…ç½®å¤±è´¥: {exc}")
+        logger.exception(f"è¯»åéç½®å¤±è´¥: {exc}")
         return {}
 
 
@@ -254,17 +253,17 @@ def write_config_values(updates):
     """Persist configuration updates to .env file (Pydantic Settings source)."""
     from pathlib import Path
     
-    # ç¡®å®š .env æ–‡ä»¶è·¯å¾„ï¼ˆä¸ config.py ä¸­çš„é€»è¾‘ä¸€è‡´ï¼‰
+    # ç¡®å® .env æä»¶è·¯å¾ï¼ä¸ config.py ä¸­çé»è¾ä¸è´ï¼
     project_root = Path(__file__).resolve().parent
     cwd_env = Path.cwd() / ".env"
     env_file_path = cwd_env if cwd_env.exists() else (project_root / ".env")
     
-    # è¯»å–ç°æœ‰çš„ .env æ–‡ä»¶å†…å®¹
+    # è¯»åç°æç .env æä»¶åå®¹
     env_lines = []
-    env_key_indices = {}  # è®°å½•æ¯ä¸ªé”®åœ¨æ–‡ä»¶ä¸­çš„ç´¢å¼•ä½ç½®
+    env_key_indices = {}  # è®°å½æ¯ä¸ªé®å¨æä»¶ä¸­çç´¢å¼ä½ç½®
     if env_file_path.exists():
         env_lines = env_file_path.read_text(encoding='utf-8').splitlines()
-        # æå–å·²å­˜åœ¨çš„é”®åŠå…¶ç´¢å¼•
+        # æåå·²å­å¨çé®åå¶ç´¢å¼
         for i, line in enumerate(env_lines):
             line_stripped = line.strip()
             if line_stripped and not line_stripped.startswith('#'):
@@ -272,9 +271,9 @@ def write_config_values(updates):
                     key = line_stripped.split('=')[0].strip()
                     env_key_indices[key] = i
     
-    # æ›´æ–°æˆ–æ·»åŠ é…ç½®é¡¹
+    # æ´æ°ææ·»å éç½®é¡¹
     for key, raw_value in updates.items():
-        # æ ¼å¼åŒ–å€¼ç”¨äº .env æ–‡ä»¶ï¼ˆä¸éœ€è¦å¼•å·ï¼Œé™¤éæ˜¯å­—ç¬¦ä¸²ä¸”åŒ…å«ç©ºæ ¼ï¼‰
+        # æ ¼å¼åå¼ç¨äº .env æä»¶ï¼ä¸éè¦å¼å·ï¼é¤éæ¯å­ç¬¦ä¸²ä¸åå«ç©ºæ ¼ï¼
         if raw_value is None or raw_value == '':
             env_value = ''
         elif isinstance(raw_value, (int, float)):
@@ -283,26 +282,26 @@ def write_config_values(updates):
             env_value = 'True' if raw_value else 'False'
         else:
             value_str = str(raw_value)
-            # å¦‚æœåŒ…å«ç©ºæ ¼æˆ–ç‰¹æ®Šå­—ç¬¦ï¼Œéœ€è¦å¼•å·
+            # å¦æåå«ç©ºæ ¼æç¹æ®å­ç¬¦ï¼éè¦å¼å·
             if ' ' in value_str or '\n' in value_str or '#' in value_str:
                 escaped = value_str.replace('\\', '\\\\').replace('"', '\\"')
                 env_value = f'"{escaped}"'
             else:
                 env_value = value_str
         
-        # æ›´æ–°æˆ–æ·»åŠ é…ç½®é¡¹
+        # æ´æ°ææ·»å éç½®é¡¹
         if key in env_key_indices:
-            # æ›´æ–°ç°æœ‰è¡Œ
+            # æ´æ°ç°æè¡
             env_lines[env_key_indices[key]] = f'{key}={env_value}'
         else:
-            # æ·»åŠ æ–°è¡Œåˆ°æ–‡ä»¶æœ«å°¾
+            # æ·»å æ°è¡å°æä»¶æ«å°¾
             env_lines.append(f'{key}={env_value}')
     
-    # å†™å…¥ .env æ–‡ä»¶
+    # åå¥ .env æä»¶
     env_file_path.parent.mkdir(parents=True, exist_ok=True)
     env_file_path.write_text('\n'.join(env_lines) + '\n', encoding='utf-8')
     
-    # é‡æ–°åŠ è½½é…ç½®æ¨¡å—ï¼ˆè¿™ä¼šé‡æ–°è¯»å– .env æ–‡ä»¶å¹¶åˆ›å»ºæ–°çš„ Settings å®ä¾‹ï¼‰
+    # éæ°å è½½éç½®æ¨¡åï¼è¿ä¼éæ°è¯»å .env æä»¶å¹¶åå»ºæ°ç Settings å®ä¾ï¼
     _load_config_module()
 
 
@@ -333,14 +332,14 @@ def _prepare_system_start():
     """Mark the system as starting if it is not already running or starting."""
     with system_state_lock:
         if system_state['started']:
-            return False, 'ç³»ç»Ÿå·²å¯åŠ¨'
+            return False, 'ç³»ç»å·²å¯å¨'
         if system_state['starting']:
-            return False, 'ç³»ç»Ÿæ­£åœ¨å¯åŠ¨'
+            return False, 'ç³»ç»æ­£å¨å¯å¨'
         system_state['starting'] = True
         return True, None
 
 def _mark_shutdown_requested():
-    """æ ‡è®°å…³æœºå·²è¯·æ±‚ï¼›è‹¥å·²æœ‰å…³æœºæµç¨‹åˆ™è¿”å› Falseã€‚"""
+    """æ è®°å³æºå·²è¯·æ±ï¼è¥å·²æå³æºæµç¨åè¿å False""
     with system_state_lock:
         if system_state.get('shutdown_in_progress'):
             return False
@@ -349,21 +348,21 @@ def _mark_shutdown_requested():
 
 
 def initialize_system_components():
-    """å¯åŠ¨æ‰€æœ‰ä¾èµ–ç»„ä»¶ï¼ˆStreamlit å­åº”ç”¨ã€ForumEngineã€ReportEngineï¼‰ã€‚"""
+    """å¯å¨ææä¾èµç»ä»¶ï¼Streamlit å­åºç¨orumEngineeportEngineï¼""
     logs = []
     errors = []
     
     spider = MindSpider()
     if spider.initialize_database():
-        logger.info("æ•°æ®åº“åˆå§‹åŒ–æˆåŠŸ")
+        logger.info("æ°æ®åºåå§åæå")
     else:
-        logger.error("æ•°æ®åº“åˆå§‹åŒ–å¤±è´¥")
+        logger.error("æ°æ®åºåå§åå¤±è´¥")
 
     try:
         stop_forum_engine()
-        logs.append("å·²åœæ­¢ ForumEngine ç›‘æ§å™¨ä»¥é¿å…æ–‡ä»¶å†²çª")
-    except Exception as exc:  # pragma: no cover - å®‰å…¨æ•è·
-        message = f"åœæ­¢ ForumEngine æ—¶å‘ç”Ÿå¼‚å¸¸: {exc}"
+        logs.append("å·²åæ­¢ ForumEngine çæ§å¨ä»¥é¿åæä»¶å²çª")
+    except Exception as exc:  # pragma: no cover - å®å¨æè·
+        message = f"åæ­¢ ForumEngine æ¶åçå¼å¸¸: {exc}"
         logs.append(message)
         logger.exception(message)
 
@@ -373,23 +372,23 @@ def initialize_system_components():
     try:
         start_forum_engine()
         processes['forum']['status'] = 'running'
-        logs.append("ForumEngine å¯åŠ¨å®Œæˆ")
+        logs.append("ForumEngine å¯å¨å®æ")
         forum_started = True
-    except Exception as exc:  # pragma: no cover - ä¿åº•æ•è·
-        error_msg = f"ForumEngine å¯åŠ¨å¤±è´¥: {exc}"
+    except Exception as exc:  # pragma: no cover - ä¿åºæè·
+        error_msg = f"ForumEngine å¯å¨å¤±è´¥: {exc}"
         logs.append(error_msg)
         errors.append(error_msg)
 
     if REPORT_ENGINE_AVAILABLE:
         try:
             if initialize_report_engine():
-                logs.append("ReportEngine åˆå§‹åŒ–æˆåŠŸ")
+                logs.append("ReportEngine åå§åæå")
             else:
-                msg = "ReportEngine åˆå§‹åŒ–å¤±è´¥"
+                msg = "ReportEngine åå§åå¤±è´¥"
                 logs.append(msg)
                 errors.append(msg)
         except Exception as exc:  # pragma: no cover
-            msg = f"ReportEngine åˆå§‹åŒ–å¼‚å¸¸: {exc}"
+            msg = f"ReportEngine åå§åå¼å¸¸: {exc}"
             logs.append(msg)
             errors.append(msg)
 
@@ -400,61 +399,61 @@ def initialize_system_components():
             try:
                 stop_forum_engine()
             except Exception:  # pragma: no cover
-                logger.exception("åœæ­¢ForumEngineå¤±è´¥")
+                logger.exception("åæ­¢ForumEngineå¤±è´¥")
         return False, logs, errors
 
     return True, logs, []
 
-# åˆå§‹åŒ–ForumEngineçš„forum.logæ–‡ä»¶
+# åå§åForumEngineçforum.logæä»¶
 def init_forum_log():
-    """åˆå§‹åŒ–forum.logæ–‡ä»¶"""
+    """åå§åforum.logæä»¶"""
     try:
         forum_log_file = LOG_DIR / "forum.log"
-        # æ£€æŸ¥æ–‡ä»¶ä¸å­˜åœ¨åˆ™åˆ›å»ºå¹¶ä¸”å†™ä¸€ä¸ªå¼€å§‹ï¼Œå­˜åœ¨å°±æ¸…ç©ºå†™ä¸€ä¸ªå¼€å§‹
+        # æ£æ¥æä»¶ä¸å­å¨ååå»ºå¹¶ä¸åä¸ä¸ªå¼å§ï¼å­å¨å°±æ¸ç©ºåä¸ä¸ªå¼å§
         if not forum_log_file.exists():
             with open(forum_log_file, 'w', encoding='utf-8') as f:
                 start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                f.write(f"=== ForumEngine ç³»ç»Ÿåˆå§‹åŒ– - {start_time} ===\n")
-            logger.info(f"ForumEngine: forum.log å·²åˆå§‹åŒ–")
+                f.write(f"=== ForumEngine ç³»ç»åå§å - {start_time} ===\n")
+            logger.info(f"ForumEngine: forum.log å·²åå§å")
         else:
             with open(forum_log_file, 'w', encoding='utf-8') as f:
                 start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                f.write(f"=== ForumEngine ç³»ç»Ÿåˆå§‹åŒ– - {start_time} ===\n")
-            logger.info(f"ForumEngine: forum.log å·²åˆå§‹åŒ–")
+                f.write(f"=== ForumEngine ç³»ç»åå§å - {start_time} ===\n")
+            logger.info(f"ForumEngine: forum.log å·²åå§å")
     except Exception as e:
-        logger.exception(f"ForumEngine: åˆå§‹åŒ–forum.logå¤±è´¥: {e}")
+        logger.exception(f"ForumEngine: åå§åforum.logå¤±è´¥: {e}")
 
-# åˆå§‹åŒ–forum.log
+# åå§åforum.log
 init_forum_log()
 
-# å¯åŠ¨ForumEngineæ™ºèƒ½ç›‘æ§
+# å¯å¨ForumEngineæºè½çæ§
 def start_forum_engine():
-    """å¯åŠ¨ForumEngineè®ºå›"""
+    """å¯å¨ForumEngineè®ºå"""
     try:
         from backend.engines.forum.monitor import start_forum_monitoring
-        logger.info("ForumEngine: å¯åŠ¨è®ºå›...")
+        logger.info("ForumEngine: å¯å¨è®ºå...")
         success = start_forum_monitoring()
         if not success:
-            logger.info("ForumEngine: è®ºå›å¯åŠ¨å¤±è´¥")
+            logger.info("ForumEngine: è®ºåå¯å¨å¤±è´¥")
     except Exception as e:
-        logger.exception(f"ForumEngine: å¯åŠ¨è®ºå›å¤±è´¥: {e}")
+        logger.exception(f"ForumEngine: å¯å¨è®ºåå¤±è´¥: {e}")
 
-# åœæ­¢ForumEngineæ™ºèƒ½ç›‘æ§
+# åæ­¢ForumEngineæºè½çæ§
 def stop_forum_engine():
-    """åœæ­¢ForumEngineè®ºå›"""
+    """åæ­¢ForumEngineè®ºå"""
     try:
         from backend.engines.forum.monitor import stop_forum_monitoring
-        logger.info("ForumEngine: åœæ­¢è®ºå›...")
+        logger.info("ForumEngine: åæ­¢è®ºå...")
         stop_forum_monitoring()
-        logger.info("ForumEngine: è®ºå›å·²åœæ­¢")
+        logger.info("ForumEngine: è®ºåå·²åæ­¢")
     except Exception as e:
-        logger.exception(f"ForumEngine: åœæ­¢è®ºå›å¤±è´¥: {e}")
+        logger.exception(f"ForumEngine: åæ­¢è®ºåå¤±è´¥: {e}")
 
 def parse_forum_log_line(line):
-    """è§£æforum.logè¡Œå†…å®¹ï¼Œæå–å¯¹è¯ä¿¡æ¯"""
+    """è§£æforum.logè¡åå®¹ï¼æåå¯¹è¯ä¿¡æ¯"""
     import re
     
-    # åŒ¹é…æ ¼å¼: [æ—¶é—´] [æ¥æº] å†…å®¹ï¼ˆæ¥æºå…è®¸å¤§å°å†™åŠç©ºæ ¼ï¼‰
+    # å¹éæ ¼å¼: [æ¶é´] [æ¥æº] åå®¹ï¼æ¥æºåè®¸å¤§å°ååç©ºæ ¼ï¼
     pattern = r'\[(\d{2}:\d{2}:\d{2})\]\s*\[([^\]]+)\]\s*(.*)'
     match = re.match(pattern, line)
     
@@ -464,18 +463,18 @@ def parse_forum_log_line(line):
     timestamp, raw_source, content = match.groups()
     source = raw_source.strip().upper()
 
-    # è¿‡æ»¤æ‰ç³»ç»Ÿæ¶ˆæ¯å’Œç©ºå†…å®¹
+    # è¿æ»¤æç³»ç»æ¶æ¯åç©ºåå®¹
     if source == 'SYSTEM' or not content.strip():
         return None
     
-    # æ”¯æŒä¸‰ä¸ªAgentå’Œä¸»æŒäºº
+    # æ¯æä¸ä¸ªAgentåä¸»æäºº
     if source not in ['QUERY', 'INSIGHT', 'MEDIA', 'HOST']:
         return None
     
-    # è§£ç æ—¥å¿—ä¸­çš„è½¬ä¹‰æ¢è¡Œï¼Œä¿ç•™å¤šè¡Œæ ¼å¼
+    # è§£ç æ¥å¿ä¸­çè½¬ä¹æ¢è¡ï¼ä¿çå¤è¡æ ¼å¼
     cleaned_content = content.replace('\\n', '\n').replace('\\r', '').strip()
     
-    # æ ¹æ®æ¥æºç¡®å®šæ¶ˆæ¯ç±»å‹å’Œå‘é€è€…
+    # æ ¹æ®æ¥æºç¡®å®æ¶æ¯ç±»åååéè
     if source == 'HOST':
         message_type = 'host'
         sender = 'Forum Host'
@@ -491,25 +490,25 @@ def parse_forum_log_line(line):
         'source': source
     }
 
-# Forumæ—¥å¿—ç›‘å¬å™¨
-# å­˜å‚¨æ¯ä¸ªå®¢æˆ·ç«¯çš„å†å²æ—¥å¿—å‘é€ä½ç½®
+# Forumæ¥å¿çå¬å¨
+# å­å¨æ¯ä¸ªå®¢æ·ç«¯çåå²æ¥å¿åéä½ç½®
 forum_log_positions = {}
 
 def monitor_forum_log():
-    """ç›‘å¬forum.logæ–‡ä»¶å˜åŒ–å¹¶æ¨é€åˆ°å‰ç«¯"""
+    """çå¬forum.logæä»¶ååå¹¶æ¨éå°åç«¯"""
     import time
     from pathlib import Path
 
     forum_log_file = LOG_DIR / "forum.log"
     last_position = 0
-    processed_lines = set()  # ç”¨äºè·Ÿè¸ªå·²å¤„ç†çš„è¡Œï¼Œé¿å…é‡å¤
+    processed_lines = set()  # ç¨äºè·è¸ªå·²å¤ççè¡ï¼é¿åéå¤
 
-    # å¦‚æœæ–‡ä»¶å­˜åœ¨ï¼Œè·å–åˆå§‹ä½ç½®ä½†ä¸è·³è¿‡å†…å®¹
+    # å¦ææä»¶å­å¨ï¼è·ååå§ä½ç½®ä½ä¸è·³è¿åå®¹
     if forum_log_file.exists():
         with open(forum_log_file, 'r', encoding='utf-8', errors='ignore') as f:
-            # è®°å½•æ–‡ä»¶å¤§å°ï¼Œä½†ä¸æ·»åŠ åˆ°processed_lines
-            # è¿™æ ·ç”¨æˆ·æ‰“å¼€forumæ ‡ç­¾æ—¶å¯ä»¥è·å–å†å²
-            f.seek(0, 2)  # ç§»åˆ°æ–‡ä»¶æœ«å°¾
+            # è®°å½æä»¶å¤§å°ï¼ä½ä¸æ·»å å°processed_lines
+            # è¿æ ·ç¨æ·æå¼forumæ ç­¾æ¶å¯ä»¥è·ååå²
+            f.seek(0, 2)  # ç§»å°æä»¶æ«å°¾
             last_position = f.tell()
 
     while True:
@@ -525,18 +524,18 @@ def monitor_forum_log():
                             if line.strip():
                                 line_hash = hash(line.strip())
 
-                                # é¿å…é‡å¤å¤„ç†åŒä¸€è¡Œ
+                                # é¿åéå¤å¤çåä¸è¡
                                 if line_hash in processed_lines:
                                     continue
 
                                 processed_lines.add(line_hash)
 
-                                # è§£ææ—¥å¿—è¡Œå¹¶å‘é€forumæ¶ˆæ¯
+                                # è§£ææ¥å¿è¡å¹¶åéforumæ¶æ¯
                                 parsed_message = parse_forum_log_line(line)
                                 if parsed_message:
                                     socketio.emit('forum_message', parsed_message)
 
-                                # åªæœ‰åœ¨æ§åˆ¶å°æ˜¾ç¤ºforumæ—¶æ‰å‘é€æ§åˆ¶å°æ¶ˆæ¯
+                                # åªæå¨æ§å¶å°æ¾ç¤ºforumæ¶æåéæ§å¶å°æ¶æ¯
                                 timestamp = datetime.now().strftime('%H:%M:%S')
                                 formatted_line = f"[{timestamp}] {line}"
                                 socketio.emit('console_output', {
@@ -546,34 +545,34 @@ def monitor_forum_log():
 
                         last_position = f.tell()
 
-                        # æ¸…ç†processed_linesé›†åˆï¼Œé¿å…å†…å­˜æ³„æ¼ï¼ˆä¿ç•™æœ€è¿‘1000è¡Œçš„å“ˆå¸Œï¼‰
+                        # æ¸çprocessed_lineséåï¼é¿ååå­æ³æ¼ï¼ä¿çæè¿1000è¡çåå¸ï¼
                         if len(processed_lines) > 1000:
-                            # ä¿ç•™æœ€è¿‘500è¡Œçš„å“ˆå¸Œ
+                            # ä¿çæè¿500è¡çåå¸
                             recent_hashes = list(processed_lines)[-500:]
                             processed_lines = set(recent_hashes)
 
-            time.sleep(1)  # æ¯ç§’æ£€æŸ¥ä¸€æ¬¡
+            time.sleep(1)  # æ¯ç§æ£æ¥ä¸æ¬¡
         except Exception as e:
-            logger.error(f"Forumæ—¥å¿—ç›‘å¬é”™è¯¯: {e}")
+            logger.error(f"Forumæ¥å¿çå¬éè¯¯: {e}")
             time.sleep(5)
 
-# å¯åŠ¨Forumæ—¥å¿—ç›‘å¬çº¿ç¨‹
+# å¯å¨Forumæ¥å¿çå¬çº¿ç¨
 forum_monitor_thread = threading.Thread(target=monitor_forum_log, daemon=True)
 forum_monitor_thread.start()
 
-# å…¨å±€å˜é‡å­˜å‚¨è¿›ç¨‹ä¿¡æ¯
+# å¨å±åéå­å¨è¿ç¨ä¿¡æ¯
 processes = {
-    'crawler': {'process': None, 'port': None, 'status': 'running', 'output': [], 'log_file': None}, # çˆ¬è™«å¼•æ“å§‹ç»ˆä¿æŒå¯ç”¨çŠ¶æ€
-    'forum': {'process': None, 'port': None, 'status': 'stopped', 'output': [], 'log_file': None}  # å¯åŠ¨åæ ‡è®°ä¸º running
+    'crawler': {'process': None, 'port': None, 'status': 'running', 'output': [], 'log_file': None}, # ç¬è«å¼æå§ç»ä¿æå¯ç¨ç¶æ
+    'forum': {'process': None, 'port': None, 'status': 'stopped', 'output': [], 'log_file': None}  # å¯å¨åæ è®°ä¸º running
 }
 
 def _log_shutdown_step(message: str):
-    """ç»Ÿä¸€è®°å½•å…³æœºæ­¥éª¤ï¼Œä¾¿äºæ’æŸ¥ã€‚"""
+    """ç»ä¸è®°å½å³æºæ­¥éª¤ï¼ä¾¿äºææ¥""
     logger.info(f"[Shutdown] {message}")
 
 
 def _describe_running_children():
-    """åˆ—å‡ºå½“å‰å­˜æ´»çš„å­è¿›ç¨‹ã€‚"""
+    """ååºå½åå­æ´»çå­è¿ç¨""
     running = []
     for name, info in processes.items():
         proc = info.get('process')
@@ -582,7 +581,7 @@ def _describe_running_children():
             running.append(f"{name}(pid={proc.pid}{port_desc})")
     return running
 
-# è¾“å‡ºé˜Ÿåˆ—
+# è¾åºéå
 output_queues = {
     'insight': Queue(),
     'media': Queue(),
@@ -591,7 +590,7 @@ output_queues = {
 }
 
 def write_log_to_file(app_name, line):
-    """å°†æ—¥å¿—å†™å…¥æ–‡ä»¶"""
+    """å°æ¥å¿åå¥æä»¶"""
     try:
         log_file_path = LOG_DIR / f"{app_name}.log"
         with open(log_file_path, 'a', encoding='utf-8') as f:
@@ -601,7 +600,7 @@ def write_log_to_file(app_name, line):
         logger.error(f"Error writing log for {app_name}: {e}")
 
 def read_log_from_file(app_name, tail_lines=None):
-    """ä»æ–‡ä»¶è¯»å–æ—¥å¿—"""
+    """ä»æä»¶è¯»åæ¥å¿"""
     try:
         log_file_path = LOG_DIR / f"{app_name}.log"
         if not log_file_path.exists():
@@ -609,14 +608,14 @@ def read_log_from_file(app_name, tail_lines=None):
         
         with open(log_file_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-            # åœ¨è¿”å›ç»™å‰ç«¯æ—¶æˆªæ–­åºå¤§çš„ JSON è¾“å‡ºï¼Œé˜²æ­¢å¡é¡¿
+            # å¨è¿åç»åç«¯æ¶æªæ­åºå¤§ç JSON è¾åºï¼é²æ­¢å¡é¡¿
             processed_lines = []
             for line in lines:
                 line = line.rstrip('\n\r')
                 if not line.strip():
                     continue
-                if "æ¸…ç†åçš„è¾“å‡º: {" in line and len(line) > 300:
-                    line = line[:150] + " ... [JSONå†…å®¹è¿‡é•¿ï¼Œå‰ç«¯å·²æŠ˜å æ˜¾ç¤º]"
+                if "æ¸çåçè¾åº: {" in line and len(line) > 300:
+                    line = line[:150] + " ... [JSONåå®¹è¿é¿ï¼åç«¯å·²æå æ¾ç¤º]"
                 processed_lines.append(line)
             
             if tail_lines:
@@ -627,13 +626,13 @@ def read_log_from_file(app_name, tail_lines=None):
         return []
 
 def read_process_output(process, app_name):
-    """è¯»å–è¿›ç¨‹è¾“å‡ºå¹¶å†™å…¥æ–‡ä»¶"""
+    """è¯»åè¿ç¨è¾åºå¹¶åå¥æä»¶"""
     import select
     import sys
-import os
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
-    
+    import os
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, PROJECT_ROOT)
+
     def process_and_emit_line(line):
         line = line.strip()
         if not line:
@@ -641,13 +640,13 @@ sys.path.insert(0, PROJECT_ROOT)
         timestamp = datetime.now().strftime('%H:%M:%S')
         formatted_line = f"[{timestamp}] {line}"
         
-        # å†™å…¥æ—¥å¿—æ–‡ä»¶ (ä¿ç•™å®Œæ•´å†…å®¹ä¾› ForumEngine è¯»å–)
+        # åå¥æ¥å¿æä»¶ (ä¿çå®æ´åå®¹ä¾ ForumEngine è¯»å)
         write_log_to_file(app_name, formatted_line)
         
-        # å‘é€åˆ°å‰ç«¯æ—¶æˆªæ–­åºå¤§çš„ JSON è¾“å‡º
+        # åéå°åç«¯æ¶æªæ­åºå¤§ç JSON è¾åº
         emit_line = formatted_line
-        if "æ¸…ç†åçš„è¾“å‡º: {" in formatted_line and len(formatted_line) > 300:
-            emit_line = formatted_line[:150] + " ... [JSONå†…å®¹è¿‡é•¿ï¼Œå‰ç«¯å·²æŠ˜å æ˜¾ç¤º]"
+        if "æ¸çåçè¾åº: {" in formatted_line and len(formatted_line) > 300:
+            emit_line = formatted_line[:150] + " ... [JSONåå®¹è¿é¿ï¼åç«¯å·²æå æ¾ç¤º]"
             
         socketio.emit('console_output', {
             'app': app_name,
@@ -657,7 +656,7 @@ sys.path.insert(0, PROJECT_ROOT)
     while True:
         try:
             if process.poll() is not None:
-                # è¿›ç¨‹ç»“æŸï¼Œè¯»å–å‰©ä½™è¾“å‡º
+                # è¿ç¨ç»æï¼è¯»åå©ä½è¾åº
                 remaining_output = process.stdout.read()
                 if remaining_output:
                     lines = remaining_output.decode('utf-8', errors='replace').split('\n')
@@ -665,18 +664,18 @@ sys.path.insert(0, PROJECT_ROOT)
                         process_and_emit_line(line)
                 break
             
-            # ä½¿ç”¨éé˜»å¡è¯»å–
+            # ä½¿ç¨éé»å¡è¯»å
             if sys.platform == 'win32':
-                # Windowsä¸‹ä½¿ç”¨ä¸åŒçš„æ–¹æ³•
+                # Windowsä¸ä½¿ç¨ä¸åçæ¹æ³
                 output = process.stdout.readline()
                 if output:
                     line = output.decode('utf-8', errors='replace')
                     process_and_emit_line(line)
                 else:
-                    # æ²¡æœ‰è¾“å‡ºæ—¶çŸ­æš‚ä¼‘çœ 
+                    # æ²¡æè¾åºæ¶ç­æä¼ç 
                     time.sleep(0.1)
             else:
-                # Unixç³»ç»Ÿä½¿ç”¨select
+                # Unixç³»ç»ä½¿ç¨select
                 ready, _, _ = select.select([process.stdout], [], [], 0.1)
                 if ready:
                     output = process.stdout.readline()
@@ -691,27 +690,27 @@ sys.path.insert(0, PROJECT_ROOT)
             break
 
 def check_app_status():
-    """æ£€æŸ¥åº”ç”¨çŠ¶æ€"""
+    """æ£æ¥åºç¨ç¶æ"""
     for app_name, info in processes.items():
         if info['process'] is not None:
             if info['process'].poll() is None:
                 info['status'] = 'running'
             else:
-                # è¿›ç¨‹å·²ç»“æŸ
+                # è¿ç¨å·²ç»æ
                 info['process'] = None
                 info['status'] = 'stopped'
 
 def wait_for_app_startup(app_name, max_wait_time=90):
-    """ç­‰å¾…åº”ç”¨å¯åŠ¨å®Œæˆ"""
+    """ç­å¾åºç¨å¯å¨å®æ"""
     import time
     start_time = time.time()
     while time.time() - start_time < max_wait_time:
         info = processes[app_name]
         if info['process'] is None:
-            return False, "è¿›ç¨‹å·²åœæ­¢"
+            return False, "è¿ç¨å·²åæ­¢"
         
         if info['process'].poll() is not None:
-            return False, "è¿›ç¨‹å¯åŠ¨å¤±è´¥"
+            return False, "è¿ç¨å¯å¨å¤±è´¥"
         
         try:
             response = requests.get(
@@ -721,44 +720,44 @@ def wait_for_app_startup(app_name, max_wait_time=90):
             )
             if response.status_code == 200:
                 info['status'] = 'running'
-                return True, "å¯åŠ¨æˆåŠŸ"
+                return True, "å¯å¨æå"
         except Exception as exc:
             _log_healthcheck_failure(app_name, exc)
 
         time.sleep(1)
 
-    return False, "å¯åŠ¨è¶…æ—¶"
+    return False, "å¯å¨è¶æ¶"
 
 def cleanup_processes():
-    """æ¸…ç†æ‰€æœ‰è¿›ç¨‹"""
-    _log_shutdown_step("å¼€å§‹ä¸²è¡Œæ¸…ç†å­è¿›ç¨‹")
+    """æ¸çææè¿ç¨"""
+    _log_shutdown_step("å¼å§ä¸²è¡æ¸çå­è¿ç¨")
 
     processes['forum']['status'] = 'stopped'
     try:
         stop_forum_engine()
     except Exception:  # pragma: no cover
-        logger.exception("åœæ­¢ForumEngineå¤±è´¥")
-    _log_shutdown_step("å­è¿›ç¨‹æ¸…ç†å®Œæˆ")
+        logger.exception("åæ­¢ForumEngineå¤±è´¥")
+    _log_shutdown_step("å­è¿ç¨æ¸çå®æ")
     _set_system_state(started=False, starting=False)
 
 def cleanup_processes_concurrent(timeout: float = 6.0):
-    """å¹¶å‘æ¸…ç†æ‰€æœ‰å­è¿›ç¨‹ï¼Œè¶…æ—¶åå¼ºåˆ¶æ€æ‰æ®‹ç•™è¿›ç¨‹ã€‚"""
-    _log_shutdown_step(f"å¼€å§‹å¹¶å‘æ¸…ç†å­è¿›ç¨‹ï¼ˆè¶…æ—¶ {timeout}sï¼‰")
-    _log_shutdown_step("ä»…ç»ˆæ­¢å½“å‰æ§åˆ¶å°å¯åŠ¨å¹¶è®°å½•çš„å­è¿›ç¨‹ï¼Œä¸åšç«¯å£æ‰«æ")
+    """å¹¶åæ¸çææå­è¿ç¨ï¼è¶æ¶åå¼ºå¶æææ®çè¿ç¨""
+    _log_shutdown_step(f"å¼å§å¹¶åæ¸çå­è¿ç¨ï¼è¶æ¶ {timeout}sï¼")
+    _log_shutdown_step("ä»ç»æ­¢å½åæ§å¶å°å¯å¨å¹¶è®°å½çå­è¿ç¨ï¼ä¸åç«¯å£æ«æ")
     running_before = _describe_running_children()
     if running_before:
-        _log_shutdown_step("å½“å‰å­˜æ´»å­è¿›ç¨‹: " + ", ".join(running_before))
+        _log_shutdown_step("å½åå­æ´»å­è¿ç¨: " + ", ".join(running_before))
     else:
-        _log_shutdown_step("æœªæ£€æµ‹åˆ°å­˜æ´»å­è¿›ç¨‹ï¼Œä»å°†å‘é€å…³é—­æŒ‡ä»¤")
+        _log_shutdown_step("æªæ£æµå°å­æ´»å­è¿ç¨ï¼ä»å°åéå³é­æä»¤")
 
     threads = []
 
-    # å¹¶å‘å…³é—­ ForumEngine
+    # å¹¶åå³é­ ForumEngine
     forum_thread = threading.Thread(target=stop_forum_engine, daemon=True)
     threads.append(forum_thread)
     forum_thread.start()
 
-    # ç­‰å¾…æ‰€æœ‰çº¿ç¨‹å®Œæˆï¼Œæœ€å¤š timeout ç§’
+    # ç­å¾ææçº¿ç¨å®æï¼æå¤ timeout ç§
     end_time = time.time() + timeout
     for t in threads:
         remaining = end_time - time.time()
@@ -767,31 +766,31 @@ def cleanup_processes_concurrent(timeout: float = 6.0):
         t.join(timeout=remaining)
 
     processes['forum']['status'] = 'stopped'
-    _log_shutdown_step("å¹¶å‘æ¸…ç†ç»“æŸï¼Œæ ‡è®°ç³»ç»Ÿæœªå¯åŠ¨")
+    _log_shutdown_step("å¹¶åæ¸çç»æï¼æ è®°ç³»ç»æªå¯å¨")
     _set_system_state(started=False, starting=False)
 
 def _schedule_server_shutdown(delay_seconds: float = 0.1):
-    """åœ¨æ¸…ç†å®Œæˆåå°½å¿«é€€å‡ºï¼Œé¿å…é˜»å¡å½“å‰è¯·æ±‚ã€‚"""
+    """å¨æ¸çå®æåå°½å¿«éåºï¼é¿åé»å¡å½åè¯·æ±""
     def _shutdown():
         time.sleep(delay_seconds)
         try:
             socketio.stop()
         except Exception as exc:  # pragma: no cover
-            logger.warning(f"SocketIO åœæ­¢æ—¶å¼‚å¸¸ï¼Œç»§ç»­é€€å‡º: {exc}")
-        _log_shutdown_step("SocketIO åœæ­¢æŒ‡ä»¤å·²å‘é€ï¼Œå³å°†é€€å‡ºä¸»è¿›ç¨‹")
+            logger.warning(f"SocketIO åæ­¢æ¶å¼å¸¸ï¼ç»§ç»­éåº: {exc}")
+        _log_shutdown_step("SocketIO åæ­¢æä»¤å·²åéï¼å³å°éåºä¸»è¿ç¨")
         os._exit(0)
 
     threading.Thread(target=_shutdown, daemon=True).start()
 
 def _start_async_shutdown(cleanup_timeout: float = 3.0):
-    """å¼‚æ­¥è§¦å‘æ¸…ç†å¹¶å¼ºåˆ¶é€€å‡ºï¼Œé¿å…HTTPè¯·æ±‚é˜»å¡ã€‚"""
-    _log_shutdown_step(f"æ”¶åˆ°å…³æœºæŒ‡ä»¤ï¼Œå¯åŠ¨å¼‚æ­¥æ¸…ç†ï¼ˆè¶…æ—¶ {cleanup_timeout}sï¼‰")
+    """å¼æ­¥è§¦åæ¸çå¹¶å¼ºå¶éåºï¼é¿åHTTPè¯·æ±é»å¡""
+    _log_shutdown_step(f"æ¶å°å³æºæä»¤ï¼å¯å¨å¼æ­¥æ¸çï¼è¶æ¶ {cleanup_timeout}sï¼")
 
     def _force_exit():
-        _log_shutdown_step("å…³æœºè¶…æ—¶ï¼Œè§¦å‘å¼ºåˆ¶é€€å‡º")
+        _log_shutdown_step("å³æºè¶æ¶ï¼è§¦åå¼ºå¶éåº")
         os._exit(0)
 
-    # ç¡¬è¶…æ—¶ä¿æŠ¤ï¼Œå³ä¾¿æ¸…ç†çº¿ç¨‹å¼‚å¸¸ä¹Ÿèƒ½é€€å‡º
+    # ç¡¬è¶æ¶ä¿æ¤ï¼å³ä¾¿æ¸ççº¿ç¨å¼å¸¸ä¹è½éåº
     hard_timeout = cleanup_timeout + 2.0
     force_timer = threading.Timer(hard_timeout, _force_exit)
     force_timer.daemon = True
@@ -801,20 +800,20 @@ def _start_async_shutdown(cleanup_timeout: float = 3.0):
         try:
             cleanup_processes_concurrent(timeout=cleanup_timeout)
         except Exception as exc:  # pragma: no cover
-            logger.exception(f"å…³æœºæ¸…ç†å¼‚å¸¸: {exc}")
+            logger.exception(f"å³æºæ¸çå¼å¸¸: {exc}")
         finally:
-            _log_shutdown_step("æ¸…ç†çº¿ç¨‹ç»“æŸï¼Œè°ƒåº¦ä¸»è¿›ç¨‹é€€å‡º")
+            _log_shutdown_step("æ¸ççº¿ç¨ç»æï¼è°åº¦ä¸»è¿ç¨éåº")
             _schedule_server_shutdown(0.05)
 
     threading.Thread(target=_cleanup_and_exit, daemon=True).start()
 
-# æ³¨å†Œæ¸…ç†å‡½æ•°
+# æ³¨åæ¸çå½æ°
 atexit.register(cleanup_processes)
 
-# API è·¯ç”±
+# API è·¯ç±
 @app.route('/api/status')
 def get_status():
-    """è·å–æ‰€æœ‰åº”ç”¨çŠ¶æ€"""
+    """è·åææåºç¨ç¶æ"""
     check_app_status()
     return jsonify({
         app_name: {
@@ -827,45 +826,45 @@ def get_status():
 
 @app.route('/api/start/<app_name>')
 def start_app(app_name):
-    """å¯åŠ¨æŒ‡å®šåº”ç”¨"""
+    """å¯å¨æå®åºç¨"""
     if app_name not in processes:
-        return jsonify({'success': False, 'message': 'æœªçŸ¥åº”ç”¨'})
+        return jsonify({'success': False, 'message': 'æªç¥åºç¨'})
 
     if app_name == 'forum':
         try:
             start_forum_engine()
             processes['forum']['status'] = 'running'
-            return jsonify({'success': True, 'message': 'ForumEngineå·²å¯åŠ¨'})
+            return jsonify({'success': True, 'message': 'ForumEngineå·²å¯å¨'})
         except Exception as exc:  # pragma: no cover
-            logger.exception("æ‰‹åŠ¨å¯åŠ¨ForumEngineå¤±è´¥")
-            return jsonify({'success': False, 'message': f'ForumEngineå¯åŠ¨å¤±è´¥: {exc}'})
+            logger.exception("æå¨å¯å¨ForumEngineå¤±è´¥")
+            return jsonify({'success': False, 'message': f'ForumEngineå¯å¨å¤±è´¥: {exc}'})
 
-    return jsonify({'success': False, 'message': 'è¯¥åº”ç”¨ä¸æ”¯æŒå¯åŠ¨æ“ä½œ'})
+    return jsonify({'success': False, 'message': 'è¯¥åºç¨ä¸æ¯æå¯å¨æä½'})
 
 @app.route('/api/stop/<app_name>')
 def stop_app(app_name):
-    """åœæ­¢æŒ‡å®šåº”ç”¨"""
+    """åæ­¢æå®åºç¨"""
     if app_name not in processes:
-        return jsonify({'success': False, 'message': 'æœªçŸ¥åº”ç”¨'})
+        return jsonify({'success': False, 'message': 'æªç¥åºç¨'})
 
     if app_name == 'forum':
         try:
             stop_forum_engine()
             processes['forum']['status'] = 'stopped'
-            return jsonify({'success': True, 'message': 'ForumEngineå·²åœæ­¢'})
+            return jsonify({'success': True, 'message': 'ForumEngineå·²åæ­¢'})
         except Exception as exc:  # pragma: no cover
-            logger.exception("æ‰‹åŠ¨åœæ­¢ForumEngineå¤±è´¥")
-            return jsonify({'success': False, 'message': f'ForumEngineåœæ­¢å¤±è´¥: {exc}'})
+            logger.exception("æå¨åæ­¢ForumEngineå¤±è´¥")
+            return jsonify({'success': False, 'message': f'ForumEngineåæ­¢å¤±è´¥: {exc}'})
 
-    return jsonify({'success': False, 'message': 'è¯¥åº”ç”¨ä¸æ”¯æŒåœæ­¢æ“ä½œ'})
+    return jsonify({'success': False, 'message': 'è¯¥åºç¨ä¸æ¯æåæ­¢æä½'})
 
 @app.route('/api/output/<app_name>')
 def get_output(app_name):
-    """è·å–åº”ç”¨è¾“å‡º"""
+    """è·ååºç¨è¾åº"""
     if app_name not in processes:
-        return jsonify({'success': False, 'message': 'æœªçŸ¥åº”ç”¨'})
+        return jsonify({'success': False, 'message': 'æªç¥åºç¨'})
     
-    # ç‰¹æ®Šå¤„ç†Forum Engine
+    # ç¹æ®å¤çForum Engine
     if app_name == 'forum':
         try:
             forum_log_content = read_log_from_file('forum')
@@ -875,9 +874,9 @@ def get_output(app_name):
                 'total_lines': len(forum_log_content)
             })
         except Exception as e:
-            return jsonify({'success': False, 'message': f'è¯»å–forumæ—¥å¿—å¤±è´¥: {str(e)}'})
+            return jsonify({'success': False, 'message': f'è¯»åforumæ¥å¿å¤±è´¥: {str(e)}'})
     
-    # ä»æ–‡ä»¶è¯»å–å®Œæ•´æ—¥å¿—
+    # ä»æä»¶è¯»åå®æ´æ¥å¿
     output_lines = read_log_from_file(app_name)
     
     return jsonify({
@@ -887,15 +886,15 @@ def get_output(app_name):
 
 @app.route('/api/test_log/<app_name>')
 def test_log(app_name):
-    """æµ‹è¯•æ—¥å¿—å†™å…¥åŠŸèƒ½"""
+    """æµè¯æ¥å¿åå¥åè½"""
     if app_name not in processes:
-        return jsonify({'success': False, 'message': 'æœªçŸ¥åº”ç”¨'})
+        return jsonify({'success': False, 'message': 'æªç¥åºç¨'})
     
-    # å†™å…¥æµ‹è¯•æ¶ˆæ¯
-    test_msg = f"[{datetime.now().strftime('%H:%M:%S')}] æµ‹è¯•æ—¥å¿—æ¶ˆæ¯ - {datetime.now()}"
+    # åå¥æµè¯æ¶æ¯
+    test_msg = f"[{datetime.now().strftime('%H:%M:%S')}] æµè¯æ¥å¿æ¶æ¯ - {datetime.now()}"
     write_log_to_file(app_name, test_msg)
     
-    # é€šè¿‡Socket.IOå‘é€
+    # éè¿Socket.IOåé
     socketio.emit('console_output', {
         'app': app_name,
         'line': test_msg
@@ -903,35 +902,35 @@ def test_log(app_name):
     
     return jsonify({
         'success': True,
-        'message': f'æµ‹è¯•æ¶ˆæ¯å·²å†™å…¥ {app_name} æ—¥å¿—'
+        'message': f'æµè¯æ¶æ¯å·²åå¥ {app_name} æ¥å¿'
     })
 
 @app.route('/api/forum/start')
 def start_forum_monitoring_api():
-    """æ‰‹åŠ¨å¯åŠ¨ForumEngineè®ºå›"""
+    """æå¨å¯å¨ForumEngineè®ºå"""
     try:
         from backend.engines.forum.monitor import start_forum_monitoring
         success = start_forum_monitoring()
         if success:
-            return jsonify({'success': True, 'message': 'ForumEngineè®ºå›å·²å¯åŠ¨'})
+            return jsonify({'success': True, 'message': 'ForumEngineè®ºåå·²å¯å¨'})
         else:
-            return jsonify({'success': False, 'message': 'ForumEngineè®ºå›å¯åŠ¨å¤±è´¥'})
+            return jsonify({'success': False, 'message': 'ForumEngineè®ºåå¯å¨å¤±è´¥'})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'å¯åŠ¨è®ºå›å¤±è´¥: {str(e)}'})
+        return jsonify({'success': False, 'message': f'å¯å¨è®ºåå¤±è´¥: {str(e)}'})
 
 @app.route('/api/forum/stop')
 def stop_forum_monitoring_api():
-    """æ‰‹åŠ¨åœæ­¢ForumEngineè®ºå›"""
+    """æå¨åæ­¢ForumEngineè®ºå"""
     try:
         from backend.engines.forum.monitor import stop_forum_monitoring
         stop_forum_monitoring()
-        return jsonify({'success': True, 'message': 'ForumEngineè®ºå›å·²åœæ­¢'})
+        return jsonify({'success': True, 'message': 'ForumEngineè®ºåå·²åæ­¢'})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'åœæ­¢è®ºå›å¤±è´¥: {str(e)}'})
+        return jsonify({'success': False, 'message': f'åæ­¢è®ºåå¤±è´¥: {str(e)}'})
 
 @app.route('/api/forum/log')
 def get_forum_log():
-    """è·å–ForumEngineçš„forum.logå†…å®¹"""
+    """è·åForumEngineçforum.logåå®¹"""
     try:
         forum_log_file = LOG_DIR / "forum.log"
         if not forum_log_file.exists():
@@ -946,7 +945,7 @@ def get_forum_log():
             lines = f.readlines()
             lines = [line.rstrip('\n\r') for line in lines if line.strip()]
         
-        # è§£ææ¯ä¸€è¡Œæ—¥å¿—å¹¶æå–å¯¹è¯ä¿¡æ¯
+        # è§£ææ¯ä¸è¡æ¥å¿å¹¶æåå¯¹è¯ä¿¡æ¯
         parsed_messages = []
         for line in lines:
             parsed_message = parse_forum_log_line(line)
@@ -960,15 +959,15 @@ def get_forum_log():
             'total_lines': len(lines)
         })
     except Exception as e:
-        return jsonify({'success': False, 'message': f'è¯»å–forum.logå¤±è´¥: {str(e)}'})
+        return jsonify({'success': False, 'message': f'è¯»åforum.logå¤±è´¥: {str(e)}'})
 
 @app.route('/api/forum/log/history', methods=['POST'])
 def get_forum_log_history():
-    """è·å–Forumå†å²æ—¥å¿—ï¼ˆæ”¯æŒä»æŒ‡å®šä½ç½®å¼€å§‹ï¼‰"""
+    """è·åForumåå²æ¥å¿ï¼æ¯æä»æå®ä½ç½®å¼å§ï¼"""
     try:
         data = request.get_json()
-        start_position = data.get('position', 0)  # å®¢æˆ·ç«¯ä¸Šæ¬¡æ¥æ”¶çš„ä½ç½®
-        max_lines = data.get('max_lines', 1000)   # æœ€å¤šè¿”å›çš„è¡Œæ•°
+        start_position = data.get('position', 0)  # å®¢æ·ç«¯ä¸æ¬¡æ¥æ¶çä½ç½®
+        max_lines = data.get('max_lines', 1000)   # æå¤è¿åçè¡æ°
 
         forum_log_file = LOG_DIR / "forum.log"
         if not forum_log_file.exists():
@@ -980,7 +979,7 @@ def get_forum_log_history():
             })
 
         with open(forum_log_file, 'r', encoding='utf-8', errors='ignore') as f:
-            # ä»æŒ‡å®šä½ç½®å¼€å§‹è¯»å–
+            # ä»æå®ä½ç½®å¼å§è¯»å
             f.seek(start_position)
             lines = []
             line_count = 0
@@ -990,17 +989,17 @@ def get_forum_log_history():
                     break
                 line = line.rstrip('\n\r')
                 if line.strip():
-                    # æ·»åŠ æ—¶é—´æˆ³
+                    # æ·»å æ¶é´æ³
                     timestamp = datetime.now().strftime('%H:%M:%S')
                     formatted_line = f"[{timestamp}] {line}"
                     lines.append(formatted_line)
                     line_count += 1
 
-            # è®°å½•å½“å‰ä½ç½®
+            # è®°å½å½åä½ç½®
             current_position = f.tell()
 
-            # æ£€æŸ¥æ˜¯å¦è¿˜æœ‰æ›´å¤šå†…å®¹
-            f.seek(0, 2)  # ç§»åˆ°æ–‡ä»¶æœ«å°¾
+            # æ£æ¥æ¯å¦è¿ææ´å¤åå®¹
+            f.seek(0, 2)  # ç§»å°æä»¶æ«å°¾
             end_position = f.tell()
             has_more = current_position < end_position
 
@@ -1011,60 +1010,59 @@ def get_forum_log_history():
             'has_more': has_more
         })
     except Exception as e:
-        return jsonify({'success': False, 'message': f'è¯»å–forumå†å²å¤±è´¥: {str(e)}'})
+        return jsonify({'success': False, 'message': f'è¯»åforumåå²å¤±è´¥: {str(e)}'})
 
 @app.route('/api/search', methods=['POST'])
 def search():
-    """ç»Ÿä¸€æœç´¢æ¥å£"""
+    """ç»ä¸æç´¢æ¥å£"""
     data = request.get_json()
     query = data.get('query', '').strip()
     
     if not query:
-        return jsonify({'success': False, 'message': 'æœç´¢æŸ¥è¯¢ä¸èƒ½ä¸ºç©º'})
+        return jsonify({'success': False, 'message': 'æç´¢æ¥è¯¢ä¸è½ä¸ºç©º'})
     
-    # ã€æ–°å¢æœºåˆ¶ï¼šå®æ—¶è§¦å‘å¢é‡æŠ“å–ã€‘
-    # åœ¨åˆ†é…æœç´¢ä»»åŠ¡ç»™åº•å±‚ Agent ä¹‹å‰ï¼Œå…ˆåˆ©ç”¨ Anspire æŠ“å–å…¨ç½‘æœ€æ–° 20 æ¡çƒ­ç‚¹å¹¶å…¥åº“ï¼Œä¿è¯æ—¶æ•ˆæ€§
+    # ãæ°å¢æºå¶ï¼å®æ¶è§¦åå¢éæå    # å¨åéæç´¢ä»»å¡ç»åºå± Agent ä¹åï¼åå©ç¨ Anspire æåå¨ç½ææ° 20 æ¡ç­ç¹å¹¶å¥åºï¼ä¿è¯æ¶ææ§
     try:
         from backend.engines.insight.utils.data_ingestion import ingest_all_sources_data
-        # å¼‚æ­¥å¯åŠ¨æŠ“å–ï¼Œä¸é˜»å¡ä¸»æµç¨‹ï¼Œå¹¶è®°å½•åˆ° crawler.log ä¸­
+        # å¼æ­¥å¯å¨æåï¼ä¸é»å¡ä¸»æµç¨ï¼å¹¶è®°å½å° crawler.log ä¸­
         import threading
         def run_jit_crawler():
             log_file = LOG_DIR / "crawler.log"
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [SYSTEM] ğŸ•·ï¸ [å¤§ä»»åŠ¡è”åŠ¨] æ”¶åˆ°ç³»ç»Ÿç»Ÿä¸€æœç´¢ä»»åŠ¡ï¼Œå¼€å§‹è‡ªåŠ¨è”åˆæŠ“å– '{query}' ç›¸å…³æ•°æ®...\n")
+                f.write(f"[{ts}] [SYSTEM] ğ·ï¸ [å¤§ä»»å¡èå¨] æ¶å°ç³»ç»ç»ä¸æç´¢ä»»å¡ï¼å¼å§èªå¨èåæå '{query}' ç¸å³æ°æ®...\n")
             try:
-                # æ•è· ingest å‡½æ•°çš„è¿”å›å€¼ï¼Œä»¥ä¾¿æ›´è¯¦ç»†åœ°è®°å½•
+                # æè· ingest å½æ°çè¿åå¼ï¼ä»¥ä¾¿æ´è¯¦ç»å°è®°å½
                 inserted_count, details = ingest_all_sources_data(query)
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts}] [SYSTEM] âœ… [å¤§ä»»åŠ¡è”åŠ¨] ç¦»çº¿å¤šæºçˆ¬è™«æŠ“å–å®Œæˆï¼å…±æˆåŠŸå…¥åº“ {inserted_count} æ¡æ•°æ®ã€‚\n")
+                    f.write(f"[{ts}] [SYSTEM] â [å¤§ä»»å¡èå¨] ç¦»çº¿å¤æºç¬è«æåå®æï¼å±æåå¥åº {inserted_count} æ¡æ°æ®n")
                     if details:
-                        f.write(f"[{ts}] [SYSTEM] ğŸ“Š æ•°æ®åˆ†å¸ƒ: {details}\n")
+                        f.write(f"[{ts}] [SYSTEM] ğ æ°æ®åå¸: {details}\n")
             except Exception as e:
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts}] [ERROR] âŒ [å¤§ä»»åŠ¡è”åŠ¨] ç¦»çº¿çˆ¬è™«æŠ“å–å¤±è´¥: {str(e)}\n")
+                    f.write(f"[{ts}] [ERROR] â [å¤§ä»»å¡èå¨] ç¦»çº¿ç¬è«æåå¤±è´¥: {str(e)}\n")
         
         threading.Thread(target=run_jit_crawler, daemon=True).start()
     except Exception as e:
-        logger.error(f"å¯åŠ¨å¤šæºå¢é‡æ•°æ®æŠ“å–çº¿ç¨‹å¤±è´¥: {e}")
+        logger.error(f"å¯å¨å¤æºå¢éæ°æ®æåçº¿ç¨å¤±è´¥: {e}")
 
-    # æ£€æŸ¥å“ªäº›åº”ç”¨æ­£åœ¨è¿è¡Œ
+    # æ£æ¥åªäºåºç¨æ­£å¨è¿è¡
     check_app_status()
     running_apps = [name for name, info in processes.items() if info['status'] == 'running']
     
     if not running_apps:
-        return jsonify({'success': False, 'message': 'æ²¡æœ‰è¿è¡Œä¸­çš„åº”ç”¨'})
+        return jsonify({'success': False, 'message': 'æ²¡æè¿è¡ä¸­çåºç¨'})
     
-    # å‘è¿è¡Œä¸­çš„åº”ç”¨å‘é€æœç´¢è¯·æ±‚
+    # åè¿è¡ä¸­çåºç¨åéæç´¢è¯·æ±
     results = {}
     api_ports = {'insight': 8501, 'media': 8502, 'query': 8503}
     
     for app_name in running_apps:
         try:
             api_port = api_ports[app_name]
-            # è°ƒç”¨Streamlitåº”ç”¨çš„APIç«¯ç‚¹
+            # è°ç¨Streamlitåºç¨çAPIç«¯ç¹
             response = requests.post(
                 f"http://localhost:{api_port}/api/search",
                 json={'query': query},
@@ -1073,12 +1071,12 @@ def search():
             if response.status_code == 200:
                 results[app_name] = response.json()
             else:
-                results[app_name] = {'success': False, 'message': 'APIè°ƒç”¨å¤±è´¥'}
+                results[app_name] = {'success': False, 'message': 'APIè°ç¨å¤±è´¥'}
         except Exception as e:
             results[app_name] = {'success': False, 'message': str(e)}
     
-    # æœç´¢å®Œæˆåå¯ä»¥é€‰æ‹©åœæ­¢ç›‘æ§ï¼Œæˆ–è€…è®©å®ƒç»§ç»­è¿è¡Œä»¥æ•è·åç»­çš„å¤„ç†æ—¥å¿—
-    # è¿™é‡Œæˆ‘ä»¬è®©ç›‘æ§ç»§ç»­è¿è¡Œï¼Œç”¨æˆ·å¯ä»¥é€šè¿‡å…¶ä»–æ¥å£æ‰‹åŠ¨åœæ­¢
+    # æç´¢å®æåå¯ä»¥éæ©åæ­¢çæ§ï¼æèè®©å®ç»§ç»­è¿è¡ä»¥æè·åç»­çå¤çæ¥å¿
+    # è¿éæä»¬è®©çæ§ç»§ç»­è¿è¡ï¼ç¨æ·å¯ä»¥éè¿å¶ä»æ¥å£æå¨åæ­¢
     
     return jsonify({
         'success': True,
@@ -1089,94 +1087,92 @@ def search():
 
 @app.route('/api/ingest', methods=['POST'])
 def manual_ingest():
-    """æ‰‹åŠ¨è§¦å‘åŸç”Ÿç¦»çº¿çˆ¬è™«ï¼ˆå†™å…¥æœ¬åœ°æ•°æ®åº“ï¼‰ï¼Œå¹¶å°†æ—¥å¿—æ‰“å…¥ crawler.log"""
+    """æå¨è§¦ååçç¦»çº¿ç¬è«ï¼åå¥æ¬å°æ°æ®åºï¼ï¼å¹¶å°æ¥å¿æå¥ crawler.log"""
     data = request.get_json()
     query = data.get('query', '').strip()
     wait = data.get('wait', False)
     if not query:
-        return jsonify({'success': False, 'error': 'æœç´¢è¯ä¸èƒ½ä¸ºç©º'})
+        return jsonify({'success': False, 'error': 'æç´¢è¯ä¸è½ä¸ºç©º'})
         
     try:
         if wait:
-            # åŒæ­¥é˜»å¡æ‰§è¡Œ
+            # åæ­¥é»å¡æ§è¡
             log_file = LOG_DIR / "crawler.log"
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [SYSTEM] ğŸ•·ï¸ [å¤§ä»»åŠ¡è”åŠ¨] æ”¶åˆ°ç³»ç»Ÿç»Ÿä¸€æœç´¢ä»»åŠ¡ï¼Œå¼€å§‹è‡ªåŠ¨è”åˆæŠ“å– '{query}' ç›¸å…³æ•°æ®...\n")
+                f.write(f"[{ts}] [SYSTEM] ğ·ï¸ [å¤§ä»»å¡èå¨] æ¶å°ç³»ç»ç»ä¸æç´¢ä»»å¡ï¼å¼å§èªå¨èåæå '{query}' ç¸å³æ°æ®...\n")
             try:
                 from backend.engines.insight.utils.data_ingestion import ingest_all_sources_data
                 inserted_count, details = ingest_all_sources_data(query)
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts}] [SYSTEM] âœ… [å¤§ä»»åŠ¡è”åŠ¨] ç¦»çº¿å¤šæºçˆ¬è™«æŠ“å–å®Œæˆï¼å…±æˆåŠŸå…¥åº“ {inserted_count} æ¡æ•°æ®ã€‚\n")
+                    f.write(f"[{ts}] [SYSTEM] â [å¤§ä»»å¡èå¨] ç¦»çº¿å¤æºç¬è«æåå®æï¼å±æåå¥åº {inserted_count} æ¡æ°æ®n")
                     if details:
-                        f.write(f"[{ts}] [SYSTEM] ğŸ“Š æ•°æ®åˆ†å¸ƒ: {details}\n")
-                return jsonify({'success': True, 'message': 'å·²å®Œæˆç¦»çº¿çˆ¬è™«æŠ“å–'})
+                        f.write(f"[{ts}] [SYSTEM] ğ æ°æ®åå¸: {details}\n")
+                return jsonify({'success': True, 'message': 'å·²å®æç¦»çº¿ç¬è«æå'})
             except Exception as e:
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts}] [ERROR] âŒ [å¤§ä»»åŠ¡è”åŠ¨] ç¦»çº¿çˆ¬è™«æŠ“å–å¤±è´¥: {str(e)}\n")
+                    f.write(f"[{ts}] [ERROR] â [å¤§ä»»å¡èå¨] ç¦»çº¿ç¬è«æåå¤±è´¥: {str(e)}\n")
                 return jsonify({'success': False, 'error': str(e)})
         else:
-            # å¼‚æ­¥éé˜»å¡æ‰§è¡Œ
+            # å¼æ­¥éé»å¡æ§è¡
             import threading
             def run_ingest():
                 log_file = LOG_DIR / "crawler.log"
                 with open(log_file, "a", encoding="utf-8") as f:
                     ts = datetime.now().strftime('%H:%M:%S')
-                    f.write(f"[{ts}] [SYSTEM] ğŸ•·ï¸ æ”¶åˆ°ç¦»çº¿çˆ¬è™«ä»»åŠ¡ï¼Œå¼€å§‹æŠ“å– '{query}' ç›¸å…³æ•°æ®å¹¶å†™å…¥æœ¬åœ°æ•°æ®åº“...\n")
+                    f.write(f"[{ts}] [SYSTEM] ğ·ï¸ æ¶å°ç¦»çº¿ç¬è«ä»»å¡ï¼å¼å§æå '{query}' ç¸å³æ°æ®å¹¶åå¥æ¬å°æ°æ®åº...\n")
                 
                 try:
                     from backend.engines.insight.utils.data_ingestion import ingest_all_sources_data
                     inserted_count, details = ingest_all_sources_data(query)
                     with open(log_file, "a", encoding="utf-8") as f:
                         ts = datetime.now().strftime('%H:%M:%S')
-                        f.write(f"[{ts}] [SYSTEM] âœ… ç¦»çº¿å¤šæºçˆ¬è™«æŠ“å–å®Œæˆï¼å…±æˆåŠŸå…¥åº“ {inserted_count} æ¡æ•°æ®ã€‚\n")
+                        f.write(f"[{ts}] [SYSTEM] â ç¦»çº¿å¤æºç¬è«æåå®æï¼å±æåå¥åº {inserted_count} æ¡æ°æ®n")
                         if details:
-                            f.write(f"[{ts}] [SYSTEM] ğŸ“Š æ•°æ®åˆ†å¸ƒ: {details}\n")
+                            f.write(f"[{ts}] [SYSTEM] ğ æ°æ®åå¸: {details}\n")
                 except Exception as e:
                     with open(log_file, "a", encoding="utf-8") as f:
                         ts = datetime.now().strftime('%H:%M:%S')
-                        f.write(f"[{ts}] [ERROR] âŒ ç¦»çº¿çˆ¬è™«æŠ“å–å¤±è´¥: {str(e)}\n")
+                        f.write(f"[{ts}] [ERROR] â ç¦»çº¿ç¬è«æåå¤±è´¥: {str(e)}\n")
                         
             threading.Thread(target=run_ingest, daemon=True).start()
-            return jsonify({'success': True, 'message': 'å·²å¯åŠ¨ç¦»çº¿çˆ¬è™«'})
+            return jsonify({'success': True, 'message': 'å·²å¯å¨ç¦»çº¿ç¬è«'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-# ================= æ–°ä¸€ä»£ç°ä»£å‰ç«¯ API (Stage 1) =================
+# ================= æ°ä¸ä»£ç°ä»£åç«¯ API (Stage 1) =================
 from flask import Response
 
 @app.route('/api/v1/logs/stream')
 def stream_crawler_logs():
     """
-    æä¾› SSE (Server-Sent Events) ç«¯ç‚¹ï¼Œç”¨äºå‘ç°ä»£å‰ç«¯å®æ—¶æµå¼æ¨é€çˆ¬è™«æ—¥å¿—ã€‚
-    å‰ç«¯å¯ä»¥ç”¨ EventSource ç›‘å¬æ­¤æ¥å£ã€‚
-    """
+    æä¾ SSE (Server-Sent Events) ç«¯ç¹ï¼ç¨äºåç°ä»£åç«¯å®æ¶æµå¼æ¨éç¬è«æ¥å¿    åç«¯å¯ä»¥ç¨ EventSource çå¬æ­¤æ¥å£    """
     def generate_logs():
         log_file_path = LOG_DIR / "crawler.log"
-        # å¦‚æœæ–‡ä»¶ä¸å­˜åœ¨ï¼Œå…ˆåˆ›å»ºä¸€ä¸ªç©ºçš„
+        # å¦ææä»¶ä¸å­å¨ï¼ååå»ºä¸ä¸ªç©ºç
         if not log_file_path.exists():
             log_file_path.touch()
 
         with open(log_file_path, "r", encoding="utf-8") as f:
-            # ç§»åŠ¨åˆ°æ–‡ä»¶æœ«å°¾ï¼ˆåªç›‘å¬æ–°å¢æ—¥å¿—ï¼Œé¿å…æ¯æ¬¡åŠ è½½å‡ åƒè¡Œå†å²ï¼‰
+            # ç§»å¨å°æä»¶æ«å°¾ï¼åªçå¬æ°å¢æ¥å¿ï¼é¿åæ¯æ¬¡å è½½å åè¡åå²ï¼
             f.seek(0, os.SEEK_END)
             last_size = f.tell()
             while True:
-                # æ£€æŸ¥æ–‡ä»¶æ˜¯å¦è¢«æ¸…ç©ºï¼ˆé‡ç½®ï¼‰
+                # æ£æ¥æä»¶æ¯å¦è¢«æ¸ç©ºï¼éç½®ï¼
                 current_size = log_file_path.stat().st_size if log_file_path.exists() else 0
                 if current_size < last_size:
-                    # æ–‡ä»¶è¢«æ¸…ç©ºï¼Œé‡ç½®ä½ç½®
+                    # æä»¶è¢«æ¸ç©ºï¼éç½®ä½ç½®
                     f.seek(0, os.SEEK_END)
                     last_size = current_size
 
                 line = f.readline()
                 if not line:
-                    time.sleep(0.5)  # ç­‰å¾…æ–°æ—¥å¿—å†™å…¥
+                    time.sleep(0.5)  # ç­å¾æ°æ¥å¿åå¥
                     continue
                 last_size = f.tell()
-                # SSE æ ¼å¼: "data: <content>\n\n"
+                # SSE æ ¼å¼: "data: <content>\n\n"
                 yield f"data: {line.strip()}\n\n"
 
     return Response(generate_logs(), mimetype='text/event-stream', headers={
@@ -1189,13 +1185,13 @@ def stream_crawler_logs():
 @app.route('/api/v1/crawler/status')
 def crawler_status():
     """
-    è·å–çˆ¬è™«ç³»ç»ŸçŠ¶æ€ï¼ŒåŒ…æ‹¬ï¼š
-    - æ•°æ®åº“è¿æ¥çŠ¶æ€
-    - æœ€è¿‘å…¥åº“æ•°æ®ç»Ÿè®¡
-    - æ´»è·ƒçˆ¬è™«ä»»åŠ¡
+    è·åç¬è«ç³»ç»ç¶æï¼åæ¬ï¼
+    - æ°æ®åºè¿æ¥ç¶æ
+    - æè¿å¥åºæ°æ®ç»è®¡
+    - æ´»è·ç¬è«ä»»å¡
     """
     try:
-        # æ£€æŸ¥æ•°æ®åº“è¿æ¥
+        # æ£æ¥æ°æ®åºè¿æ¥
         db_status = "unknown"
         recent_count = 0
         try:
@@ -1212,7 +1208,7 @@ def crawler_status():
                         database=os.getenv("DB_NAME", "radar"),
                         timeout=3,
                     )
-                    # è·å–æœ€è¿‘å…¥åº“æ•°é‡ï¼ˆä»Šå¤©çš„æ•°æ®ï¼‰
+                    # è·åæè¿å¥åºæ°éï¼ä»å¤©çæ°æ®ï¼
                     result = await pool.fetchval("""
                         SELECT COUNT(*) FROM crawled_data
                         WHERE DATE(create_time) = CURRENT_DATE
@@ -1226,10 +1222,10 @@ def crawler_status():
         except Exception as e:
             db_status = f"error: {str(e)}"
 
-        # æ£€æŸ¥æ˜¯å¦æœ‰æ´»è·ƒä»»åŠ¡
+        # æ£æ¥æ¯å¦ææ´»è·ä»»å¡
         active_task_count = len(active_tasks)
 
-        # è·å–çˆ¬è™«æ—¥å¿—æœ€æ–°è¡Œæ•°
+        # è·åç¬è«æ¥å¿ææ°è¡æ°
         crawler_log_lines = 0
         try:
             crawler_log = LOG_DIR / "crawler.log"
@@ -1251,7 +1247,7 @@ def crawler_status():
             }
         })
     except Exception as e:
-        logger.exception("è·å–çˆ¬è™«çŠ¶æ€å¤±è´¥")
+        logger.exception("è·åç¬è«ç¶æå¤±è´¥")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 active_tasks = {}
@@ -1259,8 +1255,7 @@ active_tasks = {}
 @app.route('/api/v1/report/stream/<task_id>')
 def stream_reports(task_id):
     """
-    æä¾› SSE (Server-Sent Events) ç«¯ç‚¹ï¼Œç”¨äºå‘ç°ä»£å‰ç«¯å®æ—¶æµå¼æ¨é€ä¸‰å¤§å¼•æ“åˆ†ææŠ¥å‘ŠåŠè®ºå›å†…å®¹ã€‚
-    """
+    æä¾ SSE (Server-Sent Events) ç«¯ç¹ï¼ç¨äºåç°ä»£åç«¯å®æ¶æµå¼æ¨éä¸å¤§å¼æåææ¥ååè®ºååå®¹    """
     if task_id not in active_tasks:
         return jsonify({'success': False, 'error': 'Task not found'}), 404
         
@@ -1282,7 +1277,7 @@ def stream_reports(task_id):
                     # When an engine finishes, stream its content
                     content = msg["content"]
                     def chunker(engine, text):
-                        # æ¨¡æ‹Ÿæ‰“å­—æœºæ•ˆæœ
+                        # æ¨¡ææå­æºææ
                         for i in range(0, len(text), 10):
                             q.put({"engine": engine, "type": "chunk", "content": text[i:i+10]})
                             time.sleep(0.02)
@@ -1300,7 +1295,7 @@ def stream_reports(task_id):
                 pass
                 
         yield f"data: {json.dumps({'status': 'complete'})}\n\n"
-        # ä»»åŠ¡ç»“æŸï¼Œæ¸…ç†
+        # ä»»å¡ç»æï¼æ¸ç
         if task_id in active_tasks:
             del active_tasks[task_id]
 
@@ -1313,9 +1308,7 @@ def stream_reports(task_id):
 @app.route('/api/v1/task/start', methods=['POST'])
 def v1_start_task():
     """
-    å¼‚æ­¥è§¦å‘å¤šæºçˆ¬è™«å’Œå¼•æ“åˆ†æã€‚
-    è¿”å› Task IDï¼Œä¾›å‰ç«¯è¿æ¥ SSE çŠ¶æ€ã€‚
-    """
+    å¼æ­¥è§¦åå¤æºç¬è«åå¼æåæ    è¿å Task IDï¼ä¾åç«¯è¿æ¥ SSE ç¶æ    """
     data = request.get_json() or {}
     query = data.get('query', '').strip()
     
@@ -1333,30 +1326,30 @@ def v1_start_task():
         log_file = LOG_DIR / "crawler.log"
         with open(log_file, "a", encoding="utf-8") as f:
             ts = datetime.now().strftime('%H:%M:%S')
-            f.write(f"[{ts}] [SYSTEM] ğŸš€ [Task {task_id}] å¯åŠ¨ç°ä»£å‰ç«¯æ¶æ„é‡‡é›†åˆ†ææµç¨‹: '{query}'\n")
+            f.write(f"[{ts}] [SYSTEM] ğ [Task {task_id}] å¯å¨ç°ä»£åç«¯æ¶æééåææµç¨: '{query}'\n")
             
         try:
             from backend.engines.insight.utils.data_ingestion import ingest_all_sources_data
             inserted_count, details = ingest_all_sources_data(query)
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [SYSTEM] âœ… [Task {task_id}] é‡‡é›†é˜¶æ®µå®Œæˆï¼å…±å…¥åº“ {inserted_count} æ¡æ•°æ®ã€‚\n")
+                f.write(f"[{ts}] [SYSTEM] â [Task {task_id}] ééé¶æ®µå®æï¼å±å¥åº {inserted_count} æ¡æ°æ®n")
         except Exception as e:
             logger.error(f"Task {task_id} failed: {e}")
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [ERROR] âŒ [Task {task_id}] ä»»åŠ¡å´©æºƒ: {str(e)}\n")
-            # é€šçŸ¥å‰ç«¯çˆ¬è™«å¤±è´¥ï¼Œåœæ­¢æ‰€æœ‰å¼•æ“
+                f.write(f"[{ts}] [ERROR] â [Task {task_id}] ä»»å¡å´©æº: {str(e)}\n")
+            # éç¥åç«¯ç¬è«å¤±è´¥ï¼åæ­¢ææå¼æ
             for eng in ["insight", "media", "query"]:
                 q.put({"type": "error", "engine": eng, "content": str(e)})
             return
 
-        # ================== å¯åŠ¨ ForumEngine å’Œ 3 ä¸ª Agent ==================
+        # ================== å¯å¨ ForumEngine å 3 ä¸ª Agent ==================
         try:
             start_forum_engine()
             processes['forum']['status'] = 'running'
         except Exception as e:
-            logger.error(f"ForumEngineå¯åŠ¨å¤±è´¥: {e}")
+            logger.error(f"ForumEngineå¯å¨å¤±è´¥: {e}")
 
         def log_handler(message):
             path = str(message.record["file"].path)
@@ -1368,7 +1361,7 @@ def v1_start_task():
             elif "backend.engines.query" in path:
                 q.put({"type": "log", "engine": "query", "content": msg})
             elif "backend/engines/forum" in path or "monitor.py" in path or "llm_host.py" in path:
-                # è¿‡æ»¤æ‰ä¸€äº›è¿‡é•¿çš„æˆ–ä¸å¿…è¦çš„æ—¥å¿—
+                # è¿æ»¤æä¸äºè¿é¿çæä¸å¿è¦çæ¥å¿
                 if "Forum Update" not in msg:
                     q.put({"type": "forum", "content": msg})
                 
@@ -1407,12 +1400,12 @@ def v1_start_task():
         except Exception:
             pass
 
-        # å½“ä¸‰ä¸ªå¼•æ“éƒ½å®Œæˆåï¼Œè°ƒç”¨ ReportEngine ç”Ÿæˆæœ€ç»ˆ HTML
+        # å½ä¸ä¸ªå¼æé½å®æåï¼è°ç¨ ReportEngine çææç» HTML
         try:
             from backend.engines.report.agent import create_agent as create_report_agent
             report_agent = create_report_agent()
             
-            # è¯»å–è®ºå›æ—¥å¿—
+            # è¯»åè®ºåæ¥å¿
             forum_log_path = LOG_DIR / "forum.log"
             forum_logs = forum_log_path.read_text(encoding="utf-8") if forum_log_path.exists() else ""
             
@@ -1420,7 +1413,7 @@ def v1_start_task():
             
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [SYSTEM] ğŸ“ å¼€å§‹ç”Ÿæˆç»¼åˆ HTML æŠ¥å‘Š...\n")
+                f.write(f"[{ts}] [SYSTEM] ğ å¼å§çæç»¼å HTML æ¥å...\n")
                 
             report_agent.generate_report(
                 query=query,
@@ -1429,12 +1422,12 @@ def v1_start_task():
             )
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [SYSTEM] âœ… ç»¼åˆæŠ¥å‘Šç”Ÿæˆå®Œæˆï¼è¯·åœ¨å†å²è®°å½•ä¸­æŸ¥çœ‹ã€‚\n")
+                f.write(f"[{ts}] [SYSTEM] â ç»¼åæ¥åçæå®æï¼è¯·å¨åå²è®°å½ä¸­æ¥çn")
         except Exception as e:
             logger.error(f"ReportEngine å¤±è´¥: {e}")
             with open(log_file, "a", encoding="utf-8") as f:
                 ts = datetime.now().strftime('%H:%M:%S')
-                f.write(f"[{ts}] [ERROR] âŒ ReportEngine ç”ŸæˆæŠ¥å‘Šå¤±è´¥: {e}\n")
+                f.write(f"[{ts}] [ERROR] â ReportEngine çææ¥åå¤±è´¥: {e}\n")
 
     threading.Thread(target=run_full_pipeline, daemon=True).start()
     
@@ -1444,19 +1437,18 @@ def v1_start_task():
         'task_id': task_id
     })
 
-# ç”¨äºå­˜å‚¨ MediaCrawler ä¼ é€’è¿‡æ¥çš„äºŒç»´ç  Base64 å­—ç¬¦ä¸²
+# ç¨äºå­å¨ MediaCrawler ä¼ éè¿æ¥çäºç»´ç  Base64 å­ç¬¦ä¸²
 current_qr_code = {"image": None}
 
 @app.route('/api/v1/internal/qrcode', methods=['POST'])
 def receive_qrcode():
     """
-    ä¾› MediaCrawler å†…éƒ¨è°ƒç”¨ï¼Œæ¥æ”¶æ‰«ç ç™»å½•çš„äºŒç»´ç å¹¶å­˜å‚¨ã€‚
-    """
+    ä¾ MediaCrawler åé¨è°ç¨ï¼æ¥æ¶æ«ç ç»å½çäºç»´ç å¹¶å­å¨    """
     data = request.get_json() or {}
     image_b64 = data.get('image')
     if image_b64:
         current_qr_code['image'] = image_b64
-        # å¯ä»¥å°†äºŒç»´ç ä½œä¸ºä¸€ç§ç‰¹æ®Šçš„ Log ç±»å‹é€šè¿‡ SSE æ¨é€ç»™å‰ç«¯ï¼ˆå‘æ‰€æœ‰æ´»è·ƒä»»åŠ¡å¹¿æ’­ï¼‰
+        # å¯ä»¥å°äºç»´ç ä½ä¸ºä¸ç§ç¹æ®ç Log ç±»åéè¿ SSE æ¨éç»åç«¯ï¼åæææ´»è·ä»»å¡å¹¿æ­ï¼
         for tid, tinfo in active_tasks.items():
             if 'queue' in tinfo:
                 tinfo['queue'].put({"type": "qrcode", "content": image_b64})
@@ -1465,7 +1457,7 @@ def receive_qrcode():
 
 @app.route('/api/v1/reports', methods=['GET'])
 def get_reports_list():
-    """è·å–æ‰€æœ‰å·²ç”Ÿæˆçš„å†å²æŠ¥å‘Šåˆ—è¡¨"""
+    """è·åææå·²çæçåå²æ¥ååè¡¨"""
     reports_dir = Path('final_reports')
     if not reports_dir.exists():
         return jsonify({'success': True, 'reports': []})
@@ -1483,30 +1475,28 @@ def get_reports_list():
             'md_url': f'/api/v1/reports/download/md/{file.name}'
         })
     
-    # æŒ‰åˆ›å»ºæ—¶é—´å€’åº
+    # æåå»ºæ¶é´ååº
     reports.sort(key=lambda x: x['created_at'], reverse=True)
     return jsonify({'success': True, 'reports': reports})
 
 @app.route('/api/v1/reports/download/<format>/<filename>')
 def download_report_format(format, filename):
     """
-    ä¸‹è½½æˆ–é¢„è§ˆæŠ¥å‘Šã€‚
-    æ”¯æŒ html, pdf, mdã€‚å¦‚æœ pdf/md ä¸å­˜åœ¨ï¼Œåˆ™å°è¯•ä» IR json åŠ¨æ€ç”Ÿæˆã€‚
-    """
+    ä¸è½½æé¢è§æ¥å    æ¯æ html, pdf, mdãå¦æ pdf/md ä¸å­å¨ï¼åå°è¯ä» IR json å¨æçæ    """
     reports_dir = Path('final_reports')
     
     if format == 'html':
         return send_from_directory(reports_dir, filename)
     
-    # è·å–å¯¹åº”çš„ IR æ–‡ä»¶
-    # html æ–‡ä»¶åæ ¼å¼: final_report_xxx.html
-    # IR æ–‡ä»¶åæ ¼å¼: ir/report_ir_xxx.json
+    # è·åå¯¹åºç IR æä»¶
+    # html æä»¶åæ ¼å¼: final_report_xxx.html
+    # IR æä»¶åæ ¼å¼: ir/report_ir_xxx.json
     base_name = filename.replace('final_report_', '').replace('.html', '')
     ir_filename = f"report_ir_{base_name}.json"
     ir_path = reports_dir / 'ir' / ir_filename
     
     if not ir_path.exists():
-        return jsonify({'success': False, 'error': 'æœªæ‰¾åˆ°å¯¹åº”çš„ä¸­é—´è¡¨ç¤º(IR)æ–‡ä»¶ï¼Œæ— æ³•å¯¼å‡ºè¯¥æ ¼å¼'}), 404
+        return jsonify({'success': False, 'error': 'æªæ¾å°å¯¹åºçä¸­é´è¡¨ç¤º(IR)æä»¶ï¼æ æ³å¯¼åºè¯¥æ ¼å¼'}), 404
         
     try:
         import json
@@ -1526,7 +1516,7 @@ def download_report_format(format, filename):
         elif format == 'pdf':
             from backend.engines.report.renderers.pdf_renderer import PDFRenderer
             renderer = PDFRenderer()
-            # åŠ¨æ€ç”Ÿæˆ PDFï¼Œå¯èƒ½ä¼šæœ‰ç‚¹æ…¢
+            # å¨æçæ PDFï¼å¯è½ä¼æç¹æ¢
             pdf_bytes = renderer.render(document_ir)
             return Response(
                 pdf_bytes,
@@ -1535,10 +1525,10 @@ def download_report_format(format, filename):
             )
             
         else:
-            return jsonify({'success': False, 'error': 'ä¸æ”¯æŒçš„æ ¼å¼'}), 400
+            return jsonify({'success': False, 'error': 'ä¸æ¯æçæ ¼å¼'}), 400
             
     except Exception as e:
-        logger.exception(f"å¯¼å‡º {format} å¤±è´¥")
+        logger.exception(f"å¯¼åº {format} å¤±è´¥")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==============================================================
@@ -1550,8 +1540,8 @@ def get_config():
         config_values = read_config_values()
         return jsonify({'success': True, 'config': config_values})
     except Exception as exc:
-        logger.exception("è¯»å–é…ç½®å¤±è´¥")
-        return jsonify({'success': False, 'message': f'è¯»å–é…ç½®å¤±è´¥: {exc}'}), 500
+        logger.exception("è¯»åéç½®å¤±è´¥")
+        return jsonify({'success': False, 'message': f'è¯»åéç½®å¤±è´¥: {exc}'}), 500
 
 
 @app.route('/api/config', methods=['POST'])
@@ -1559,7 +1549,7 @@ def update_config():
     """Update configuration values and persist them to config.py."""
     payload = request.get_json(silent=True) or {}
     if not isinstance(payload, dict) or not payload:
-        return jsonify({'success': False, 'message': 'è¯·æ±‚ä½“ä¸èƒ½ä¸ºç©º'}), 400
+        return jsonify({'success': False, 'message': 'è¯·æ±ä½ä¸è½ä¸ºç©º'}), 400
 
     updates = {}
     for key, value in payload.items():
@@ -1567,12 +1557,12 @@ def update_config():
             updates[key] = value if value is not None else ''
 
     if not updates:
-        return jsonify({'success': False, 'message': 'æ²¡æœ‰å¯æ›´æ–°çš„é…ç½®é¡¹'}), 400
+        return jsonify({'success': False, 'message': 'æ²¡æå¯æ´æ°çéç½®é¡¹'}), 400
 
     try:
         write_config_values(updates)
         
-        # ä¸ºäº†ä¿è¯é‡è½½ç”Ÿæ•ˆï¼Œæˆ‘ä»¬éœ€è¦å…ˆæ¸…é™¤æ“ä½œç³»ç»Ÿçš„ç¯å¢ƒå˜é‡ç¼“å­˜
+        # ä¸ºäºä¿è¯éè½½çæï¼æä»¬éè¦åæ¸é¤æä½ç³»ç»çç¯å¢åéç¼å­
         import os
         for key in updates.keys():
             if key in os.environ:
@@ -1581,13 +1571,13 @@ def update_config():
         updated_config = read_config_values()
         return jsonify({'success': True, 'config': updated_config})
     except Exception as exc:
-        logger.exception("æ›´æ–°é…ç½®å¤±è´¥")
-        return jsonify({'success': False, 'message': f'æ›´æ–°é…ç½®å¤±è´¥: {exc}'}), 500
+        logger.exception("æ´æ°éç½®å¤±è´¥")
+        return jsonify({'success': False, 'message': f'æ´æ°éç½®å¤±è´¥: {exc}'}), 500
 
 
 @app.route('/api/system/status')
 def get_system_status():
-    """è¿”å›ç³»ç»Ÿå¯åŠ¨çŠ¶æ€ã€‚"""
+    """è¿åç³»ç»å¯å¨ç¶æ""
     state = _get_system_state()
     return jsonify({
         'success': True,
@@ -1598,7 +1588,7 @@ def get_system_status():
 
 @app.route('/api/system/start', methods=['POST'])
 def start_system():
-    """åœ¨æ¥æ”¶åˆ°è¯·æ±‚åå¯åŠ¨å®Œæ•´ç³»ç»Ÿã€‚"""
+    """å¨æ¥æ¶å°è¯·æ±åå¯å¨å®æ´ç³»ç»""
     allowed, message = _prepare_system_start()
     if not allowed:
         return jsonify({'success': False, 'message': message}), 400
@@ -1607,28 +1597,28 @@ def start_system():
         success, logs, errors = initialize_system_components()
         if success:
             _set_system_state(started=True)
-            return jsonify({'success': True, 'message': 'ç³»ç»Ÿå¯åŠ¨æˆåŠŸ', 'logs': logs})
+            return jsonify({'success': True, 'message': 'ç³»ç»å¯å¨æå', 'logs': logs})
 
         _set_system_state(started=False)
         return jsonify({
             'success': False,
-            'message': 'ç³»ç»Ÿå¯åŠ¨å¤±è´¥',
+            'message': 'ç³»ç»å¯å¨å¤±è´¥',
             'logs': logs,
             'errors': errors
         }), 500
-    except Exception as exc:  # pragma: no cover - ä¿åº•æ•è·
-        logger.exception("ç³»ç»Ÿå¯åŠ¨è¿‡ç¨‹ä¸­å‡ºç°å¼‚å¸¸")
+    except Exception as exc:  # pragma: no cover - ä¿åºæè·
+        logger.exception("ç³»ç»å¯å¨è¿ç¨ä¸­åºç°å¼å¸¸")
         _set_system_state(started=False)
-        return jsonify({'success': False, 'message': f'ç³»ç»Ÿå¯åŠ¨å¼‚å¸¸: {exc}'}), 500
+        return jsonify({'success': False, 'message': f'ç³»ç»å¯å¨å¼å¸¸: {exc}'}), 500
     finally:
         _set_system_state(starting=False)
 
 @app.route('/api/system/shutdown', methods=['POST'])
 def shutdown_system():
-    """ä¼˜é›…åœæ­¢æ‰€æœ‰ç»„ä»¶å¹¶å…³é—­å½“å‰æœåŠ¡è¿›ç¨‹ã€‚"""
+    """ä¼éåæ­¢ææç»ä»¶å¹¶å³é­å½åæå¡è¿ç¨""
     state = _get_system_state()
     if state['starting']:
-        return jsonify({'success': False, 'message': 'ç³»ç»Ÿæ­£åœ¨å¯åŠ¨/é‡å¯ï¼Œè¯·ç¨å€™'}), 400
+        return jsonify({'success': False, 'message': 'ç³»ç»æ­£å¨å¯å¨/éå¯ï¼è¯·ç¨å'}), 400
 
     target_ports = [
         f"{name}:{info['port']}"
@@ -1636,43 +1626,43 @@ def shutdown_system():
         if info.get('port')
     ]
 
-    # å·²æœ‰å…³æœºè¯·æ±‚æ‰§è¡Œä¸­æ—¶ï¼Œè¿”å›å½“å‰å­˜æ´»çš„å­è¿›ç¨‹ï¼Œä¾¿äºå‰ç«¯åˆ¤æ–­è¿›åº¦
+    # å·²æå³æºè¯·æ±æ§è¡ä¸­æ¶ï¼è¿åå½åå­æ´»çå­è¿ç¨ï¼ä¾¿äºåç«¯å¤æ­è¿åº¦
     if not _mark_shutdown_requested():
         running = _describe_running_children()
-        detail = 'å…³æœºæŒ‡ä»¤å·²ä¸‹å‘ï¼Œè¯·ç¨ç­‰...'
+        detail = 'å³æºæä»¤å·²ä¸åï¼è¯·ç¨ç­...'
         if running:
-            detail = f"å…³æœºæŒ‡ä»¤å·²ä¸‹å‘ï¼Œç­‰å¾…è¿›ç¨‹é€€å‡º: {', '.join(running)}"
+            detail = f"å³æºæä»¤å·²ä¸åï¼ç­å¾è¿ç¨éåº: {', '.join(running)}"
         if target_ports:
-            detail = f"{detail}ï¼ˆç«¯å£: {', '.join(target_ports)}ï¼‰"
+            detail = f"{detail}ï¼ç«¯å£: {', '.join(target_ports)}ï¼"
         return jsonify({'success': True, 'message': detail, 'ports': target_ports})
 
     running = _describe_running_children()
     if running:
-        _log_shutdown_step("å¼€å§‹å…³é—­ç³»ç»Ÿï¼Œæ­£åœ¨ç­‰å¾…å­è¿›ç¨‹é€€å‡º: " + ", ".join(running))
+        _log_shutdown_step("å¼å§å³é­ç³»ç»ï¼æ­£å¨ç­å¾å­è¿ç¨éåº: " + ", ".join(running))
     else:
-        _log_shutdown_step("å¼€å§‹å…³é—­ç³»ç»Ÿï¼Œæœªæ£€æµ‹åˆ°å­˜æ´»å­è¿›ç¨‹")
+        _log_shutdown_step("å¼å§å³é­ç³»ç»ï¼æªæ£æµå°å­æ´»å­è¿ç¨")
 
     try:
         _set_system_state(started=False, starting=False)
         _start_async_shutdown(cleanup_timeout=6.0)
-        message = 'å…³é—­ç³»ç»ŸæŒ‡ä»¤å·²ä¸‹å‘ï¼Œæ­£åœ¨åœæ­¢è¿›ç¨‹'
+        message = 'å³é­ç³»ç»æä»¤å·²ä¸åï¼æ­£å¨åæ­¢è¿ç¨'
         if running:
             message = f"{message}: {', '.join(running)}"
         if target_ports:
-            message = f"{message}ï¼ˆç«¯å£: {', '.join(target_ports)}ï¼‰"
+            message = f"{message}ï¼ç«¯å£: {', '.join(target_ports)}ï¼"
         return jsonify({'success': True, 'message': message, 'ports': target_ports})
-    except Exception as exc:  # pragma: no cover - å…œåº•æ•è·
-        logger.exception("ç³»ç»Ÿå…³é—­è¿‡ç¨‹ä¸­å‡ºç°å¼‚å¸¸")
-        return jsonify({'success': False, 'message': f'ç³»ç»Ÿå…³é—­å¼‚å¸¸: {exc}'}), 500
+    except Exception as exc:  # pragma: no cover - ååºæè·
+        logger.exception("ç³»ç»å³é­è¿ç¨ä¸­åºç°å¼å¸¸")
+        return jsonify({'success': False, 'message': f'ç³»ç»å³é­å¼å¸¸: {exc}'}), 500
 
 @socketio.on('connect')
 def handle_connect():
-    """å®¢æˆ·ç«¯è¿æ¥"""
+    """å®¢æ·ç«¯è¿æ¥"""
     emit('status', 'Connected to Flask server')
 
 @socketio.on('request_status')
 def handle_status_request():
-    """è¯·æ±‚çŠ¶æ€æ›´æ–°"""
+    """è¯·æ±ç¶ææ´æ°"""
     check_app_status()
     emit('status_update', {
         app_name: {
@@ -1683,18 +1673,18 @@ def handle_status_request():
     })
 
 if __name__ == '__main__':
-    # ä»é…ç½®æ–‡ä»¶è¯»å– HOST å’Œ PORT
+    # ä»éç½®æä»¶è¯»å HOST å PORT
     from backend.config import settings
     HOST = settings.HOST
     PORT = settings.PORT
     
-    logger.info("ç­‰å¾…é…ç½®ç¡®è®¤ï¼Œç³»ç»Ÿå°†åœ¨å‰ç«¯æŒ‡ä»¤åå¯åŠ¨ç»„ä»¶...")
-    logger.info(f"FlaskæœåŠ¡å™¨å·²å¯åŠ¨ï¼Œè®¿é—®åœ°å€: http://{HOST}:{PORT}")
+    logger.info("ç­å¾éç½®ç¡®è®¤ï¼ç³»ç»å°å¨åç«¯æä»¤åå¯å¨ç»ä»¶...")
+    logger.info(f"Flaskæå¡å¨å·²å¯å¨ï¼è®¿é®å°å: http://{HOST}:{PORT}")
     
     try:
         socketio.run(app, host=HOST, port=PORT, debug=False, allow_unsafe_werkzeug=True)
     except KeyboardInterrupt:
-        logger.info("\næ­£åœ¨å…³é—­åº”ç”¨...")
+        logger.info("\næ­£å¨å³é­åºç¨...")
         cleanup_processes()
         
     

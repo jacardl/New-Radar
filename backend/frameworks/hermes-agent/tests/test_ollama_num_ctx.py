@@ -1,8 +1,8 @@
 """Tests for Ollama num_ctx context length detection and injection.
 
 Covers:
-  agent/model_metadata.py �?query_ollama_num_ctx()
-  run_agent.py �?_ollama_num_ctx detection + extra_body injection
+  agent/model_metadata.py é¥?query_ollama_num_ctx()
+  run_agent.py é¥?_ollama_num_ctx detection + extra_body injection
 """
 
 from unittest.mock import patch, MagicMock
@@ -12,9 +12,9 @@ import pytest
 from agent.model_metadata import query_ollama_num_ctx
 
 
-# ══════════════════════════════════════════════════════════════════════�?
-# Level 1: query_ollama_num_ctx �?Ollama API interaction
-# ══════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+# Level 1: query_ollama_num_ctx é¥?Ollama API interaction
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 
 def _mock_httpx_client(show_response_data, status_code=200):
@@ -41,7 +41,7 @@ class TestQueryOllamaNumCtx:
         mock_ctx, _ = _mock_httpx_client(show_data)
 
         with patch("agent.model_metadata.detect_local_server_type", return_value="ollama"):
-            # httpx is imported inside the function �?patch the module import
+            # httpx is imported inside the function é¥?patch the module import
             import httpx
             with patch.object(httpx, "Client", return_value=mock_ctx):
                 result = query_ollama_num_ctx("llama3.1:8b", "http://localhost:11434/v1")

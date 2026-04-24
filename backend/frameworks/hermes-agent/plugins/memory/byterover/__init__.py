@@ -1,7 +1,7 @@
-"""ByteRover memory plugin �?MemoryProvider interface.
+"""ByteRover memory plugin é¥?MemoryProvider interface.
 
 Persistent memory via the ByteRover CLI (``brv``). Organizes knowledge into
-a hierarchical context tree with tiered retrieval (fuzzy text �?LLM-driven
+a hierarchical context tree with tiered retrieval (fuzzy text é«?LLM-driven
 search). Local-first with optional cloud sync.
 
 Original PR #3499 by hieuntg81, adapted to MemoryProvider ABC.
@@ -10,7 +10,7 @@ Requires: ``brv`` CLI installed (npm install -g byterover-cli or
 curl -fsSL https://byterover.dev/install.sh | sh).
 
 Config via environment variables (profile-scoped via each profile's .env):
-  BRV_API_KEY   �?ByteRover API key (for cloud features, optional for local)
+  BRV_API_KEY   é¥?ByteRover API key (for cloud features, optional for local)
 
 Working directory: $HERMES_HOME/byterover/ (profile-scoped context tree)
 """
@@ -32,8 +32,8 @@ from tools.registry import tool_error
 logger = logging.getLogger(__name__)
 
 # Timeouts
-_QUERY_TIMEOUT = 10   # brv query �?should be fast
-_CURATE_TIMEOUT = 120  # brv curate �?may involve LLM processing
+_QUERY_TIMEOUT = 10   # brv query é¥?should be fast
+_CURATE_TIMEOUT = 120  # brv curate é¥?may involve LLM processing
 
 # Minimum lengths to filter noise
 _MIN_QUERY_LEN = 10
@@ -145,7 +145,7 @@ CURATE_SCHEMA = {
     "description": (
         "Store important information in ByteRover's persistent knowledge tree. "
         "Use for architectural decisions, bug fixes, user preferences, project "
-        "patterns �?anything worth remembering across sessions. ByteRover's LLM "
+        "patterns é¥?anything worth remembering across sessions. ByteRover's LLM "
         "automatically categorizes and organizes the memory."
     ),
     "parameters": {
@@ -159,7 +159,7 @@ CURATE_SCHEMA = {
 
 STATUS_SCHEMA = {
     "name": "brv_status",
-    "description": "Check ByteRover status �?CLI version, context tree stats, cloud sync state.",
+    "description": "Check ByteRover status é¥?CLI version, context tree stats, cloud sync state.",
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
 

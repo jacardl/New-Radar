@@ -155,7 +155,7 @@ def test_normal_path_still_works(hermes_auth_only_env):
 @pytest.fixture()
 def claude_code_only_env(tmp_path, monkeypatch):
     """Set up an environment where Anthropic credentials only exist in
-    ~/.claude/.credentials.json (Claude Code) �?not in env vars or Hermes
+    ~/.claude/.credentials.json (Claude Code) é¥?not in env vars or Hermes
     auth store."""
     hermes_home = tmp_path / ".hermes"
     hermes_home.mkdir()

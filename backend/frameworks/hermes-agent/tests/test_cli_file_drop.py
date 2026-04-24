@@ -1,4 +1,4 @@
-"""Tests for _detect_file_drop �?file path detection that prevents
+"""Tests for _detect_file_drop é¥?file path detection that prevents
 dragged/pasted absolute paths from being mistaken for slash commands."""
 
 import os

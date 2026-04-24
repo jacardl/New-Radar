@@ -1,5 +1,5 @@
 """
-Hermes Agent â€?Web UI server.
+Hermes Agent Ã¢?Web UI server.
 
 Provides a FastAPI backend serving the Vite/React frontend and REST API
 endpoints for managing configuration, environment variables, and sessions.
@@ -63,7 +63,7 @@ app = FastAPI(title="Hermes Agent", version=__version__)
 
 # ---------------------------------------------------------------------------
 # Session token for protecting sensitive endpoints (reveal).
-# Generated fresh on every server start â€?dies when the process exits.
+# Generated fresh on every server start Ã¢?dies when the process exits.
 # Injected into the SPA HTML so only the legitimate web UI can use it.
 # ---------------------------------------------------------------------------
 _SESSION_TOKEN = secrets.token_urlsafe(32)
@@ -86,7 +86,7 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
-# Config schema â€?auto-generated from DEFAULT_CONFIG
+# Config schema Ã¢?auto-generated from DEFAULT_CONFIG
 # ---------------------------------------------------------------------------
 
 # Manual overrides for fields that need select options or custom types
@@ -186,7 +186,7 @@ _CATEGORY_MERGE: Dict[str, str] = {
     "smart_model_routing": "agent",
 }
 
-# Display order for tabs â€?unlisted categories sort alphabetically after these.
+# Display order for tabs Ã¢?unlisted categories sort alphabetically after these.
 _CATEGORY_ORDER = [
     "general", "agent", "terminal", "display", "delegation",
     "memory", "compression", "security", "browser", "voice",
@@ -213,7 +213,7 @@ def _build_schema_from_config(
     config: Dict[str, Any],
     prefix: str = "",
 ) -> Dict[str, Dict[str, Any]]:
-    """Walk DEFAULT_CONFIG and produce a flat dot-path â†?field schema dict."""
+    """Walk DEFAULT_CONFIG and produce a flat dot-path Ã¢?field schema dict."""
     schema: Dict[str, Dict[str, Any]] = {}
     for key, value in config.items():
         full_key = f"{prefix}.{key}" if prefix else key
@@ -237,7 +237,7 @@ def _build_schema_from_config(
         else:
             entry: Dict[str, Any] = {
                 "type": _infer_type(value),
-                "description": full_key.replace(".", " â†?").replace("_", " ").title(),
+                "description": full_key.replace(".", " Ã¢?").replace("_", " ").title(),
                 "category": category,
             }
             # Apply manual overrides
@@ -385,7 +385,7 @@ async def search_sessions(q: str = "", limit: int = 20):
         db = SessionDB()
         try:
             # Auto-add prefix wildcards so partial words match
-            # e.g. "nimb" â†?"nimb*" matches "nimby"
+            # e.g. "nimb" Ã¢?"nimb*" matches "nimby"
             # Preserve quoted phrases and existing wildcards as-is
             import re
             terms = []
@@ -396,7 +396,7 @@ async def search_sessions(q: str = "", limit: int = 20):
                     terms.append(token + "*")
             prefix_query = " ".join(terms)
             matches = db.search_messages(query=prefix_query, limit=limit)
-            # Group by session_id â€?return unique sessions with their best snippet
+            # Group by session_id Ã¢?return unique sessions with their best snippet
             seen: dict = {}
             for m in matches:
                 sid = m["session_id"]
@@ -502,7 +502,7 @@ def get_model_info():
                 model=model_name,
                 base_url=base_url,
                 provider=provider,
-                config_context_length=None,  # ignore override â€?we want auto value
+                config_context_length=None,  # ignore override Ã¢?we want auto value
             )
         except Exception:
             auto_ctx = 0
@@ -552,7 +552,7 @@ def _denormalize_config_from_web(config: Dict[str, Any]) -> Dict[str, Any]:
     stripped from the GET response.  The frontend only sees model as a flat
     string; the rest is preserved transparently.
 
-    Also handles ``model_context_length`` â€?writes it back into the model dict
+    Also handles ``model_context_length`` Ã¢?writes it back into the model dict
     as ``context_length``.  A value of 0 or absent means "auto-detect" (omitted
     from the dict so get_model_context_length() uses its normal resolution).
     """
@@ -585,7 +585,7 @@ def _denormalize_config_from_web(config: Dict[str, Any]) -> Dict[str, Any]:
                     disk_model.pop("context_length", None)
                 config["model"] = disk_model
             else:
-                # Model was previously a bare string â€?upgrade to dict if
+                # Model was previously a bare string Ã¢?upgrade to dict if
                 # user is setting a context_length override
                 if ctx_override > 0:
                     config["model"] = {
@@ -593,7 +593,7 @@ def _denormalize_config_from_web(config: Dict[str, Any]) -> Dict[str, Any]:
                         "context_length": ctx_override,
                     }
         except Exception:
-            pass  # can't read disk config â€?just use the string form
+            pass  # can't read disk config Ã¢?just use the string form
     return config
 
 
@@ -612,7 +612,7 @@ async def get_session_token():
     """Return the ephemeral session token for this server instance.
 
     The token protects sensitive endpoints (reveal).  It's served to the SPA
-    which stores it in memory â€?it's never persisted and dies when the server
+    which stores it in memory Ã¢?it's never persisted and dies when the server
     process exits.  CORS already restricts this to localhost origins.
     """
     return {"token": _SESSION_TOKEN}
@@ -694,7 +694,7 @@ async def reveal_env_var(body: EnvVarReveal, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# OAuth provider endpoints â€?status + disconnect (Phase 1)
+# OAuth provider endpoints Ã¢?status + disconnect (Phase 1)
 # ---------------------------------------------------------------------------
 #
 # Phase 1 surfaces *which OAuth providers exist* and whether each is
@@ -717,19 +717,19 @@ def _truncate_token(value: Optional[str], visible: int = 6) -> str:
         return ""
     s = str(value)
     if "." in s and s.count(".") >= 2:
-        # Looks like a JWT â€?show the trailing piece of the signature only.
+        # Looks like a JWT Ã¢?show the trailing piece of the signature only.
         s = s.rsplit(".", 1)[-1]
     if len(s) <= visible:
         return s
-    return f"â€¦{s[-visible:]}"
+    return f"Ã¢Â¦{s[-visible:]}"
 
 
 def _anthropic_oauth_status() -> Dict[str, Any]:
     """Combined status across the three Anthropic credential sources we read.
 
     Hermes resolves Anthropic creds in this order at runtime:
-    1. ``~/.hermes/.anthropic_oauth.json`` â€?Hermes-managed PKCE flow
-    2. ``~/.claude/.credentials.json`` â€?Claude Code CLI credentials (auto)
+    1. ``~/.hermes/.anthropic_oauth.json`` Ã¢?Hermes-managed PKCE flow
+    2. ``~/.claude/.credentials.json`` Ã¢?Claude Code CLI credentials (auto)
     3. ``ANTHROPIC_TOKEN`` / ``ANTHROPIC_API_KEY`` env vars
     The dashboard reports the highest-priority source that's actually present.
     """
@@ -813,7 +813,7 @@ def _claude_code_only_status() -> Dict[str, Any]:
     return {"logged_in": False, "source": None}
 
 
-# Provider catalog. The order matters â€?it's how we render the UI list.
+# Provider catalog. The order matters Ã¢?it's how we render the UI list.
 # ``cli_command`` is what the dashboard surfaces as the copy-to-clipboard
 # fallback while Phase 2 (in-browser flows) isn't built yet.
 # ``flow`` describes the OAuth shape so the future modal can pick the
@@ -920,7 +920,7 @@ async def list_oauth_providers():
         cli_command     fallback CLI command for users to run manually
         docs_url        external docs/portal link for the "Learn more" link
         status:
-          logged_in        bool â€?currently has usable creds
+          logged_in        bool Ã¢?currently has usable creds
           source           short slug ("hermes_pkce", "claude_code", ...)
           source_label     human-readable origin (file path, env var name)
           token_preview    last N chars of the token, never the full token
@@ -958,7 +958,7 @@ async def disconnect_oauth_provider(provider_id: str, request: Request):
 
     # Anthropic and claude-code clear the same Hermes-managed PKCE file
     # AND forget the Claude Code import. We don't touch ~/.claude/* directly
-    # â€?that's owned by the Claude Code CLI; users can re-auth there if they
+    # Ã¢?that's owned by the Claude Code CLI; users can re-auth there if they
     # want to undo a disconnect.
     if provider_id in ("anthropic", "claude-code"):
         try:
@@ -987,30 +987,30 @@ async def disconnect_oauth_provider(provider_id: str, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# OAuth Phase 2 â€?in-browser PKCE & device-code flows
+# OAuth Phase 2 Ã¢?in-browser PKCE & device-code flows
 # ---------------------------------------------------------------------------
 #
 # Two flow shapes are supported:
 #
 #   PKCE (Anthropic):
 #     1. POST /api/providers/oauth/anthropic/start
-#          â†?server generates code_verifier + challenge, builds claude.ai
+#          Ã¢?server generates code_verifier + challenge, builds claude.ai
 #            authorize URL, stashes verifier in _oauth_sessions[session_id]
-#          â†?returns { session_id, flow: "pkce", auth_url }
+#          Ã¢?returns { session_id, flow: "pkce", auth_url }
 #     2. UI opens auth_url in a new tab. User authorizes, copies code.
 #     3. POST /api/providers/oauth/anthropic/submit { session_id, code }
-#          â†?server exchanges (code + verifier) â†?tokens at console.anthropic.com
-#          â†?persists to ~/.hermes/.anthropic_oauth.json AND credential pool
-#          â†?returns { ok: true, status: "approved" }
+#          Ã¢?server exchanges (code + verifier) Ã¢?tokens at console.anthropic.com
+#          Ã¢?persists to ~/.hermes/.anthropic_oauth.json AND credential pool
+#          Ã¢?returns { ok: true, status: "approved" }
 #
 #   Device code (Nous, OpenAI Codex):
 #     1. POST /api/providers/oauth/{nous|openai-codex}/start
-#          â†?server hits provider's device-auth endpoint
-#          â†?gets { user_code, verification_url, device_code, interval, expires_in }
-#          â†?spawns background poller thread that polls the token endpoint
+#          Ã¢?server hits provider's device-auth endpoint
+#          Ã¢?gets { user_code, verification_url, device_code, interval, expires_in }
+#          Ã¢?spawns background poller thread that polls the token endpoint
 #            every `interval` seconds until approved/expired
-#          â†?stores poll status in _oauth_sessions[session_id]
-#          â†?returns { session_id, flow: "device_code", user_code,
+#          Ã¢?stores poll status in _oauth_sessions[session_id]
+#          Ã¢?returns { session_id, flow: "device_code", user_code,
 #                      verification_url, expires_in, poll_interval }
 #     2. UI opens verification_url in a new tab and shows user_code.
 #     3. UI polls GET /api/providers/oauth/{provider}/poll/{session_id}
@@ -1083,7 +1083,7 @@ def _save_anthropic_oauth_creds(access_token: str, refresh_token: str, expires_a
     _HERMES_OAUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
     _HERMES_OAUTH_FILE.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     # Best-effort credential-pool insert. Failure here doesn't invalidate
-    # the file write â€?pool registration only matters for the rotation
+    # the file write Ã¢?pool registration only matters for the rotation
     # strategy, not for runtime credential resolution.
     try:
         from agent.credential_pool import (
@@ -1259,7 +1259,7 @@ async def _start_device_code_flow(provider_id: str) -> Dict[str, Any]:
         # We can't extract just the start step without refactoring auth.py,
         # so we run the full helper in a worker and proxy the user_code +
         # verification_url back via the session dict. The helper prints
-        # to stdout â€?we capture nothing here, just status.
+        # to stdout Ã¢?we capture nothing here, just status.
         threading.Thread(
             target=_codex_full_login_worker, args=(sid,), daemon=True,
             name=f"oauth-codex-{sid[:6]}",
@@ -1390,7 +1390,7 @@ def _codex_full_login_worker(session_id: str) -> None:
 
     The flow is replicated inline (rather than calling
     _codex_device_code_login) because that helper prints/blocks/polls in a
-    single function â€?we need to surface the user_code to the dashboard the
+    single function Ã¢?we need to surface the user_code to the dashboard the
     moment we receive it, well before polling completes.
     """
     try:
@@ -1478,7 +1478,7 @@ def _codex_full_login_worker(session_id: str) -> None:
         if not access_token:
             raise RuntimeError("token exchange did not return access_token")
 
-        # Persist via credential pool â€?same shape as auth_commands.add_command
+        # Persist via credential pool Ã¢?same shape as auth_commands.add_command
         from agent.credential_pool import (
             PooledCredential,
             load_pool,
@@ -1564,7 +1564,7 @@ async def submit_oauth_code(provider_id: str, body: OAuthSubmitBody, request: Re
 
 @app.get("/api/providers/oauth/{provider_id}/poll/{session_id}")
 async def poll_oauth_session(provider_id: str, session_id: str):
-    """Poll a device-code session's status (no auth â€?read-only state)."""
+    """Poll a device-code session's status (no auth Ã¢?read-only state)."""
     with _oauth_sessions_lock:
         sess = _oauth_sessions.get(session_id)
     if not sess:
@@ -1664,7 +1664,7 @@ async def get_logs(
     except ImportError:
         COMPONENT_PREFIXES = {}
 
-    # Normalize "ALL" / "all" / empty â†?no filter. _matches_filters treats an
+    # Normalize "ALL" / "all" / empty Ã¢?no filter. _matches_filters treats an
     # empty tuple as "must match a prefix" (startswith(()) is always False),
     # so passing () instead of None silently drops every line.
     min_level = level if level and level.upper() != "ALL" else None
@@ -1971,7 +1971,7 @@ def start_server(host: str = "127.0.0.1", port: int = 9119, open_browser: bool =
     if host not in ("127.0.0.1", "localhost", "::1"):
         import logging
         logging.warning(
-            "Binding to %s â€?the web UI exposes config and API keys. "
+            "Binding to %s Ã¢?the web UI exposes config and API keys. "
             "Only bind to non-localhost if you trust all users on the network.", host,
         )
 
@@ -1986,5 +1986,5 @@ def start_server(host: str = "127.0.0.1", port: int = 9119, open_browser: bool =
 
         threading.Thread(target=_open, daemon=True).start()
 
-    print(f"  Hermes Web UI â†?http://{host}:{port}")
+    print(f"  Hermes Web UI Ã¢?http://{host}:{port}")
     uvicorn.run(app, host=host, port=port, log_level="warning")

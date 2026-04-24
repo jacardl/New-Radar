@@ -80,7 +80,7 @@ without going bankrupt, while **maximising final funds**.
 ## Simulation Mechanics
 
 - **Funds**: You start with $250,000 seed capital. Revenue comes from completing
-  tasks. Rewards scale with your prestige: `base × (1 + scale × (prestige �?1))`.
+  tasks. Rewards scale with your prestige: `base è³ (1 + scale è³ (prestige é­?1))`.
 - **Domains**: There are 4 skill domains: **research**, **inference**,
   **data_environment**, and **training**. Each has its own prestige level
   (1.0-10.0). Higher prestige unlocks better-paying tasks.

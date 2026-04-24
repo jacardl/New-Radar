@@ -80,7 +80,7 @@ class TestResponseStore:
         store.put("resp_3", {"output": "three"})
         # Access resp_1 to move it to end
         store.get("resp_1")
-        # Now resp_2 is the oldest �?adding a 4th should evict resp_2
+        # Now resp_2 is the oldest é¥?adding a 4th should evict resp_2
         store.put("resp_4", {"output": "four"})
         assert store.get("resp_2") is None
         assert store.get("resp_1") is not None
@@ -503,7 +503,7 @@ class TestChatCompletionsEndpoint:
 
     @pytest.mark.asyncio
     async def test_stream_includes_tool_progress(self, adapter):
-        """tool_progress_callback fires �?progress appears as custom SSE event, not in delta.content."""
+        """tool_progress_callback fires é«?progress appears as custom SSE event, not in delta.content."""
         import asyncio
 
         app = _create_app(adapter)
@@ -535,7 +535,7 @@ class TestChatCompletionsEndpoint:
                 body = await resp.text()
                 assert "[DONE]" in body
                 # Tool progress must appear as a custom SSE event, not in
-                # delta.content �?prevents model from learning to imitate
+                # delta.content é¥?prevents model from learning to imitate
                 # markers instead of calling tools (#6972).
                 assert "event: hermes.tool.progress" in body
                 assert '"tool": "terminal"' in body
@@ -1689,7 +1689,7 @@ class TestConversationParameter:
                 data1 = await resp1.json()
                 resp1_id = data1["id"]
 
-                # Second request �?should chain
+                # Second request é¥?should chain
                 mock_run.return_value = (
                     {"final_response": "Second response", "messages": [], "api_calls": 1},
                     {"input_tokens": 20, "output_tokens": 10, "total_tokens": 30},
@@ -1830,7 +1830,7 @@ class TestSessionIdHeader:
                 resp = await cli.post(
                     "/v1/chat/completions",
                     headers={"X-Hermes-Session-Id": "existing-session", "Authorization": "Bearer sk-secret"},
-                    # Request body has different history �?should be ignored
+                    # Request body has different history é¥?should be ignored
                     json={
                         "model": "hermes-agent",
                         "messages": [

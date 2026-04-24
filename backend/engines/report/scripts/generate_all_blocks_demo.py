@@ -1,10 +1,10 @@
-﻿#!/usr/bin/env python3
+ï»¿#!/usr/bin/env python3
 """
-生成覆盖全部允许block类型的演�?IR，用于验�?HTML / PDF / Markdown 渲染�?
+çæè¦çå¨é¨åè®¸blockç±»åçæ¼ï¿½?IRï¼ç¨äºéªï¿½?HTML / PDF / Markdown æ¸²æï¿½?
 
-执行后会�?`final_reports/ir` 写入一份带时间戳的 IR�?
-并分别在 `final_reports/html`、`final_reports/pdf` �?`final_reports/md`
-输出对应的渲染文件�?
+æ§è¡åä¼ï¿½?`final_reports/ir` åå¥ä¸ä»½å¸¦æ¶é´æ³ç IRï¿½?
+å¹¶åå«å¨ `final_reports/html`final_reports/pdf` ï¿½?`final_reports/md`
+è¾åºå¯¹åºçæ¸²ææä»¶ï¿½?
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# 允许直接以脚本形式运�?
+# åè®¸ç´æ¥ä»¥èæ¬å½¢å¼è¿ï¿½?
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -27,29 +27,29 @@ from backend.engines.report.utils.config import settings
 
 
 def build_inline_marks_demo() -> dict:
-    """生成覆盖全部内联标记�?paragraph block�?""
+    """çæè¦çå¨é¨åèæ è®°ï¿½?paragraph blockï¿½?""
     return {
         "type": "paragraph",
         "inlines": [
-            {"text": "这一段覆盖全部内联标记："},
-            {"text": "粗体", "marks": [{"type": "bold"}]},
-            {"text": " / 斜体", "marks": [{"type": "italic"}]},
-            {"text": " / 下划�?, "marks": [{"type": "underline"}]},
-            {"text": " / 删除�?, "marks": [{"type": "strike"}]},
-            {"text": " / 代码", "marks": [{"type": "code"}]},
+            {"text": "è¿ä¸æ®µè¦çå¨é¨åèæ è®°ï¼"},
+            {"text": "ç²ä½", "marks": [{"type": "bold"}]},
+            {"text": " / æä½", "marks": [{"type": "italic"}]},
+            {"text": " / ä¸åï¿½?, "marks": [{"type": "underline"}]},
+            {"text": " / å é¤ï¿½?, "marks": [{"type": "strike"}]},
+            {"text": " / ä»£ç ", "marks": [{"type": "code"}]},
             {
-                "text": " / 链接",
+                "text": " / é¾æ¥",
                 "marks": [
                     {
                         "type": "link",
                         "href": "https://example.com/demo",
-                        "title": "示例链接",
+                        "title": "ç¤ºä¾é¾æ¥",
                     }
                 ],
             },
-            {"text": " / 颜色", "marks": [{"type": "color", "value": "#c0392b"}]},
+            {"text": " / é¢è²", "marks": [{"type": "color", "value": "#c0392b"}]},
             {
-                "text": " / 字体",
+                "text": " / å­ä½",
                 "marks": [
                     {
                         "type": "font",
@@ -59,17 +59,17 @@ def build_inline_marks_demo() -> dict:
                     }
                 ],
             },
-            {"text": " / 高亮", "marks": [{"type": "highlight"}]},
-            {"text": " / 下标", "marks": [{"type": "subscript"}]},
-            {"text": " / 上标", "marks": [{"type": "superscript"}]},
-            {"text": " / 行内公式", "marks": [{"type": "math", "value": "E=mc^2"}]},
-            {"text": "�?},
+            {"text": " / é«äº®", "marks": [{"type": "highlight"}]},
+            {"text": " / ä¸æ ", "marks": [{"type": "subscript"}]},
+            {"text": " / ä¸æ ", "marks": [{"type": "superscript"}]},
+            {"text": " / è¡åå¬å¼", "marks": [{"type": "math", "value": "E=mc^2"}]},
+            {"text": "ï¿½?},
         ],
     }
 
 
 def build_widget_block() -> dict:
-    """构造一个合法的 Chart.js widget block�?""
+    """æé ä¸ä¸ªåæ³ç Chart.js widget blockï¿½?""
     return {
         "type": "widget",
         "widgetId": "demo-volume-trend",
@@ -79,14 +79,14 @@ def build_widget_block() -> dict:
             "options": {
                 "responsive": True,
                 "plugins": {"legend": {"position": "bottom"}},
-                "scales": {"y": {"title": {"display": True, "text": "提及�?}}},
+                "scales": {"y": {"title": {"display": True, "text": "æåï¿½?}}},
             },
         },
         "data": {
             "labels": ["T0", "T0+6h", "T0+12h", "T0+18h", "T0+24h"],
             "datasets": [
                 {
-                    "label": "主流媒体",
+                    "label": "ä¸»æµåªä½",
                     "data": [12, 18, 23, 30, 26],
                     "borderColor": "#2980b9",
                     "backgroundColor": "rgba(41,128,185,0.18)",
@@ -94,7 +94,7 @@ def build_widget_block() -> dict:
                     "fill": False,
                 },
                 {
-                    "label": "社交平台",
+                    "label": "ç¤¾äº¤å¹³å°",
                     "data": [8, 10, 15, 28, 40],
                     "borderColor": "#c0392b",
                     "backgroundColor": "rgba(192,57,43,0.2)",
@@ -107,7 +107,7 @@ def build_widget_block() -> dict:
 
 
 def build_chapters() -> list[dict]:
-    """构造覆盖所�?block 类型的章节列表�?""
+    """æé è¦çæï¿½?block ç±»åçç« èåè¡¨ï¿½?""
     inline_demo = build_inline_marks_demo()
 
     bullet_list = {
@@ -117,13 +117,13 @@ def build_chapters() -> list[dict]:
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "社交媒体热度�?48 小时内翻�?}],
+                    "inlines": [{"text": "ç¤¾äº¤åªä½ç­åº¦ï¿½?48 å°æ¶åç¿»ï¿½?}],
                 }
             ],
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "主流媒体报道集中在早间时�?}],
+                    "inlines": [{"text": "ä¸»æµåªä½æ¥ééä¸­å¨æ©é´æ¶ï¿½?}],
                 },
                 {
                     "type": "list",
@@ -132,13 +132,13 @@ def build_chapters() -> list[dict]:
                         [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "07:00-09:00：首轮报�?}],
+                                "inlines": [{"text": "07:00-09:00ï¼é¦è½®æ¥ï¿½?}],
                             }
                         ],
                         [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "10:00-12:00：评论扩�?}],
+                                "inlines": [{"text": "10:00-12:00ï¼è¯è®ºæ©ï¿½?}],
                             }
                         ],
                     ],
@@ -147,7 +147,7 @@ def build_chapters() -> list[dict]:
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "地方政务号开始回应并同步线下通稿"}],
+                    "inlines": [{"text": "å°æ¹æ¿å¡å·å¼å§ååºå¹¶åæ­¥çº¿ä¸éç¨¿"}],
                 }
             ],
         ],
@@ -160,19 +160,19 @@ def build_chapters() -> list[dict]:
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "跟踪权威辟谣素材是否上线"}],
+                    "inlines": [{"text": "è·è¸ªæå¨è¾è°£ç´ ææ¯å¦ä¸çº¿"}],
                 }
             ],
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "监测新增关联关键词与长尾问题"}],
+                    "inlines": [{"text": "çæµæ°å¢å³èå³é®è¯ä¸é¿å°¾é®é¢"}],
                 }
             ],
             [
                 {
                     "type": "paragraph",
-                    "inlines": [{"text": "准备 FAQ 供客服统一答复"}],
+                    "inlines": [{"text": "åå¤ FAQ ä¾å®¢æç»ä¸ç­å¤"}],
                 }
             ],
         ],
@@ -180,7 +180,7 @@ def build_chapters() -> list[dict]:
 
     table_block = {
         "type": "table",
-        "caption": "核心信源与传播路�?,
+        "caption": "æ ¸å¿ä¿¡æºä¸ä¼ æ­è·¯ï¿½?,
         "zebra": True,
         "colgroup": [{"width": "22%"}, {"width": "38%"}, {"width": "40%"}],
         "rows": [
@@ -191,7 +191,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "时间节点", "marks": [{"type": "bold"}]}],
+                                "inlines": [{"text": "æ¶é´èç¹", "marks": [{"type": "bold"}]}],
                             }
                         ],
                     },
@@ -200,7 +200,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "事件内容", "marks": [{"type": "bold"}]}],
+                                "inlines": [{"text": "äºä»¶åå®¹", "marks": [{"type": "bold"}]}],
                             }
                         ],
                     },
@@ -209,7 +209,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "主要渠道", "marks": [{"type": "bold"}]}],
+                                "inlines": [{"text": "ä¸»è¦æ¸ é", "marks": [{"type": "bold"}]}],
                             }
                         ],
                     },
@@ -222,7 +222,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "线下冲突视频首次上传"}],
+                                "inlines": [{"text": "çº¿ä¸å²çªè§é¢é¦æ¬¡ä¸ä¼ "}],
                             }
                         ]
                     },
@@ -230,7 +230,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "短视频平�?/ 私聊转发"}],
+                                "inlines": [{"text": "ç­è§é¢å¹³ï¿½?/ ç§èè½¬å"}],
                             }
                         ]
                     },
@@ -243,7 +243,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "登上热搜，出现二次剪�?}],
+                                "inlines": [{"text": "ç»ä¸ç­æï¼åºç°äºæ¬¡åªï¿½?}],
                             }
                         ]
                     },
@@ -251,7 +251,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "微博 / 朋友�?}],
+                                "inlines": [{"text": "å¾®å / æåï¿½?}],
                             }
                         ]
                     },
@@ -264,7 +264,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "官方回应并发布事实澄�?}],
+                                "inlines": [{"text": "å®æ¹ååºå¹¶åå¸äºå®æ¾ï¿½?}],
                             }
                         ]
                     },
@@ -272,7 +272,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "政务�?/ 新闻客户�?}],
+                                "inlines": [{"text": "æ¿å¡ï¿½?/ æ°é»å®¢æ·ï¿½?}],
                             }
                         ]
                     },
@@ -285,7 +285,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "专家解读，舆论重心转向责任归�?}],
+                                "inlines": [{"text": "ä¸å®¶è§£è¯»ï¼èè®ºéå¿è½¬åè´£ä»»å½ï¿½?}],
                             }
                         ]
                     },
@@ -293,7 +293,7 @@ def build_chapters() -> list[dict]:
                         "blocks": [
                             {
                                 "type": "paragraph",
-                                "inlines": [{"text": "视频号直�?/ 行业社群"}],
+                                "inlines": [{"text": "è§é¢å·ç´ï¿½?/ è¡ä¸ç¤¾ç¾¤"}],
                             }
                         ]
                     },
@@ -308,11 +308,11 @@ def build_chapters() -> list[dict]:
         "blocks": [
             {
                 "type": "paragraph",
-                "inlines": [{"text": "“公众最关心的信息是真相与责任边界。�?}],
+                "inlines": [{"text": ""å¬ä¼æå³å¿çä¿¡æ¯æ¯çç¸ä¸è´£ä»»è¾¹çãï¿½?}],
             },
             {
                 "type": "paragraph",
-                "inlines": [{"text": "—�?模拟引用，验证引用块样式"}],
+                "inlines": [{"text": "-ï¿½?æ¨¡æå¼ç¨ï¼éªè¯å¼ç¨åæ ·å¼"}],
             },
         ],
     }
@@ -326,7 +326,7 @@ def build_chapters() -> list[dict]:
                 "type": "paragraph",
                 "inlines": [
                     {
-                        "text": "模型认为 24 小时内保持回应频次，可避免信息真空�?,
+                        "text": "æ¨¡åè®¤ä¸º 24 å°æ¶åä¿æååºé¢æ¬¡ï¼å¯é¿åä¿¡æ¯çç©ºï¿½?,
                         "marks": [{"type": "bold"}],
                     }
                 ],
@@ -334,7 +334,7 @@ def build_chapters() -> list[dict]:
             {
                 "type": "paragraph",
                 "inlines": [
-                    {"text": "建议同时准备简�?FAQ，便于多渠道统一口径�?}
+                    {"text": "å»ºè®®åæ¶åå¤ç®ï¿½?FAQï¼ä¾¿äºå¤æ¸ éç»ä¸å£å¾ï¿½?}
                 ],
             },
         ],
@@ -342,86 +342,86 @@ def build_chapters() -> list[dict]:
 
     swot_block = {
         "type": "swotTable",
-        "title": "舆论�?SWOT 速览",
-        "summary": "覆盖当前情绪分布、潜在风险与机会�?,
+        "title": "èè®ºï¿½?SWOT éè§",
+        "summary": "è¦çå½åæç»ªåå¸ãæ½å¨é£é©ä¸æºä¼ï¿½?,
         "strengths": [
-            {"title": "官方快速响�?, "detail": "首条澄清视频 3 小时内上�?},
-            {"title": "同城媒体配合", "impact": "�?, "score": 8},
+            {"title": "å®æ¹å¿«éåï¿½?, "detail": "é¦æ¡æ¾æ¸è§é¢ 3 å°æ¶åä¸ï¿½?},
+            {"title": "åååªä½éå", "impact": "ï¿½?, "score": 8},
         ],
         "weaknesses": [
-            {"title": "早期谣言存量�?, "detail": "相关转发仍占 30%"},
-            "外部专家尚未统一口径",
+            {"title": "æ©æè°£è¨å­éï¿½?, "detail": "ç¸å³è½¬åä»å  30%"},
+            "å¤é¨ä¸å®¶å°æªç»ä¸å£å¾",
         ],
         "opportunities": [
             {
-                "title": "社区共建讨论",
-                "detail": "自发组织“辟谣志愿者”话题，情绪正向",
+                "title": "ç¤¾åºå±å»ºè®¨è®º",
+                "detail": "èªåç»ç»"è¾è°£å¿æ¿è"è¯é¢ï¼æç»ªæ­£å",
             },
-            {"title": "公益合作窗口", "impact": "�?},
+            {"title": "å¬çåä½çªå£", "impact": "ï¿½?},
         ],
         "threats": [
-            {"title": "跨平台剪辑继续发�?, "impact": "�?, "score": 9},
-            {"title": "个别自媒体煽动情�?, "evidence": "存在地域标签化倾向"},
+            {"title": "è·¨å¹³å°åªè¾ç»§ç»­åï¿½?, "impact": "ï¿½?, "score": 9},
+            {"title": "ä¸ªå«èªåªä½ç½å¨æï¿½?, "evidence": "å­å¨å°åæ ç­¾åå¾å"},
         ],
     }
 
     pest_block = {
         "type": "pestTable",
-        "title": "宏观环境脉冲扫描（PEST�?,
-        "summary": "模拟四大维度的外部约束与机会，验�?pestTable 的渲染样式�?,
+        "title": "å®è§ç¯å¢èå²æ«æï¼PESTï¿½?,
+        "summary": "æ¨¡æåå¤§ç»´åº¦çå¤é¨çº¦æä¸æºä¼ï¼éªï¿½?pestTable çæ¸²ææ ·å¼ï¿½?,
         "political": [
             {
-                "title": "地方条例征求意见",
-                "detail": "短视频发布需实名溯源，平台合规沟通窗口期开�?,
-                "trend": "正面利好",
+                "title": "å°æ¹æ¡ä¾å¾æ±æè§",
+                "detail": "ç­è§é¢åå¸éå®åæº¯æºï¼å¹³å°åè§æ²éçªå£æå¼ï¿½?,
+                "trend": "æ­£é¢å©å¥½",
                 "impact": 7,
             },
             {
-                "title": "监管关注情绪煽动",
-                "detail": "对夸大矛盾的账号重点巡查，舆论阈值下�?,
-                "trend": "持续观察",
+                "title": "çç®¡å³æ³¨æç»ªç½å¨",
+                "detail": "å¯¹å¤¸å¤§çç¾çè´¦å·éç¹å·¡æ¥ï¼èè®ºéå¼ä¸ï¿½?,
+                "trend": "æç»­è§å¯",
                 "impact": 6,
             },
         ],
         "economic": [
             {
-                "title": "周边商户营收波动",
-                "detail": "客流短期下滑 12%，但直播带货订单上升",
-                "trend": "中�?,
+                "title": "å¨è¾¹åæ·è¥æ¶æ³¢å¨",
+                "detail": "å®¢æµç­æä¸æ» 12%ï¼ä½ç´æ­å¸¦è´§è®¢åä¸å",
+                "trend": "ä¸­ï¿½?,
                 "impact": 5,
             },
             {
-                "title": "品牌赞助谨慎",
-                "detail": "赞助延期观察声誉风险，对官宣节奏有压�?,
-                "trend": "不确�?,
+                "title": "åçèµå©è°¨æ",
+                "detail": "èµå©å»¶æè§å¯å£°èªé£é©ï¼å¯¹å®å®£èå¥æåï¿½?,
+                "trend": "ä¸ç¡®ï¿½?,
                 "impact": 4,
             },
         ],
         "social": [
             {
-                "title": "核心群体情绪分化",
-                "detail": "本地居民关注安全，外地游客关注体验与退�?,
-                "trend": "负面影响",
+                "title": "æ ¸å¿ç¾¤ä½æç»ªåå",
+                "detail": "æ¬å°å±æ°å³æ³¨å®å¨ï¼å¤å°æ¸¸å®¢å³æ³¨ä½éªä¸éï¿½?,
+                "trend": "è´é¢å½±å",
                 "impact": 8,
             },
             {
-                "title": "高校社群自发求证",
-                "detail": "校媒与学生会组织“以图搜图”科普贴，情绪趋�?,
-                "trend": "正面利好",
+                "title": "é«æ ¡ç¤¾ç¾¤èªåæ±è¯",
+                "detail": "æ ¡åªä¸å­¦çä¼ç»ç»"ä»¥å¾æå¾"ç§æ®è´´ï¼æç»ªè¶ï¿½?,
+                "trend": "æ­£é¢å©å¥½",
                 "impact": 6,
             },
         ],
         "technological": [
             {
-                "title": "AI 生成内容被混�?,
-                "detail": "局部画面被放大后再传播，需水印溯源工具辅助鉴伪",
-                "trend": "负面影响",
+                "title": "AI çæåå®¹è¢«æ··ï¿½?,
+                "detail": "å±é¨ç»é¢è¢«æ¾å¤§ååä¼ æ­ï¼éæ°´å°æº¯æºå·¥å·è¾å©é´ä¼ª",
+                "trend": "è´é¢å½±å",
                 "impact": 7,
             },
             {
-                "title": "多模态检索上�?,
-                "detail": "平台试行“视频反诈”模型，自动提示剪辑痕迹",
-                "trend": "正面利好",
+                "title": "å¤æ¨¡ææ£ç´¢ä¸ï¿½?,
+                "detail": "å¹³å°è¯è¡"è§é¢åè¯"æ¨¡åï¼èªå¨æç¤ºåªè¾çè¿¹",
+                "trend": "æ­£é¢å©å¥½",
                 "impact": 5,
             },
         ],
@@ -430,12 +430,12 @@ def build_chapters() -> list[dict]:
     callout_block = {
         "type": "callout",
         "tone": "warning",
-        "title": "排版边界提示",
+        "title": "æçè¾¹çæç¤º",
         "blocks": [
             {
                 "type": "paragraph",
                 "inlines": [
-                    {"text": "callout 内部仅放轻量内容，超出部分会自动溢出到外层�?}
+                    {"text": "callout åé¨ä»æ¾è½»éåå®¹ï¼è¶åºé¨åä¼èªå¨æº¢åºå°å¤å±ï¿½?}
                 ],
             },
             {
@@ -445,13 +445,13 @@ def build_chapters() -> list[dict]:
                     [
                         {
                             "type": "paragraph",
-                            "inlines": [{"text": "支持嵌套列表 / 表格 / 数学公式"}],
+                            "inlines": [{"text": "æ¯æåµå¥åè¡¨ / è¡¨æ ¼ / æ°å­¦å¬å¼"}],
                         }
                     ],
                     [
                         {
                             "type": "paragraph",
-                            "inlines": [{"text": "可在这里放置提醒或操作步�?}],
+                            "inlines": [{"text": "å¯å¨è¿éæ¾ç½®æéææä½æ­¥ï¿½?}],
                         }
                     ],
                 ],
@@ -462,8 +462,8 @@ def build_chapters() -> list[dict]:
     code_block = {
         "type": "code",
         "lang": "json",
-        "caption": "演示代码�?,
-        "content": '{\n  "event": "热点示例",\n  "topic": "公共事件",\n  "status": "monitoring"\n}',
+        "caption": "æ¼ç¤ºä»£ç ï¿½?,
+        "content": '{\n  "event": "ç­ç¹ç¤ºä¾",\n  "topic": "å¬å±äºä»¶",\n  "status": "monitoring"\n}',
     }
 
     math_block = {
@@ -476,11 +476,11 @@ def build_chapters() -> list[dict]:
         "type": "figure",
         "img": {
             "src": "https://dummyimage.com/600x320/eeeeee/333333&text=Placeholder",
-            "alt": "占位示意�?,
+            "alt": "å ä½ç¤ºæï¿½?,
             "width": 600,
             "height": 320,
         },
-        "caption": "图像外链被替换为友好提示，可验证 figure 占位效果�?,
+        "caption": "å¾åå¤é¾è¢«æ¿æ¢ä¸ºåå¥½æç¤ºï¼å¯éªè¯ figure å ä½ææï¿½?,
         "responsive": True,
     }
 
@@ -496,16 +496,16 @@ def build_chapters() -> list[dict]:
                 "plugins": {"legend": {"position": "bottom"}},
                 "scales": {
                     "x": {"stacked": True},
-                    "y": {"stacked": True, "title": {"display": True, "text": "信息�?}},
+                    "y": {"stacked": True, "title": {"display": True, "text": "ä¿¡æ¯ï¿½?}},
                 },
             },
         },
         "data": {
-            "labels": ["周一", "周二", "周三", "周四", "周五"],
+            "labels": ["å¨ä¸", "å¨äº", "å¨ä¸", "å¨å", "å¨äº"],
             "datasets": [
-                {"label": "正向", "data": [18, 22, 24, 19, 16], "backgroundColor": "#27ae60"},
-                {"label": "中�?, "data": [22, 20, 18, 21, 23], "backgroundColor": "#f39c12"},
-                {"label": "负向", "data": [12, 14, 10, 9, 11], "backgroundColor": "#c0392b"},
+                {"label": "æ­£å", "data": [18, 22, 24, 19, 16], "backgroundColor": "#27ae60"},
+                {"label": "ä¸­ï¿½?, "data": [22, 20, 18, 21, 23], "backgroundColor": "#f39c12"},
+                {"label": "è´å", "data": [12, 14, 10, 9, 11], "backgroundColor": "#c0392b"},
             ],
         },
     }
@@ -514,19 +514,19 @@ def build_chapters() -> list[dict]:
         "widgetId": "demo-horizontal-voice",
         "widgetType": "chart.js/bar",
         "props": {
-            # 通过 indexAxis 切换横向柱状�?
+            # éè¿ indexAxis åæ¢æ¨ªåæ±ç¶ï¿½?
             "type": "bar",
             "options": {
                 "indexAxis": "y",
                 "plugins": {"legend": {"position": "right"}},
-                "scales": {"x": {"title": {"display": True, "text": "提及�?�?"}}},
+                "scales": {"x": {"title": {"display": True, "text": "æåï¿½?ï¿½?"}}},
             },
         },
         "data": {
-            "labels": ["微博", "短视�?, "社区论坛", "新闻客户�?],
+            "labels": ["å¾®å", "ç­è§ï¿½?, "ç¤¾åºè®ºå", "æ°é»å®¢æ·ï¿½?],
             "datasets": [
                 {
-                    "label": "声量对比",
+                    "label": "å£°éå¯¹æ¯",
                     "data": [42, 58, 27, 36],
                     "backgroundColor": ["#2ecc71", "#3498db", "#9b59b6", "#f39c12"],
                 }
@@ -542,10 +542,10 @@ def build_chapters() -> list[dict]:
             "options": {"plugins": {"legend": {"position": "bottom"}}},
         },
         "data": {
-            "labels": ["支持", "中立", "质疑"],
+            "labels": ["æ¯æ", "ä¸­ç«", "è´¨ç"],
             "datasets": [
                 {
-                    "label": "立场分布",
+                    "label": "ç«åºåå¸",
                     "data": [36, 28, 21],
                     "backgroundColor": ["#27ae60", "#f1c40f", "#c0392b"],
                 }
@@ -561,10 +561,10 @@ def build_chapters() -> list[dict]:
             "options": {"plugins": {"legend": {"position": "right"}, "tooltip": {"enabled": True}}},
         },
         "data": {
-            "labels": ["政策", "经济", "社会", "技�?],
+            "labels": ["æ¿ç­", "ç»æµ", "ç¤¾ä¼", "æï¿½?],
             "datasets": [
                 {
-                    "label": "关注度占�?,
+                    "label": "å³æ³¨åº¦å ï¿½?,
                     "data": [24, 30, 28, 18],
                     "backgroundColor": ["#8e44ad", "#16a085", "#e67e22", "#2980b9"],
                     "hoverOffset": 6,
@@ -584,17 +584,17 @@ def build_chapters() -> list[dict]:
             },
         },
         "data": {
-            "labels": ["透明�?, "响应速度", "一致�?, "互动�?, "信息�?],
+            "labels": ["éæï¿½?, "ååºéåº¦", "ä¸è´ï¿½?, "äºå¨ï¿½?, "ä¿¡æ¯ï¿½?],
             "datasets": [
                 {
-                    "label": "官方渠道",
+                    "label": "å®æ¹æ¸ é",
                     "data": [78, 88, 82, 66, 91],
                     "backgroundColor": "rgba(46,204,113,0.15)",
                     "borderColor": "#2ecc71",
                     "pointBackgroundColor": "#27ae60",
                 },
                 {
-                    "label": "民间讨论",
+                    "label": "æ°é´è®¨è®º",
                     "data": [64, 72, 58, 74, 63],
                     "backgroundColor": "rgba(52,152,219,0.12)",
                     "borderColor": "#3498db",
@@ -609,10 +609,10 @@ def build_chapters() -> list[dict]:
         "widgetType": "chart.js/polarArea",
         "props": {"type": "polarArea"},
         "data": {
-            "labels": ["短视�?, "微博", "社区论坛", "新闻客户�?, "线下反馈"],
+            "labels": ["ç­è§ï¿½?, "å¾®å", "ç¤¾åºè®ºå", "æ°é»å®¢æ·ï¿½?, "çº¿ä¸åé¦"],
             "datasets": [
                 {
-                    "label": "渠道渗透度",
+                    "label": "æ¸ éæ¸éåº¦",
                     "data": [62, 54, 38, 45, 28],
                     "backgroundColor": [
                         "rgba(231,76,60,0.65)",
@@ -634,15 +634,15 @@ def build_chapters() -> list[dict]:
             "options": {
                 "plugins": {"legend": {"position": "bottom"}},
                 "scales": {
-                    "x": {"title": {"display": True, "text": "情绪极�?}, "min": -1, "max": 1},
-                    "y": {"title": {"display": True, "text": "互动�?}, "beginAtZero": True},
+                    "x": {"title": {"display": True, "text": "æç»ªæï¿½?}, "min": -1, "max": 1},
+                    "y": {"title": {"display": True, "text": "äºå¨ï¿½?}, "beginAtZero": True},
                 },
             },
         },
         "data": {
             "datasets": [
                 {
-                    "label": "帖子散点",
+                    "label": "å¸å­æ£ç¹",
                     "data": [
                         {"x": -0.65, "y": 120},
                         {"x": -0.25, "y": 190},
@@ -664,15 +664,15 @@ def build_chapters() -> list[dict]:
             "options": {
                 "plugins": {"legend": {"position": "bottom"}},
                 "scales": {
-                    "x": {"title": {"display": True, "text": "曝光�?(�?"}, "beginAtZero": True},
-                    "y": {"title": {"display": True, "text": "情绪强度"}, "min": -100, "max": 100},
+                    "x": {"title": {"display": True, "text": "æåï¿½?(ï¿½?"}, "beginAtZero": True},
+                    "y": {"title": {"display": True, "text": "æç»ªå¼ºåº¦"}, "min": -100, "max": 100},
                 },
             },
         },
         "data": {
             "datasets": [
                 {
-                    "label": "渠道分布",
+                    "label": "æ¸ éåå¸",
                     "data": [
                         {"x": 8, "y": 35, "r": 12},
                         {"x": 12, "y": -28, "r": 10},
@@ -689,16 +689,16 @@ def build_chapters() -> list[dict]:
 
     chapter_1 = {
         "chapterId": "S1",
-        "title": "封面与目�?,
+        "title": "å°é¢ä¸ç®ï¿½?,
         "anchor": "overview",
         "order": 10,
         "blocks": [
-            {"type": "heading", "level": 2, "text": "一、封面与目录", "anchor": "overview"},
+            {"type": "heading", "level": 2, "text": "ä¸ãå°é¢ä¸ç®å½", "anchor": "overview"},
             {
                 "type": "paragraph",
                 "inlines": [
                     {
-                        "text": "模拟社会公共热点事件的摘要，便于快速确认排版与字体效果�?,
+                        "text": "æ¨¡æç¤¾ä¼å¬å±ç­ç¹äºä»¶çæè¦ï¼ä¾¿äºå¿«éç¡®è®¤æçä¸å­ä½ææï¿½?,
                     }
                 ],
             },
@@ -706,10 +706,10 @@ def build_chapters() -> list[dict]:
             {
                 "type": "kpiGrid",
                 "items": [
-                    {"label": "24h提及�?, "value": "98K", "delta": "+41%", "deltaTone": "up"},
-                    {"label": "正向占比", "value": "32%", "delta": "+5pp", "deltaTone": "up"},
-                    {"label": "负向占比", "value": "18%", "delta": "-3pp", "deltaTone": "down"},
-                    {"label": "高频渠道", "value": "短视�?/ 微博"},
+                    {"label": "24hæåï¿½?, "value": "98K", "delta": "+41%", "deltaTone": "up"},
+                    {"label": "æ­£åå æ¯", "value": "32%", "delta": "+5pp", "deltaTone": "up"},
+                    {"label": "è´åå æ¯", "value": "18%", "delta": "-3pp", "deltaTone": "down"},
+                    {"label": "é«é¢æ¸ é", "value": "ç­è§ï¿½?/ å¾®å"},
                 ],
                 "cols": 4,
             },
@@ -720,28 +720,28 @@ def build_chapters() -> list[dict]:
 
     chapter_2 = {
         "chapterId": "S2",
-        "title": "块类型演�?,
+        "title": "åç±»åæ¼ï¿½?,
         "anchor": "blocks-showcase",
         "order": 20,
         "blocks": [
             {
                 "type": "heading",
                 "level": 2,
-                "text": "二、块类型演示",
+                "text": "äºãåç±»åæ¼ç¤º",
                 "anchor": "blocks-showcase",
             },
             {
                 "type": "paragraph",
                 "inlines": [
                     {
-                        "text": "以下内容逐一覆盖 paragraph/list/table/swot/pest/widget 等全部块类型�?,
+                        "text": "ä»¥ä¸åå®¹éä¸è¦ç paragraph/list/table/swot/pest/widget ç­å¨é¨åç±»åï¿½?,
                     }
                 ],
             },
             {
                 "type": "heading",
                 "level": 3,
-                "text": "2.1 列表与表�?,
+                "text": "2.1 åè¡¨ä¸è¡¨ï¿½?,
                 "anchor": "lists-and-tables",
             },
             bullet_list,
@@ -750,14 +750,14 @@ def build_chapters() -> list[dict]:
             {
                 "type": "heading",
                 "level": 3,
-                "text": "2.2 图表组件演示",
+                "text": "2.2 å¾è¡¨ç»ä»¶æ¼ç¤º",
                 "anchor": "charts-demo",
             },
             {
                 "type": "paragraph",
                 "inlines": [
                     {
-                        "text": "折线 / 柱状（含横向、堆叠）/ 饼图 / 圆环 / 雷达 / 极区 / 散点 / 气泡等多类型图表，用于验�?Chart.js 兼容性�?,
+                        "text": "æçº¿ / æ±ç¶ï¼å«æ¨ªåãå å ï¼/ é¥¼å¾ / åç¯ / é·è¾¾ / æåº / æ£ç¹ / æ°æ³¡ç­å¤ç±»åå¾è¡¨ï¼ç¨äºéªï¿½?Chart.js å¼å®¹æ§ï¿½?,
                     }
                 ],
             },
@@ -773,7 +773,7 @@ def build_chapters() -> list[dict]:
             {
                 "type": "heading",
                 "level": 3,
-                "text": "2.3 高阶块与富媒�?,
+                "text": "2.3 é«é¶åä¸å¯åªï¿½?,
                 "anchor": "advanced-blocks",
             },
             blockquote_block,
@@ -793,10 +793,10 @@ def build_chapters() -> list[dict]:
                 "align": "justify",
                 "inlines": [
                     {
-                        "text": "本章节的 inline math 兜底验证�?,
+                        "text": "æ¬ç« èç inline math ååºéªè¯ï¿½?,
                     },
                     {"text": "p(t)=p_0 e^{\\lambda t}", "marks": [{"type": "math"}]},
-                    {"text": "；以上覆盖所有允许块及标记�?},
+                    {"text": "ï¼ä»¥ä¸è¦çææåè®¸ååæ è®°ï¿½?},
                 ],
             },
         ],
@@ -806,16 +806,16 @@ def build_chapters() -> list[dict]:
 
 
 def validate_chapters(chapters: list[dict]) -> None:
-    """使用 IRValidator 校验章节结构，发现错误时抛出异常�?""
+    """ä½¿ç¨ IRValidator æ ¡éªç« èç»æï¼åç°éè¯¯æ¶æåºå¼å¸¸ï¿½?""
     validator = IRValidator()
     for chapter in chapters:
         ok, errors = validator.validate_chapter(chapter)
         if not ok:
-            raise ValueError(f"{chapter.get('chapterId', 'unknown')} 校验失败: {errors}")
+            raise ValueError(f"{chapter.get('chapterId', 'unknown')} æ ¡éªå¤±è´¥: {errors}")
 
 
 def render_and_save(document_ir: dict, timestamp: str) -> tuple[Path, Path, Path, Path]:
-    """�?IR 保存�?JSON，并渲染 HTML / PDF / Markdown，返回四个路径�?""
+    """ï¿½?IR ä¿å­ï¿½?JSONï¼å¹¶æ¸²æ HTML / PDF / Markdownï¼è¿ååä¸ªè·¯å¾ï¿½?""
     ir_dir = Path(settings.DOCUMENT_IR_OUTPUT_DIR)
     html_dir = Path(settings.OUTPUT_DIR) / "html"
     pdf_dir = Path(settings.OUTPUT_DIR) / "pdf"
@@ -849,18 +849,18 @@ def main() -> int:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_id = f"all-blocks-demo-{timestamp}"
     metadata = {
-        "title": "社会公共热点事件渲染测试",
-        "subtitle": "覆盖全部 IR 块类型的示例数据，含多种图表�?PEST 演示",
-        "query": "公共事件渲染能力自检 / Chart & PEST",
-        "toc": {"title": "目录", "depth": 3},
+        "title": "ç¤¾ä¼å¬å±ç­ç¹äºä»¶æ¸²ææµè¯",
+        "subtitle": "è¦çå¨é¨ IR åç±»åçç¤ºä¾æ°æ®ï¼å«å¤ç§å¾è¡¨ï¿½?PEST æ¼ç¤º",
+        "query": "å¬å±äºä»¶æ¸²æè½åèªæ£ / Chart & PEST",
+        "toc": {"title": "ç®å½", "depth": 3},
         "hero": {
-            "summary": "用于验证 Report Engine �?HTML / PDF 渲染时对各类区块、Chart.js 组件�?PEST 模块的兼容性�?,
+            "summary": "ç¨äºéªè¯ Report Engine ï¿½?HTML / PDF æ¸²ææ¶å¯¹åç±»åºåhart.js ç»ä»¶ï¿½?PEST æ¨¡åçå¼å®¹æ§ï¿½?,
             "kpis": [
-                {"label": "示例块数�?, "value": "20+", "delta": "�?PEST", "tone": "up"},
-                {"label": "图表�?, "value": "7", "delta": "新增多类�?, "tone": "neutral"},
+                {"label": "ç¤ºä¾åæ°ï¿½?, "value": "20+", "delta": "ï¿½?PEST", "tone": "up"},
+                {"label": "å¾è¡¨ï¿½?, "value": "7", "delta": "æ°å¢å¤ç±»ï¿½?, "tone": "neutral"},
             ],
-            "highlights": ["覆盖全部 block", "含行�?块级公式", "Chart.js 多类�?, "PEST + SWOT"],
-            "actions": ["重新生成", "导出 PDF"],
+            "highlights": ["è¦çå¨é¨ block", "å«è¡ï¿½?åçº§å¬å¼", "Chart.js å¤ç±»ï¿½?, "PEST + SWOT"],
+            "actions": ["éæ°çæ", "å¯¼åº PDF"],
         },
     }
 
@@ -872,7 +872,7 @@ def main() -> int:
 
     ir_path, html_path, pdf_path, md_path = render_and_save(document_ir, timestamp)
 
-    print("�?演示 IR 生成完成")
+    print("ï¿½?æ¼ç¤º IR çæå®æ")
     print(f"IR:   {ir_path}")
     print(f"HTML: {html_path}")
     print(f"PDF:  {pdf_path}")

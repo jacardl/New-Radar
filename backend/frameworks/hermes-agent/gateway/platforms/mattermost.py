@@ -2,7 +2,7 @@
 
 Connects to a self-hosted (or cloud) Mattermost instance via its REST API
 (v4) and WebSocket for real-time events.  No external Mattermost library
-required �?uses aiohttp which is already a Hermes dependency.
+required é¥?uses aiohttp which is already a Hermes dependency.
 
 Environment variables:
     MATTERMOST_URL              Server URL (e.g. https://mm.example.com)
@@ -33,14 +33,14 @@ from gateway.platforms.base import (
 logger = logging.getLogger(__name__)
 
 # Mattermost post size limit (server default is 16383, but 4000 is the
-# practical limit for readable messages �?matching OpenClaw's choice).
+# practical limit for readable messages é¥?matching OpenClaw's choice).
 MAX_POST_LENGTH = 4000
 
 # Channel type codes returned by the Mattermost API.
 _CHANNEL_TYPE_MAP = {
     "D": "dm",
     "G": "group",
-    "P": "group",   # private channel �?treat as group
+    "P": "group",   # private channel é«?treat as group
     "O": "channel",
 }
 
@@ -117,7 +117,7 @@ class MattermostAdapter(BasePlatformAdapter):
             async with self._session.get(url, headers=self._headers(), timeout=aiohttp.ClientTimeout(total=30)) as resp:
                 if resp.status >= 400:
                     body = await resp.text()
-                    logger.error("MM API GET %s �?%s: %s", path, resp.status, body[:200])
+                    logger.error("MM API GET %s é«?%s: %s", path, resp.status, body[:200])
                     return {}
                 return await resp.json()
         except aiohttp.ClientError as exc:
@@ -137,7 +137,7 @@ class MattermostAdapter(BasePlatformAdapter):
             ) as resp:
                 if resp.status >= 400:
                     body = await resp.text()
-                    logger.error("MM API POST %s �?%s: %s", path, resp.status, body[:200])
+                    logger.error("MM API POST %s é«?%s: %s", path, resp.status, body[:200])
                     return {}
                 return await resp.json()
         except aiohttp.ClientError as exc:
@@ -156,7 +156,7 @@ class MattermostAdapter(BasePlatformAdapter):
             ) as resp:
                 if resp.status >= 400:
                     body = await resp.text()
-                    logger.error("MM API PUT %s �?%s: %s", path, resp.status, body[:200])
+                    logger.error("MM API PUT %s é«?%s: %s", path, resp.status, body[:200])
                     return {}
                 return await resp.json()
         except aiohttp.ClientError as exc:
@@ -182,7 +182,7 @@ class MattermostAdapter(BasePlatformAdapter):
         async with self._session.post(url, headers=headers, data=form, timeout=aiohttp.ClientTimeout(total=60)) as resp:
             if resp.status >= 400:
                 body = await resp.text()
-                logger.error("MM file upload �?%s: %s", resp.status, body[:200])
+                logger.error("MM file upload é«?%s: %s", resp.status, body[:200])
                 return None
             data = await resp.json()
             infos = data.get("file_infos", [])
@@ -208,7 +208,7 @@ class MattermostAdapter(BasePlatformAdapter):
         # Verify credentials and fetch bot identity.
         me = await self._api_get("users/me")
         if not me or "id" not in me:
-            logger.error("Mattermost: failed to authenticate �?check MATTERMOST_TOKEN and MATTERMOST_URL")
+            logger.error("Mattermost: failed to authenticate é¥?check MATTERMOST_TOKEN and MATTERMOST_URL")
             await self._session.close()
             return False
 
@@ -383,11 +383,11 @@ class MattermostAdapter(BasePlatformAdapter):
         )
 
     def format_message(self, content: str) -> str:
-        """Mattermost uses standard Markdown �?mostly pass through.
+        """Mattermost uses standard Markdown é¥?mostly pass through.
 
         Strip image markdown into plain links (files are uploaded separately).
         """
-        # Convert ![alt](url) to just the URL �?Mattermost renders
+        # Convert ![alt](url) to just the URL é¥?Mattermost renders
         # image URLs as inline previews automatically.
         content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"\2", content)
         return content
@@ -508,7 +508,7 @@ class MattermostAdapter(BasePlatformAdapter):
         while not self._closing:
             try:
                 await self._ws_connect_and_listen()
-                # Clean disconnect �?reset delay.
+                # Clean disconnect é¥?reset delay.
                 delay = _RECONNECT_BASE_DELAY
             except asyncio.CancelledError:
                 return
@@ -516,16 +516,16 @@ class MattermostAdapter(BasePlatformAdapter):
                 if self._closing:
                     return
                 # Detect permanent auth/permission failures that will never
-                # succeed on retry �?stop reconnecting instead of looping forever.
+                # succeed on retry é¥?stop reconnecting instead of looping forever.
                 import aiohttp
                 err_str = str(exc).lower()
                 if isinstance(exc, aiohttp.WSServerHandshakeError) and exc.status in (401, 403):
-                    logger.error("Mattermost WS auth failed (HTTP %d) �?stopping reconnect", exc.status)
+                    logger.error("Mattermost WS auth failed (HTTP %d) é¥?stopping reconnect", exc.status)
                     return
                 if "401" in err_str or "403" in err_str or "unauthorized" in err_str:
-                    logger.error("Mattermost WS permanent error: %s �?stopping reconnect", exc)
+                    logger.error("Mattermost WS permanent error: %s é¥?stopping reconnect", exc)
                     return
-                logger.warning("Mattermost WS error: %s �?reconnecting in %.0fs", exc, delay)
+                logger.warning("Mattermost WS error: %s é¥?reconnecting in %.0fs", exc, delay)
 
             if self._closing:
                 return
@@ -538,7 +538,7 @@ class MattermostAdapter(BasePlatformAdapter):
 
     async def _ws_connect_and_listen(self) -> None:
         """Single WebSocket session: connect, authenticate, process events."""
-        # Build WS URL: https:// �?wss://, http:// �?ws://
+        # Build WS URL: https:// é«?wss://, http:// é«?ws://
         ws_url = re.sub(r"^http", "ws", self._base_url) + "/api/v4/websocket"
         logger.info("Mattermost: connecting to %s", ws_url)
 

@@ -67,7 +67,7 @@ class TestDelegateRequirements(unittest.TestCase):
         self.assertIn("context", props)
         self.assertIn("toolsets", props)
         self.assertIn("max_iterations", props)
-        self.assertNotIn("maxItems", props["tasks"])  # removed �?limit is now runtime-configurable
+        self.assertNotIn("maxItems", props["tasks"])  # removed é¥?limit is now runtime-configurable
 
 
 class TestChildSystemPrompt(unittest.TestCase):
@@ -366,7 +366,7 @@ class TestToolNamePreservation(unittest.TestCase):
                 )
             except NameError as exc:
                 self.fail(
-                    f"_build_child_agent raised NameError �?"
+                    f"_build_child_agent raised NameError é¥?"
                     f"_saved_tool_names leaked back into wrong scope: {exc}"
                 )
 
@@ -501,17 +501,17 @@ class TestDelegateObservability(unittest.TestCase):
             # All three tool calls should have results
             self.assertEqual(len(trace), 3)
 
-            # First: web_search �?ok
+            # First: web_search é«?ok
             self.assertEqual(trace[0]["tool"], "web_search")
             self.assertEqual(trace[0]["status"], "ok")
             self.assertIn("result_bytes", trace[0])
 
-            # Second: web_search �?error
+            # Second: web_search é«?error
             self.assertEqual(trace[1]["tool"], "web_search")
             self.assertEqual(trace[1]["status"], "error")
             self.assertIn("result_bytes", trace[1])
 
-            # Third: terminal �?ok
+            # Third: terminal é«?ok
             self.assertEqual(trace[2]["tool"], "terminal")
             self.assertEqual(trace[2]["status"], "ok")
             self.assertIn("result_bytes", trace[2])
@@ -709,7 +709,7 @@ class TestDelegationCredentialResolution(unittest.TestCase):
 
 
 class TestDelegationProviderIntegration(unittest.TestCase):
-    """Integration tests: delegation config �?_run_single_child �?AIAgent construction."""
+    """Integration tests: delegation config é«?_run_single_child é«?AIAgent construction."""
 
     @patch("tools.delegate_tool._load_config")
     @patch("tools.delegate_tool._resolve_delegation_credentials")
@@ -748,7 +748,7 @@ class TestDelegationProviderIntegration(unittest.TestCase):
     @patch("tools.delegate_tool._load_config")
     @patch("tools.delegate_tool._resolve_delegation_credentials")
     def test_cross_provider_delegation(self, mock_creds, mock_cfg):
-        """Parent on Nous, subagent on OpenRouter �?full credential switch."""
+        """Parent on Nous, subagent on OpenRouter é¥?full credential switch."""
         mock_cfg.return_value = {
             "max_iterations": 45,
             "model": "google/gemini-3-flash-preview",

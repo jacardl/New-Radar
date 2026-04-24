@@ -7,7 +7,7 @@ import math
 import inspect
 from typing import Dict, List, Optional, Tuple
 
-# ========== 单卡锁定（在导入 torch/transformers 前执行） ==========
+# ========== åå¡éå®ï¼å¨å¯¼å¥ torch/transformers åæ§è¡ï¼ ==========
 def _extract_gpu_arg(argv: List[str], default: str = "0") -> str:
     for i, arg in enumerate(argv):
         if arg.startswith("--gpu="):
@@ -21,12 +21,12 @@ try:
     gpu_to_use = _extract_gpu_arg(sys.argv, default="0")
 except Exception:
     gpu_to_use = "0"
-# 若未设置或暴露了多卡，则强制只暴露单卡（默认0）以确保直接运行稳定
+# è¥æªè®¾ç½®ææ´é²äºå¤å¡ï¼åå¼ºå¶åªæ´é²åå¡ï¼é»è®¤0ï¼ä»¥ç¡®ä¿ç´æ¥è¿è¡ç¨³å®
 if (not env_vis) or ("," in env_vis):
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_to_use
 os.environ.setdefault("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
 
-# 清理可能由外部启动器注入的分布式环境变量，避免误触多�?分布�?
+# æ¸çå¯è½ç±å¤é¨å¯å¨å¨æ³¨å¥çåå¸å¼ç¯å¢åéï¼é¿åè¯¯è§¦å¤å?åå¸å¼?
 for _k in ["RANK", "LOCAL_RANK", "WORLD_SIZE"]:
     os.environ.pop(_k, None)
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
@@ -52,7 +52,7 @@ try:
 except Exception:  # pragma: no cover
     EarlyStoppingCallback = None  # type: ignore
 
-# 预置可选中文基座模型（可扩展）
+# é¢ç½®å¯éä¸­æåºåº§æ¨¡åï¼å¯æ©å±ï¼
 BACKBONE_CANDIDATES: List[Tuple[str, str]] = [
     ("1) google-bert/bert-base-chinese", "google-bert/bert-base-chinese"),
     ("2) hfl/chinese-roberta-wwm-ext-large", "hfl/chinese-roberta-wwm-ext-large"),
@@ -66,11 +66,11 @@ BACKBONE_CANDIDATES: List[Tuple[str, str]] = [
 
 
 def prompt_backbone_interactive(current_id: str) -> str:
-    """交互式选择基座模型�?
+    """äº¤äºå¼éæ©åºåº§æ¨¡å
 
-    - 当处于非交互环境（stdin �?TTY）或设置了环境变�?NON_INTERACTIVE=1 时，直接返回 current_id�?
-    - 用户可输入序号选择预置项，或直接输入任�?Hugging Face 模型 ID�?
-    - 空回车使用当前默认�?
+    - å½å¤äºéäº¤äºç¯å¢ï¼stdin é?TTYï¼æè®¾ç½®äºç¯å¢åé?NON_INTERACTIVE=1 æ¶ï¼ç´æ¥è¿å current_id
+    - ç¨æ·å¯è¾å¥åºå·éæ©é¢ç½®é¡¹ï¼æç´æ¥è¾å¥ä»»æ?Hugging Face æ¨¡å ID
+    - ç©ºåè½¦ä½¿ç¨å½åé»è®¤
     """
     if os.environ.get("NON_INTERACTIVE", "0") == "1":
         return current_id
@@ -80,22 +80,22 @@ def prompt_backbone_interactive(current_id: str) -> str:
     except Exception:
         return current_id
 
-    print("\n可选中文基座模型（直接回车使用默认�?")
+    print("\nå¯éä¸­æåºåº§æ¨¡åï¼ç´æ¥åè½¦ä½¿ç¨é»è®¤ï¼?")
     for label, hf_id in BACKBONE_CANDIDATES:
         print(f"  {label}")
-    print(f"当前默认: {current_id}")
-    choice = input("请输入序号或直接粘贴模型ID（回车沿用默认）: ").strip()
+    print(f"å½åé»è®¤: {current_id}")
+    choice = input("è¯·è¾å¥åºå·æç´æ¥ç²è´´æ¨¡åIDï¼åè½¦æ²¿ç¨é»è®¤ï¼: ").strip()
     if not choice:
         return current_id
-    # 数字选项
+    # æ°å­éé¡¹
     if choice.isdigit():
         idx = int(choice)
         for label, hf_id in BACKBONE_CANDIDATES:
             if label.startswith(f"{idx})"):
                 return hf_id
-        print("未找到该序号，沿用默认�?)
+        print("æªæ¾å°è¯¥åºå·ï¼æ²¿ç¨é»è®¤)
         return current_id
-    # 自定�?HF 模型 ID
+    # èªå®ä¹?HF æ¨¡å ID
     return choice
 
 
@@ -115,12 +115,12 @@ def ensure_base_model_local(model_name_or_path: str, local_model_root: str) -> T
     def is_ready(path: str) -> bool:
         return os.path.isdir(path) and os.path.isfile(os.path.join(path, "config.json"))
 
-    # 1) 本地现成
+    # 1) æ¬å°ç°æ
     if is_ready(base_dir):
         tokenizer = AutoTokenizer.from_pretrained(base_dir)
         return base_dir, tokenizer
 
-    # 2) 本机缓存
+    # 2) æ¬æºç¼å­
     try:
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, local_files_only=True)
         base = AutoModel.from_pretrained(model_name_or_path, local_files_only=True)
@@ -131,7 +131,7 @@ def ensure_base_model_local(model_name_or_path: str, local_model_root: str) -> T
     except Exception:
         pass
 
-    # 3) 远程下载
+    # 3) è¿ç¨ä¸è½½
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     base = AutoModel.from_pretrained(model_name_or_path)
     os.makedirs(base_dir, exist_ok=True)
@@ -217,19 +217,19 @@ def autodetect_columns(df: pd.DataFrame, text_col: str, label_col: str) -> Tuple
                 break
     if t == "auto" or l == "auto":
         raise ValueError(
-            f"无法自动识别列名，请显式传入 --text_col �?--label_col。现有列: {list(df.columns)}"
+            f"æ æ³èªå¨è¯å«ååï¼è¯·æ¾å¼ä¼ å¥ --text_col ä¸?--label_colãç°æå: {list(df.columns)}"
         )
     return t, l
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="使用 google-bert/bert-base-chinese 在本目录数据集上进行文本分类微调")
+    parser = argparse.ArgumentParser(description="ä½¿ç¨ google-bert/bert-base-chinese å¨æ¬ç®å½æ°æ®éä¸è¿è¡ææ¬åç±»å¾®è°")
     parser.add_argument("--train_file", type=str, default="./dataset/web_text_zh_train.csv")
     parser.add_argument("--valid_file", type=str, default="./dataset/web_text_zh_valid.csv")
-    parser.add_argument("--text_col", type=str, default="auto", help="文本列名，默认自动识�?)
-    parser.add_argument("--label_col", type=str, default="auto", help="标签列名，默认自动识�?)
-    parser.add_argument("--model_root", type=str, default="./model", help="本地模型根目�?)
-    parser.add_argument("--pretrained_name", type=str, default="google-bert/bert-base-chinese", help="Hugging Face 模型ID；留空则进入交互选择")
+    parser.add_argument("--text_col", type=str, default="auto", help="ææ¬ååï¼é»è®¤èªå¨è¯å?)
+    parser.add_argument("--label_col", type=str, default="auto", help="æ ç­¾ååï¼é»è®¤èªå¨è¯å?)
+    parser.add_argument("--model_root", type=str, default="./model", help="æ¬å°æ¨¡åæ ¹ç®å½?)
+    parser.add_argument("--pretrained_name", type=str, default="google-bert/bert-base-chinese", help="Hugging Face æ¨¡åIDï¼çç©ºåè¿å¥äº¤äºéæ©")
     parser.add_argument("--save_subdir", type=str, default="bert-chinese-classifier")
     parser.add_argument("--max_length", type=int, default=128)
     parser.add_argument("--batch_size", type=int, default=64)
@@ -239,10 +239,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--warmup_ratio", type=float, default=0.1)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--fp16", action="store_true")
-    parser.add_argument("--gpu", type=str, default=os.environ.get("CUDA_VISIBLE_DEVICES", "0"), help="指定单卡 GPU，如 0 �?1")
-    parser.add_argument("--eval_fraction", type=float, default=0.25, help="每多少个 epoch 做一次评估与保存，例�?0.25 表示每四分之一�?epoch")
-    parser.add_argument("--early_stop_patience", type=int, default=5, help="早停耐心（以评估轮次计）")
-    parser.add_argument("--early_stop_threshold", type=float, default=0.0, help="早停最小改善阈值（�?metric_for_best_model 同单位）")
+    parser.add_argument("--gpu", type=str, default=os.environ.get("CUDA_VISIBLE_DEVICES", "0"), help="æå®åå¡ GPUï¼å¦ 0 æ?1")
+    parser.add_argument("--eval_fraction", type=float, default=0.25, help="æ¯å¤å°ä¸ª epoch åä¸æ¬¡è¯ä¼°ä¸ä¿å­ï¼ä¾å¦?0.25 è¡¨ç¤ºæ¯ååä¹ä¸ä¸?epoch")
+    parser.add_argument("--early_stop_patience", type=int, default=5, help="æ©åèå¿ï¼ä»¥è¯ä¼°è½®æ¬¡è®¡ï¼")
+    parser.add_argument("--early_stop_threshold", type=float, default=0.0, help="æ©åæå°æ¹åéå¼ï¼ä¸?metric_for_best_model ååä½ï¼")
     return parser.parse_args()
 
 
@@ -254,56 +254,56 @@ def main() -> None:
     model_root = args.model_root if os.path.isabs(args.model_root) else os.path.join(script_dir, args.model_root)
     os.makedirs(model_root, exist_ok=True)
 
-    # 交互式选择基座模型（若允许交互且未通过环境禁用�?
+    # äº¤äºå¼éæ©åºåº§æ¨¡åï¼è¥åè®¸äº¤äºä¸æªéè¿ç¯å¢ç¦ç¨ï¼?
     selected_model_id = prompt_backbone_interactive(args.pretrained_name)
-    # 确保基础模型就绪
+    # ç¡®ä¿åºç¡æ¨¡åå°±ç»ª
     base_dir, tokenizer = ensure_base_model_local(selected_model_id, model_root)
-    print(f"[Info] 使用基础模型目录: {base_dir}")
+    print(f"[Info] ä½¿ç¨åºç¡æ¨¡åç®å½: {base_dir}")
 
-    # 读取数据
+    # è¯»åæ°æ®
     train_path = args.train_file if os.path.isabs(args.train_file) else os.path.join(script_dir, args.train_file)
     valid_path = args.valid_file if os.path.isabs(args.valid_file) else os.path.join(script_dir, args.valid_file)
     if not os.path.isfile(train_path):
-        raise FileNotFoundError(f"训练集不存在: {train_path}")
+        raise FileNotFoundError(f"è®­ç»éä¸å­å¨: {train_path}")
     train_df = pd.read_csv(train_path)
     if not os.path.isfile(valid_path):
-        # 若未提供或不存在验证集，自动切分
+        # è¥æªæä¾æä¸å­å¨éªè¯éï¼èªå¨åå
         shuffled = train_df.sample(frac=1.0, random_state=args.seed).reset_index(drop=True)
         split_idx = int(len(shuffled) * 0.9)
         valid_df = shuffled.iloc[split_idx:].reset_index(drop=True)
         train_df = shuffled.iloc[:split_idx].reset_index(drop=True)
     else:
         valid_df = pd.read_csv(valid_path)
-    print(f"[Info] 训练�? {train_path} | 样本�? {len(train_df)}")
-    print(f"[Info] 验证�? {valid_path if os.path.isfile(valid_path) else '(从训练集切分)'} | 样本�? {len(valid_df)}")
+    print(f"[Info] è®­ç»é? {train_path} | æ ·æ¬æ? {len(train_df)}")
+    print(f"[Info] éªè¯é? {valid_path if os.path.isfile(valid_path) else '(ä»è®­ç»éåå)'} | æ ·æ¬æ? {len(valid_df)}")
 
-    # 自动识别列名
+    # èªå¨è¯å«åå
     text_col, label_col = autodetect_columns(train_df, args.text_col, args.label_col)
-    print(f"[Info] 文本�? {text_col} | 标签�? {label_col}")
+    print(f"[Info] ææ¬å? {text_col} | æ ç­¾å? {label_col}")
 
-    # 标签映射（使�?训练集∪验证�?的并集，避免验证集中出现新标签导致报错）
+    # æ ç­¾æ å°ï¼ä½¿ç?è®­ç»éâªéªè¯é?çå¹¶éï¼é¿åéªè¯éä¸­åºç°æ°æ ç­¾å¯¼è´æ¥éï¼
     combined_labels_df = pd.concat([train_df[[label_col]], valid_df[[label_col]]], ignore_index=True)
     label2id, id2label = build_label_mappings(combined_labels_df, label_col)
     if len(label2id) < 2:
-        raise ValueError("标签类别数少�?2，无法训练分类模型�?)
-    print(f"[Info] 标签类别�? {len(label2id)}")
-    # 提示验证集中未出现在训练集的标签数量
+        raise ValueError("æ ç­¾ç±»å«æ°å°äº?2ï¼æ æ³è®­ç»åç±»æ¨¡å)
+    print(f"[Info] æ ç­¾ç±»å«æ? {len(label2id)}")
+    # æç¤ºéªè¯éä¸­æªåºç°å¨è®­ç»éçæ ç­¾æ°é
     try:
         train_label_set = set(str(x) for x in train_df[label_col].dropna().astype(str).tolist())
         valid_label_set = set(str(x) for x in valid_df[label_col].dropna().astype(str).tolist())
         unseen_in_train = sorted(valid_label_set - train_label_set)
         if unseen_in_train:
             preview = ", ".join(unseen_in_train[:10])
-            print(f"[Warn] 验证集中存在 {len(unseen_in_train)} 个训练未出现的标签（已纳入映射以避免报错）。示�? {preview} ...")
+            print(f"[Warn] éªè¯éä¸­å­å¨ {len(unseen_in_train)} ä¸ªè®­ç»æªåºç°çæ ç­¾ï¼å·²çº³å¥æ å°ä»¥é¿åæ¥éï¼ãç¤ºä¾? {preview} ...")
     except Exception:
         pass
 
-    # 数据�?
+    # æ°æ®é?
     train_dataset = TextClassificationDataset(train_df, tokenizer, text_col, label_col, label2id, args.max_length)
     eval_dataset = TextClassificationDataset(valid_df, tokenizer, text_col, label_col, label2id, args.max_length)
     collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    # 模型
+    # æ¨¡å
     config = AutoConfig.from_pretrained(
         base_dir,
         num_labels=len(label2id),
@@ -316,10 +316,10 @@ def main() -> None:
         ignore_mismatched_sizes=True,
     )
 
-    # 训练参数
+    # è®­ç»åæ°
     output_dir = os.path.join(model_root, args.save_subdir)
     os.makedirs(output_dir, exist_ok=True)
-    # 训练参数（兼容不�?transformers 版本�?
+    # è®­ç»åæ°ï¼å¼å®¹ä¸å?transformers çæ¬ï¼?
     args_dict = {
         "output_dir": output_dir,
         "per_device_train_batch_size": args.batch_size,
@@ -335,15 +335,15 @@ def main() -> None:
     sig = inspect.signature(TrainingArguments.__init__)
     allowed = set(sig.parameters.keys())
 
-    # 可选参数（仅在支持时添加，尽量简化与参考实现一致以提升兼容性）
+    # å¯éåæ°ï¼ä»å¨æ¯ææ¶æ·»å ï¼å°½éç®åä¸åèå®ç°ä¸è´ä»¥æåå¼å®¹æ§ï¼
     if "warmup_ratio" in allowed:
         args_dict["warmup_ratio"] = args.warmup_ratio
     if "report_to" in allowed:
         args_dict["report_to"] = []
-    # 评估/保存步进：按 eval_fraction 折算每个 epoch 的步�?
+    # è¯ä¼°/ä¿å­æ­¥è¿ï¼æ eval_fraction æç®æ¯ä¸ª epoch çæ­¥æ?
     steps_per_epoch = max(1, math.ceil(len(train_dataset) / max(1, args.batch_size)))
     eval_every_steps = max(1, math.ceil(steps_per_epoch * max(0.01, min(1.0, args.eval_fraction))))
-    # 策略式（�?旧版本字段名兼容�?
+    # ç­ç¥å¼ï¼æ?æ§çæ¬å­æ®µåå¼å®¹ï¼?
     key_eval = "evaluation_strategy" if "evaluation_strategy" in allowed else ("eval_strategy" if "eval_strategy" in allowed else None)
     if key_eval:
         args_dict[key_eval] = "steps"
@@ -355,10 +355,10 @@ def main() -> None:
         args_dict["save_steps"] = eval_every_steps
     if "save_total_limit" in allowed:
         args_dict["save_total_limit"] = 5
-    # 将日志步长与评估/保存步长对齐，减少刷�?
+    # å°æ¥å¿æ­¥é¿ä¸è¯ä¼°/ä¿å­æ­¥é¿å¯¹é½ï¼åå°å·å±?
     if "logging_steps" in allowed:
         args_dict["logging_steps"] = eval_every_steps
-    # 最优模型回滚（仅当评估与保存策略一致时开启）
+    # æä¼æ¨¡ååæ»ï¼ä»å½è¯ä¼°ä¸ä¿å­ç­ç¥ä¸è´æ¶å¼å¯ï¼
     if "metric_for_best_model" in allowed:
         args_dict["metric_for_best_model"] = "f1"
     if "greater_is_better" in allowed:
@@ -369,18 +369,18 @@ def main() -> None:
         if eval_strat == save_strat and eval_strat in ("steps", "epoch"):
             args_dict["load_best_model_at_end"] = True
 
-    # 兼容�?warmup_ratio 的版本：若支�?warmup_steps 则忽略比�?
+    # å¼å®¹æ?warmup_ratio ççæ¬ï¼è¥æ¯æ?warmup_steps åå¿½ç¥æ¯ä¾?
     if "warmup_ratio" not in allowed and "warmup_steps" in allowed:
-        # 不计算总步数，默认 0
+        # ä¸è®¡ç®æ»æ­¥æ°ï¼é»è®¤ 0
         args_dict["warmup_steps"] = 0
 
-    # 若不支持策略式参数：退化为�?eval_every_steps 步保�?评估
+    # è¥ä¸æ¯æç­ç¥å¼åæ°ï¼éåä¸ºæ¯?eval_every_steps æ­¥ä¿å­?è¯ä¼°
     if "save_strategy" not in allowed and "save_steps" in allowed:
         args_dict["save_steps"] = eval_every_steps
     if ("evaluation_strategy" not in allowed and "eval_strategy" not in allowed) and "eval_steps" in allowed:
         args_dict["eval_steps"] = eval_every_steps
 
-    # 如果支持 load_best_model_at_end，但无法同时设置评估/保存策略，则关闭它以避免报错
+    # å¦ææ¯æ load_best_model_at_endï¼ä½æ æ³åæ¶è®¾ç½®è¯ä¼°/ä¿å­ç­ç¥ï¼åå³é­å®ä»¥é¿åæ¥é
     if "load_best_model_at_end" in allowed:
         want_load_best = args_dict.get("load_best_model_at_end", False)
         eval_set = args_dict.get("evaluation_strategy", None)
@@ -389,7 +389,7 @@ def main() -> None:
             args_dict["load_best_model_at_end"] = False
 
     training_args = TrainingArguments(**args_dict)
-    print("[Info] 训练参数要点:")
+    print("[Info] è®­ç»åæ°è¦ç¹:")
     print(f"       epochs={args.num_epochs}, batch_size={args.batch_size}, lr={args.learning_rate}, weight_decay={args.weight_decay}")
     print(f"       max_length={args.max_length}, seed={args.seed}, fp16={args.fp16}")
     if "warmup_ratio" in allowed and "warmup_ratio" in args_dict:
@@ -422,19 +422,19 @@ def main() -> None:
         compute_metrics=compute_metrics_fn,
         callbacks=callbacks,
     )
-    # 设备�?GPU 信息
+    # è®¾å¤ä¸?GPU ä¿¡æ¯
     try:
         device_cnt = torch.cuda.device_count()
         dev_name = torch.cuda.get_device_name(0) if device_cnt > 0 else "cpu"
-        print(f"[Info] CUDA 可见设备�? {device_cnt}, 当前设备: {dev_name}, CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')}")
+        print(f"[Info] CUDA å¯è§è®¾å¤æ? {device_cnt}, å½åè®¾å¤: {dev_name}, CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')}")
     except Exception:
         pass
 
-    print("[Info] 开始训�?...")
+    print("[Info] å¼å§è®­ç»?...")
 
     trainer.train()
 
-    # 保存
+    # ä¿å­
     tokenizer.save_pretrained(output_dir)
     trainer.model.config.id2label = {int(i): str(l) for i, l in id2label.items()}
     trainer.model.config.label2id = {str(l): int(i) for l, i in label2id.items()}
@@ -443,7 +443,7 @@ def main() -> None:
         best_metric = getattr(trainer.state, "best_metric", None)
         best_ckpt = getattr(trainer.state, "best_model_checkpoint", None)
         if best_metric is not None and best_ckpt is not None:
-            print(f"[Info] 最优模�? metric={best_metric:.6f} | checkpoint={best_ckpt}")
+            print(f"[Info] æä¼æ¨¡å? metric={best_metric:.6f} | checkpoint={best_ckpt}")
     except Exception:
         pass
 
@@ -455,7 +455,7 @@ def main() -> None:
             indent=2,
         )
 
-    # 训练曲线：可选保存训练与评估 loss
+    # è®­ç»æ²çº¿ï¼å¯éä¿å­è®­ç»ä¸è¯ä¼° loss
     try:
         import matplotlib.pyplot as plt  # type: ignore
         logs = trainer.state.log_history
@@ -483,7 +483,7 @@ def main() -> None:
     except Exception:
         pass
 
-    print(f"微调完成，模型已保存�? {output_dir}")
+    print(f"å¾®è°å®æï¼æ¨¡åå·²ä¿å­å? {output_dir}")
 
 
 if __name__ == "__main__":

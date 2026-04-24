@@ -16,7 +16,7 @@ class BrowserbaseProvider(CloudBrowserProvider):
     """Browserbase (https://browserbase.com) cloud browser backend.
 
     This provider requires direct BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID
-    credentials.  Managed Nous gateway support has been removed �?the Nous
+    credentials.  Managed Nous gateway support has been removed é¥?the Nous
     subscription now routes through Browser Use instead.
     """
 
@@ -102,7 +102,7 @@ class BrowserbaseProvider(CloudBrowserProvider):
         proxies_fallback = False
         keepalive_fallback = False
 
-        # Handle 402 �?paid features unavailable
+        # Handle 402 é¥?paid features unavailable
         if response.status_code == 402:
             if enable_keep_alive:
                 keepalive_fallback = True
@@ -164,7 +164,7 @@ class BrowserbaseProvider(CloudBrowserProvider):
         try:
             config = self._get_config()
         except ValueError:
-            logger.warning("Cannot close Browserbase session %s �?missing credentials", session_id)
+            logger.warning("Cannot close Browserbase session %s é¥?missing credentials", session_id)
             return False
 
         try:
@@ -198,7 +198,7 @@ class BrowserbaseProvider(CloudBrowserProvider):
     def emergency_cleanup(self, session_id: str) -> None:
         config = self._get_config_or_none()
         if config is None:
-            logger.warning("Cannot emergency-cleanup Browserbase session %s �?missing credentials", session_id)
+            logger.warning("Cannot emergency-cleanup Browserbase session %s é¥?missing credentials", session_id)
             return
         try:
             requests.post(

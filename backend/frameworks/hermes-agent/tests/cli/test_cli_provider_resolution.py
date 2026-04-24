@@ -462,7 +462,7 @@ def test_codex_config_model_not_replaced_by_normalization(monkeypatch):
 
     shell = cli.HermesCLI(compact=True, max_turns=1)
 
-    # Config model is NOT the global default �?user made a deliberate choice
+    # Config model is NOT the global default é¥?user made a deliberate choice
     assert shell._model_is_default is False
     assert shell._ensure_runtime_credentials() is True
     assert shell.provider == "openai-codex"
@@ -498,7 +498,7 @@ def test_codex_provider_preserves_explicit_codex_model(monkeypatch):
 
 
 def test_codex_provider_strips_provider_prefix_from_model(monkeypatch):
-    """openai/gpt-5.3-codex should become gpt-5.3-codex �?the Codex
+    """openai/gpt-5.3-codex should become gpt-5.3-codex é¥?the Codex
     Responses API does not accept provider-prefixed model slugs."""
     cli = _import_cli()
 
@@ -576,7 +576,7 @@ def test_model_flow_custom_saves_verified_v1_base_url(monkeypatch, capsys):
     monkeypatch.setattr("hermes_cli.config.save_config", lambda cfg: None)
 
     # After the probe detects a single model ("llm"), the flow asks
-    # "Use this model? [Y/n]:" �?confirm with Enter, then context length,
+    # "Use this model? [Y/n]:" é¥?confirm with Enter, then context length,
     # then display name.
     answers = iter(["http://localhost:8000", "local-key", "", "", ""])
     monkeypatch.setattr("builtins.input", lambda _prompt="": next(answers))
@@ -587,7 +587,7 @@ def test_model_flow_custom_saves_verified_v1_base_url(monkeypatch, capsys):
 
     assert "Saving the working base URL instead" in output
     assert "Detected model: llm" in output
-    # OPENAI_BASE_URL is no longer saved to .env �?config.yaml is authoritative
+    # OPENAI_BASE_URL is no longer saved to .env é¥?config.yaml is authoritative
     assert "OPENAI_BASE_URL" not in saved_env
     assert saved_env["MODEL"] == "llm"
 
@@ -645,7 +645,7 @@ def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# _auto_provider_name �?unit tests
+# _auto_provider_name é¥?unit tests
 # ---------------------------------------------------------------------------
 
 def test_auto_provider_name_localhost():

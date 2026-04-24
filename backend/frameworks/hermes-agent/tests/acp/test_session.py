@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.session �?SessionManager and SessionState."""
+"""Tests for acp_adapter.session é¥?SessionManager and SessionState."""
 
 import contextlib
 import io
@@ -73,7 +73,7 @@ class TestForkSession:
         assert len(forked.history) == 2
         assert forked.history[0]["content"] == "hello"
 
-        # But a deep copy �?mutating one doesn't affect the other
+        # But a deep copy é¥?mutating one doesn't affect the other
         forked.history.append({"role": "user", "content": "extra"})
         assert len(original.history) == 2
         assert len(forked.history) == 3
@@ -122,7 +122,7 @@ class TestListAndCleanup:
 
 
 # ---------------------------------------------------------------------------
-# persistence �?sessions survive process restarts (via SessionDB)
+# persistence é¥?sessions survive process restarts (via SessionDB)
 # ---------------------------------------------------------------------------
 
 

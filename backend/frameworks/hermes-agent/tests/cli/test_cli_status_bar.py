@@ -84,7 +84,7 @@ class TestCLIStatusBar:
         cli_obj = _make_cli()
 
         class _Doc:
-            lines = ["�? * 10]
+            lines = ["æµ£? * 10]
 
         class _Buffer:
             document = _Doc()
@@ -118,7 +118,7 @@ class TestCLIStatusBar:
 
         mock_app = MagicMock()
         mock_app.output.get_size.return_value = MagicMock(columns=14)
-        with patch.object(HermesCLI, "_get_tui_prompt_text", return_value="�?"), \
+        with patch.object(HermesCLI, "_get_tui_prompt_text", return_value="é?"), \
              patch("prompt_toolkit.application.get_app", return_value=mock_app):
             assert _input_height() == 2
 
@@ -126,7 +126,7 @@ class TestCLIStatusBar:
         cli_obj = _make_cli()
 
         class _Doc:
-            lines = ["�? * 10]
+            lines = ["æµ£? * 10]
 
         class _Buffer:
             document = _Doc()
@@ -160,7 +160,7 @@ class TestCLIStatusBar:
 
         mock_app = MagicMock()
         mock_app.output.get_size.return_value = MagicMock(columns=14)
-        with patch.object(HermesCLI, "_get_tui_prompt_text", return_value="�?"), \
+        with patch.object(HermesCLI, "_get_tui_prompt_text", return_value="é?"), \
              patch("prompt_toolkit.application.get_app", return_value=mock_app), \
              patch("shutil.get_terminal_size") as mock_shutil:
             assert _input_height() == 2
@@ -193,7 +193,7 @@ class TestCLIStatusBar:
 
         text = cli_obj._build_status_bar_text(width=60)
 
-        assert "�? in text
+        assert "é¿? in text
         assert "$0.06" not in text  # cost hidden by default
         assert "15m" in text
         assert "200K" not in text
@@ -203,7 +203,7 @@ class TestCLIStatusBar:
 
         text = cli_obj._build_status_bar_text(width=100)
 
-        assert "�? in text
+        assert "é¿? in text
         assert "claude-sonnet-4-20250514" in text
 
     def test_minimal_tui_chrome_threshold(self):
@@ -247,7 +247,7 @@ class TestCLIStatusBar:
 
         fragments = cli_obj._get_voice_status_fragments(width=50)
 
-        assert fragments == [("class:voice-status", " 🎤 Ctrl+B ")]
+        assert fragments == [("class:voice-status", " é¦å¸³ Ctrl+B ")]
 
     def test_voice_recording_status_bar_compacts_on_narrow_terminals(self):
         cli_obj = _make_cli()
@@ -257,7 +257,7 @@ class TestCLIStatusBar:
 
         fragments = cli_obj._get_voice_status_fragments(width=50)
 
-        assert fragments == [("class:voice-status-recording", " �?REC ")]
+        assert fragments == [("class:voice-status-recording", " é¼?REC ")]
 
 
 class TestCLIUsageReport:

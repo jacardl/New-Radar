@@ -1,4 +1,4 @@
-"""Tests for hermes_cli/tips.py â€?random tip display at session start."""
+"""Tests for hermes_cli/tips.py Ã©Â¥?random tip display at session start."""
 
 import pytest
 from hermes_cli.tips import TIPS, get_random_tip
@@ -66,7 +66,7 @@ class TestTipIntegrationInCLI:
         """Verify the Rich markup format doesn't break."""
         tip = get_random_tip()
         color = "#B8860B"
-        markup = f"[dim {color}]âœ?Tip: {tip}[/]"
+        markup = f"[dim {color}]Ã©?Tip: {tip}[/]"
         # Should not contain nested/broken Rich tags
         assert markup.count("[/]") == 1
         assert "[dim #B8860B]" in markup

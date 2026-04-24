@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-朴素贝叶斯情感分析模型训练脚�?
+æ´ç´ è´å¶æ¯ææåææ¨¡åè®­ç»èæ?
 """
 import argparse
 import pandas as pd
@@ -14,25 +14,25 @@ from utils import stopwords
 
 
 class BayesModel(BaseModel):
-    """朴素贝叶斯情感分析模�?""
+    """æ´ç´ è´å¶æ¯ææåææ¨¡å?""
     
     def __init__(self):
         super().__init__("Bayes")
         
     def train(self, train_data: List[Tuple[str, int]], **kwargs) -> None:
-        """训练朴素贝叶斯模�?
+        """è®­ç»æ´ç´ è´å¶æ¯æ¨¡å?
         
         Args:
-            train_data: 训练数据，格式为[(text, label), ...]
-            **kwargs: 其他参数
+            train_data: è®­ç»æ°æ®ï¼æ ¼å¼ä¸º[(text, label), ...]
+            **kwargs: å¶ä»åæ°
         """
-        print(f"开始训�?{self.model_name} 模型...")
+        print(f"å¼å§è®­ç»?{self.model_name} æ¨¡å...")
         
-        # 准备数据
+        # åå¤æ°æ®
         df_train = pd.DataFrame(train_data, columns=["words", "label"])
         
-        # 特征编码（词袋模型）
-        print("构建词袋模型...")
+        # ç¹å¾ç¼ç ï¼è¯è¢æ¨¡åï¼
+        print("æå»ºè¯è¢æ¨¡å...")
         self.vectorizer = CountVectorizer(
             token_pattern=r'\[?\w+\]?', 
             stop_words=stopwords
@@ -41,52 +41,52 @@ class BayesModel(BaseModel):
         X_train = self.vectorizer.fit_transform(df_train["words"])
         y_train = df_train["label"]
         
-        print(f"特征维度: {X_train.shape[1]}")
+        print(f"ç¹å¾ç»´åº¦: {X_train.shape[1]}")
         
-        # 训练模型
-        print("训练朴素贝叶斯分类器...")
+        # è®­ç»æ¨¡å
+        print("è®­ç»æ´ç´ è´å¶æ¯åç±»å¨...")
         self.model = MultinomialNB()
         self.model.fit(X_train, y_train)
         
         self.is_trained = True
-        print(f"{self.model_name} 模型训练完成�?)
+        print(f"{self.model_name} æ¨¡åè®­ç»å®æï¼?)
         
     def predict(self, texts: List[str]) -> List[int]:
-        """预测文本情感
+        """é¢æµææ¬ææ
         
         Args:
-            texts: 待预测文本列�?
+            texts: å¾é¢æµææ¬åè¡?
             
         Returns:
-            预测结果列表
+            é¢æµç»æåè¡¨
         """
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，请先调用train方法")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼è¯·åè°ç¨trainæ¹æ³")
             
-        # 特征转换
+        # ç¹å¾è½¬æ¢
         X = self.vectorizer.transform(texts)
         
-        # 预测
+        # é¢æµ
         predictions = self.model.predict(X)
         
         return predictions.tolist()
     
     def predict_single(self, text: str) -> Tuple[int, float]:
-        """预测单条文本的情�?
+        """é¢æµåæ¡ææ¬çææ?
         
         Args:
-            text: 待预测文�?
+            text: å¾é¢æµææ?
             
         Returns:
             (predicted_label, confidence)
         """
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，请先调用train方法")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼è¯·åè°ç¨trainæ¹æ³")
             
-        # 特征转换
+        # ç¹å¾è½¬æ¢
         X = self.vectorizer.transform([text])
         
-        # 预测
+        # é¢æµ
         prediction = self.model.predict(X)[0]
         probabilities = self.model.predict_proba(X)[0]
         confidence = max(probabilities)
@@ -95,59 +95,59 @@ class BayesModel(BaseModel):
 
 
 def main():
-    """主函�?""
-    parser = argparse.ArgumentParser(description='朴素贝叶斯情感分析模型训�?)
+    """ä¸»å½æ?""
+    parser = argparse.ArgumentParser(description='æ´ç´ è´å¶æ¯ææåææ¨¡åè®­ç»?)
     parser.add_argument('--train_path', type=str, default='./data/weibo2018/train.txt',
-                        help='训练数据路径')
+                        help='è®­ç»æ°æ®è·¯å¾')
     parser.add_argument('--test_path', type=str, default='./data/weibo2018/test.txt',
-                        help='测试数据路径')
+                        help='æµè¯æ°æ®è·¯å¾')
     parser.add_argument('--model_path', type=str, default='./model/bayes_model.pkl',
-                        help='模型保存路径')
+                        help='æ¨¡åä¿å­è·¯å¾')
     parser.add_argument('--eval_only', action='store_true',
-                        help='仅评估已有模型，不进行训�?)
+                        help='ä»è¯ä¼°å·²ææ¨¡åï¼ä¸è¿è¡è®­ç»?)
     
     args = parser.parse_args()
     
-    # 创建模型
+    # åå»ºæ¨¡å
     model = BayesModel()
     
     if args.eval_only:
-        # 仅评估模�?
-        print("评估模式：加载已有模型进行评�?)
+        # ä»è¯ä¼°æ¨¡å¼?
+        print("è¯ä¼°æ¨¡å¼ï¼å è½½å·²ææ¨¡åè¿è¡è¯ä¼?)
         model.load_model(args.model_path)
         
-        # 加载测试数据
+        # å è½½æµè¯æ°æ®
         _, test_data = BaseModel.load_data(args.train_path, args.test_path)
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         model.evaluate(test_data)
     else:
-        # 训练模式
-        # 加载数据
+        # è®­ç»æ¨¡å¼
+        # å è½½æ°æ®
         train_data, test_data = BaseModel.load_data(args.train_path, args.test_path)
         
-        # 训练模型
+        # è®­ç»æ¨¡å
         model.train(train_data)
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         model.evaluate(test_data)
         
-        # 保存模型
+        # ä¿å­æ¨¡å
         model.save_model(args.model_path)
         
-        # 示例预测
-        print("\n示例预测:")
+        # ç¤ºä¾é¢æµ
+        print("\nç¤ºä¾é¢æµ:")
         test_texts = [
-            "今天天气真好，心情很�?,
-            "这部电影太无聊了，浪费时�?,
-            "哈哈哈，太有趣了"
+            "ä»å¤©å¤©æ°çå¥½ï¼å¿æå¾æ£?,
+            "è¿é¨çµå½±å¤ªæ èäºï¼æµªè´¹æ¶é?,
+            "åååï¼å¤ªæè¶£äº"
         ]
         
         for text in test_texts:
             pred, conf = model.predict_single(text)
-            sentiment = "正面" if pred == 1 else "负面"
-            print(f"文本: {text}")
-            print(f"预测: {sentiment} (置信�? {conf:.4f})")
+            sentiment = "æ­£é¢" if pred == 1 else "è´é¢"
+            print(f"ææ¬: {text}")
+            print(f"é¢æµ: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
             print()
 
 

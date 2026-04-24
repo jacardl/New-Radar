@@ -1,4 +1,4 @@
-"""Tests for tools/file_operations.py �?deny list, result dataclasses, helpers."""
+"""Tests for tools/file_operations.py é¥?deny list, result dataclasses, helpers."""
 
 import os
 import pytest

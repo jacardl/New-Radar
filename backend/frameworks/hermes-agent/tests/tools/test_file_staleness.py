@@ -91,7 +91,7 @@ class TestStalenessCheck(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops")
     def test_no_warning_when_file_unchanged(self, mock_ops):
-        """Read then write with no external modification �?no warning."""
+        """Read then write with no external modification é¥?no warning."""
         mock_ops.return_value = _make_fake_ops("original content\n", 18)
         read_file_tool(self._tmpfile, task_id="t1")
 
@@ -100,7 +100,7 @@ class TestStalenessCheck(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops")
     def test_warning_when_file_modified_externally(self, mock_ops):
-        """Read, then external modify, then write �?should warn."""
+        """Read, then external modify, then write é¥?should warn."""
         mock_ops.return_value = _make_fake_ops("original content\n", 18)
         read_file_tool(self._tmpfile, task_id="t1")
 
@@ -115,14 +115,14 @@ class TestStalenessCheck(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops")
     def test_no_warning_when_file_never_read(self, mock_ops):
-        """Writing a file that was never read �?no warning."""
+        """Writing a file that was never read é¥?no warning."""
         mock_ops.return_value = _make_fake_ops()
         result = json.loads(write_file_tool(self._tmpfile, "new content", task_id="t2"))
         self.assertNotIn("_warning", result)
 
     @patch("tools.file_tools._get_file_ops")
     def test_no_warning_for_new_file(self, mock_ops):
-        """Creating a new file �?no warning."""
+        """Creating a new file é¥?no warning."""
         mock_ops.return_value = _make_fake_ops()
         new_path = os.path.join(self._tmpdir, "brand_new.txt")
         result = json.loads(write_file_tool(new_path, "content", task_id="t3"))
@@ -134,7 +134,7 @@ class TestStalenessCheck(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops")
     def test_different_task_isolated(self, mock_ops):
-        """Task A reads, file changes, Task B writes �?no warning for B."""
+        """Task A reads, file changes, Task B writes é¥?no warning for B."""
         mock_ops.return_value = _make_fake_ops("original content\n", 18)
         read_file_tool(self._tmpfile, task_id="task_a")
 
@@ -187,7 +187,7 @@ class TestPatchStaleness(unittest.TestCase):
 
     @patch("tools.file_tools._get_file_ops")
     def test_patch_no_warning_when_fresh(self, mock_ops):
-        """Patch with no external changes �?no warning."""
+        """Patch with no external changes é¥?no warning."""
         mock_ops.return_value = _make_fake_ops("original line\n", 15)
         read_file_tool(self._tmpfile, task_id="p2")
 
@@ -233,7 +233,7 @@ class TestCheckFileStalenessHelper(unittest.TestCase):
                 "read_history": set(), "dedup": {},
                 "read_timestamps": {"/nonexistent/path": 99999.0},
             }
-        # File doesn't exist �?stat fails �?returns None (let write handle it)
+        # File doesn't exist é«?stat fails é«?returns None (let write handle it)
         self.assertIsNone(_check_file_staleness("/nonexistent/path", "t1"))
 
 

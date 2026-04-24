@@ -19,7 +19,7 @@ from hermes_constants import OPENROUTER_MODELS_URL
 logger = logging.getLogger(__name__)
 
 # Provider names that can appear as a "provider:" prefix before a model ID.
-# Only these are stripped �?Ollama-style "model:tag" colons (e.g. "qwen3.5:27b")
+# Only these are stripped é¥?Ollama-style "model:tag" colons (e.g. "qwen3.5:27b")
 # are preserved so the full model name reaches cache lookups and server queries.
 _PROVIDER_PREFIXES: frozenset[str] = frozenset({
     "openrouter", "nous", "openai-codex", "copilot", "copilot-acp",
@@ -49,10 +49,10 @@ _OLLAMA_TAG_PATTERN = re.compile(
 def _strip_provider_prefix(model: str) -> str:
     """Strip a recognised provider prefix from a model string.
 
-    ``"local:my-model"`` �?``"my-model"``
-    ``"qwen3.5:27b"``   �?``"qwen3.5:27b"``  (unchanged �?not a provider prefix)
-    ``"qwen:0.5b"``     �?``"qwen:0.5b"``    (unchanged �?Ollama model:tag)
-    ``"deepseek:latest"``�?``"deepseek:latest"``(unchanged �?Ollama model:tag)
+    ``"local:my-model"`` é«?``"my-model"``
+    ``"qwen3.5:27b"``   é«?``"qwen3.5:27b"``  (unchanged é¥?not a provider prefix)
+    ``"qwen:0.5b"``     é«?``"qwen:0.5b"``    (unchanged é¥?Ollama model:tag)
+    ``"deepseek:latest"``é«?``"deepseek:latest"``(unchanged é¥?Ollama model:tag)
     """
     if ":" not in model or model.startswith("http"):
         return model
@@ -91,12 +91,12 @@ DEFAULT_FALLBACK_CONTEXT = CONTEXT_PROBE_TIERS[0]
 # Sessions, model switches, and cron jobs should reject models below this.
 MINIMUM_CONTEXT_LENGTH = 64_000
 
-# Thin fallback defaults �?only broad model family patterns.
+# Thin fallback defaults é¥?only broad model family patterns.
 # These fire only when provider is unknown AND models.dev/OpenRouter/Anthropic
 # all miss. Replaced the previous 80+ entry dict.
 # For provider-specific context lengths, models.dev is the primary source.
 DEFAULT_CONTEXT_LENGTHS = {
-    # Anthropic Claude 4.6 (1M context) �?bare IDs only to avoid
+    # Anthropic Claude 4.6 (1M context) é¥?bare IDs only to avoid
     # fuzzy-match collisions (e.g. "anthropic/claude-sonnet-4" is a
     # substring of "anthropic/claude-sonnet-4.6").
     # OpenRouter-prefixed models resolve via OpenRouter live API or models.dev.
@@ -106,7 +106,7 @@ DEFAULT_CONTEXT_LENGTHS = {
     "claude-sonnet-4.6": 1000000,
     # Catch-all for older Claude models (must sort after specific entries)
     "claude": 200000,
-    # OpenAI �?GPT-5 family (most have 400k; specific overrides first)
+    # OpenAI é¥?GPT-5 family (most have 400k; specific overrides first)
     # Source: https://developers.openai.com/api/docs/models
     "gpt-5.4-nano": 400000,           # 400k (not 1.05M like full 5.4)
     "gpt-5.4-mini": 400000,           # 400k (not 1.05M like full 5.4)
@@ -127,17 +127,17 @@ DEFAULT_CONTEXT_LENGTHS = {
     "deepseek": 128000,
     # Meta
     "llama": 131072,
-    # Qwen �?specific model families before the catch-all.
+    # Qwen é¥?specific model families before the catch-all.
     # Official docs: https://help.aliyun.com/zh/model-studio/developer-reference/
     "qwen3-coder-plus": 1000000,  # 1M context
     "qwen3-coder": 262144,        # 256K context
     "qwen": 131072,
-    # MiniMax �?official docs: 204,800 context for all models
+    # MiniMax é¥?official docs: 204,800 context for all models
     # https://platform.minimax.io/docs/api-reference/text-anthropic-api
     "minimax": 204800,
     # GLM
     "glm": 202752,
-    # xAI Grok �?xAI /v1/models does not return context_length metadata,
+    # xAI Grok é¥?xAI /v1/models does not return context_length metadata,
     # so these hardcoded fallbacks prevent Hermes from probing-down to
     # the default 128k when the user points at https://api.x.ai/v1
     # via a custom provider. Values sourced from models.dev (2026-04).
@@ -158,7 +158,7 @@ DEFAULT_CONTEXT_LENGTHS = {
     "trinity": 262144,
     # OpenRouter
     "elephant": 262144,
-    # Hugging Face Inference Providers �?model IDs use org/name format
+    # Hugging Face Inference Providers é¥?model IDs use org/name format
     "Qwen/Qwen3.5-397B-A17B": 131072,
     "Qwen/Qwen3.5-35B-A3B": 131072,
     "deepseek-ai/DeepSeek-V3.2": 65536,
@@ -316,7 +316,7 @@ def detect_local_server_type(base_url: str) -> Optional[str]:
 
     try:
         with httpx.Client(timeout=2.0) as client:
-            # LM Studio exposes /api/v1/models �?check first (most specific)
+            # LM Studio exposes /api/v1/models é¥?check first (most specific)
             try:
                 r = client.get(f"{server_url}/api/v1/models")
                 if r.status_code == 200:
@@ -649,12 +649,12 @@ def parse_context_limit_from_error(error_msg: str) -> Optional[int]:
 def parse_available_output_tokens_from_error(error_msg: str) -> Optional[int]:
     """Detect an "output cap too large" error and return how many output tokens are available.
 
-    Background �?two distinct context errors exist:
-      1. "Prompt too long"  �?the INPUT itself exceeds the context window.
+    Background é¥?two distinct context errors exist:
+      1. "Prompt too long"  é¥?the INPUT itself exceeds the context window.
            Fix: compress history and/or halve context_length.
-      2. "max_tokens too large" �?input is fine, but input + requested_output > window.
+      2. "max_tokens too large" é¥?input is fine, but input + requested_output > window.
            Fix: reduce max_tokens (the output cap) for this call.
-           Do NOT touch context_length �?the window hasn't shrunk.
+           Do NOT touch context_length é¥?the window hasn't shrunk.
 
     Anthropic's API returns errors like:
       "max_tokens: 32768 > context_window: 200000 - input_tokens: 190000 = available_tokens: 10000"
@@ -673,7 +673,7 @@ def parse_available_output_tokens_from_error(error_msg: str) -> Optional[int]:
         return None
 
     # Extract the available_tokens figure.
-    # Anthropic format: "�?= available_tokens: 10000"
+    # Anthropic format: "é¥?= available_tokens: 10000"
     patterns = [
         r'available_tokens[:\s]+(\d+)',
         r'available\s+tokens[:\s]+(\d+)',
@@ -765,7 +765,7 @@ def _query_local_context_length(model: str, base_url: str) -> Optional[int]:
     """Query a local server for the model's context length."""
     import httpx
 
-    # Strip recognised provider prefix (e.g., "local:model-name" �?"model-name").
+    # Strip recognised provider prefix (e.g., "local:model-name" é«?"model-name").
     # Ollama "model:tag" colons (e.g. "qwen3.5:27b") are intentionally preserved.
     model = _strip_provider_prefix(model)
 
@@ -789,7 +789,7 @@ def _query_local_context_length(model: str, base_url: str) -> Optional[int]:
                     # Prefer explicit num_ctx from Modelfile parameters: this is
                     # the *runtime* context Ollama will actually allocate KV cache
                     # for. The GGUF model_info.context_length is the training max,
-                    # which can be larger than num_ctx �?using it here would let
+                    # which can be larger than num_ctx é¥?using it here would let
                     # Hermes grow conversations past the runtime limit and Ollama
                     # would silently truncate. Matches query_ollama_num_ctx().
                     params = data.get("parameters", "")
@@ -902,7 +902,7 @@ def _resolve_nous_context_length(model: str) -> Optional[int]:
 
     Nous model IDs are bare (e.g. 'claude-opus-4-6') while OpenRouter uses
     prefixed IDs (e.g. 'anthropic/claude-opus-4.6'). Try suffix matching
-    with version normalization (dot↔dash).
+    with version normalization (doté«æash).
     """
     metadata = fetch_model_metadata()  # OpenRouter cache
     # Exact match first
@@ -916,7 +916,7 @@ def _resolve_nous_context_length(model: str) -> Optional[int]:
         if bare.lower() == model.lower() or _normalize_model_version(bare).lower() == normalized:
             return entry.get("context_length")
 
-    # Partial prefix match for cases like gemini-3-flash �?gemini-3-flash-preview
+    # Partial prefix match for cases like gemini-3-flash é«?gemini-3-flash-preview
     # Require match to be at a word boundary (followed by -, :, or end of string)
     model_lower = model.lower()
     for or_id, entry in metadata.items():
@@ -951,11 +951,11 @@ def get_model_context_length(
     8. Thin hardcoded defaults (broad family patterns)
     9. Default fallback (128K)
     """
-    # 0. Explicit config override �?user knows best
+    # 0. Explicit config override é¥?user knows best
     if config_context_length is not None and isinstance(config_context_length, int) and config_context_length > 0:
         return config_context_length
 
-    # Normalise provider-prefixed model names (e.g. "local:model-name" �?
+    # Normalise provider-prefixed model names (e.g. "local:model-name" é«?
     # "model-name") so cache lookups and server queries use the bare ID that
     # local servers actually know about.  Ollama "model:tag" colons are preserved.
     model = _strip_provider_prefix(model)
@@ -967,7 +967,7 @@ def get_model_context_length(
             return cached
 
     # 2. Active endpoint metadata for truly custom/unknown endpoints.
-    # Known providers (Copilot, OpenAI, Anthropic, etc.) skip this �?their
+    # Known providers (Copilot, OpenAI, Anthropic, etc.) skip this é¥?their
     # /models endpoint may report a provider-imposed limit (e.g. Copilot
     # returns 128k) instead of the model's full context (400k).  models.dev
     # has the correct per-provider values and is checked at step 5+.
@@ -996,7 +996,7 @@ def get_model_context_length(
                     save_context_length(model, base_url, local_ctx)
                     return local_ctx
             logger.info(
-                "Could not detect context length for model %r at %s �?"
+                "Could not detect context length for model %r at %s é¥?"
                 "defaulting to %s tokens (probe-down). Set model.context_length "
                 "in config.yaml to override.",
                 model, base_url, f"{DEFAULT_FALLBACK_CONTEXT:,}",
@@ -1038,7 +1038,7 @@ def get_model_context_length(
     if model in metadata:
         return metadata[model].get("context_length", 128000)
 
-    # 8. Hardcoded defaults (fuzzy match �?longest key first for specificity)
+    # 8. Hardcoded defaults (fuzzy match é¥?longest key first for specificity)
     # Only check `default_model in model` (is the key a substring of the input).
     # The reverse (`model in default_model`) causes shorter names like
     # "claude-sonnet-4" to incorrectly match "claude-sonnet-4-6" and return 1M.
@@ -1056,7 +1056,7 @@ def get_model_context_length(
             save_context_length(model, base_url, local_ctx)
             return local_ctx
 
-    # 10. Default fallback �?128K
+    # 10. Default fallback é¥?128K
     return DEFAULT_FALLBACK_CONTEXT
 
 
@@ -1088,7 +1088,7 @@ def estimate_request_tokens_rough(
 
     Includes the major payload buckets Hermes sends to providers:
     system prompt, conversation messages, and tool schemas.  With 50+
-    tools enabled, schemas alone can add 20-30K tokens �?a significant
+    tools enabled, schemas alone can add 20-30K tokens é¥?a significant
     blind spot when only counting messages.
     """
     total_chars = 0

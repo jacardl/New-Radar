@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.events �?callback factories for ACP notifications."""
+"""Tests for acp_adapter.events é¥?callback factories for ACP notifications."""
 
 import asyncio
 from concurrent.futures import Future

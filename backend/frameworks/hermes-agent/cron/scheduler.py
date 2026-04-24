@@ -39,7 +39,7 @@ from hermes_time import now as _hermes_now
 
 logger = logging.getLogger(__name__)
 
-# Valid delivery platforms �?used to validate user-supplied platform names
+# Valid delivery platforms é¥?used to validate user-supplied platform names
 # in cron delivery targets, preventing env var enumeration via crafted names.
 _KNOWN_DELIVERY_PLATFORMS = frozenset({
     "telegram", "discord", "slack", "whatsapp", "signal",
@@ -90,7 +90,7 @@ def _resolve_delivery_target(job: dict) -> Optional[dict]:
                 "chat_id": str(origin["chat_id"]),
                 "thread_id": origin.get("thread_id"),
             }
-        # Origin missing (e.g. job created via API/script) �?try each
+        # Origin missing (e.g. job created via API/script) é¥?try each
         # platform's home channel as a fallback instead of silently dropping.
         for platform_name in ("matrix", "telegram", "discord", "slack", "bluebubbles"):
             chat_id = os.getenv(f"{platform_name.upper()}_HOME_CHANNEL", "")
@@ -159,7 +159,7 @@ def _resolve_delivery_target(job: dict) -> Optional[dict]:
     }
 
 
-# Media extension sets �?keep in sync with gateway/platforms/base.py:_process_message_background
+# Media extension sets é¥?keep in sync with gateway/platforms/base.py:_process_message_background
 _AUDIO_EXTS = frozenset({'.ogg', '.opus', '.mp3', '.wav', '.m4a'})
 _VIDEO_EXTS = frozenset({'.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp'})
 _IMAGE_EXTS = frozenset({'.jpg', '.jpeg', '.png', '.webp', '.gif'})
@@ -169,7 +169,7 @@ def _send_media_via_adapter(adapter, chat_id: str, media_files: list, metadata: 
     """Send extracted MEDIA files as native platform attachments via a live adapter.
 
     Routes each file to the appropriate adapter method (send_voice, send_image_file,
-    send_video, send_document) based on file extension �?mirroring the routing logic
+    send_video, send_document) based on file extension é¥?mirroring the routing logic
     in ``BasePlatformAdapter._process_message_background``.
     """
     from pathlib import Path
@@ -202,7 +202,7 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
     Deliver job output to the configured target (origin chat, specific platform, etc.).
 
     When ``adapters`` and ``loop`` are provided (gateway is running), tries to
-    use the live adapter first �?this supports E2EE rooms (e.g. Matrix) where
+    use the live adapter first é¥?this supports E2EE rooms (e.g. Matrix) where
     the standalone HTTP path cannot encrypt.  Falls back to standalone send if
     the adapter path fails or is unavailable.
 
@@ -214,7 +214,7 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
             msg = f"no delivery target resolved for deliver={job.get('deliver', 'local')}"
             logger.warning("Job '%s': %s", job["id"], msg)
             return msg
-        return None  # local-only jobs don't deliver �?not a failure
+        return None  # local-only jobs don't deliver é¥?not a failure
 
     platform_name = target["platform"]
     chat_id = target["chat_id"]
@@ -301,13 +301,13 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
     from gateway.platforms.base import BasePlatformAdapter
     media_files, cleaned_delivery_content = BasePlatformAdapter.extract_media(delivery_content)
 
-    # Prefer the live adapter when the gateway is running �?this supports E2EE
+    # Prefer the live adapter when the gateway is running é¥?this supports E2EE
     # rooms (e.g. Matrix) where the standalone HTTP path cannot encrypt.
     runtime_adapter = (adapters or {}).get(platform)
     if runtime_adapter is not None and loop is not None and getattr(loop, "is_running", lambda: False)():
         send_metadata = {"thread_id": thread_id} if thread_id else None
         try:
-            # Send cleaned text (MEDIA tags stripped) �?not the raw content
+            # Send cleaned text (MEDIA tags stripped) é¥?not the raw content
             text_to_send = cleaned_delivery_content.strip()
             adapter_ok = True
             if text_to_send:
@@ -343,7 +343,7 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
         result = asyncio.run(coro)
     except RuntimeError:
         # asyncio.run() checks for a running loop before awaiting the coroutine;
-        # when it raises, the original coro was never started �?close it to
+        # when it raises, the original coro was never started é¥?close it to
         # prevent "coroutine was never awaited" RuntimeWarning, then retry in a
         # fresh thread that has no running loop.
         coro.close()
@@ -417,7 +417,7 @@ def _run_job_script(script_path: str) -> tuple[bool, str]:
             are also validated to ensure they stay within the scripts dir.
 
     Returns:
-        (success, output) �?on failure *output* contains the error message so the
+        (success, output) é¥?on failure *output* contains the error message so the
         LLM can report the problem to the user.
     """
     from hermes_constants import get_hermes_home
@@ -433,7 +433,7 @@ def _run_job_script(script_path: str) -> tuple[bool, str]:
         path = (scripts_dir / raw).resolve()
 
     # Guard against path traversal, absolute path injection, and symlink
-    # escape �?scripts MUST reside within HERMES_HOME/scripts/.
+    # escape é¥?scripts MUST reside within HERMES_HOME/scripts/.
     try:
         path.relative_to(scripts_dir_resolved)
     except ValueError:
@@ -520,12 +520,12 @@ def _build_job_prompt(job: dict) -> str:
     cron_hint = (
         "[SYSTEM: You are running as a scheduled cron job. "
         "DELIVERY: Your final response will be automatically delivered "
-        "to the user �?do NOT use send_message or try to deliver "
+        "to the user é¥?do NOT use send_message or try to deliver "
         "the output yourself. Just produce your report/output as your "
         "final response and the system handles the rest. "
         "SILENT: If there is genuinely nothing new to report, respond "
         "with exactly \"[SILENT]\" (nothing else) to suppress delivery. "
-        "Never combine [SILENT] with content �?either report your "
+        "Never combine [SILENT] with content é¥?either report your "
         "findings normally, or say [SILENT] and nothing more.]\n\n"
     )
     prompt = cron_hint + prompt
@@ -545,7 +545,7 @@ def _build_job_prompt(job: dict) -> str:
         loaded = json.loads(skill_view(skill_name))
         if not loaded.get("success"):
             error = loaded.get("error") or f"Failed to load skill '{skill_name}'"
-            logger.warning("Cron job '%s': skill not found, skipping �?%s", job.get("name", job.get("id")), error)
+            logger.warning("Cron job '%s': skill not found, skipping é¥?%s", job.get("name", job.get("id")), error)
             skipped.append(skill_name)
             continue
 
@@ -565,7 +565,7 @@ def _build_job_prompt(job: dict) -> str:
             f"[SYSTEM: The following skill(s) were listed for this job but could not be found "
             f"and were skipped: {', '.join(skipped)}. "
             f"Start your response with a brief notice so the user is aware, e.g.: "
-            f"'⚠️ Skill(s) not found and skipped: {', '.join(skipped)}']"
+            f"'é¿çç¬ Skill(s) not found and skipped: {', '.join(skipped)}']"
         )
         parts.insert(0, notice)
 
@@ -772,7 +772,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         _inactivity_timeout = False
         try:
             if _cron_inactivity_limit is None:
-                # Unlimited �?just wait for the result.
+                # Unlimited é¥?just wait for the result.
                 result = _cron_future.result()
             else:
                 result = None
@@ -783,7 +783,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
                     if done:
                         result = _cron_future.result()
                         break
-                    # Agent still running �?check inactivity.
+                    # Agent still running é¥?check inactivity.
                     _idle_secs = 0.0
                     if hasattr(agent, "get_activity_summary"):
                         try:
@@ -826,7 +826,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
             raise TimeoutError(
                 f"Cron job '{job_name}' idle for "
                 f"{int(_secs_ago)}s (limit {int(_cron_inactivity_limit)}s) "
-                f"�?last activity: {_last_desc}"
+                f"é¥?last activity: {_last_desc}"
             )
 
         final_response = result.get("final_response", "") or ""
@@ -905,7 +905,7 @@ def tick(verbose: bool = True, adapters=None, loop=None) -> int:
     
     Args:
         verbose: Whether to print status messages
-        adapters: Optional dict mapping Platform �?live adapter (from gateway)
+        adapters: Optional dict mapping Platform é«?live adapter (from gateway)
         loop: Optional asyncio event loop (from gateway) for live adapter sends
     
     Returns:
@@ -922,7 +922,7 @@ def tick(verbose: bool = True, adapters=None, loop=None) -> int:
         elif msvcrt:
             msvcrt.locking(lock_fd.fileno(), msvcrt.LK_NBLCK, 1)
     except (OSError, IOError):
-        logger.debug("Tick skipped �?another instance holds the lock")
+        logger.debug("Tick skipped é¥?another instance holds the lock")
         if lock_fd is not None:
             lock_fd.close()
         return 0
@@ -955,10 +955,10 @@ def tick(verbose: bool = True, adapters=None, loop=None) -> int:
                 # Deliver the final response to the origin/target chat.
                 # If the agent responded with [SILENT], skip delivery (but
                 # output is already saved above).  Failed jobs always deliver.
-                deliver_content = final_response if success else f"⚠️ Cron job '{job.get('name', job['id'])}' failed:\n{error}"
+                deliver_content = final_response if success else f"é¿çç¬ Cron job '{job.get('name', job['id'])}' failed:\n{error}"
                 should_deliver = bool(deliver_content)
                 if should_deliver and success and SILENT_MARKER in deliver_content.strip().upper():
-                    logger.info("Job '%s': agent returned %s �?skipping delivery", job["id"], SILENT_MARKER)
+                    logger.info("Job '%s': agent returned %s é¥?skipping delivery", job["id"], SILENT_MARKER)
                     should_deliver = False
 
                 delivery_error = None

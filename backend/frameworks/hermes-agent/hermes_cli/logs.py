@@ -1,4 +1,4 @@
-"""``hermes logs`` �?view and filter Hermes log files.
+"""``hermes logs`` é¥?view and filter Hermes log files.
 
 Supports tailing, following, session filtering, level filtering,
 component filtering, and relative time ranges.  All log files live
@@ -26,21 +26,21 @@ from typing import Optional, Sequence
 
 from hermes_constants import get_hermes_home, display_hermes_home
 
-# Known log files (name �?filename)
+# Known log files (name é«?filename)
 LOG_FILES = {
     "agent": "agent.log",
     "errors": "errors.log",
     "gateway": "gateway.log",
 }
 
-# Log line timestamp regex �?matches "2026-04-05 22:35:00,123" or
+# Log line timestamp regex é¥?matches "2026-04-05 22:35:00,123" or
 # "2026-04-05 22:35:00" at the start of a line.
 _TS_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})")
 
-# Level extraction �?matches " INFO ", " WARNING ", " ERROR ", " DEBUG ", " CRITICAL "
+# Level extraction é¥?matches " INFO ", " WARNING ", " ERROR ", " DEBUG ", " CRITICAL "
 _LEVEL_RE = re.compile(r"\s(DEBUG|INFO|WARNING|ERROR|CRITICAL)\s")
 
-# Logger name extraction �?after level and optional session tag, the next
+# Logger name extraction é¥?after level and optional session tag, the next
 # non-space token before ":" is the logger name.
 # Matches: "INFO gateway.run:" or "INFO [sess_abc] tools.terminal_tool:"
 _LOGGER_NAME_RE = re.compile(
@@ -172,7 +172,7 @@ def tail_log(
     log_path = get_hermes_home() / "logs" / filename
     if not log_path.exists():
         print(f"Log file not found: {log_path}")
-        print(f"(Logs are created when Hermes runs �?try 'hermes chat' first)")
+        print(f"(Logs are created when Hermes runs é¥?try 'hermes chat' first)")
         sys.exit(1)
 
     # Parse --since into a datetime cutoff
@@ -238,7 +238,7 @@ def tail_log(
     if not follow:
         return
 
-    # Follow mode �?poll for new content
+    # Follow mode é¥?poll for new content
     try:
         _follow_log(log_path, min_level=min_level, session_filter=session,
                      since=since_dt, component_prefixes=component_prefixes)
@@ -286,7 +286,7 @@ def _read_last_n_lines(path: Path, n: int) -> list:
         if size == 0:
             return []
 
-        # For files up to 1MB, just read the whole thing �?simple and correct.
+        # For files up to 1MB, just read the whole thing é¥?simple and correct.
         if size <= 1_048_576:
             with open(path, "r", encoding="utf-8", errors="replace") as f:
                 all_lines = f.readlines()
@@ -387,4 +387,4 @@ def list_logs() -> None:
             found = True
 
     if not found:
-        print("  (no log files yet �?run 'hermes chat' to generate logs)")
+        print("  (no log files yet é¥?run 'hermes chat' to generate logs)")

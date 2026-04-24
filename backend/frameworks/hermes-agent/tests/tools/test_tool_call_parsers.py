@@ -1,5 +1,5 @@
 """
-Tests for environments/tool_call_parsers/ �?client-side tool call parsers.
+Tests for environments/tool_call_parsers/ â?client-side tool call parsers.
 
 These parsers extract structured tool_calls from raw model output text.
 Used in Phase 2 (VLLM/generate) where the server returns raw tokens.
@@ -25,7 +25,7 @@ except ImportError:
     pytest.skip("atroposlib not installed", allow_module_level=True)
 
 
-# ─── Registry tests ─────────────────────────────────────────────────────
+# --- Registry tests -----------------------------------------------------
 
 class TestParserRegistry:
     def test_list_parsers_returns_nonempty(self):
@@ -52,7 +52,7 @@ class TestParserRegistry:
             assert hasattr(parser, "parse")
 
 
-# ─── Hermes parser tests ────────────────────────────────────────────────
+# --- Hermes parser tests ------------------------------------------------
 
 class TestHermesParser:
     @pytest.fixture
@@ -114,7 +114,7 @@ class TestHermesParser:
         text = '<tool_call>not valid json</tool_call>'
         content, tool_calls = parser.parse(text)
         # Should either return None tool_calls or handle gracefully
-        # (implementation may vary �?some parsers return error tool calls)
+        # (implementation may vary â?some parsers return error tool calls)
 
     def test_truncated_tool_call(self, parser):
         """Test handling of unclosed tool_call tag (model truncated mid-generation)."""
@@ -124,7 +124,7 @@ class TestHermesParser:
         # Either parse it successfully or return None
 
 
-# ─── Parse result contract tests (applies to ALL parsers) ───────────────
+# --- Parse result contract tests (applies to ALL parsers) ---------------
 
 class TestParseResultContract:
     """Ensure all parsers conform to the ParseResult contract."""
@@ -159,7 +159,7 @@ class TestParseResultContract:
                 assert isinstance(tc.function.arguments, str)
 
 
-# ─── DeepSeek V3 parser tests ───────────────────────────────────────────
+# --- DeepSeek V3 parser tests -------------------------------------------
 
 class TestDeepSeekV3Parser:
     @pytest.fixture
@@ -174,8 +174,8 @@ class TestDeepSeekV3Parser:
 
     def test_single_tool_call(self, parser):
         text = (
-            '<｜tool▁calls▁begin�?<｜tool▁call▁begin�?function<｜tool▁sep�?get_weather\n'
-            '```json\n{"city": "London"}\n```<｜tool▁call▁end�?<｜tool▁calls▁end�?'
+            '<ï½toolâcallsâbeginï½?<ï½toolâcallâbeginï½?function<ï½toolâsepï½?get_weather\n'
+            '```json\n{"city": "London"}\n```<ï½toolâcallâendï½?<ï½toolâcallsâendï½?'
         )
         content, tool_calls = parser.parse(text)
         assert tool_calls is not None
@@ -186,12 +186,12 @@ class TestDeepSeekV3Parser:
 
     def test_multiple_tool_calls(self, parser):
         text = (
-            '<｜tool▁calls▁begin�?'
-            '<｜tool▁call▁begin�?function<｜tool▁sep�?get_weather\n'
-            '```json\n{"city": "London"}\n```<｜tool▁call▁end�?'
-            '<｜tool▁call▁begin�?function<｜tool▁sep�?get_time\n'
-            '```json\n{"timezone": "UTC"}\n```<｜tool▁call▁end�?'
-            '<｜tool▁calls▁end�?'
+            '<ï½toolâcallsâbeginï½?'
+            '<ï½toolâcallâbeginï½?function<ï½toolâsepï½?get_weather\n'
+            '```json\n{"city": "London"}\n```<ï½toolâcallâendï½?'
+            '<ï½toolâcallâbeginï½?function<ï½toolâsepï½?get_time\n'
+            '```json\n{"timezone": "UTC"}\n```<ï½toolâcallâendï½?'
+            '<ï½toolâcallsâendï½?'
         )
         content, tool_calls = parser.parse(text)
         assert tool_calls is not None
@@ -203,15 +203,15 @@ class TestDeepSeekV3Parser:
     def test_tool_call_with_preceding_text(self, parser):
         text = (
             'Let me check that for you.\n'
-            '<｜tool▁calls▁begin�?<｜tool▁call▁begin�?function<｜tool▁sep�?terminal\n'
-            '```json\n{"command": "ls"}\n```<｜tool▁call▁end�?<｜tool▁calls▁end�?'
+            '<ï½toolâcallsâbeginï½?<ï½toolâcallâbeginï½?function<ï½toolâsepï½?terminal\n'
+            '```json\n{"command": "ls"}\n```<ï½toolâcallâendï½?<ï½toolâcallsâendï½?'
         )
         content, tool_calls = parser.parse(text)
         assert tool_calls is not None
         assert len(tool_calls) == 1
 
 
-# ─── Mistral parser tests ───────────────────────────────────────────────
+# --- Mistral parser tests -----------------------------------------------
 
 class TestMistralParser:
     @pytest.fixture

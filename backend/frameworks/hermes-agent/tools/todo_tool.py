@@ -105,7 +105,7 @@ class TodoStore:
             "cancelled": "[~]",
         }
 
-        # Only inject pending/in_progress items �?completed/cancelled ones
+        # Only inject pending/in_progress items é¥?completed/cancelled ones
         # cause the model to re-do finished work after compression.
         active_items = [
             item for item in self._items
@@ -273,5 +273,5 @@ registry.register(
     handler=lambda args, **kw: todo_tool(
         todos=args.get("todos"), merge=args.get("merge", False), store=kw.get("store")),
     check_fn=check_todo_requirements,
-    emoji="📋",
+    emoji="é¦æµ",
 )

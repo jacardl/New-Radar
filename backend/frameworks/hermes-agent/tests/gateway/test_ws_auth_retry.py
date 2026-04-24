@@ -17,7 +17,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 class TestMattermostWSAuthRetry:
-    """gateway/platforms/mattermost.py �?_ws_loop()"""
+    """gateway/platforms/mattermost.py é¥?_ws_loop()"""
 
     def test_401_handshake_stops_reconnect(self):
         """A WSServerHandshakeError with status 401 should stop the loop."""
@@ -111,7 +111,7 @@ class TestMattermostWSAuthRetry:
 # ---------------------------------------------------------------------------
 
 class TestMatrixSyncAuthRetry:
-    """gateway/platforms/matrix.py �?_sync_loop()"""
+    """gateway/platforms/matrix.py é¥?_sync_loop()"""
 
     def test_unknown_token_sync_error_stops_loop(self):
         """A SyncError with M_UNKNOWN_TOKEN should stop syncing."""

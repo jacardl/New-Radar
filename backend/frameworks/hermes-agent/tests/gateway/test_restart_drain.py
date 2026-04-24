@@ -14,7 +14,7 @@ from tests.gateway.restart_test_helpers import make_restart_runner, make_restart
 
 @pytest.mark.asyncio
 async def test_restart_command_while_busy_requests_drain_without_interrupt(monkeypatch):
-    # Ensure INVOCATION_ID is NOT set �?systemd sets this in service mode,
+    # Ensure INVOCATION_ID is NOT set é¥?systemd sets this in service mode,
     # which changes the restart call signature.
     monkeypatch.delenv("INVOCATION_ID", raising=False)
     runner, _adapter = make_restart_runner()
@@ -31,7 +31,7 @@ async def test_restart_command_while_busy_requests_drain_without_interrupt(monke
 
     result = await runner._handle_message(event)
 
-    assert result == "�?Draining 1 active agent(s) before restart..."
+    assert result == "é´?Draining 1 active agent(s) before restart..."
     running_agent.interrupt.assert_not_called()
     runner.request_restart.assert_called_once_with(detached=True, via_service=False)
 
@@ -75,7 +75,7 @@ async def test_draining_rejects_new_session_messages():
 
     result = await runner._handle_message(event)
 
-    assert result == "�?Gateway is restarting and is not accepting new work right now."
+    assert result == "é´?Gateway is restarting and is not accepting new work right now."
 
 
 def test_load_busy_input_mode_prefers_env_then_config_then_default(tmp_path, monkeypatch):

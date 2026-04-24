@@ -4,7 +4,7 @@ Scans ``plugins/memory/<name>/`` directories for memory provider plugins.
 Each subdirectory must contain ``__init__.py`` with a class implementing
 the MemoryProvider ABC.
 
-Memory providers are separate from the general plugin system �?they live
+Memory providers are separate from the general plugin system é¥?they live
 in the repo and are always available without user installation. Only ONE
 can be active at a time, selected via ``memory.provider`` in config.yaml.
 
@@ -33,7 +33,7 @@ def discover_memory_providers() -> List[Tuple[str, str, bool]]:
     """Scan plugins/memory/ for available providers.
 
     Returns list of (name, description, is_available) tuples.
-    Does NOT import the providers �?just reads plugin.yaml for metadata
+    Does NOT import the providers é¥?just reads plugin.yaml for metadata
     and does a lightweight availability check.
     """
     results = []
@@ -59,7 +59,7 @@ def discover_memory_providers() -> List[Tuple[str, str, bool]]:
             except Exception:
                 pass
 
-        # Quick availability check �?try loading and calling is_available()
+        # Quick availability check é¥?try loading and calling is_available()
         available = True
         try:
             provider = _load_provider_from_dir(child)
@@ -100,8 +100,8 @@ def _load_provider_from_dir(provider_dir: Path) -> Optional["MemoryProvider"]:
     """Import a provider module and extract the MemoryProvider instance.
 
     The module must have either:
-    - A register(ctx) function (plugin-style) �?we simulate a ctx
-    - A top-level class that extends MemoryProvider �?we instantiate it
+    - A register(ctx) function (plugin-style) é¥?we simulate a ctx
+    - A top-level class that extends MemoryProvider é¥?we instantiate it
     """
     name = provider_dir.name
     module_name = f"plugins.memory.{name}"
@@ -220,7 +220,7 @@ def _get_active_memory_provider() -> Optional[str]:
     """Read the active memory provider name from config.yaml.
 
     Returns the provider name (e.g. ``"honcho"``) or None if no
-    external provider is configured.  Lightweight �?only reads config,
+    external provider is configured.  Lightweight é¥?only reads config,
     no plugin loading.
     """
     try:
@@ -244,7 +244,7 @@ def discover_plugin_cli_commands() -> List[dict]:
     keys: ``name``, ``help``, ``description``, ``setup_fn``,
     ``handler_fn``.
 
-    This is a lightweight scan �?it only imports ``cli.py``, not the
+    This is a lightweight scan é¥?it only imports ``cli.py``, not the
     full plugin module.  Safe to call during argparse setup before
     any provider is loaded.
     """
@@ -267,7 +267,7 @@ def discover_plugin_cli_commands() -> List[dict]:
 
     module_name = f"plugins.memory.{active_provider}.cli"
     try:
-        # Import the CLI module (lightweight �?no SDK needed)
+        # Import the CLI module (lightweight é¥?no SDK needed)
         if module_name in sys.modules:
             cli_mod = sys.modules[module_name]
         else:

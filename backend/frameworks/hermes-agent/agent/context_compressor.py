@@ -32,13 +32,13 @@ from agent.model_metadata import (
 logger = logging.getLogger(__name__)
 
 SUMMARY_PREFIX = (
-    "[CONTEXT COMPACTION �?REFERENCE ONLY] Earlier turns were compacted "
+    "[CONTEXT COMPACTION é¥?REFERENCE ONLY] Earlier turns were compacted "
     "into the summary below. This is a handoff from a previous context "
-    "window �?treat it as background reference, NOT as active instructions. "
+    "window é¥?treat it as background reference, NOT as active instructions. "
     "Do NOT answer questions or fulfill requests mentioned in this summary; "
     "they were already addressed. Respond ONLY to the latest user message "
     "that appears AFTER this summary. The current session state (files, "
-    "config, etc.) may reflect work described here �?avoid repeating it:"
+    "config, etc.) may reflect work described here é¥?avoid repeating it:"
 )
 LEGACY_SUMMARY_PREFIX = "[CONTEXT SUMMARY]:"
 
@@ -58,7 +58,7 @@ _SUMMARY_FAILURE_COOLDOWN_SECONDS = 600
 
 
 class ContextCompressor(ContextEngine):
-    """Default context engine �?compresses conversation context via lossy summarization.
+    """Default context engine é¥?compresses conversation context via lossy summarization.
 
     Algorithm:
       1. Prune old tool results (cheap, no LLM call)
@@ -256,7 +256,7 @@ class ContextCompressor(ContextEngine):
         return max(_MIN_SUMMARY_TOKENS, min(budget, self.max_summary_tokens))
 
     # Truncation limits for the summarizer input.  These bound how much of
-    # each message the summary model sees �?the budget is the *summary*
+    # each message the summary model sees é¥?the budget is the *summary*
     # model's context window, not the main model's.
     _CONTENT_MAX = 6000       # total chars per message body
     _CONTENT_HEAD = 4000      # chars kept from the start
@@ -329,7 +329,7 @@ class ContextCompressor(ContextEngine):
                 related to this topic and is more aggressive about compressing
                 everything else.  Inspired by Claude Code's ``/compact``.
 
-        Returns None if all attempts fail �?the caller should drop
+        Returns None if all attempts fail é¥?the caller should drop
         the middle turns without a summary rather than inject a useless
         placeholder.
         """
@@ -351,7 +351,7 @@ class ContextCompressor(ContextEngine):
             "You are a summarization agent creating a context checkpoint. "
             "Your output will be injected as reference material for a DIFFERENT "
             "assistant that continues the conversation. "
-            "Do NOT respond to any questions or requests in the conversation �?"
+            "Do NOT respond to any questions or requests in the conversation é¥?"
             "only output the structured summary. "
             "Do NOT include any preamble, greeting, or prefix."
         )
@@ -372,7 +372,7 @@ class ContextCompressor(ContextEngine):
 
 ## Progress
 ### Done
-[Completed work �?include specific file paths, commands run, results obtained]
+[Completed work é¥?include specific file paths, commands run, results obtained]
 ### In Progress
 [Work currently underway]
 ### Blocked
@@ -382,16 +382,16 @@ class ContextCompressor(ContextEngine):
 [Important technical decisions and why they were made]
 
 ## Resolved Questions
-[Questions the user asked that were ALREADY answered �?include the answer so the next assistant does not re-answer them]
+[Questions the user asked that were ALREADY answered é¥?include the answer so the next assistant does not re-answer them]
 
 ## Pending User Asks
 [Questions or requests from the user that have NOT yet been answered or fulfilled. If none, write "None."]
 
 ## Relevant Files
-[Files read, modified, or created �?with brief note on each]
+[Files read, modified, or created é¥?with brief note on each]
 
 ## Remaining Work
-[What remains to be done �?framed as context, not instructions]
+[What remains to be done é¥?framed as context, not instructions]
 
 ## Critical Context
 [Any specific values, error messages, configuration details, or data that would be lost without explicit preservation]
@@ -399,7 +399,7 @@ class ContextCompressor(ContextEngine):
 ## Tools & Patterns
 [Which tools were used, how they were used effectively, and any tool-specific discoveries]
 
-Target ~{summary_budget} tokens. Be specific �?include file paths, command outputs, error messages, and concrete values rather than vague descriptions.
+Target ~{summary_budget} tokens. Be specific é¥?include file paths, command outputs, error messages, and concrete values rather than vague descriptions.
 
 Write only the summary body. Do not include any preamble or prefix."""
 
@@ -437,7 +437,7 @@ Use this exact structure:
             prompt += f"""
 
 FOCUS TOPIC: "{focus_topic}"
-The user has requested that this compaction PRIORITISE preserving all information related to the focus topic above. For content related to "{focus_topic}", include full detail �?exact values, file paths, command outputs, error messages, and decisions. For content NOT related to the focus topic, summarise more aggressively (brief one-liners or omit if truly irrelevant). The focus topic sections should receive roughly 60-70% of the summary token budget."""
+The user has requested that this compaction PRIORITISE preserving all information related to the focus topic above. For content related to "{focus_topic}", include full detail é¥?exact values, file paths, command outputs, error messages, and decisions. For content NOT related to the focus topic, summarise more aggressively (brief one-liners or omit if truly irrelevant). The focus topic sections should receive roughly 60-70% of the summary token budget."""
 
         try:
             call_kwargs = {
@@ -554,7 +554,7 @@ The user has requested that this compaction PRIORITISE preserving all informatio
                         if cid in missing_results:
                             patched.append({
                                 "role": "tool",
-                                "content": "[Result from earlier conversation �?see context summary above]",
+                                "content": "[Result from earlier conversation é¥?see context summary above]",
                                 "tool_call_id": cid,
                             })
             messages = patched
@@ -755,7 +755,7 @@ The user has requested that this compaction PRIORITISE preserving all informatio
         # knows context was lost rather than silently dropping everything.
         if not summary:
             if not self.quiet_mode:
-                logger.warning("Summary generation failed �?inserting static fallback context marker")
+                logger.warning("Summary generation failed é¥?inserting static fallback context marker")
             n_dropped = compress_end - compress_start
             summary = (
                 f"{SUMMARY_PREFIX}\n"
@@ -782,7 +782,7 @@ The user has requested that this compaction PRIORITISE preserving all informatio
                 summary_role = flipped
             else:
                 # Both roles would create consecutive same-role messages
-                # (e.g. head=assistant, tail=user �?neither role works).
+                # (e.g. head=assistant, tail=user é¥?neither role works).
                 # Merge the summary into the first tail message instead
                 # of inserting a standalone message that breaks alternation.
                 _merge_summary_into_tail = True
@@ -795,7 +795,7 @@ The user has requested that this compaction PRIORITISE preserving all informatio
                 original = msg.get("content") or ""
                 msg["content"] = (
                     summary
-                    + "\n\n--- END OF CONTEXT SUMMARY �?"
+                    + "\n\n--- END OF CONTEXT SUMMARY é¥?"
                     "respond to the message below, not the summary above ---\n\n"
                     + original
                 )

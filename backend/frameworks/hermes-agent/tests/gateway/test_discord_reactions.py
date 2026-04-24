@@ -105,9 +105,9 @@ async def test_process_message_background_adds_and_swaps_reactions(adapter):
     event = _make_event("1", raw_message)
     await adapter._process_message_background(event, build_session_key(event.source))
 
-    assert raw_message.add_reaction.await_args_list[0].args == ("👀",)
-    assert raw_message.remove_reaction.await_args_list[0].args == ("👀", adapter._client.user)
-    assert raw_message.add_reaction.await_args_list[1].args == ("�?,)
+    assert raw_message.add_reaction.await_args_list[0].args == ("é¦æ",)
+    assert raw_message.remove_reaction.await_args_list[0].args == ("é¦æ", adapter._client.user)
+    assert raw_message.add_reaction.await_args_list[1].args == ("é?,)
 
 
 @pytest.mark.asyncio
@@ -231,7 +231,7 @@ async def test_reactions_enabled_by_default(adapter, monkeypatch):
     event = _make_event("6", raw_message)
     await adapter.on_processing_start(event)
 
-    raw_message.add_reaction.assert_awaited_once_with("👀")
+    raw_message.add_reaction.assert_awaited_once_with("é¦æ")
 
 
 @pytest.mark.asyncio
@@ -244,5 +244,5 @@ async def test_on_processing_complete_cancelled_removes_eyes_without_terminal_re
     event = _make_event("7", raw_message)
     await adapter.on_processing_complete(event, ProcessingOutcome.CANCELLED)
 
-    raw_message.remove_reaction.assert_awaited_once_with("👀", adapter._client.user)
+    raw_message.remove_reaction.assert_awaited_once_with("é¦æ", adapter._client.user)
     raw_message.add_reaction.assert_not_awaited()

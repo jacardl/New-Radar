@@ -219,7 +219,7 @@ class DockerEnvironment(BaseEnvironment):
 
     Security: all capabilities dropped, no privilege escalation, PID limits,
     size-limited tmpfs for scratch dirs. The container itself is the security
-    boundary �?the filesystem inside is writable so agents can install packages
+    boundary é¥?the filesystem inside is writable so agents can install packages
     (pip, npm, apt) as needed. Writable workspace via tmpfs or bind mounts.
 
     Persistence: when enabled, bind mounts preserve /workspace and /root
@@ -376,7 +376,7 @@ class DockerEnvironment(BaseEnvironment):
 
             # Mount host-side cache directories (documents, images, audio,
             # screenshots) so the agent can access uploaded files and other
-            # cached media from inside the container.  Read-only �?the
+            # cached media from inside the container.  Read-only é¥?the
             # container reads these but the host gateway manages writes.
             for cache_mount in get_cache_directory_mounts():
                 volume_args.extend([
@@ -391,7 +391,7 @@ class DockerEnvironment(BaseEnvironment):
         except Exception as e:
             logger.debug("Docker: could not load credential file mounts: %s", e)
 
-        # Explicit environment variables (docker_env config) �?set at container
+        # Explicit environment variables (docker_env config) é¥?set at container
         # creation so they're available to all processes (including entrypoint).
         env_args = []
         for key in sorted(self._env):
@@ -409,12 +409,12 @@ class DockerEnvironment(BaseEnvironment):
         container_name = f"hermes-{uuid.uuid4().hex[:8]}"
         run_cmd = [
             self._docker_exe, "run", "-d",
-            "--init",           # tini/catatonit as PID 1 �?reaps zombie children
+            "--init",           # tini/catatonit as PID 1 é¥?reaps zombie children
             "--name", container_name,
             "-w", cwd,
             *all_run_args,
             image,
-            "sleep", "infinity",  # no fixed lifetime �?idle reaper handles cleanup
+            "sleep", "infinity",  # no fixed lifetime é¥?idle reaper handles cleanup
         ]
         logger.debug(f"Starting container: {' '.join(run_cmd)}")
         result = subprocess.run(
@@ -511,7 +511,7 @@ class DockerEnvironment(BaseEnvironment):
                 _storage_opt_ok = False
                 return False
             # overlay2 only supports storage-opt on XFS with pquota.
-            # Probe by attempting a dry-ish run �?the fastest reliable check.
+            # Probe by attempting a dry-ish run é¥?the fastest reliable check.
             probe = subprocess.run(
                 [docker, "create", "--storage-opt", "size=1m", "hello-world"],
                 capture_output=True, text=True, timeout=15,

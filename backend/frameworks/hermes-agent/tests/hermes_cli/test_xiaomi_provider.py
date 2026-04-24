@@ -132,7 +132,7 @@ class TestXiaomiCredentials:
 
 
 # =============================================================================
-# Model catalog (dynamic �?no static list)
+# Model catalog (dynamic é¥?no static list)
 # =============================================================================
 
 
@@ -190,7 +190,7 @@ class TestXiaomiModelCatalog:
 
 
 class TestXiaomiNormalization:
-    """Model name normalization �?Xiaomi is a direct provider."""
+    """Model name normalization é¥?Xiaomi is a direct provider."""
 
     def test_vendor_prefix_mapping(self):
         from hermes_cli.model_normalize import _VENDOR_PREFIXES
@@ -218,7 +218,7 @@ class TestXiaomiNormalization:
 
 
 class TestXiaomiURLMapping:
-    """Test URL �?provider inference for Xiaomi endpoints."""
+    """Test URL é«?provider inference for Xiaomi endpoints."""
 
     def test_url_to_provider(self):
         from agent.model_metadata import _URL_TO_PROVIDER
@@ -285,7 +285,7 @@ class TestXiaomiProvidersModule:
 
 
 class TestXiaomiAuxiliary:
-    """Xiaomi auxiliary routing: vision �?omni, non-vision �?user's main model, never flash."""
+    """Xiaomi auxiliary routing: vision é«?omni, non-vision é«?user's main model, never flash."""
 
     def test_no_flash_in_aux_models(self):
         """mimo-v2-flash must NEVER be used for automatic aux routing."""

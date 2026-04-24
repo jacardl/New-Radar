@@ -1,6 +1,6 @@
 """Tests for fallback-eviction gating on failed runs (#7130).
 
-When a run fails, the gateway must NOT evict the cached agent �?doing so
+When a run fails, the gateway must NOT evict the cached agent é¥?doing so
 forces MCP reinit on the next message, creating a CPU-burning restart loop.
 Eviction should only happen on successful runs where fallback activated.
 """

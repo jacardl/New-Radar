@@ -100,7 +100,7 @@ class HonchoSessionManager:
         self._write_frequency = write_frequency
         self._turn_counter: int = 0
 
-        # Prefetch caches: session_key �?last result (consumed once per turn)
+        # Prefetch caches: session_key é«?last result (consumed once per turn)
         self._context_cache: dict[str, dict] = {}
         self._dialectic_cache: dict[str, str] = {}
         self._prefetch_cache_lock = threading.Lock()
@@ -128,7 +128,7 @@ class HonchoSessionManager:
             config.dialectic_max_input_chars if config else 10000
         )
 
-        # Async write queue �?started lazily on first enqueue
+        # Async write queue é¥?started lazily on first enqueue
         self._async_queue: queue.Queue | None = None
         self._async_thread: threading.Thread | None = None
         if write_frequency == "async":
@@ -401,10 +401,10 @@ class HonchoSessionManager:
         """Save messages to Honcho, respecting write_frequency.
 
         write_frequency modes:
-          "async"   �?enqueue for background thread (zero blocking, zero token cost)
-          "turn"    �?flush synchronously every turn
-          "session" �?defer until flush_session() is called explicitly
-          N (int)   �?flush every N turns
+          "async"   é¥?enqueue for background thread (zero blocking, zero token cost)
+          "turn"    é¥?flush synchronously every turn
+          "session" é¥?defer until flush_session() is called explicitly
+          N (int)   é¥?flush every N turns
         """
         self._turn_counter += 1
         wf = self._write_frequency
@@ -526,7 +526,7 @@ class HonchoSessionManager:
         Query Honcho's dialectic endpoint about a peer.
 
         Runs an LLM on Honcho's backend against the target peer's full
-        representation. Higher latency than context() �?call async via
+        representation. Higher latency than context() é¥?call async via
         prefetch_dialectic() to avoid blocking the response.
 
         Args:
@@ -534,7 +534,7 @@ class HonchoSessionManager:
             query: Natural language question.
             reasoning_level: Override the config default. If None, uses
                              _dynamic_reasoning_level(query).
-            peer: Which peer to query �?"user" (default) or "ai".
+            peer: Which peer to query é¥?"user" (default) or "ai".
 
         Returns:
             Honcho's synthesized answer, or empty string on failure.
@@ -551,7 +551,7 @@ class HonchoSessionManager:
 
         try:
             if self._ai_observe_others:
-                # AI peer can observe user �?use cross-observation routing
+                # AI peer can observe user é¥?use cross-observation routing
                 if peer == "ai":
                     ai_peer_obj = self._get_or_create_peer(session.assistant_peer_id)
                     result = ai_peer_obj.chat(query, reasoning_level=level) or ""
@@ -563,14 +563,14 @@ class HonchoSessionManager:
                         reasoning_level=level,
                     ) or ""
             else:
-                # AI can't observe others �?each peer queries self
+                # AI can't observe others é¥?each peer queries self
                 peer_id = session.assistant_peer_id if peer == "ai" else session.user_peer_id
                 target_peer = self._get_or_create_peer(peer_id)
                 result = target_peer.chat(query, reasoning_level=level) or ""
 
             # Apply Hermes-side char cap before caching
             if result and self._dialectic_max_chars and len(result) > self._dialectic_max_chars:
-                result = result[:self._dialectic_max_chars].rsplit(" ", 1)[0] + " �?
+                result = result[:self._dialectic_max_chars].rsplit(" ", 1)[0] + " é¥?
             return result
         except Exception as e:
             logger.warning("Honcho dialectic query failed: %s", e)
@@ -648,7 +648,7 @@ class HonchoSessionManager:
         Pre-fetch user and AI peer context from Honcho.
 
         Fetches peer_representation and peer_card for both peers. search_query
-        is intentionally omitted �?it would only affect additional excerpts
+        is intentionally omitted é¥?it would only affect additional excerpts
         that this code does not consume, and passing the raw message exposes
         conversation content in server access logs.
 
@@ -913,7 +913,7 @@ class HonchoSessionManager:
 
     def get_peer_card(self, session_key: str) -> list[str]:
         """
-        Fetch the user peer's card �?a curated list of key facts.
+        Fetch the user peer's card é¥?a curated list of key facts.
 
         Fast, no LLM reasoning. Returns raw structured facts Honcho has
         inferred about the user (name, role, preferences, patterns).
@@ -934,7 +934,7 @@ class HonchoSessionManager:
         Semantic search over Honcho session context.
 
         Returns raw excerpts ranked by relevance to the query. No LLM
-        reasoning �?cheaper and faster than dialectic_query. Good for
+        reasoning é¥?cheaper and faster than dialectic_query. Good for
         factual lookups where the model will do its own synthesis.
 
         Args:
@@ -965,7 +965,7 @@ class HonchoSessionManager:
     def create_conclusion(self, session_key: str, content: str) -> bool:
         """Write a conclusion about the user back to Honcho.
 
-        Conclusions are facts the AI peer observes about the user �?
+        Conclusions are facts the AI peer observes about the user é¥?
         preferences, corrections, clarifications, project context.
         They feed into the user's peer card and representation.
 
@@ -990,7 +990,7 @@ class HonchoSessionManager:
                 assistant_peer = self._get_or_create_peer(session.assistant_peer_id)
                 conclusions_scope = assistant_peer.conclusions_of(session.user_peer_id)
             else:
-                # AI can't observe others �?user peer creates self-conclusion
+                # AI can't observe others é¥?user peer creates self-conclusion
                 user_peer = self._get_or_create_peer(session.user_peer_id)
                 conclusions_scope = user_peer.conclusions_of(session.user_peer_id)
 

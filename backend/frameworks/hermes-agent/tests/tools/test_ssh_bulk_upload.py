@@ -41,7 +41,7 @@ def mock_env(monkeypatch):
 
 
 class TestSSHBulkUpload:
-    """Unit tests for _ssh_bulk_upload �?tar pipe mechanics."""
+    """Unit tests for _ssh_bulk_upload é¥?tar pipe mechanics."""
 
     def test_empty_files_is_noop(self, mock_env):
         """Empty file list should not spawn any subprocesses."""

@@ -146,7 +146,7 @@ async def test_sentinel_cleaned_up_on_exception():
 async def test_second_message_during_sentinel_queued_not_duplicate():
     """While the sentinel is set (agent setup in progress), a second
     message for the same session must hit the 'already running' branch
-    and be queued �?not start a second agent."""
+    and be queued é¥?not start a second agent."""
     runner = _make_runner()
     event1 = _make_event(text="first message")
     event2 = _make_event(text="second message")
@@ -155,7 +155,7 @@ async def test_second_message_during_sentinel_queued_not_duplicate():
     barrier = asyncio.Event()
 
     async def slow_inner(self_inner, ev, src, qk):
-        # Simulate slow setup �?wait until test tells us to proceed
+        # Simulate slow setup é¥?wait until test tells us to proceed
         await barrier.wait()
         return "ok"
 
@@ -238,7 +238,7 @@ async def test_stop_during_sentinel_force_cleans_session():
         # Sentinel should be set
         assert runner._running_agents.get(session_key) is _AGENT_PENDING_SENTINEL
 
-        # Send /stop �?should force-clean the sentinel
+        # Send /stop é¥?should force-clean the sentinel
         stop_event = _make_event(text="/stop")
         result = await runner._handle_message(stop_event)
         assert result is not None, "/stop during sentinel should return a message"
@@ -265,7 +265,7 @@ async def test_stop_hard_kills_running_agent():
     2. Force-clean _running_agents to unlock the session
     3. Return a confirmation message
     This fixes the bug where a hung agent kept the session locked
-    forever �?showing 'writing...' but never producing output."""
+    forever é¥?showing 'writing...' but never producing output."""
     runner = _make_runner()
     session_key = build_session_key(
         SessionSource(platform=Platform.TELEGRAM, chat_id="12345", chat_type="dm", user_id="u1")

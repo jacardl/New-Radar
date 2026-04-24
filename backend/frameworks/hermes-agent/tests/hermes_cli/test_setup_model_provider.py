@@ -133,7 +133,7 @@ def test_setup_same_provider_rotation_strategy_saved_for_multi_credential_pool(t
             return [_Entry("primary"), _Entry("secondary")]
 
     def fake_select():
-        pass  # no-op �?config already has provider set
+        pass  # no-op é¥?config already has provider set
 
     def fake_prompt_choice(question, choices, default=0):
         if "rotation strategy" in question:
@@ -198,7 +198,7 @@ def test_setup_same_provider_fallback_can_add_another_credential(tmp_path, monke
         add_calls.append(args.provider)
 
     def fake_select():
-        pass  # no-op �?config already has provider set
+        pass  # no-op é¥?config already has provider set
 
     def fake_prompt_choice(question, choices, default=0):
         if question == "Select same-provider rotation strategy:":
@@ -287,7 +287,7 @@ def test_setup_pool_step_shows_manual_vs_auto_detected_counts(tmp_path, monkeypa
             ]
 
     def fake_select():
-        pass  # no-op �?config already has provider set
+        pass  # no-op é¥?config already has provider set
 
     def fake_prompt_choice(question, choices, default=0):
         if "rotation strategy" in question:

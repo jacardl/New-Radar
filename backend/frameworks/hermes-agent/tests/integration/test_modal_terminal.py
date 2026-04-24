@@ -70,16 +70,16 @@ def test_modal_requirements():
     modal_toml = Path.home() / ".modal.toml"
     
     print(f"\nModal authentication:")
-    print(f"  MODAL_TOKEN_ID env var: {'‚ú?Set' if modal_token else '‚ù?Not set'}")
-    print(f"  ~/.modal.toml file: {'‚ú?Exists' if modal_toml.exists() else '‚ù?Not found'}")
+    print(f"  MODAL_TOKEN_ID env var: {'√©?Set' if modal_token else '√©?Not set'}")
+    print(f"  ~/.modal.toml file: {'√©?Exists' if modal_toml.exists() else '√©?Not found'}")
     
     if config['env_type'] != 'modal':
-        print(f"\n‚ö†Ô∏è  TERMINAL_ENV is '{config['env_type']}', not 'modal'")
+        print(f"\n√©¬ø√ß√ß¬¨  TERMINAL_ENV is '{config['env_type']}', not 'modal'")
         print("   Set TERMINAL_ENV=modal in .env or export it to test Modal backend")
         return False
     
     requirements_met = check_terminal_requirements()
-    print(f"\nRequirements check: {'‚ú?Passed' if requirements_met else '‚ù?Failed'}")
+    print(f"\nRequirements check: {'√©?Passed' if requirements_met else '√©?Failed'}")
     
     return requirements_met
 
@@ -102,7 +102,7 @@ def test_simple_command():
     print(f"  Error: {result_json.get('error')}")
     
     success = result_json.get('exit_code') == 0 and 'Hello from Modal!' in result_json.get('output', '')
-    print(f"\nTest: {'‚ú?Passed' if success else '‚ù?Failed'}")
+    print(f"\nTest: {'√©?Passed' if success else '√©?Failed'}")
     
     # Cleanup
     cleanup_vm(test_task_id)
@@ -130,7 +130,7 @@ def test_python_execution():
     print(f"  Error: {result_json.get('error')}")
     
     success = result_json.get('exit_code') == 0 and 'Python' in result_json.get('output', '')
-    print(f"\nTest: {'‚ú?Passed' if success else '‚ù?Failed'}")
+    print(f"\nTest: {'√©?Passed' if success else '√©?Failed'}")
     
     # Cleanup
     cleanup_vm(test_task_id)
@@ -163,7 +163,7 @@ def test_pip_install():
     print(f"  Error: {result_json.get('error')}")
     
     success = result_json.get('exit_code') == 0 and 'Modal works!' in result_json.get('output', '')
-    print(f"\nTest: {'‚ú?Passed' if success else '‚ù?Failed'}")
+    print(f"\nTest: {'√©?Passed' if success else '√©?Failed'}")
     
     # Cleanup
     cleanup_vm(test_task_id)
@@ -197,7 +197,7 @@ def test_filesystem_persistence():
         result2_json.get('exit_code') == 0 and
         'persistence test' in result2_json.get('output', '')
     )
-    print(f"\nTest: {'‚ú?Passed' if success else '‚ù?Failed'}")
+    print(f"\nTest: {'√©?Passed' if success else '√©?Failed'}")
     
     # Cleanup
     cleanup_vm(test_task_id)
@@ -228,7 +228,7 @@ def test_environment_isolation():
     isolated = 'task1 data' not in output or 'FILE_NOT_FOUND' in output or 'No such file' in output
     
     print(f"  Task2 output: {output[:200]}")
-    print(f"\nTest: {'‚ú?Passed (environments isolated)' if isolated else '‚ù?Failed (environments NOT isolated)'}")
+    print(f"\nTest: {'√©?Passed (environments isolated)' if isolated else '√©?Failed (environments NOT isolated)'}")
     
     # Cleanup
     cleanup_vm(task1)
@@ -239,7 +239,7 @@ def test_environment_isolation():
 
 def main():
     """Run all Modal terminal tests."""
-    print("üß™ Modal Terminal Tool Test Suite")
+    print("√©¬¶√ Modal Terminal Tool Test Suite")
     print("=" * 60)
     
     # Check current config
@@ -250,7 +250,7 @@ def main():
     print(f"  TERMINAL_TIMEOUT: {config['timeout']}s")
     
     if config['env_type'] != 'modal':
-        print(f"\n‚ö†Ô∏è  WARNING: TERMINAL_ENV is set to '{config['env_type']}', not 'modal'")
+        print(f"\n√©¬ø√ß√ß¬¨  WARNING: TERMINAL_ENV is set to '{config['env_type']}', not 'modal'")
         print("   To test Modal specifically, set TERMINAL_ENV=modal")
         response = input("\n   Continue testing with current backend? (y/n): ")
         if response.lower() != 'y':
@@ -263,7 +263,7 @@ def main():
     results['requirements'] = test_modal_requirements()
     
     if not results['requirements']:
-        print("\n‚ù?Requirements not met. Cannot continue with other tests.")
+        print("\n√©?Requirements not met. Cannot continue with other tests.")
         return
     
     results['simple_command'] = test_simple_command()
@@ -281,7 +281,7 @@ def main():
     total = len(results)
     
     for test_name, passed_test in results.items():
-        status = "‚ú?PASSED" if passed_test else "‚ù?FAILED"
+        status = "√©?PASSED" if passed_test else "√©?FAILED"
         print(f"  {test_name}: {status}")
     
     print(f"\nTotal: {passed}/{total} tests passed")

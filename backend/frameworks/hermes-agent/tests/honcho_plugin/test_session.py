@@ -1,4 +1,4 @@
-"""Tests for plugins/memory/honcho/session.py �?HonchoSession and helpers."""
+"""Tests for plugins/memory/honcho/session.py é¥?HonchoSession and helpers."""
 
 from datetime import datetime
 from types import SimpleNamespace
@@ -319,7 +319,7 @@ class TestToolsModeInitBehavior:
         return provider, cfg
 
     def test_tools_lazy_default(self):
-        """tools + initOnSessionStart=false �?session NOT initialized after initialize()."""
+        """tools + initOnSessionStart=false é«?session NOT initialized after initialize()."""
         provider, _ = self._make_provider_with_config(
             recall_mode="tools", init_on_session_start=False,
         )
@@ -328,7 +328,7 @@ class TestToolsModeInitBehavior:
         assert provider._lazy_init_kwargs is not None
 
     def test_tools_eager_init(self):
-        """tools + initOnSessionStart=true �?session IS initialized after initialize()."""
+        """tools + initOnSessionStart=true é«?session IS initialized after initialize()."""
         provider, _ = self._make_provider_with_config(
             recall_mode="tools", init_on_session_start=True,
         )

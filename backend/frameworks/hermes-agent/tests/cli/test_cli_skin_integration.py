@@ -17,7 +17,7 @@ def _make_cli_stub():
     cli._voice_recording = False
     cli._voice_processing = False
     cli._voice_mode = False
-    cli._command_spinner_frame = lambda: "�?
+    cli._command_spinner_frame = lambda: "é?
     cli._tui_style_base = {
         "prompt": "#fff",
         "input-area": "#fff",
@@ -34,27 +34,27 @@ class TestCliSkinPromptIntegration:
         cli = _make_cli_stub()
 
         set_active_skin("default")
-        assert cli._get_tui_prompt_fragments() == [("class:prompt", "�?")]
+        assert cli._get_tui_prompt_fragments() == [("class:prompt", "é?")]
 
     def test_ares_prompt_fragments_use_skin_symbol(self):
         cli = _make_cli_stub()
 
         set_active_skin("ares")
-        assert cli._get_tui_prompt_fragments() == [("class:prompt", "�?�?")]
+        assert cli._get_tui_prompt_fragments() == [("class:prompt", "é¿?é?")]
 
     def test_secret_prompt_fragments_preserve_secret_state(self):
         cli = _make_cli_stub()
         cli._secret_state = {"response_queue": object()}
 
         set_active_skin("ares")
-        assert cli._get_tui_prompt_fragments() == [("class:sudo-prompt", "🔑 �?")]
+        assert cli._get_tui_prompt_fragments() == [("class:sudo-prompt", "é¦æ½ é?")]
 
     def test_narrow_terminals_compact_voice_prompt_fragments(self):
         cli = _make_cli_stub()
         cli._voice_mode = True
 
         with patch.object(HermesCLI, "_get_tui_terminal_width", return_value=50):
-            assert cli._get_tui_prompt_fragments() == [("class:voice-prompt", "🎤 ")]
+            assert cli._get_tui_prompt_fragments() == [("class:voice-prompt", "é¦å¸³ ")]
 
     def test_narrow_terminals_compact_voice_recording_prompt_fragments(self):
         cli = _make_cli_stub()
@@ -65,15 +65,15 @@ class TestCliSkinPromptIntegration:
             frags = cli._get_tui_prompt_fragments()
 
         assert frags[0][0] == "class:voice-recording"
-        assert frags[0][1].startswith("�?)
-        assert "�? not in frags[0][1]
+        assert frags[0][1].startswith("é¼?)
+        assert "é? not in frags[0][1]
 
     def test_icon_only_skin_symbol_still_visible_in_special_states(self):
         cli = _make_cli_stub()
         cli._secret_state = {"response_queue": object()}
 
-        with patch("hermes_cli.skin_engine.get_active_prompt_symbol", return_value="�?"):
-            assert cli._get_tui_prompt_fragments() == [("class:sudo-prompt", "🔑 �?")]
+        with patch("hermes_cli.skin_engine.get_active_prompt_symbol", return_value="é¿?"):
+            assert cli._get_tui_prompt_fragments() == [("class:sudo-prompt", "é¦æ½ é¿?")]
 
     def test_build_tui_style_dict_uses_skin_overrides(self):
         cli = _make_cli_stub()

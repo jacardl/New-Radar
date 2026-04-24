@@ -35,7 +35,7 @@ def test_copilot_uses_hermes_slug():
 
 @patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fake-ghu"}, clear=False)
 def test_copilot_no_duplicate_entries():
-    """Copilot must appear only once �?not as both 'copilot' (section 1) and 'github-copilot' (section 2)."""
+    """Copilot must appear only once é¥?not as both 'copilot' (section 1) and 'github-copilot' (section 2)."""
     providers = list_authenticated_providers(current_provider="copilot")
 
     copilot_slugs = [p["slug"] for p in providers if "copilot" in p["slug"]]

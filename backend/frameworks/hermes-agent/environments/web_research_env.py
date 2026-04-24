@@ -1,16 +1,16 @@
 """
-WebResearchEnv �?RL Environment for Multi-Step Web Research
+WebResearchEnv é¥?RL Environment for Multi-Step Web Research
 ============================================================
 
 Trains models to do accurate, efficient, multi-source web research.
 
 Reward signals:
-  - Answer correctness  (LLM judge, 0.0�?.0)
-  - Source diversity    (used �? distinct domains)
+  - Answer correctness  (LLM judge, 0.0é¥?.0)
+  - Source diversity    (used é®? distinct domains)
   - Efficiency          (penalizes excessive tool calls)
   - Tool usage          (bonus for actually using web tools)
 
-Dataset: FRAMES benchmark (Google, 2024) �?multi-hop factual questions
+Dataset: FRAMES benchmark (Google, 2024) é¥?multi-hop factual questions
   HuggingFace: google/frames-benchmark
   Fallback:    built-in sample questions (no HF token needed)
 
@@ -31,7 +31,7 @@ Usage:
         --openai.model_name YourModel
 
 Built by: github.com/jackx707
-Inspired by: GroceryMind �?production Hermes agent doing live web research
+Inspired by: GroceryMind é¥?production Hermes agent doing live web research
              across German grocery stores (firecrawl + hermes-agent)
 """
 
@@ -87,7 +87,7 @@ SAMPLE_QUESTIONS = [
     },
     {
         "question": "Who is the CEO of the company that makes the most widely used open-source container orchestration platform?",
-        "answer": "The Linux Foundation oversees Kubernetes. CNCF (Cloud Native Computing Foundation) is the specific body �?it does not have a traditional CEO but has an executive director.",
+        "answer": "The Linux Foundation oversees Kubernetes. CNCF (Cloud Native Computing Foundation) is the specific body é¥?it does not have a traditional CEO but has an executive director.",
         "difficulty": "medium",
         "hops": 2,
     },
@@ -117,7 +117,7 @@ SAMPLE_QUESTIONS = [
     },
     {
         "question": "What is the current interest rate set by the central bank of the country where the Eiffel Tower is located?",
-        "answer": "The European Central Bank sets rates for France/eurozone. The current rate should be verified �?it has changed frequently in 2023-2025.",
+        "answer": "The European Central Bank sets rates for France/eurozone. The current rate should be verified é¥?it has changed frequently in 2023-2025.",
         "difficulty": "hard",
         "hops": 2,
     },
@@ -164,7 +164,7 @@ class WebResearchEnvConfig(HermesAgentEnvConfig):
     )
     diversity_bonus: float = Field(
         default=0.1,
-        description="Bonus reward for citing �? distinct domains.",
+        description="Bonus reward for citing é®? distinct domains.",
     )
 
     # Efficiency thresholds
@@ -184,7 +184,7 @@ class WebResearchEnvConfig(HermesAgentEnvConfig):
     )
     eval_split_ratio: float = Field(
         default=0.1,
-        description="Fraction of dataset to hold out for evaluation (0.0�?.0).",
+        description="Fraction of dataset to hold out for evaluation (0.0é¥?.0).",
     )
 
     # Dataset
@@ -206,17 +206,17 @@ class WebResearchEnv(HermesAgentBaseEnv):
     and must use web_search / web_extract tools to find and synthesize the answer.
 
     Reward is multi-signal:
-      60% �?answer correctness (LLM judge)
-      20% �?tool usage (did the model actually search the web?)
-      20% �?efficiency (penalizes >5 tool calls)
+      60% é¥?answer correctness (LLM judge)
+      20% é¥?tool usage (did the model actually search the web?)
+      20% é¥?efficiency (penalizes >5 tool calls)
 
-    Bonus +0.1 for source diversity (�? distinct domains cited).
+    Bonus +0.1 for source diversity (é®? distinct domains cited).
     """
 
     name = "web-research"
     env_config_cls = WebResearchEnvConfig
 
-    # Default toolsets for this environment �?web + file for saving notes
+    # Default toolsets for this environment é¥?web + file for saving notes
     default_toolsets = ["web", "file"]
 
     @classmethod
@@ -264,7 +264,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
         self._diversity_buffer: list[float] = []
 
     # ------------------------------------------------------------------
-    # 1. Setup �?load dataset
+    # 1. Setup é¥?load dataset
     # ------------------------------------------------------------------
 
     async def setup(self) -> None:
@@ -309,7 +309,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
         )
 
     # ------------------------------------------------------------------
-    # 2. get_next_item �?return the next question
+    # 2. get_next_item é¥?return the next question
     # ------------------------------------------------------------------
 
     async def get_next_item(self) -> dict:
@@ -321,14 +321,14 @@ class WebResearchEnv(HermesAgentBaseEnv):
         return item
 
     # ------------------------------------------------------------------
-    # 3. format_prompt �?build the user-facing prompt
+    # 3. format_prompt é¥?build the user-facing prompt
     # ------------------------------------------------------------------
 
     def format_prompt(self, item: dict) -> str:
         """Format the research question as a task prompt."""
         return (
             f"Research the following question thoroughly using web search. "
-            f"You MUST search the web to find current, accurate information �?"
+            f"You MUST search the web to find current, accurate information é¥?"
             f"do not rely solely on your training data.\n\n"
             f"Question: {item['question']}\n\n"
             f"Requirements:\n"
@@ -339,7 +339,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
         )
 
     # ------------------------------------------------------------------
-    # 4. compute_reward �?multi-signal scoring
+    # 4. compute_reward é¥?multi-signal scoring
     # ------------------------------------------------------------------
 
     async def compute_reward(
@@ -351,10 +351,10 @@ class WebResearchEnv(HermesAgentBaseEnv):
         """
         Multi-signal reward function:
 
-          correctness_weight * correctness  �?LLM judge comparing answer to ground truth
-          tool_usage_weight  * tool_used    �?binary: did the model use web tools?
-          efficiency_weight  * efficiency   �?penalizes wasteful tool usage
-          + diversity_bonus                 �?source diversity (�? distinct domains)
+          correctness_weight * correctness  é¥?LLM judge comparing answer to ground truth
+          tool_usage_weight  * tool_used    é¥?binary: did the model use web tools?
+          efficiency_weight  * efficiency   é¥?penalizes wasteful tool usage
+          + diversity_bonus                 é¥?source diversity (é®? distinct domains)
         """
         # Extract final response from messages (last assistant message with content)
         final_response = ""
@@ -413,21 +413,21 @@ class WebResearchEnv(HermesAgentBaseEnv):
         self._diversity_buffer.append(diversity)
 
         logger.debug(
-            f"Reward breakdown �?correctness={correctness:.2f}, "
+            f"Reward breakdown é¥?correctness={correctness:.2f}, "
             f"tool_used={tool_used:.1f}, efficiency={efficiency:.2f}, "
-            f"diversity={diversity:.1f} �?total={reward:.3f}"
+            f"diversity={diversity:.1f} é«?total={reward:.3f}"
         )
 
         return reward
 
     # ------------------------------------------------------------------
-    # 5. evaluate �?run on held-out eval split
+    # 5. evaluate é¥?run on held-out eval split
     # ------------------------------------------------------------------
 
     async def evaluate(self, *args, **kwargs) -> None:
         """Run evaluation on the held-out split using the full agent loop with tools.
 
-        Each eval item runs through the same agent loop as training �?
+        Each eval item runs through the same agent loop as training é¥?
         the model can use web_search, web_extract, etc. to research answers.
         This measures actual agentic research capability, not just knowledge.
         """
@@ -523,7 +523,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
                 })
 
                 logger.info(
-                    f"  �?correctness={correctness:.2f}, reward={reward:.3f}, "
+                    f"  é«?correctness={correctness:.2f}, reward={reward:.3f}, "
                     f"tools={tool_call_count}, turns={result.turns_used}"
                 )
 
@@ -556,7 +556,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
         }
 
         logger.info(
-            f"Eval complete �?correctness={eval_metrics['eval/mean_correctness']:.3f}, "
+            f"Eval complete é¥?correctness={eval_metrics['eval/mean_correctness']:.3f}, "
             f"reward={eval_metrics['eval/mean_reward']:.3f}, "
             f"tool_usage={eval_metrics['eval/tool_usage_rate']:.0%}"
         )
@@ -569,7 +569,7 @@ class WebResearchEnv(HermesAgentBaseEnv):
         )
 
     # ------------------------------------------------------------------
-    # 6. wandb_log �?custom metrics
+    # 6. wandb_log é¥?custom metrics
     # ------------------------------------------------------------------
 
     async def wandb_log(self, wandb_metrics: Optional[Dict] = None) -> None:

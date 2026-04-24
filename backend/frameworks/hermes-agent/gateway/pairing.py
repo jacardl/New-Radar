@@ -50,7 +50,7 @@ def _secure_write(path: Path, data: str) -> None:
     """Write data to file with restrictive permissions (owner read/write only).
 
     Uses a temp-file + atomic rename so readers always see either the old
-    complete file or the new one �?never a partial write.
+    complete file or the new one é¥?never a partial write.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_path = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")

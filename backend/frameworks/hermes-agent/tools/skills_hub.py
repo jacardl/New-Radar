@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Hub �?Source adapters and hub state management for the Hermes Skills Hub.
+Skills Hub é¥?Source adapters and hub state management for the Hermes Skills Hub.
 
 This is a library module (not an agent tool). It provides:
   - GitHubAuth: Shared GitHub API authentication (PAT, gh CLI, GitHub App)
@@ -129,7 +129,7 @@ def _validate_bundle_rel_path(rel_path: str) -> str:
 class GitHubAuth:
     """
     GitHub API authentication. Tries methods in priority order:
-      1. GITHUB_TOKEN / GH_TOKEN env var (PAT �?the default)
+      1. GITHUB_TOKEN / GH_TOKEN env var (PAT é¥?the default)
       2. `gh auth token` subprocess (if gh CLI is installed)
       3. GitHub App JWT + installation token (if app credentials configured)
       4. Unauthenticated (60 req/hr, public repos only)
@@ -460,7 +460,7 @@ class GitHubSource(SkillSource):
 
         Returns ``(default_branch, tree_entries)`` or ``None``.
         A single install can call ``_download_directory_via_tree`` and
-        ``_find_skill_in_repo_tree`` multiple times for the same repo �?this
+        ``_find_skill_in_repo_tree`` multiple times for the same repo é¥?this
         cache eliminates the redundant ``GET /repos/{repo}`` +
         ``GET /repos/{repo}/git/trees/{branch}`` round-trips (previously up to
         6 duplicated pairs per install, consuming ~12 of the 60/hr
@@ -552,7 +552,7 @@ class GitHubSource(SkillSource):
             item.get("path", "").startswith(prefix) for item in tree_entries
         )
         if not has_entries:
-            # Path definitively doesn't exist in the repo �?return empty
+            # Path definitively doesn't exist in the repo é¥?return empty
             # instead of None to skip the Contents API fallback.
             return {}
 
@@ -1088,7 +1088,7 @@ class SkillsShSource(SkillSource):
         repo = f"{parts[0]}/{parts[1]}"
         skill_path = parts[2]
         installs = item.get("installs")
-        installs_label = f" · {int(installs):,} installs" if isinstance(installs, int) else ""
+        installs_label = f" è·¯ {int(installs):,} installs" if isinstance(installs, int) else ""
 
         return SkillMeta(
             name=str(item.get("name") or skill_path.split("/")[-1]),
@@ -1254,7 +1254,7 @@ class SkillsShSource(SkillSource):
             if body_summary:
                 meta.description = body_summary
             elif meta.description and weekly_installs:
-                meta.description = f"{meta.description} · {weekly_installs} weekly installs on skills.sh"
+                meta.description = f"{meta.description} è·¯ {weekly_installs} weekly installs on skills.sh"
         return meta
 
     @classmethod
@@ -1409,7 +1409,7 @@ class SkillsShSource(SkillSource):
 class ClawHubSource(SkillSource):
     """
     Fetch skills from ClawHub (clawhub.ai) via their HTTP API.
-    All skills are treated as community trust �?ClawHavoc incident showed
+    All skills are treated as community trust é¥?ClawHavoc incident showed
     their vetting is insufficient (341 malicious skills found Feb 2026).
     """
 
@@ -1994,7 +1994,7 @@ class ClaudeMarketplaceSource(SkillSource):
 class LobeHubSource(SkillSource):
     """
     Fetch skills from LobeHub's agent marketplace (14,500+ agents).
-    LobeHub agents are system prompt templates �?we convert them to SKILL.md on fetch.
+    LobeHub agents are system prompt templates é¥?we convert them to SKILL.md on fetch.
     Data lives in GitHub: lobehub/lobe-chat-agents.
     """
 
@@ -2155,7 +2155,7 @@ class OptionalSkillSource(SkillSource):
     Fetch skills from the optional-skills/ directory shipped with the repo.
 
     These skills are official (maintained by Nous Research) but not activated
-    by default �?they don't appear in the system prompt and aren't copied to
+    by default é¥?they don't appear in the system prompt and aren't copied to
     ~/.hermes/skills/ during setup.  They are discoverable via the Skills Hub
     (search / install / inspect) and labelled "official" with "builtin" trust.
     """
@@ -2376,7 +2376,7 @@ def _skill_meta_to_dict(meta: SkillMeta) -> dict:
 # ---------------------------------------------------------------------------
 
 class HubLockFile:
-    """Manages skills/.hub/lock.json �?tracks provenance of installed hub skills."""
+    """Manages skills/.hub/lock.json é¥?tracks provenance of installed hub skills."""
 
     def __init__(self, path: Path = LOCK_FILE):
         self.path = path
@@ -2442,7 +2442,7 @@ class HubLockFile:
 # ---------------------------------------------------------------------------
 
 class TapsManager:
-    """Manages the taps.json file �?custom GitHub repo sources."""
+    """Manages the taps.json file é¥?custom GitHub repo sources."""
 
     def __init__(self, path: Path = TAPS_FILE):
         self.path = path
@@ -2774,7 +2774,7 @@ class HermesIndexSource(SkillSource):
         self._index: Optional[dict] = None
         self._loaded = False
         self.auth = auth
-        # Lazily create GitHubSource for fetch �?only used when actually
+        # Lazily create GitHubSource for fetch é¥?only used when actually
         # downloading files, which requires real GitHub API calls.
         self._github: Optional[GitHubSource] = None
 
@@ -2813,7 +2813,7 @@ class HermesIndexSource(SkillSource):
             return []
 
         if not query.strip():
-            # No query �?return featured/popular
+            # No query é¥?return featured/popular
             return [self._to_meta(s) for s in skills[:limit]]
 
         query_lower = query.lower()
@@ -2963,7 +2963,7 @@ def parallel_search_sources(
     Returns ``(all_results, source_counts, timed_out_ids)``.
 
     *on_source_done* is an optional callback ``(source_id, count) -> None``
-    invoked as each source completes �?useful for progress indicators.
+    invoked as each source completes é¥?useful for progress indicators.
     """
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -2972,7 +2972,7 @@ def parallel_search_sources(
     active: List[SkillSource] = []
     # When the centralized index is available and the user hasn't filtered
     # to a specific source, skip external API sources (github, skills-sh,
-    # clawhub, etc.) �?the index already has their data.  This avoids
+    # clawhub, etc.) é¥?the index already has their data.  This avoids
     # ~70 GitHub API calls per search for unauthenticated users.
     _index_available = False
     _api_source_ids = frozenset({"github", "skills-sh", "clawhub",

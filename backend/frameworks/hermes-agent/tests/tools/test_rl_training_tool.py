@@ -1,4 +1,4 @@
-"""Tests for rl_training_tool.py �?file handle lifecycle and cleanup.
+"""Tests for rl_training_tool.py é¥?file handle lifecycle and cleanup.
 
 Verifies that _stop_training_run properly closes log file handles,
 terminates processes, and handles edge cases on failure paths.
@@ -65,7 +65,7 @@ class TestStopTrainingRunFileHandles:
     def test_handles_missing_file_attrs(self):
         """RunState without log file attrs should not crash."""
         state = _make_run_state()
-        # No log file attrs set at all �?getattr(..., None) should handle it
+        # No log file attrs set at all é¥?getattr(..., None) should handle it
         _stop_training_run(state)  # should not raise
 
 

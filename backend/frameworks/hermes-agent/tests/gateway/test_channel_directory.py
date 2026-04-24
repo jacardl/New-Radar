@@ -1,4 +1,4 @@
-"""Tests for gateway/channel_directory.py �?channel resolution and display."""
+"""Tests for gateway/channel_directory.py é¥?channel resolution and display."""
 
 import json
 import os

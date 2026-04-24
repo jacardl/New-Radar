@@ -11,9 +11,9 @@ Bug scenario (pre-fix):
   4. On exit, _flush_messages_to_session_db() calculates:
      flush_from = max(len(conversation_history=200), _last_flushed_db_idx=0) = 200
   5. messages[200:] is empty (only ~30 messages after compression)
-  6. Nothing written to new session's SQLite �?compressed context lost
+  6. Nothing written to new session's SQLite é¥?compressed context lost
   7. Gateway's history_offset was still 200, producing empty new_messages
-  8. Fallback wrote only user/assistant pair �?summary lost
+  8. Fallback wrote only user/assistant pair é¥?summary lost
 """
 
 import os
@@ -25,7 +25,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Part 1: Agent-side �?_flush_messages_to_session_db after compression
+# Part 1: Agent-side é¥?_flush_messages_to_session_db after compression
 # ---------------------------------------------------------------------------
 
 class TestFlushAfterCompression:
@@ -125,7 +125,7 @@ class TestFlushAfterCompression:
 
             rows = db.get_messages("new-session")
             # With the stale history, flush_from = max(100, 0) = 100
-            # But compressed only has 2 entries �?messages[100:] = empty
+            # But compressed only has 2 entries é«?messages[100:] = empty
             assert len(rows) == 0, (
                 "Expected 0 messages with stale conversation_history "
                 "(this test verifies the bug condition exists)"
@@ -133,7 +133,7 @@ class TestFlushAfterCompression:
 
 
 # ---------------------------------------------------------------------------
-# Part 2: Gateway-side �?history_offset after session split
+# Part 2: Gateway-side é¥?history_offset after session split
 # ---------------------------------------------------------------------------
 
 class TestGatewayHistoryOffsetAfterSplit:

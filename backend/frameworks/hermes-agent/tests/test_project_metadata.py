@@ -19,7 +19,7 @@ def test_matrix_extra_linux_only_in_all():
     optional_dependencies = _load_optional_dependencies()
 
     assert "matrix" in optional_dependencies
-    # Must NOT be unconditional �?python-olm has no macOS wheels.
+    # Must NOT be unconditional é¥?python-olm has no macOS wheels.
     assert "hermes-agent[matrix]" not in optional_dependencies["all"]
     # Must be present with a Linux platform marker.
     linux_gated = [

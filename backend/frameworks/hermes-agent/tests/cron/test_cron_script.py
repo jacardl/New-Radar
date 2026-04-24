@@ -530,7 +530,7 @@ class TestRunJobEnvVarCleanup:
             monkeypatch.delenv(key, raising=False)
 
         # Build a job with origin info that will fail during execution
-        # (no valid model, no API key �?will raise inside try block)
+        # (no valid model, no API key é¥?will raise inside try block)
         job = {
             "id": "test-envleak",
             "name": "env-leak-test",

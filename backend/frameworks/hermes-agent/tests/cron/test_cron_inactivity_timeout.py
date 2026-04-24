@@ -153,7 +153,7 @@ class TestInactivityTimeout:
 
         pool.shutdown(wait=False, cancel_futures=True)
         assert _inactivity_timeout is True
-        assert result is None  # Never got a result �?interrupted
+        assert result is None  # Never got a result é¥?interrupted
 
     def test_unlimited_timeout(self):
         """HERMES_CRON_TIMEOUT=0 means no timeout at all."""
@@ -229,7 +229,7 @@ class TestInactivityTimeout:
         err_msg = (
             f"Cron job 'test-job' idle for "
             f"{int(_secs_ago)}s (limit {int(_cron_inactivity_limit)}s) "
-            f"�?last activity: {_last_desc}"
+            f"é¥?last activity: {_last_desc}"
         )
         assert "idle for" in err_msg
         assert "api_call_streaming" in err_msg
@@ -269,7 +269,7 @@ class TestInactivityTimeout:
                 break
 
         pool.shutdown(wait=False)
-        # Should NOT have timed out �?bare agent has no get_activity_summary
+        # Should NOT have timed out é¥?bare agent has no get_activity_summary
         assert not _inactivity_timeout
         assert result["final_response"] == "no activity tracker"
 

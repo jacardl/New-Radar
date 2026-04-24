@@ -1,15 +1,15 @@
-﻿"""
-专为 AI Agent 设计的舆情搜索工具集 (本地数据�?
+ï»¿"""
+ä¸ä¸º AI Agent è®¾è®¡çèææç´¢å·¥å·é (æ¬å°æ°æ®ï¿½?
 
-版本: 2.0
-最后更�? 2025-08-22
+çæ¬: 2.0
+æåæ´ï¿½? 2025-08-22
 
-此脚本将搜索功能重构为从本地 SQLite 数据库中检索数据，
-保持了与原有 Tavily 接口相同的签名和返回结构，以�?Agent 无缝切换�?
+æ­¤èæ¬å°æç´¢åè½éæä¸ºä»æ¬å° SQLite æ°æ®åºä¸­æ£ç´¢æ°æ®ï¼
+ä¿æäºä¸åæ Tavily æ¥å£ç¸åçç­¾ååè¿åç»æï¼ä»¥ï¿½?Agent æ ç¼åæ¢ï¿½?
 
-新特�?
-- 彻底移除 Tavily 依赖，改为检索本地每日新闻及社媒表�?
-- 提取 extra_info 中的多模态数据�?
+æ°ç¹ï¿½?
+- å½»åºç§»é¤ Tavily ä¾èµï¼æ¹ä¸ºæ£ç´¢æ¬å°æ¯æ¥æ°é»åç¤¾åªè¡¨ï¿½?
+- æå extra_info ä¸­çå¤æ¨¡ææ°æ®ï¿½?
 """
 
 import os
@@ -18,7 +18,7 @@ import datetime
 import asyncio
 from typing import List, Dict, Any, Optional, Tuple
 
-# 添加utils目录到Python路径
+# æ·»å utilsç®å½å°Pythonè·¯å¾
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 utils_dir = os.path.join(root_dir, 'utils')
@@ -28,20 +28,20 @@ if utils_dir not in sys.path:
 from retry_helper import with_graceful_retry, SEARCH_API_RETRY_CONFIG
 from dataclasses import dataclass, field
 
-# 引入本地数据库查询工�?
+# å¼å¥æ¬å°æ°æ®åºæ¥è¯¢å·¥ï¿½?
 sys.path.insert(0, root_dir)
 from backend.db.connection import fetch_all, _run_async
 import logging
 
 logger = logging.getLogger(__name__)
 
-# --- 1. 数据结构定义 ---
+# --- 1. æ°æ®ç»æå®ä¹ ---
 
 @dataclass
 class SearchResult:
     """
-    网页搜索结果数据�?
-    包含 published_date 属性来存储新闻发布日期
+    ç½é¡µæç´¢ç»ææ°æ®ï¿½?
+    åå« published_date å±æ§æ¥å­å¨æ°é»åå¸æ¥æ
     """
     title: str
     url: str
@@ -52,13 +52,13 @@ class SearchResult:
 
 @dataclass
 class ImageResult:
-    """图片搜索结果数据�?""
+    """å¾çæç´¢ç»ææ°æ®ï¿½?""
     url: str
     description: Optional[str] = None
 
 @dataclass
 class TavilyResponse:
-    """封装搜索 API 的完整返回结果，保持原有命名以便兼容"""
+    """å°è£æç´¢ API çå®æ´è¿åç»æï¼ä¿æåæå½åä»¥ä¾¿å¼å®¹"""
     query: str
     answer: Optional[str] = None
     results: List[SearchResult] = field(default_factory=list)
@@ -66,21 +66,21 @@ class TavilyResponse:
     response_time: Optional[float] = None
 
 
-# --- 2. 核心客户端与专用工具�?---
+# --- 2. æ ¸å¿å®¢æ·ç«¯ä¸ä¸ç¨å·¥å·ï¿½?---
 
 class TavilyNewsAgency:
     """
-    一个包含多种专用新闻舆情搜索工具的客户端�?
-    底层已重构为本地数据库查询�?
+    ä¸ä¸ªåå«å¤ç§ä¸ç¨æ°é»èææç´¢å·¥å·çå®¢æ·ç«¯ï¿½?
+    åºå±å·²éæä¸ºæ¬å°æ°æ®åºæ¥è¯¢ï¿½?
     """
 
     def __init__(self, api_key: Optional[str] = None):
-        """初始化客户端（API Key参数保留以兼容旧代码，但不再使用�?""
+        """åå§åå®¢æ·ç«¯ï¼API Keyåæ°ä¿çä»¥å¼å®¹æ§ä»£ç ï¼ä½ä¸åä½¿ç¨ï¿½?""
         pass
 
     def _build_keyword_conditions(self, topic: str, columns: List[str]) -> Tuple[str, dict]:
         """
-        (不再使用�?LIKE 模糊匹配，保留此函数以防其他地方调用)
+        (ä¸åä½¿ç¨ï¿½?LIKE æ¨¡ç³å¹éï¼ä¿çæ­¤å½æ°ä»¥é²å¶ä»å°æ¹è°ç¨)
         """
         keywords = [k.strip() for k in topic.replace('+', ' ').split() if k.strip()][:5]
         if not keywords:
@@ -98,8 +98,8 @@ class TavilyNewsAgency:
 
     def _build_vector_conditions(self, topic: str) -> Tuple[str, dict]:
         """
-        使用本地 Embedding 进行向量相似度匹配�?
-        返回: SQL 排序/计算片段 �?params (包含 query_vector 字符�?
+        ä½¿ç¨æ¬å° Embedding è¿è¡åéç¸ä¼¼åº¦å¹éï¿½?
+        è¿å: SQL æåº/è®¡ç®çæ®µ ï¿½?params (åå« query_vector å­ç¬¦ï¿½?
         """
         from utils.embedding import get_embedding
         try:
@@ -112,7 +112,7 @@ class TavilyNewsAgency:
             return "1", {} # fallback
 
     def _parse_timestamp(self, ts) -> str:
-        """将毫秒时间戳转换�?YYYY-MM-DD HH:MM:SS 格式"""
+        """å°æ¯«ç§æ¶é´æ³è½¬æ¢ï¿½?YYYY-MM-DD HH:MM:SS æ ¼å¼"""
         if not ts:
             return ""
         try:
@@ -121,7 +121,7 @@ class TavilyNewsAgency:
             return str(ts)
 
     async def _search_local_db_async(self, query: str, limit: int = 10, start_ts: int = 0, end_ts: int = 0):
-        """异步查询本地数据库的各个�?""
+        """å¼æ­¥æ¥è¯¢æ¬å°æ°æ®åºçåä¸ªï¿½?""
         time_filter = ""
         time_params = {}
         if start_ts > 0:
@@ -187,7 +187,7 @@ class TavilyNewsAgency:
             all_rows = await asyncio.gather(*tasks, return_exceptions=True)
             for i, rows in enumerate(all_rows):
                 if isinstance(rows, Exception):
-                    logger.debug(f"查询本地库出错或表不存在: {rows}")
+                    logger.debug(f"æ¥è¯¢æ¬å°åºåºéæè¡¨ä¸å­å¨: {rows}")
                     continue
                 platform = platform_order[i]
                 for r in rows:
@@ -206,19 +206,19 @@ class TavilyNewsAgency:
                                 for img_url in extra_data['images']:
                                     if img_url:
                                         images_results.append(ImageResult(
-                                            description=f"[{platform.upper()}] 图片",
+                                            description=f"[{platform.upper()}] å¾ç",
                                             url=img_url
                                         ))
                             if 'video_url' in extra_data and extra_data['video_url']:
-                                raw_content += f"\n[视频链接: {extra_data['video_url']}]"
+                                raw_content += f"\n[è§é¢é¾æ¥: {extra_data['video_url']}]"
                             
-                            # 将完�?JSON 存入 raw_content 以供深度分析
-                            raw_content += f"\n[附加数据: {json.dumps(extra_data, ensure_ascii=False)}]"
+                            # å°å®ï¿½?JSON å­å¥ raw_content ä»¥ä¾æ·±åº¦åæ
+                            raw_content += f"\n[éå æ°æ®: {json.dumps(extra_data, ensure_ascii=False)}]"
                         except Exception:
                             pass
                     
                     results.append(SearchResult(
-                        title=f"[{platform.upper()}] {title}" if title else f"[{platform.upper()}] 网友讨论",
+                        title=f"[{platform.upper()}] {title}" if title else f"[{platform.upper()}] ç½åè®¨è®º",
                         url=url or f"local://{platform}/{time_val}",
                         content=content[:300] + "..." if len(content) > 300 else content,
                         raw_content=raw_content,
@@ -228,16 +228,16 @@ class TavilyNewsAgency:
             from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
             db_utils._engine = None  # Clear global engine to prevent event loop issues
         
-        # 按照时间降序排序，并截取�?limit �?
+        # æç§æ¶é´éåºæåºï¼å¹¶æªåï¿½?limit ï¿½?
         results.sort(key=lambda x: x.published_date or "", reverse=True)
         return results[:limit], images_results
 
     def _search_local_db(self, query: str, limit: int = 10, start_ts: int = 0, end_ts: int = 0):
         return _run_async(self._search_local_db_async(query, limit, start_ts, end_ts))
 
-    @with_graceful_retry(SEARCH_API_RETRY_CONFIG, default_return=TavilyResponse(query="搜索失败"))
+    @with_graceful_retry(SEARCH_API_RETRY_CONFIG, default_return=TavilyResponse(query="æç´¢å¤±è´¥"))
     def _search_internal(self, query: str, max_results: int = 10, start_ts: int = 0, end_ts: int = 0) -> TavilyResponse:
-        """内部通用的搜索执行器，所有工具最终都调用此方�?""
+        """åé¨éç¨çæç´¢æ§è¡å¨ï¼ææå·¥å·æç»é½è°ç¨æ­¤æ¹ï¿½?""
         try:
             results, images = self._search_local_db(query, limit=max_results, start_ts=start_ts, end_ts=end_ts)
             return TavilyResponse(
@@ -248,53 +248,53 @@ class TavilyNewsAgency:
                 response_time=0.1
             )
         except Exception as e:
-            print(f"搜索时发生错�? {str(e)}")
+            print(f"æç´¢æ¶åçéï¿½? {str(e)}")
             raise e
 
-    # --- Agent 可用的工具方�?---
+    # --- Agent å¯ç¨çå·¥å·æ¹ï¿½?---
 
     def basic_search_news(self, query: str, max_results: int = 7) -> TavilyResponse:
         """
-        【工具】基础新闻搜索: 执行一次标准、快速的新闻搜索�?
+        ãå·¥å·ãåºç¡æ°é»æç´¢: æ§è¡ä¸æ¬¡æ åãå¿«éçæ°é»æç´¢ï¿½?
         """
-        print(f"--- TOOL: 基础新闻搜索 (query: {query}) ---")
+        print(f"--- TOOL: åºç¡æ°é»æç´¢ (query: {query}) ---")
         return self._search_internal(query=query, max_results=max_results)
 
     def deep_search_news(self, query: str) -> TavilyResponse:
         """
-        【工具】深度新闻分�? 对一个主题进行最全面、最深入的搜索�?
+        ãå·¥å·ãæ·±åº¦æ°é»åï¿½? å¯¹ä¸ä¸ªä¸»é¢è¿è¡æå¨é¢ãææ·±å¥çæç´¢ï¿½?
         """
-        print(f"--- TOOL: 深度新闻分析 (query: {query}) ---")
+        print(f"--- TOOL: æ·±åº¦æ°é»åæ (query: {query}) ---")
         return self._search_internal(query=query, max_results=20)
 
     def search_news_last_24_hours(self, query: str) -> TavilyResponse:
         """
-        【工具】搜�?4小时内新�? 获取关于某个主题的最新动态�?
+        ãå·¥å·ãæï¿½?4å°æ¶åæ°ï¿½? è·åå³äºæä¸ªä¸»é¢çææ°å¨æï¿½?
         """
-        print(f"--- TOOL: 搜索24小时内新�?(query: {query}) ---")
+        print(f"--- TOOL: æç´¢24å°æ¶åæ°ï¿½?(query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(days=1)).timestamp() * 1000)
         return self._search_internal(query=query, max_results=10, start_ts=start_ts)
 
     def search_news_last_week(self, query: str) -> TavilyResponse:
         """
-        【工具】搜索本周新�? 获取关于某个主题过去一周内的主要新闻报道�?
+        ãå·¥å·ãæç´¢æ¬å¨æ°ï¿½? è·åå³äºæä¸ªä¸»é¢è¿å»ä¸å¨åçä¸»è¦æ°é»æ¥éï¿½?
         """
-        print(f"--- TOOL: 搜索本周新闻 (query: {query}) ---")
+        print(f"--- TOOL: æç´¢æ¬å¨æ°é» (query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(weeks=1)).timestamp() * 1000)
         return self._search_internal(query=query, max_results=10, start_ts=start_ts)
 
     def search_images_for_news(self, query: str) -> TavilyResponse:
         """
-        【工具】查找新闻图�? 搜索与某个新闻主题相关的图片�?
+        ãå·¥å·ãæ¥æ¾æ°é»å¾ï¿½? æç´¢ä¸æä¸ªæ°é»ä¸»é¢ç¸å³çå¾çï¿½?
         """
-        print(f"--- TOOL: 查找新闻图片 (query: {query}) ---")
+        print(f"--- TOOL: æ¥æ¾æ°é»å¾ç (query: {query}) ---")
         return self._search_internal(query=query, max_results=5)
 
     def search_news_by_date(self, query: str, start_date: str, end_date: str) -> TavilyResponse:
         """
-        【工具】按指定日期范围搜索新闻�?
+        ãå·¥å·ãææå®æ¥æèå´æç´¢æ°é»ï¿½?
         """
-        print(f"--- TOOL: 按指定日期范围搜索新�?(query: {query}, from: {start_date}, to: {end_date}) ---")
+        print(f"--- TOOL: ææå®æ¥æèå´æç´¢æ°ï¿½?(query: {query}, from: {start_date}, to: {end_date}) ---")
         try:
             start_ts = int(datetime.datetime.strptime(start_date, '%Y-%m-%d').timestamp() * 1000)
             end_ts = int(datetime.datetime.strptime(end_date, '%Y-%m-%d').timestamp() * 1000)
@@ -304,62 +304,62 @@ class TavilyNewsAgency:
         return self._search_internal(query=query, max_results=15, start_ts=start_ts, end_ts=end_ts)
 
 
-# --- 3. 测试与使用示�?---
+# --- 3. æµè¯ä¸ä½¿ç¨ç¤ºï¿½?---
 
 def print_response_summary(response: TavilyResponse):
-    """简化的打印函数，用于展示测试结果，现在会显示发布日�?""
+    """ç®åçæå°å½æ°ï¼ç¨äºå±ç¤ºæµè¯ç»æï¼ç°å¨ä¼æ¾ç¤ºåå¸æ¥ï¿½?""
     if not response or not response.query:
-        print("未能获取有效响应�?)
+        print("æªè½è·åææååºï¿½?)
         return
         
-    print(f"\n查询: '{response.query}' | 耗时: {response.response_time}s")
+    print(f"\næ¥è¯¢: '{response.query}' | èæ¶: {response.response_time}s")
     if response.answer:
-        print(f"AI摘要: {response.answer[:120]}...")
-    print(f"找到 {len(response.results)} 条网�? {len(response.images)} 张图片�?)
+        print(f"AIæè¦: {response.answer[:120]}...")
+    print(f"æ¾å° {len(response.results)} æ¡ç½ï¿½? {len(response.images)} å¼ å¾çï¿½?)
     if response.results:
         first_result = response.results[0]
-        date_info = f"(发布�? {first_result.published_date})" if first_result.published_date else ""
-        print(f"第一条结�? {first_result.title} {date_info}")
+        date_info = f"(åå¸ï¿½? {first_result.published_date})" if first_result.published_date else ""
+        print(f"ç¬¬ä¸æ¡ç»ï¿½? {first_result.title} {date_info}")
     print("-" * 60)
 
 
 if __name__ == "__main__":
-    # 在运行前，请确保您已设置 TAVILY_API_KEY 环境变量
+    # å¨è¿è¡åï¼è¯·ç¡®ä¿æ¨å·²è®¾ç½® TAVILY_API_KEY ç¯å¢åé
     
     try:
-        # 初始化“新闻社”客户端，它内部包含了所有工�?
+        # åå§å"æ°é»ç¤¾"å®¢æ·ç«¯ï¼å®åé¨åå«äºææå·¥ï¿½?
         agency = TavilyNewsAgency()
 
-        # 场景1: Agent 进行一次常规、快速的搜索
-        response1 = agency.basic_search_news(query="奥运会最新赛�?, max_results=5)
+        # åºæ¯1: Agent è¿è¡ä¸æ¬¡å¸¸è§ãå¿«éçæç´¢
+        response1 = agency.basic_search_news(query="å¥¥è¿ä¼ææ°èµï¿½?, max_results=5)
         print_response_summary(response1)
 
-        # 场景2: Agent 需要全面了解“全球芯片技术竞争”的背景
-        response2 = agency.deep_search_news(query="全球芯片技术竞�?)
+        # åºæ¯2: Agent éè¦å¨é¢äºè§£"å¨çè¯çææ¯ç«äº"çèæ¯
+        response2 = agency.deep_search_news(query="å¨çè¯çææ¯ç«ï¿½?)
         print_response_summary(response2)
 
-        # 场景3: Agent 需要追踪“GTC大会”的最新消�?
-        response3 = agency.search_news_last_24_hours(query="Nvidia GTC大会 最新发�?)
+        # åºæ¯3: Agent éè¦è¿½è¸ª"GTCå¤§ä¼"çææ°æ¶ï¿½?
+        response3 = agency.search_news_last_24_hours(query="Nvidia GTCå¤§ä¼ ææ°åï¿½?)
         print_response_summary(response3)
         
-        # 场景4: Agent 需要为一篇关于“自动驾驶”的周报查找素材
-        response4 = agency.search_news_last_week(query="自动驾驶商业化落�?)
+        # åºæ¯4: Agent éè¦ä¸ºä¸ç¯å³äº"èªå¨é©¾é©¶"çå¨æ¥æ¥æ¾ç´ æ
+        response4 = agency.search_news_last_week(query="èªå¨é©¾é©¶åä¸åè½ï¿½?)
         print_response_summary(response4)
         
-        # 场景5: Agent 需要查找“韦伯太空望远镜”的新闻图片
-        response5 = agency.search_images_for_news(query="韦伯太空望远镜最新发�?)
+        # åºæ¯5: Agent éè¦æ¥æ¾"é¦ä¼¯å¤ªç©ºæè¿é"çæ°é»å¾ç
+        response5 = agency.search_images_for_news(query="é¦ä¼¯å¤ªç©ºæè¿éææ°åï¿½?)
         print_response_summary(response5)
 
-        # 场景6: Agent 需要研�?025年第一季度关于“人工智能法规”的新闻
+        # åºæ¯6: Agent éè¦ç ï¿½?025å¹´ç¬¬ä¸å­£åº¦å³äº"äººå·¥æºè½æ³è§"çæ°é»
         response6 = agency.search_news_by_date(
-            query="人工智能法规",
+            query="äººå·¥æºè½æ³è§",
             start_date="2025-01-01",
             end_date="2025-03-31"
         )
         print_response_summary(response6)
 
     except ValueError as e:
-        print(f"初始化失�? {e}")
-        print("请确�?TAVILY_API_KEY 环境变量已正确设置�?)
+        print(f"åå§åå¤±ï¿½? {e}")
+        print("è¯·ç¡®ï¿½?TAVILY_API_KEY ç¯å¢åéå·²æ­£ç¡®è®¾ç½®ï¿½?)
     except Exception as e:
-        print(f"测试过程中发生未知错�? {e}")
+        print(f"æµè¯è¿ç¨ä¸­åçæªç¥éï¿½? {e}")

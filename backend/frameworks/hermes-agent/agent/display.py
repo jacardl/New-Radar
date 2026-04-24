@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 _ANSI_RESET = "\033[0m"
 
-# Diff colors â€?resolved lazily from the skin engine so they adapt
+# Diff colors ÃÂ¢?resolved lazily from the skin engine so they adapt
 # to light/dark themes.  Falls back to sensible defaults on import
 # failure.  We cache after first resolution for performance.
 _diff_colors_cached: dict[str, str] | None = None
@@ -57,7 +57,7 @@ def _diff_ansi() -> dict[str, str]:
         dim = _hex_fg("banner_dim", (150, 150, 150))
         file_c = _hex_fg("session_label", (180, 160, 255))
         hunk = _hex_fg("session_border", (120, 120, 140))
-        # minus/plus use background colors â€?derive from ui_error/ui_ok
+        # minus/plus use background colors ÃÂ¢?derive from ui_error/ui_ok
         err_h = skin.get_color("ui_error", "#ef5350")
         ok_h = skin.get_color("ui_ok", "#4caf50")
         if err_h and len(err_h) == 7:
@@ -77,7 +77,7 @@ def _diff_ansi() -> dict[str, str]:
     return _diff_colors_cached
 
 
-# Module-level helpers â€?each call resolves from the active skin lazily.
+# Module-level helpers ÃÂ¢?each call resolves from the active skin lazily.
 def _diff_dim():   return _diff_ansi()["dim"]
 def _diff_file():  return _diff_ansi()["file"]
 def _diff_hunk():  return _diff_ansi()["hunk"]
@@ -129,10 +129,10 @@ def get_skin_tool_prefix() -> str:
     skin = _get_skin()
     if skin:
         return skin.tool_prefix
-    return "â”?
+    return "ÃÂ¢?
 
 
-def get_tool_emoji(tool_name: str, default: str = "âš?) -> str:
+def get_tool_emoji(tool_name: str, default: str = "ÃÂ¢?) -> str:
     """Get the display emoji for a tool.
 
     Resolution order:
@@ -435,7 +435,7 @@ def _emit_inline_diff(diff_text: str, print_fn) -> bool:
     if print_fn is None or not diff_text:
         return False
     try:
-        print_fn("  â”?review diff")
+        print_fn("  ÃÂ¢?review diff")
         for line in diff_text.rstrip("\n").splitlines():
             print_fn(line)
         return True
@@ -456,7 +456,7 @@ def _render_inline_unified_diff(diff: str) -> list[str]:
         if raw_line.startswith("+++ "):
             to_file = raw_line[4:].strip()
             if from_file or to_file:
-                rendered.append(f"{_diff_file()}{from_file or 'a/?'} â†?{to_file or 'b/?'}{_ANSI_RESET}")
+                rendered.append(f"{_diff_file()}{from_file or 'a/?'} ÃÂ¢?{to_file or 'b/?'}{_ANSI_RESET}")
             continue
         if raw_line.startswith("@@"):
             rendered.append(f"{_diff_hunk()}{raw_line}{_ANSI_RESET}")
@@ -531,7 +531,7 @@ def _summarize_rendered_diff_sections(
         break
 
     if omitted_files or omitted_lines:
-        summary = f"â€?omitted {omitted_lines} diff line(s)"
+        summary = f"ÃÂ¢?omitted {omitted_lines} diff line(s)"
         if omitted_files:
             summary += f" across {omitted_files} additional file(s)/section(s)"
         rendered.append(f"{_diff_hunk()}{summary}{_ANSI_RESET}")
@@ -572,26 +572,26 @@ class KawaiiSpinner:
     """Animated spinner with kawaii faces for CLI feedback during tool execution."""
 
     SPINNERS = {
-        'dots': ['â ?, 'â ?, 'â ?, 'â ?, 'â ?, 'â ?, 'â ?, 'â ?, 'â ?, 'â ?],
-        'bounce': ['â ?, 'â ?, 'â ?, 'â¡€', 'â¢€', 'â ?, 'â ?, 'â ?],
-        'grow': ['â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?, 'â–?],
-        'arrows': ['â†?, 'â†?, 'â†?, 'â†?, 'â†?, 'â†?, 'â†?, 'â†?],
-        'star': ['âœ?, 'âœ?, 'âœ?, 'âœ?, 'âœ?, 'âœ?, 'âœ?, 'âœ?],
-        'moon': ['ğŸŒ‘', 'ğŸŒ’', 'ğŸŒ“', 'ğŸŒ”', 'ğŸŒ•', 'ğŸŒ–', 'ğŸŒ—', 'ğŸŒ˜'],
-        'pulse': ['â—?, 'â—?, 'â—?, 'â—?, 'â—?, 'â—?],
-        'brain': ['ğŸ§ ', 'ğŸ’­', 'ğŸ’¡', 'âœ?, 'ğŸ’«', 'ğŸŒŸ', 'ğŸ’¡', 'ğŸ’­'],
-        'sparkle': ['â?, 'Ëš', '*', 'âœ?, 'âœ?, 'âœ?, '*', 'Ëš'],
+        'dots': ['ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?],
+        'bounce': ['ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ¡', 'ÃÂ¢ÃÂ¢', 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?, 'ÃÂ¢ÃÂ ?],
+        'grow': ['ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?],
+        'arrows': ['ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?],
+        'star': ['ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?],
+        'moon': ['ÃÂ°', 'ÃÂ°', 'ÃÂ°', 'ÃÂ°', 'ÃÂ°', 'ÃÂ°', 'ÃÂ°', 'ÃÂ°'],
+        'pulse': ['ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?],
+        'brain': ['ÃÂ°ÃÂ§ÃÂ ', 'ÃÂ°ÃÂ­', 'ÃÂ°ÃÂ¡', 'ÃÂ¢?, 'ÃÂ°ÃÂ«', 'ÃÂ°', 'ÃÂ°ÃÂ¡', 'ÃÂ°ÃÂ­'],
+        'sparkle': ['ÃÂ¢?, 'Ã', '*', 'ÃÂ¢?, 'ÃÂ¢?, 'ÃÂ¢?, '*', 'Ã'],
     }
 
     KAWAII_WAITING = [
-        "(ï½¡â—•â€¿â—•ï½?", "(â—•â€¿â—•âœ?", "Ù©(â—•â€¿â—•ï½?Û¶", "(âœ¿â— â€¿â— )", "( Ë˜â–½Ë?ã?,
-        "â™?Â´Îµ` )", "(â—•á´—â—•âœ¿)", "ãƒ?ï¼¾âˆ‡ï¼?", "(â‰§â—¡â‰?", "(â˜…Ï‰â˜…)",
+        "(ÃÂ¯ÃÂ½ÃÂ¡ÃÂ¢ÃÂ¢ÃÂ¿ÃÂ¢ÃÂ¯ÃÂ½?", "(ÃÂ¢ÃÂ¢ÃÂ¿ÃÂ¢ÃÂ¢?", "ÃÃÂ©(ÃÂ¢ÃÂ¢ÃÂ¿ÃÂ¢ÃÂ¯ÃÂ½?ÃÃÂ¶", "(ÃÂ¢ÃÂ¿ÃÂ¢ÃÂ ÃÂ¢ÃÂ¿ÃÂ¢ÃÂ )", "( ÃÃÂ¢ÃÂ½Ã?ÃÂ£?,
+        "ÃÂ¢?ÃÃÂ´ÃÃÂµ` )", "(ÃÂ¢ÃÂ¡ÃÂ´ÃÂ¢ÃÂ¢ÃÂ¿)", "ÃÂ£?ÃÂ¯ÃÂ¼ÃÂ¾ÃÂ¢ÃÂ¯ÃÂ¼?", "(ÃÂ¢ÃÂ§ÃÂ¢ÃÂ¡ÃÂ¢?", "(ÃÂ¢ÃÃÂ¢)",
     ]
 
     KAWAII_THINKING = [
-        "(ï½¡â€¢Ìï¸¿â€¢Ì€ï½?", "(â—”_â—?", "(Â¬â€¿Â?", "( â€¢_â€?>âŒâ– -â–?, "(âŒâ– _â–?",
-        "(Â´ï½¥_ï½¥`)", "â—‰_â—?, "(Â°ãƒ­Â?", "( Ë˜âŒ£Ë?â™?, "ãƒ?>âˆ€<â˜?â˜?,
-        "Ù©(à¹‘â›á´—â›à¹?Û¶", "(âŠ™_âŠ?", "(Â¬_Â¬)", "( Í¡Â° ÍœÊ– Í¡Â°)", "à² _à²?,
+        "(ÃÂ¯ÃÂ½ÃÂ¡ÃÂ¢ÃÂ¢ÃÃÂ¯ÃÂ¸ÃÂ¿ÃÂ¢ÃÂ¢ÃÃÂ¯ÃÂ½?", "(ÃÂ¢_ÃÂ¢?", "(ÃÃÂ¬ÃÂ¢ÃÂ¿Ã?", "( ÃÂ¢ÃÂ¢_ÃÂ¢?>ÃÂ¢ÃÂ¢ÃÂ -ÃÂ¢?, "(ÃÂ¢ÃÂ¢ÃÂ _ÃÂ¢?",
+        "(ÃÃÂ´ÃÂ¯ÃÂ½ÃÂ¥_ÃÂ¯ÃÂ½ÃÂ¥`)", "ÃÂ¢_ÃÂ¢?, "(ÃÃÂ°ÃÂ£ÃÂ­Ã?", "( ÃÃÂ¢ÃÂ£Ã?ÃÂ¢?, "ÃÂ£?>ÃÂ¢<ÃÂ¢?ÃÂ¢?,
+        "ÃÃÂ©(ÃÂ ÃÂ¹ÃÂ¢ÃÂ¡ÃÂ´ÃÂ¢ÃÂ ÃÂ¹?ÃÃÂ¶", "(ÃÂ¢_ÃÂ¢?", "(ÃÃÂ¬_ÃÃÂ¬)", "( ÃÃÂ¡ÃÃÂ° ÃÃ ÃÃÂ¡ÃÃÂ°)", "ÃÂ ÃÂ²ÃÂ _ÃÂ ÃÂ²?,
     ]
 
     THINKING_VERBS = [
@@ -620,7 +620,7 @@ class KawaiiSpinner:
         """Write to the stdout captured at spinner creation time.
 
         If a print_fn was supplied at construction, all output is routed through
-        it instead â€?allowing callers to silence the spinner with a no-op lambda.
+        it instead ÃÂ¢?allowing callers to silence the spinner with a no-op lambda.
         """
         if self._print_fn is not None:
             try:
@@ -648,7 +648,7 @@ class KawaiiSpinner:
 
         patch_stdout wraps sys.stdout in a StdoutProxy that queues writes and
         injects newlines around each flush().  The \\r overwrite never lands on
-        the correct line â€?each spinner frame ends up on its own line.
+        the correct line ÃÂ¢?each spinner frame ends up on its own line.
 
         The CLI already drives a TUI widget (_spinner_text) for spinner display,
         so KawaiiSpinner's \\r-based animation is redundant under StdoutProxy.
@@ -661,7 +661,7 @@ class KawaiiSpinner:
 
     def _animate(self):
         # When stdout is not a real terminal (e.g. Docker, systemd, pipe),
-        # skip the animation entirely â€?it creates massive log bloat.
+        # skip the animation entirely ÃÂ¢?it creates massive log bloat.
         # Just log the start once and let stop() log the completion.
         if not self._is_tty:
             self._write(f"  [tool] {self.message}", flush=True)
@@ -724,7 +724,7 @@ class KawaiiSpinner:
             self._write(f"  {text}", flush=True)
             return
         # Clear spinner line with spaces (not \033[K) to avoid garbled escape
-        # codes when prompt_toolkit's patch_stdout is active â€?same approach
+        # codes when prompt_toolkit's patch_stdout is active ÃÂ¢?same approach
         # as stop(). Then print text; spinner redraws on next tick.
         blanks = ' ' * max(self.last_line_len + 5, 40)
         self._write(f"\r{blanks}\r  {text}", flush=True)
@@ -821,112 +821,112 @@ def get_cute_tool_message(
 
     def _wrap(line: str) -> str:
         """Apply skin tool prefix and failure suffix."""
-        if skin_prefix != "â”?:
-            line = line.replace("â”?, skin_prefix, 1)
+        if skin_prefix != "ÃÂ¢?:
+            line = line.replace("ÃÂ¢?, skin_prefix, 1)
         if not is_failure:
             return line
         return f"{line}{failure_suffix}"
 
     if tool_name == "web_search":
-        return _wrap(f"â”?ğŸ” search    {_trunc(args.get('query', ''), 42)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° search    {_trunc(args.get('query', ''), 42)}  {dur}")
     if tool_name == "web_extract":
         urls = args.get("urls", [])
         if urls:
             url = urls[0] if isinstance(urls, list) else str(urls)
             domain = url.replace("https://", "").replace("http://", "").split("/")[0]
             extra = f" +{len(urls)-1}" if len(urls) > 1 else ""
-            return _wrap(f"â”?ğŸ“„ fetch     {_trunc(domain, 35)}{extra}  {dur}")
-        return _wrap(f"â”?ğŸ“„ fetch     pages  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ° fetch     {_trunc(domain, 35)}{extra}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° fetch     pages  {dur}")
     if tool_name == "web_crawl":
         url = args.get("url", "")
         domain = url.replace("https://", "").replace("http://", "").split("/")[0]
-        return _wrap(f"â”?ğŸ•¸ï¸? crawl     {_trunc(domain, 35)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¸ÃÂ¯ÃÂ¸? crawl     {_trunc(domain, 35)}  {dur}")
     if tool_name == "terminal":
-        return _wrap(f"â”?ğŸ’» $         {_trunc(args.get('command', ''), 42)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ» $         {_trunc(args.get('command', ''), 42)}  {dur}")
     if tool_name == "process":
         action = args.get("action", "?")
         sid = args.get("session_id", "")[:12]
         labels = {"list": "ls processes", "poll": f"poll {sid}", "log": f"log {sid}",
                   "wait": f"wait {sid}", "kill": f"kill {sid}", "write": f"write {sid}", "submit": f"submit {sid}"}
-        return _wrap(f"â”?âš™ï¸  proc      {labels.get(action, f'{action} {sid}')}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢ÃÂ¯ÃÂ¸  proc      {labels.get(action, f'{action} {sid}')}  {dur}")
     if tool_name == "read_file":
-        return _wrap(f"â”?ğŸ“– read      {_path(args.get('path', ''))}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° read      {_path(args.get('path', ''))}  {dur}")
     if tool_name == "write_file":
-        return _wrap(f"â”?âœï¸  write     {_path(args.get('path', ''))}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢ÃÂ¯ÃÂ¸  write     {_path(args.get('path', ''))}  {dur}")
     if tool_name == "patch":
-        return _wrap(f"â”?ğŸ”§ patch     {_path(args.get('path', ''))}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ patch     {_path(args.get('path', ''))}  {dur}")
     if tool_name == "search_files":
         pattern = _trunc(args.get("pattern", ""), 35)
         target = args.get("target", "content")
         verb = "find" if target == "files" else "grep"
-        return _wrap(f"â”?ğŸ” {verb:9} {pattern}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° {verb:9} {pattern}  {dur}")
     if tool_name == "browser_navigate":
         url = args.get("url", "")
         domain = url.replace("https://", "").replace("http://", "").split("/")[0]
-        return _wrap(f"â”?ğŸŒ navigate  {_trunc(domain, 35)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° navigate  {_trunc(domain, 35)}  {dur}")
     if tool_name == "browser_snapshot":
         mode = "full" if args.get("full") else "compact"
-        return _wrap(f"â”?ğŸ“¸ snapshot  {mode}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¸ snapshot  {mode}  {dur}")
     if tool_name == "browser_click":
-        return _wrap(f"â”?ğŸ‘† click     {args.get('ref', '?')}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° click     {args.get('ref', '?')}  {dur}")
     if tool_name == "browser_type":
-        return _wrap(f"â”?âŒ¨ï¸  type      \"{_trunc(args.get('text', ''), 30)}\"  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢ÃÂ¨ÃÂ¯ÃÂ¸  type      \"{_trunc(args.get('text', ''), 30)}\"  {dur}")
     if tool_name == "browser_scroll":
         d = args.get("direction", "down")
-        arrow = {"down": "â†?, "up": "â†?, "right": "â†?, "left": "â†?}.get(d, "â†?)
-        return _wrap(f"â”?{arrow}  scroll    {d}  {dur}")
+        arrow = {"down": "ÃÂ¢?, "up": "ÃÂ¢?, "right": "ÃÂ¢?, "left": "ÃÂ¢?}.get(d, "ÃÂ¢?)
+        return _wrap(f"ÃÂ¢?{arrow}  scroll    {d}  {dur}")
     if tool_name == "browser_back":
-        return _wrap(f"â”?â—€ï¸? back      {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢ÃÂ¯ÃÂ¸? back      {dur}")
     if tool_name == "browser_press":
-        return _wrap(f"â”?âŒ¨ï¸  press     {args.get('key', '?')}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢ÃÂ¨ÃÂ¯ÃÂ¸  press     {args.get('key', '?')}  {dur}")
     if tool_name == "browser_get_images":
-        return _wrap(f"â”?ğŸ–¼ï¸? images    extracting  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¼ÃÂ¯ÃÂ¸? images    extracting  {dur}")
     if tool_name == "browser_vision":
-        return _wrap(f"â”?ğŸ‘ï¸? vision    analyzing page  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¯ÃÂ¸? vision    analyzing page  {dur}")
     if tool_name == "todo":
         todos_arg = args.get("todos")
         merge = args.get("merge", False)
         if todos_arg is None:
-            return _wrap(f"â”?ğŸ“‹ plan      reading tasks  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ° plan      reading tasks  {dur}")
         elif merge:
-            return _wrap(f"â”?ğŸ“‹ plan      update {len(todos_arg)} task(s)  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ° plan      update {len(todos_arg)} task(s)  {dur}")
         else:
-            return _wrap(f"â”?ğŸ“‹ plan      {len(todos_arg)} task(s)  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ° plan      {len(todos_arg)} task(s)  {dur}")
     if tool_name == "session_search":
-        return _wrap(f"â”?ğŸ” recall    \"{_trunc(args.get('query', ''), 35)}\"  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° recall    \"{_trunc(args.get('query', ''), 35)}\"  {dur}")
     if tool_name == "memory":
         action = args.get("action", "?")
         target = args.get("target", "")
         if action == "add":
-            return _wrap(f"â”?ğŸ§  memory    +{target}: \"{_trunc(args.get('content', ''), 30)}\"  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂ  memory    +{target}: \"{_trunc(args.get('content', ''), 30)}\"  {dur}")
         elif action == "replace":
-            return _wrap(f"â”?ğŸ§  memory    ~{target}: \"{_trunc(args.get('old_text', ''), 20)}\"  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂ  memory    ~{target}: \"{_trunc(args.get('old_text', ''), 20)}\"  {dur}")
         elif action == "remove":
-            return _wrap(f"â”?ğŸ§  memory    -{target}: \"{_trunc(args.get('old_text', ''), 20)}\"  {dur}")
-        return _wrap(f"â”?ğŸ§  memory    {action}  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂ  memory    -{target}: \"{_trunc(args.get('old_text', ''), 20)}\"  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂ  memory    {action}  {dur}")
     if tool_name == "skills_list":
-        return _wrap(f"â”?ğŸ“š skills    list {args.get('category', 'all')}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° skills    list {args.get('category', 'all')}  {dur}")
     if tool_name == "skill_view":
-        return _wrap(f"â”?ğŸ“š skill     {_trunc(args.get('name', ''), 30)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° skill     {_trunc(args.get('name', ''), 30)}  {dur}")
     if tool_name == "image_generate":
-        return _wrap(f"â”?ğŸ¨ create    {_trunc(args.get('prompt', ''), 35)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¨ create    {_trunc(args.get('prompt', ''), 35)}  {dur}")
     if tool_name == "text_to_speech":
-        return _wrap(f"â”?ğŸ”Š speak     {_trunc(args.get('text', ''), 30)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° speak     {_trunc(args.get('text', ''), 30)}  {dur}")
     if tool_name == "vision_analyze":
-        return _wrap(f"â”?ğŸ‘ï¸? vision    {_trunc(args.get('question', ''), 30)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¯ÃÂ¸? vision    {_trunc(args.get('question', ''), 30)}  {dur}")
     if tool_name == "mixture_of_agents":
-        return _wrap(f"â”?ğŸ§  reason    {_trunc(args.get('user_prompt', ''), 30)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂ  reason    {_trunc(args.get('user_prompt', ''), 30)}  {dur}")
     if tool_name == "send_message":
-        return _wrap(f"â”?ğŸ“¨ send      {args.get('target', '?')}: \"{_trunc(args.get('message', ''), 25)}\"  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ¨ send      {args.get('target', '?')}: \"{_trunc(args.get('message', ''), 25)}\"  {dur}")
     if tool_name == "cronjob":
         action = args.get("action", "?")
         if action == "create":
             skills = args.get("skills") or ([] if not args.get("skill") else [args.get("skill")])
             label = args.get("name") or (skills[0] if skills else None) or args.get("prompt", "task")
-            return _wrap(f"â”?â?cron      create {_trunc(label, 24)}  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ¢?cron      create {_trunc(label, 24)}  {dur}")
         if action == "list":
-            return _wrap(f"â”?â?cron      listing  {dur}")
-        return _wrap(f"â”?â?cron      {action} {args.get('job_id', '')}  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ¢?cron      listing  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ¢?cron      {action} {args.get('job_id', '')}  {dur}")
     if tool_name.startswith("rl_"):
         rl = {
             "rl_list_environments": "list envs", "rl_select_environment": f"select {args.get('name', '')}",
@@ -935,19 +935,19 @@ def get_cute_tool_message(
             "rl_stop_training": f"stop {args.get('run_id', '?')[:12]}", "rl_get_results": f"results {args.get('run_id', '?')[:12]}",
             "rl_list_runs": "list runs", "rl_test_inference": "test inference",
         }
-        return _wrap(f"â”?ğŸ§ª rl        {rl.get(tool_name, tool_name.replace('rl_', ''))}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ°ÃÂ§ÃÂª rl        {rl.get(tool_name, tool_name.replace('rl_', ''))}  {dur}")
     if tool_name == "execute_code":
         code = args.get("code", "")
         first_line = code.strip().split("\n")[0] if code.strip() else ""
-        return _wrap(f"â”?ğŸ exec      {_trunc(first_line, 35)}  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° exec      {_trunc(first_line, 35)}  {dur}")
     if tool_name == "delegate_task":
         tasks = args.get("tasks")
         if tasks and isinstance(tasks, list):
-            return _wrap(f"â”?ğŸ”€ delegate  {len(tasks)} parallel tasks  {dur}")
-        return _wrap(f"â”?ğŸ”€ delegate  {_trunc(args.get('goal', ''), 35)}  {dur}")
+            return _wrap(f"ÃÂ¢?ÃÂ° delegate  {len(tasks)} parallel tasks  {dur}")
+        return _wrap(f"ÃÂ¢?ÃÂ° delegate  {_trunc(args.get('goal', ''), 35)}  {dur}")
 
     preview = build_tool_preview(tool_name, args) or ""
-    return _wrap(f"â”?âš?{tool_name[:9]:9} {_trunc(preview, 35)}  {dur}")
+    return _wrap(f"ÃÂ¢?ÃÂ¢?{tool_name[:9]:9} {_trunc(preview, 35)}  {dur}")
 
 
 # =========================================================================
@@ -970,8 +970,8 @@ _BOLD = "\033[1m"
 _DIM_ANSI = "\033[2m"
 
 # Bar characters
-_BAR_FILLED = "â–?
-_BAR_EMPTY = "â–?
+_BAR_FILLED = "ÃÂ¢?
+_BAR_EMPTY = "ÃÂ¢?
 _BAR_WIDTH = 20
 
 
@@ -987,7 +987,7 @@ def format_context_pressure(
     NOT the raw context window.  100% = compaction fires.
 
     Args:
-        compaction_progress: How close to compaction (0.0â€?.0, 1.0 = fires).
+        compaction_progress: How close to compaction (0.0ÃÂ¢?.0, 1.0 = fires).
         threshold_tokens: Compaction threshold in tokens.
         threshold_percent: Compaction threshold as a fraction of context window.
         compression_enabled: Whether auto-compression is active.
@@ -1000,7 +1000,7 @@ def format_context_pressure(
     threshold_pct_int = int(threshold_percent * 100)
 
     color = f"{_BOLD}{_YELLOW}"
-    icon = "âš?
+    icon = "ÃÂ¢?
     if compression_enabled:
         hint = "compaction approaching"
     else:
@@ -1008,7 +1008,7 @@ def format_context_pressure(
 
     return (
         f"  {color}{icon} context {bar} {pct_int}% to compaction{_ANSI_RESET}"
-        f"  {_DIM_ANSI}{threshold_k} threshold ({threshold_pct_int}%) Â· {hint}{_ANSI_RESET}"
+        f"  {_DIM_ANSI}{threshold_k} threshold ({threshold_pct_int}%) ÃÃÂ· {hint}{_ANSI_RESET}"
     )
 
 
@@ -1019,7 +1019,7 @@ def format_context_pressure_gateway(
 ) -> str:
     """Build a plain-text context pressure notification for messaging platforms.
 
-    No ANSI â€?just Unicode and plain text suitable for Telegram/Discord/etc.
+    No ANSI ÃÂ¢?just Unicode and plain text suitable for Telegram/Discord/etc.
     The percentage shows progress toward the compaction threshold.
     """
     pct_int = min(int(compaction_progress * 100), 100)
@@ -1028,10 +1028,10 @@ def format_context_pressure_gateway(
 
     threshold_pct_int = int(threshold_percent * 100)
 
-    icon = "âš ï¸"
+    icon = "ÃÂ¢ÃÂ ÃÂ¯ÃÂ¸"
     if compression_enabled:
         hint = f"Context compaction approaching (threshold: {threshold_pct_int}% of window)."
     else:
-        hint = "Auto-compaction is disabled â€?context may be truncated."
+        hint = "Auto-compaction is disabled ÃÂ¢?context may be truncated."
 
     return f"{icon} Context: {bar} {pct_int}% to compaction\n{hint}"

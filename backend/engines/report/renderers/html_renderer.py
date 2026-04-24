@@ -1,10 +1,10 @@
-﻿"""
-基于章节IR的HTML/PDF渲染器，实现与示例报告一致的交互与视觉�?
+ï»¿"""
+åºäºç« èIRçHTML/PDFæ¸²æå¨ï¼å®ç°ä¸ç¤ºä¾æ¥åä¸è´çäº¤äºä¸è§è§ï¿½?
 
-新增要点�?
-1. 内置Chart.js数据验证/修复（ChartValidator+LLM兜底），杜绝非法配置导致的注入或崩溃�?
-2. 将MathJax/Chart.js/html2canvas/jspdf等依赖内联并带CDN fallback，适配离线或被墙环境；
-3. 预置思源宋体子集的Base64字体，用于PDF/HTML一体化导出，避免缺字或额外系统依赖�?
+æ°å¢è¦ç¹ï¿½?
+1. åç½®Chart.jsæ°æ®éªè¯/ä¿®å¤ï¼ChartValidator+LLMååºï¼ï¼æç»éæ³éç½®å¯¼è´çæ³¨å¥æå´©æºï¿½?
+2. å°MathJax/Chart.js/html2canvas/jspdfç­ä¾èµåèå¹¶å¸¦CDN fallbackï¼ééç¦»çº¿æè¢«å¢ç¯å¢ï¼
+3. é¢ç½®ææºå®ä½å­éçBase64å­ä½ï¼ç¨äºPDF/HTMLä¸ä½åå¯¼åºï¼é¿åç¼ºå­æé¢å¤ç³»ç»ä¾èµï¿½?
 """
 
 from __future__ import annotations
@@ -34,20 +34,20 @@ from backend.engines.report.utils.chart_review_service import get_chart_review_s
 
 class HTMLRenderer:
     """
-    Document IR �?HTML 渲染器�?
+    Document IR ï¿½?HTML æ¸²æå¨ï¿½?
 
-    - 读取 IR metadata/chapters，将结构映射为响应式HTML�?
-    - 动态构造目录、锚点、Chart.js脚本及互动逻辑�?
-    - 提供主题变量、编号映射等辅助功能�?
+    - è¯»å IR metadata/chaptersï¼å°ç»ææ å°ä¸ºååºå¼HTMLï¿½?
+    - å¨ææé ç®å½ãéç¹hart.jsèæ¬åäºå¨é»è¾ï¿½?
+    - æä¾ä¸»é¢åéãç¼å·æ å°ç­è¾å©åè½ï¿½?
     """
 
-    # ===== 渲染流程快速导览（便于定位注释�?=====
-    # render(document_ir): 单一公开入口，负责重置状态并串联 _render_head / _render_body�?
-    # _render_head: 根据 themeTokens 构�?<head>，注�?CSS 变量、内联库�?CDN fallback�?
-    # _render_body: 组装页面骨架（页�?header、目�?toc、章�?blocks、脚本注水）�?
-    # _render_header: 生成顶部按钮区域，按�?ID 及事件在 _hydration_script 内绑定�?
-    # _render_widget: 处理 Chart.js/词云组件，先校验与修复数据，再写�?<script type="application/json"> 配置�?
-    # _hydration_script: 输出末尾 JS，负责按钮交互（主题切换/打印/导出）与图表实例化�?
+    # ===== æ¸²ææµç¨å¿«éå¯¼è§ï¼ä¾¿äºå®ä½æ³¨éï¿½?=====
+    # render(document_ir): åä¸å¬å¼å¥å£ï¼è´è´£éç½®ç¶æå¹¶ä¸²è _render_head / _render_bodyï¿½?
+    # _render_head: æ ¹æ® themeTokens æï¿½?<head>ï¼æ³¨ï¿½?CSS åéãåèåºï¿½?CDN fallbackï¿½?
+    # _render_body: ç»è£é¡µé¢éª¨æ¶ï¼é¡µï¿½?headerãç®ï¿½?tocãç« ï¿½?blocksãèæ¬æ³¨æ°´ï¼ï¿½?
+    # _render_header: çæé¡¶é¨æé®åºåï¼æï¿½?ID åäºä»¶å¨ _hydration_script åç»å®ï¿½?
+    # _render_widget: å¤ç Chart.js/è¯äºç»ä»¶ï¼åæ ¡éªä¸ä¿®å¤æ°æ®ï¼ååï¿½?<script type="application/json"> éç½®ï¿½?
+    # _hydration_script: è¾åºæ«å°¾ JSï¼è´è´£æé®äº¤äºï¼ä¸»é¢åæ¢/æå°/å¯¼åºï¼ä¸å¾è¡¨å®ä¾åï¿½?
 
     CALLOUT_ALLOWED_TYPES = {
         "paragraph",
@@ -74,24 +74,24 @@ class HTMLRenderer:
         "options",
     }
     TABLE_COMPLEX_CHARS = set(
-        "@�?（）()�?。；;�?、？?�?·�?—_+<>[]{}|\\/\"'`~$^&*#"
+        "@ï¿½?ï¼ï¼()ï¿½?ãï¼;ï¿½?ãï¼?ï¿½?�·ï¿½?-_+<>[]{}|\\/\"'`~$^&*#"
     )
 
     def __init__(self, config: Dict[str, Any] | None = None):
         """
-        初始化渲染器缓存并允许注入额外配置�?
+        åå§åæ¸²æå¨ç¼å­å¹¶åè®¸æ³¨å¥é¢å¤éç½®ï¿½?
 
-        参数层级说明�?
-        - config: dict | None，供调用方临时覆盖主�?调试开关等，优先级最高；
-          典型键值：
-            - themeOverride: 覆盖元数据里�?themeTokens�?
-            - enableDebug: bool，是否输出额外日志�?
-        内部状态：
-        - self.document/metadata/chapters：保存一次渲染周期的 IR�?
-        - self.widget_scripts：收集图表配�?JSON，后续在 _render_body 尾部注水�?
-        - self._lib_cache/_pdf_font_base64：缓存本地库与字体，避免重复IO�?
-        - self.chart_validator/chart_repairer：Chart.js 配置的本地与 LLM 兜底修复器；
-        - self.chart_validation_stats：记录总量/修复来源/失败数量，便于日志审计�?
+        åæ°å±çº§è¯´æï¿½?
+        - config: dict | Noneï¼ä¾è°ç¨æ¹ä¸´æ¶è¦çä¸»ï¿½?è°è¯å¼å³ç­ï¼ä¼åçº§æé«ï¼
+          å¸åé®å¼ï¼
+            - themeOverride: è¦çåæ°æ®éï¿½?themeTokensï¿½?
+            - enableDebug: boolï¼æ¯å¦è¾åºé¢å¤æ¥å¿ï¿½?
+        åé¨ç¶æï¼
+        - self.document/metadata/chaptersï¼ä¿å­ä¸æ¬¡æ¸²æå¨æç IRï¿½?
+        - self.widget_scriptsï¼æ¶éå¾è¡¨éï¿½?JSONï¼åç»­å¨ _render_body å°¾é¨æ³¨æ°´ï¿½?
+        - self._lib_cache/_pdf_font_base64ï¼ç¼å­æ¬å°åºä¸å­ä½ï¼é¿åéå¤IOï¿½?
+        - self.chart_validator/chart_repairerï¼Chart.js éç½®çæ¬å°ä¸ LLM ååºä¿®å¤å¨ï¼
+        - self.chart_validation_statsï¼è®°å½æ»é/ä¿®å¤æ¥æº/å¤±è´¥æ°éï¼ä¾¿äºæ¥å¿å®¡è®¡ï¿½?
         """
         self.config = config or {}
         self.document: Dict[str, Any] = {}
@@ -111,24 +111,24 @@ class HTMLRenderer:
         self._lib_cache: Dict[str, str] = {}
         self._pdf_font_base64: str | None = None
 
-        # 初始化图表验证和修复�?
+        # åå§åå¾è¡¨éªè¯åä¿®å¤ï¿½?
         self.chart_validator = create_chart_validator()
         llm_repair_fns = create_llm_repair_functions()
         self.chart_repairer = create_chart_repairer(
             validator=self.chart_validator,
             llm_repair_fns=llm_repair_fns
         )
-        # 打印LLM修复函数状�?
+        # æå°LLMä¿®å¤å½æ°ç¶ï¿½?
         self._llm_repair_count = len(llm_repair_fns)
         if not llm_repair_fns:
-            logger.warning("HTMLRenderer: 未配置任何LLM API，图表API修复功能不可�?)
+            logger.warning("HTMLRenderer: æªéç½®ä»»ä½LLM APIï¼å¾è¡¨APIä¿®å¤åè½ä¸å¯ï¿½?)
         else:
-            logger.info(f"HTMLRenderer: 已配�?{len(llm_repair_fns)} 个LLM修复函数")
-        # 记录修复失败的图表，避免多次触发LLM循环修复
+            logger.info(f"HTMLRenderer: å·²éï¿½?{len(llm_repair_fns)} ä¸ªLLMä¿®å¤å½æ°")
+        # è®°å½ä¿®å¤å¤±è´¥çå¾è¡¨ï¼é¿åå¤æ¬¡è§¦åLLMå¾ªç¯ä¿®å¤
         self._chart_failure_notes: Dict[str, str] = {}
         self._chart_failure_recorded: set[str] = set()
 
-        # 统计信息
+        # ç»è®¡ä¿¡æ¯
         self.chart_validation_stats = {
             'total': 0,
             'valid': 0,
@@ -139,23 +139,23 @@ class HTMLRenderer:
 
     @staticmethod
     def _get_lib_path() -> Path:
-        """获取第三方库文件的目录路�?""
+        """è·åç¬¬ä¸æ¹åºæä»¶çç®å½è·¯ï¿½?""
         return Path(__file__).parent / "libs"
 
     @staticmethod
     def _get_font_path() -> Path:
-        """返回PDF导出所需字体的路径（使用优化后的子集字体�?""
+        """è¿åPDFå¯¼åºæéå­ä½çè·¯å¾ï¼ä½¿ç¨ä¼ååçå­éå­ä½ï¿½?""
         return Path(__file__).parent / "assets" / "fonts" / "SourceHanSerifSC-Medium-Subset.ttf"
 
     def _load_lib(self, filename: str) -> str:
         """
-        加载指定的第三方库文件内�?
+        å è½½æå®çç¬¬ä¸æ¹åºæä»¶åï¿½?
 
-        参数:
-            filename: 库文件名
+        åæ°:
+            filename: åºæä»¶å
 
-        返回:
-            str: 库文件的JavaScript代码内容
+        è¿å:
+            str: åºæä»¶çJavaScriptä»£ç åå®¹
         """
         if filename in self._lib_cache:
             return self._lib_cache[filename]
@@ -167,14 +167,14 @@ class HTMLRenderer:
                 self._lib_cache[filename] = content
                 return content
         except FileNotFoundError:
-            print(f"警告: 库文�?{filename} 未找到，将使用CDN备用链接")
+            print(f"è­¦å: åºæï¿½?{filename} æªæ¾å°ï¼å°ä½¿ç¨CDNå¤ç¨é¾æ¥")
             return ""
         except Exception as e:
-            print(f"警告: 读取库文�?{filename} 时出�? {e}")
+            print(f"è­¦å: è¯»ååºæï¿½?{filename} æ¶åºï¿½? {e}")
             return ""
 
     def _load_pdf_font_data(self) -> str:
-        """加载PDF字体的Base64数据，避免重复读取大型文�?""
+        """å è½½PDFå­ä½çBase64æ°æ®ï¼é¿åéå¤è¯»åå¤§åæï¿½?""
         if self._pdf_font_base64 is not None:
             return self._pdf_font_base64
         font_path = self._get_font_path()
@@ -183,14 +183,14 @@ class HTMLRenderer:
             self._pdf_font_base64 = base64.b64encode(data).decode("ascii")
             return self._pdf_font_base64
         except FileNotFoundError:
-            logger.warning("PDF字体文件缺失�?s", font_path)
+            logger.warning("PDFå­ä½æä»¶ç¼ºå¤±ï¿½?s", font_path)
         except Exception as exc:
-            logger.warning("读取PDF字体文件失败�?s (%s)", font_path, exc)
+            logger.warning("è¯»åPDFå­ä½æä»¶å¤±è´¥ï¿½?s (%s)", font_path, exc)
         self._pdf_font_base64 = ""
         return self._pdf_font_base64
 
     def _reset_chart_validation_stats(self) -> None:
-        """重置图表校验统计并清除失败计数标�?""
+        """éç½®å¾è¡¨æ ¡éªç»è®¡å¹¶æ¸é¤å¤±è´¥è®¡æ°æ ï¿½?""
         self.chart_validation_stats = {
             'total': 0,
             'valid': 0,
@@ -198,7 +198,7 @@ class HTMLRenderer:
             'repaired_api': 0,
             'failed': 0
         }
-        # 保留失败原因缓存，但重置本次渲染的计�?
+        # ä¿çå¤±è´¥åå ç¼å­ï¼ä½éç½®æ¬æ¬¡æ¸²æçè®¡ï¿½?
         self._chart_failure_recorded = set()
 
     def _build_script_with_fallback(
@@ -210,55 +210,55 @@ class HTMLRenderer:
         is_defer: bool = False
     ) -> str:
         """
-        构建带有CDN fallback机制的script标签
+        æå»ºå¸¦æCDN fallbackæºå¶çscriptæ ç­¾
 
-        策略�?
-        1. 优先嵌入本地库代�?
-        2. 添加检测脚本，验证库是否成功加�?
-        3. 如果检测失败，动态加载CDN版本作为备用
+        ç­ç¥ï¿½?
+        1. ä¼ååµå¥æ¬å°åºä»£ï¿½?
+        2. æ·»å æ£æµèæ¬ï¼éªè¯åºæ¯å¦æåå ï¿½?
+        3. å¦ææ£æµå¤±è´¥ï¼å¨æå è½½CDNçæ¬ä½ä¸ºå¤ç¨
 
-        参数:
-            inline_code: 本地库的JavaScript代码内容
-            cdn_url: CDN备用链接
-            check_expression: JavaScript表达式，用于检测库是否加载成功
-            lib_name: 库名称（用于日志输出�?
-            is_defer: 是否使用defer属�?
+        åæ°:
+            inline_code: æ¬å°åºçJavaScriptä»£ç åå®¹
+            cdn_url: CDNå¤ç¨é¾æ¥
+            check_expression: JavaScriptè¡¨è¾¾å¼ï¼ç¨äºæ£æµåºæ¯å¦å è½½æå
+            lib_name: åºåç§°ï¼ç¨äºæ¥å¿è¾åºï¿½?
+            is_defer: æ¯å¦ä½¿ç¨deferå±ï¿½?
 
-        返回:
-            str: 完整的script标签HTML
+        è¿å:
+            str: å®æ´çscriptæ ç­¾HTML
         """
         defer_attr = ' defer' if is_defer else ''
 
         if inline_code:
-            # 嵌入本地库代码，并添加fallback检�?
+            # åµå¥æ¬å°åºä»£ç ï¼å¹¶æ·»å fallbackæ£ï¿½?
             return f"""
   <script{defer_attr}>
-    // {lib_name} - 嵌入式版�?
+    // {lib_name} - åµå¥å¼çï¿½?
     try {{
       {inline_code}
     }} catch (e) {{
-      console.error('{lib_name}嵌入式加载失�?', e);
+      console.error('{lib_name}åµå¥å¼å è½½å¤±ï¿½?', e);
     }}
   </script>
   <script{defer_attr}>
-    // {lib_name} - CDN Fallback检�?
+    // {lib_name} - CDN Fallbackæ£ï¿½?
     (function() {{
       var checkLib = function() {{
         if (!({check_expression})) {{
-          console.warn('{lib_name}本地版本加载失败，正在从CDN加载备用版本...');
+          console.warn('{lib_name}æ¬å°çæ¬å è½½å¤±è´¥ï¼æ­£å¨ä»CDNå è½½å¤ç¨çæ¬...');
           var script = document.createElement('script');
           script.src = '{cdn_url}';
           script.onerror = function() {{
-            console.error('{lib_name} CDN备用加载也失败了');
+            console.error('{lib_name} CDNå¤ç¨å è½½ä¹å¤±è´¥äº');
           }};
           script.onload = function() {{
-            console.log('{lib_name} CDN备用版本加载成功');
+            console.log('{lib_name} CDNå¤ç¨çæ¬å è½½æå');
           }};
           document.head.appendChild(script);
         }}
       }};
 
-      // 延迟检测，确保嵌入代码有时间执�?
+      // å»¶è¿æ£æµï¼ç¡®ä¿åµå¥ä»£ç ææ¶é´æ§ï¿½?
       if (document.readyState === 'loading') {{
         document.addEventListener('DOMContentLoaded', function() {{
           setTimeout(checkLib, 100);
@@ -269,11 +269,11 @@ class HTMLRenderer:
     }})();
   </script>""".strip()
         else:
-            # 本地文件读取失败，直接使用CDN
-            logger.warning(f"{lib_name}本地文件未找到或读取失败，将直接使用CDN")
+            # æ¬å°æä»¶è¯»åå¤±è´¥ï¼ç´æ¥ä½¿ç¨CDN
+            logger.warning(f"{lib_name}æ¬å°æä»¶æªæ¾å°æè¯»åå¤±è´¥ï¼å°ç´æ¥ä½¿ç¨CDN")
             return f'  <script{defer_attr} src="{cdn_url}"></script>'
 
-    # ====== 公共入口 ======
+    # ====== å¬å±å¥å£ ======
 
     def render(
         self,
@@ -281,20 +281,20 @@ class HTMLRenderer:
         ir_file_path: str | None = None
     ) -> str:
         """
-        接收Document IR，重置内部状态并输出完整HTML�?
+        æ¥æ¶Document IRï¼éç½®åé¨ç¶æå¹¶è¾åºå®æ´HTMLï¿½?
 
-        参数:
-            document_ir: �?DocumentComposer 生成的整本报告数据�?
-            ir_file_path: 可选，IR 文件路径，提供时修复后会自动保存�?
+        åæ°:
+            document_ir: ï¿½?DocumentComposer çæçæ´æ¬æ¥åæ°æ®ï¿½?
+            ir_file_path: å¯éï¼IR æä»¶è·¯å¾ï¼æä¾æ¶ä¿®å¤åä¼èªå¨ä¿å­ï¿½?
 
-        返回:
-            str: 可直接写入磁盘的完整HTML文档�?
+        è¿å:
+            str: å¯ç´æ¥åå¥ç£ççå®æ´HTMLææ¡£ï¿½?
         """
         self.document = document_ir or {}
 
-        # 使用统一�?ChartReviewService 进行图表审查与修�?
-        # 修复结果会直接回写到 document_ir，避免多次渲染重复修�?
-        # review_document 返回本次会话的统计信息（线程安全�?
+        # ä½¿ç¨ç»ä¸ï¿½?ChartReviewService è¿è¡å¾è¡¨å®¡æ¥ä¸ä¿®ï¿½?
+        # ä¿®å¤ç»æä¼ç´æ¥ååå° document_irï¼é¿åå¤æ¬¡æ¸²æéå¤ä¿®ï¿½?
+        # review_document è¿åæ¬æ¬¡ä¼è¯çç»è®¡ä¿¡æ¯ï¼çº¿ç¨å®å¨ï¿½?
         chart_service = get_chart_review_service()
         review_stats = chart_service.review_document(
             self.document,
@@ -302,8 +302,8 @@ class HTMLRenderer:
             reset_stats=True,
             save_on_repair=bool(ir_file_path)
         )
-        # 同步统计信息到本地（用于兼容旧的 _log_chart_validation_stats�?
-        # 使用返回�?ReviewStats 对象，而非共享�?chart_service.stats
+        # åæ­¥ç»è®¡ä¿¡æ¯å°æ¬å°ï¼ç¨äºå¼å®¹æ§ç _log_chart_validation_statsï¿½?
+        # ä½¿ç¨è¿åï¿½?ReviewStats å¯¹è±¡ï¼èéå±äº«ï¿½?chart_service.stats
         self.chart_validation_stats.update(review_stats.to_dict())
 
         self.widget_scripts = []
@@ -323,22 +323,22 @@ class HTMLRenderer:
 
         metadata = self.metadata
         theme_tokens = metadata.get("themeTokens") or self.document.get("themeTokens", {})
-        title = metadata.get("title") or metadata.get("query") or "智能舆情报告"
+        title = metadata.get("title") or metadata.get("query") or "æºè½èææ¥å"
         hero_kpis = (metadata.get("hero") or {}).get("kpis")
         self.hero_kpi_signature = self._kpi_signature_from_items(hero_kpis)
 
         head = self._render_head(title, theme_tokens)
         body = self._render_body()
 
-        # 输出图表验证统计
+        # è¾åºå¾è¡¨éªè¯ç»è®¡
         self._log_chart_validation_stats()
 
         return f"<!DOCTYPE html>\n<html lang=\"zh-CN\" class=\"no-js\">\n{head}\n{body}\n</html>"
 
-    # ====== 头部 / 正文 ======
+    # ====== å¤´é¨ / æ­£æ ======
 
     def _resolve_color_value(self, value: Any, fallback: str) -> str:
-        """从颜色token中提取字符串�?""
+        """ä»é¢è²tokenä¸­æåå­ç¬¦ä¸²ï¿½?""
         if isinstance(value, str):
             value = value.strip()
             return value or fallback
@@ -353,7 +353,7 @@ class HTMLRenderer:
         return fallback
 
     def _resolve_color_family(self, value: Any, fallback: Dict[str, str]) -> Dict[str, str]:
-        """解析�?�?暗三色，缺失时回落到默认�?""
+        """è§£æï¿½?ï¿½?æä¸è²ï¼ç¼ºå¤±æ¶åè½å°é»è®¤ï¿½?""
         result = {
             "main": fallback.get("main", "#007bff"),
             "light": fallback.get("light", fallback.get("main", "#007bff")),
@@ -372,21 +372,21 @@ class HTMLRenderer:
 
     def _render_head(self, title: str, theme_tokens: Dict[str, Any]) -> str:
         """
-        渲染<head>部分，加载主题CSS与必要的脚本依赖�?
+        æ¸²æ<head>é¨åï¼å è½½ä¸»é¢CSSä¸å¿è¦çèæ¬ä¾èµï¿½?
 
-        参数:
-            title: 页面title标签内容�?
-            theme_tokens: 主题变量，用于注入CSS。支持层级：
+        åæ°:
+            title: é¡µé¢titleæ ç­¾åå®¹ï¿½?
+            theme_tokens: ä¸»é¢åéï¼ç¨äºæ³¨å¥CSSãæ¯æå±çº§ï¼
               - colors: {primary/secondary/bg/text/card/border/...}
-              - typography: {fontFamily, fonts:{body,heading}}，body/heading 为空时回落到系统字体
+              - typography: {fontFamily, fonts:{body,heading}}ï¼body/heading ä¸ºç©ºæ¶åè½å°ç³»ç»å­ä½
               - spacing: {container,gutter/pagePadding}
 
-        返回:
-            str: head片段HTML�?
+        è¿å:
+            str: headçæ®µHTMLï¿½?
         """
         css = self._build_css(theme_tokens)
 
-        # 加载第三方库
+        # å è½½ç¬¬ä¸æ¹åº
         chartjs = self._load_lib("chart.js")
         chartjs_sankey = self._load_lib("chartjs-chart-sankey.js")
         html2canvas = self._load_lib("html2canvas.min.js")
@@ -394,16 +394,16 @@ class HTMLRenderer:
         mathjax = self._load_lib("mathjax.js")
         wordcloud2 = self._load_lib("wordcloud2.min.js")
 
-        # 生成嵌入式script标签，并为每个库添加CDN fallback机制
-        # ECharts - 主要图表�?(替换原有�?Chart.js)
+        # çæåµå¥å¼scriptæ ç­¾ï¼å¹¶ä¸ºæ¯ä¸ªåºæ·»å CDN fallbackæºå¶
+        # ECharts - ä¸»è¦å¾è¡¨ï¿½?(æ¿æ¢åæï¿½?Chart.js)
         echarts_tag = self._build_script_with_fallback(
-            inline_code="", # 暂时不内联巨大文件，直接用CDN
+            inline_code="", # ææ¶ä¸åèå·¨å¤§æä»¶ï¼ç´æ¥ç¨CDN
             cdn_url="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js",
             check_expression="typeof echarts !== 'undefined'",
             lib_name="ECharts"
         )
 
-        # wordcloud2 - 词云渲染
+        # wordcloud2 - è¯äºæ¸²æ
         wordcloud_tag = self._build_script_with_fallback(
             inline_code=wordcloud2,
             cdn_url="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js",
@@ -411,7 +411,7 @@ class HTMLRenderer:
             lib_name="wordcloud2"
         )
 
-        # html2canvas - 用于截图
+        # html2canvas - ç¨äºæªå¾
         html2canvas_tag = self._build_script_with_fallback(
             inline_code=html2canvas,
             cdn_url="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
@@ -419,7 +419,7 @@ class HTMLRenderer:
             lib_name="html2canvas"
         )
 
-        # jsPDF - 用于PDF导出
+        # jsPDF - ç¨äºPDFå¯¼åº
         jspdf_tag = self._build_script_with_fallback(
             inline_code=jspdf,
             cdn_url="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
@@ -427,7 +427,7 @@ class HTMLRenderer:
             lib_name="jsPDF"
         )
 
-        # MathJax - 数学公式渲染
+        # MathJax - æ°å­¦å¬å¼æ¸²æ
         mathjax_tag = self._build_script_with_fallback(
             inline_code=mathjax,
             cdn_url="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js",
@@ -436,7 +436,7 @@ class HTMLRenderer:
             is_defer=True
         )
 
-        # PDF字体数据不再嵌入HTML，减小文件体�?
+        # PDFå­ä½æ°æ®ä¸ååµå¥HTMLï¼åå°æä»¶ä½ï¿½?
         pdf_font_script = ""
 
         return f"""
@@ -474,14 +474,14 @@ class HTMLRenderer:
 
     def _render_body(self) -> str:
         """
-        拼装<body>结构，包含头部、导航、章节和脚本�?
-        新版本：移除独立的cover section，标题合并到hero section中�?
+        æ¼è£<body>ç»æï¼åå«å¤´é¨ãå¯¼èªãç« èåèæ¬ï¿½?
+        æ°çæ¬ï¼ç§»é¤ç¬ç«çcover sectionï¼æ é¢åå¹¶å°hero sectionä¸­ï¿½?
 
-        返回:
-            str: body片段HTML�?
+        è¿å:
+            str: bodyçæ®µHTMLï¿½?
         """
         header = self._render_header()
-        # cover = self._render_cover()  # 不再单独渲染cover
+        # cover = self._render_cover()  # ä¸ååç¬æ¸²æcover
         hero = self._render_hero()
         toc_section = self._render_toc_section()
         chapters = "".join(self._render_chapter(chapter) for chapter in self.chapters)
@@ -491,8 +491,8 @@ class HTMLRenderer:
 <div id="export-overlay" class="export-overlay no-print" aria-hidden="true">
   <div class="export-dialog" role="status" aria-live="assertive">
     <div class="export-spinner" aria-hidden="true"></div>
-    <p class="export-status">正在导出PDF，请稍�?..</p>
-    <div class="export-progress" role="progressbar" aria-valuetext="正在导出">
+    <p class="export-status">æ­£å¨å¯¼åºPDFï¼è¯·ç¨ï¿½?..</p>
+    <div class="export-progress" role="progressbar" aria-valuetext="æ­£å¨å¯¼åº">
       <div class="export-progress-bar"></div>
     </div>
   </div>
@@ -503,7 +503,7 @@ class HTMLRenderer:
 <div class="ai-warning-banner no-print" style="background-color: #fff3cd; color: #856404; padding: 12px 20px; border-left: 4px solid #ffeeba; margin: 20px auto; max-width: 1200px; border-radius: 4px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
   <div>
-    <strong>免责声明�?/strong> 本报告由AI基于实时网络搜索生成，受限于网络环境、反爬策略及LLM固有的“幻觉”现象，部分数据、事实或观点可能存在偏差或虚构。请务必结合<a href="#citations" style="color: #856404; text-decoration: underline;">文末信息源引�?/a>进行交叉验证，切勿将此作为唯一的决策依据�?
+    <strong>åè´£å£°æï¿½?/strong> æ¬æ¥åç±AIåºäºå®æ¶ç½ç»æç´¢çæï¼åéäºç½ç»ç¯å¢ãåç¬ç­ç¥åLLMåºæç"å¹»è§"ç°è±¡ï¼é¨åæ°æ®ãäºå®æè§ç¹å¯è½å­å¨åå·®æèæãè¯·å¡å¿ç»å<a href="#citations" style="color: #856404; text-decoration: underline;">ææ«ä¿¡æ¯æºå¼ï¿½?/a>è¿è¡äº¤åéªè¯ï¼åå¿å°æ­¤ä½ä¸ºå¯ä¸çå³ç­ä¾æ®ï¿½?
   </div>
 </div>
 """
@@ -522,21 +522,21 @@ class HTMLRenderer:
 {hydration}
 </body>""".strip()
 
-    # ====== 页眉 / 元信�?/ 目录 ======
+    # ====== é¡µç / åä¿¡ï¿½?/ ç®å½ ======
 
     def _render_header(self) -> str:
         """
-        渲染吸顶头部，包含标题、副标题与功能按钮�?
+        æ¸²æå¸é¡¶å¤´é¨ï¼åå«æ é¢ãå¯æ é¢ä¸åè½æé®ï¿½?
 
-        按钮/控件说明（ID 用于 _hydration_script 里绑定事件）�?
-        - 移除了原有的“切换模式”和“打印页面”按钮�?
+        æé®/æ§ä»¶è¯´æï¼ID ç¨äº _hydration_script éç»å®äºä»¶ï¼ï¿½?
+        - ç§»é¤äºåæç"åæ¢æ¨¡å¼"å"æå°é¡µé¢"æé®ï¿½?
 
-        返回:
-            str: header HTML�?
+        è¿å:
+            str: header HTMLï¿½?
         """
         metadata = self.metadata
-        title = metadata.get("title") or "智能舆情分析报告"
-        subtitle = metadata.get("subtitle") or metadata.get("templateName") or "自动生成"
+        title = metadata.get("title") or "æºè½èæåææ¥å"
+        subtitle = metadata.get("subtitle") or metadata.get("templateName") or "èªå¨çæ"
         return f"""
 <header class="report-header no-print">
   <div>
@@ -545,17 +545,17 @@ class HTMLRenderer:
     {self._render_tagline()}
   </div>
   <div class="header-actions">
-    <button id="export-btn" class="action-btn" type="button" style="display: none;">⬇️ 导出PDF</button>
+    <button id="export-btn" class="action-btn" type="button" style="display: none;">â¬ï¸ å¯¼åºPDF</button>
   </div>
 </header>
 """.strip()
 
     def _render_tagline(self) -> str:
         """
-        渲染标题下方的标语，如无标语则返回空字符串�?
+        æ¸²ææ é¢ä¸æ¹çæ è¯­ï¼å¦æ æ è¯­åè¿åç©ºå­ç¬¦ä¸²ï¿½?
 
-        返回:
-            str: tagline HTML或空串�?
+        è¿å:
+            str: tagline HTMLæç©ºä¸²ï¿½?
         """
         tagline = self.metadata.get("tagline")
         if not tagline:
@@ -564,14 +564,14 @@ class HTMLRenderer:
 
     def _render_cover(self) -> str:
         """
-        文章开头的封面区，居中展示标题与“文章总览”提示�?
+        æç« å¼å¤´çå°é¢åºï¼å±ä¸­å±ç¤ºæ é¢ä¸"æç« æ»è§"æç¤ºï¿½?
 
-        返回:
-            str: cover section HTML�?
+        è¿å:
+            str: cover section HTMLï¿½?
         """
-        title = self.metadata.get("title") or "智能舆情报告"
+        title = self.metadata.get("title") or "æºè½èææ¥å"
         subtitle = self.metadata.get("subtitle") or self.metadata.get("templateName") or ""
-        overview_hint = "文章总览"
+        overview_hint = "æç« æ»è§"
         return f"""
 <section class="cover">
   <p class="cover-hint">{overview_hint}</p>
@@ -582,18 +582,18 @@ class HTMLRenderer:
 
     def _render_hero(self) -> str:
         """
-        根据layout中的hero字段输出摘要/KPI/亮点区�?
-        新版本：将标题和总览合并在一起，去掉椭圆背景�?
+        æ ¹æ®layoutä¸­çheroå­æ®µè¾åºæè¦/KPI/äº®ç¹åºï¿½?
+        æ°çæ¬ï¼å°æ é¢åæ»è§åå¹¶å¨ä¸èµ·ï¼å»ææ¤­åèæ¯ï¿½?
 
-        返回:
-            str: hero区HTML，若无数据则为空字符串�?
+        è¿å:
+            str: heroåºHTMLï¼è¥æ æ°æ®åä¸ºç©ºå­ç¬¦ä¸²ï¿½?
         """
         hero = self.metadata.get("hero") or {}
         if not hero:
             return ""
 
-        # 获取标题和副标题
-        title = self.metadata.get("title") or "智能舆情报告"
+        # è·åæ é¢åå¯æ é¢
+        title = self.metadata.get("title") or "æºè½èææ¥å"
         subtitle = self.metadata.get("subtitle") or self.metadata.get("templateName") or ""
 
         summary = hero.get("summary")
@@ -630,7 +630,7 @@ class HTMLRenderer:
         return f"""
 <section class="hero-section-combined">
   <div class="hero-header">
-    <p class="hero-hint">文章总览</p>
+    <p class="hero-hint">æç« æ»è§</p>
     <h1 class="hero-title">{self._escape_html(title)}</h1>
     <p class="hero-subtitle">{self._escape_html(subtitle)}</p>
   </div>
@@ -645,22 +645,22 @@ class HTMLRenderer:
 """.strip()
 
     def _render_meta_panel(self) -> str:
-        """当前需求不展示元信息，保留方法便于后续扩展"""
+        """å½åéæ±ä¸å±ç¤ºåä¿¡æ¯ï¼ä¿çæ¹æ³ä¾¿äºåç»­æ©å±"""
         return ""
 
     def _render_toc_section(self) -> str:
         """
-        生成目录模块，如无目录数据则返回空字符串�?
+        çæç®å½æ¨¡åï¼å¦æ ç®å½æ°æ®åè¿åç©ºå­ç¬¦ä¸²ï¿½?
 
-        返回:
-            str: toc HTML结构�?
+        è¿å:
+            str: toc HTMLç»æï¿½?
         """
         if not self.toc_entries:
             return ""
         if self.toc_rendered:
             return ""
         toc_config = self.metadata.get("toc") or {}
-        toc_title = toc_config.get("title") or "📚 目录"
+        toc_title = toc_config.get("title") or "ð ç®å½"
         toc_items = "".join(
             self._format_toc_entry(entry)
             for entry in self.toc_entries
@@ -676,14 +676,14 @@ class HTMLRenderer:
 """.strip()
 
     def _render_citation_list(self, block: Dict[str, Any]) -> str:
-        """渲染文末引用信息源列�?""
-        # 由于我们无法直接�?_render_citation_list 里获取到 task_id（或�?seed_id），
-        # 只能渲染一个通用前端 JS 函数的调用。在 HTML 文件全局加上 script 支持�?
+        """æ¸²æææ«å¼ç¨ä¿¡æ¯æºåï¿½?""
+        # ç±äºæä»¬æ æ³ç´æ¥ï¿½?_render_citation_list éè·åå° task_idï¼æï¿½?seed_idï¼ï¼
+        # åªè½æ¸²æä¸ä¸ªéç¨åç«¯ JS å½æ°çè°ç¨ãå¨ HTML æä»¶å¨å±å ä¸ script æ¯æï¿½?
         items = block.get("items", [])
         if not items:
             return ""
 
-        # 去重逻辑：基�?URL �?title 进行去重
+        # å»éé»è¾ï¼åºï¿½?URL ï¿½?title è¿è¡å»é
         unique_items = []
         seen_urls = set()
         seen_titles = set()
@@ -691,10 +691,10 @@ class HTMLRenderer:
             url = item.get("url", "").strip()
             title = item.get("title", "").strip()
             
-            # 如果 URL 存在且已见过，跳�?
+            # å¦æ URL å­å¨ä¸å·²è§è¿ï¼è·³ï¿½?
             if url and url in seen_urls:
                 continue
-            # 如果 URL 为空�?title 已见过，跳过
+            # å¦æ URL ä¸ºç©ºï¿½?title å·²è§è¿ï¼è·³è¿
             if not url and title and title in seen_titles:
                 continue
                 
@@ -703,13 +703,13 @@ class HTMLRenderer:
             if title:
                 seen_titles.add(title)
                 
-            # 重新分配序号
+            # éæ°åéåºå·
             item["index"] = len(unique_items) + 1
             unique_items.append(item)
 
         lines = [
             '<div class="citation-list" style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">',
-            '<h3 id="citations" style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1.25rem;">参考资�?/ 引用来源</h3>',
+            '<h3 id="citations" style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1.25rem;">åèèµï¿½?/ å¼ç¨æ¥æº</h3>',
             '<ol style="padding-left: 1.5rem; font-size: 0.9em; color: var(--text-secondary); line-height: 1.6;">'
         ]
 
@@ -726,13 +726,13 @@ class HTMLRenderer:
             lines.append(f'<li id="citation-{index}" style="margin-bottom: 0.5rem; word-break: break-all;">')
             if url:
                 if url.startswith("seed://"):
-                    # 直接生成指向后端的在线预览链接，在新标签页打开
+                    # ç´æ¥çææååç«¯çå¨çº¿é¢è§é¾æ¥ï¼å¨æ°æ ç­¾é¡µæå¼
                     seed_id = url.split("seed://")[1].split("/")[0] if "seed://" in url else ""
                     display_url = f"/api/report/seed/{seed_id}"
-                    lines.append(f'<a href="{display_url}" target="_blank" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">{title}</a> <span style="font-size: 0.85em; color: var(--text-muted);">[在线预览附件]</span>')
+                    lines.append(f'<a href="{display_url}" target="_blank" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">{title}</a> <span style="font-size: 0.85em; color: var(--text-muted);">[å¨çº¿é¢è§éä»¶]</span>')
                 elif url.startswith("file:///"):
-                    # 兼容旧版本地附件 URL，提示无法预�?
-                    lines.append(f'<span style="color: var(--text-muted); text-decoration: line-through;">{title}</span> <span style="font-size: 0.85em; color: var(--text-muted);">[本地附件无法直接预览]</span>')
+                    # å¼å®¹æ§çæ¬å°éä»¶ URLï¼æç¤ºæ æ³é¢ï¿½?
+                    lines.append(f'<span style="color: var(--text-muted); text-decoration: line-through;">{title}</span> <span style="font-size: 0.85em; color: var(--text-muted);">[æ¬å°éä»¶æ æ³ç´æ¥é¢è§]</span>')
                 else:
                     lines.append(f'<a href="{url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: none;">{title}</a>')
             else:
@@ -746,13 +746,13 @@ class HTMLRenderer:
 
     def _collect_toc_entries(self, chapters: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        根据metadata中的tocPlan或章节heading收集目录项�?
+        æ ¹æ®metadataä¸­çtocPlanæç« èheadingæ¶éç®å½é¡¹ï¿½?
 
-        参数:
-            chapters: Document IR中的章节数组�?
+        åæ°:
+            chapters: Document IRä¸­çç« èæ°ç»ï¿½?
 
-        返回:
-            list[dict]: 规范化后的目录条目，包含level/text/anchor/description�?
+        è¿å:
+            list[dict]: è§èååçç®å½æ¡ç®ï¼åå«level/text/anchor/descriptionï¿½?
         """
         metadata = self.metadata
         toc_config = metadata.get("toc") or {}
@@ -763,23 +763,23 @@ class HTMLRenderer:
             for entry in custom_entries:
                 anchor = entry.get("anchor") or self.chapter_anchor_map.get(entry.get("chapterId"))
 
-                # 验证anchor是否有效
+                # éªè¯anchoræ¯å¦ææ
                 if not anchor:
                     logger.warning(
-                        f"目录�?'{entry.get('display') or entry.get('title')}' "
-                        f"缺少有效的anchor，已跳过"
+                        f"ç®å½ï¿½?'{entry.get('display') or entry.get('title')}' "
+                        f"ç¼ºå°ææçanchorï¼å·²è·³è¿"
                     )
                     continue
 
-                # 验证anchor是否在chapter_anchor_map中或在chapters的blocks�?
+                # éªè¯anchoræ¯å¦å¨chapter_anchor_mapä¸­æå¨chaptersçblocksï¿½?
                 anchor_valid = self._validate_toc_anchor(anchor, chapters)
                 if not anchor_valid:
                     logger.warning(
-                        f"目录�?'{entry.get('display') or entry.get('title')}' "
-                        f"的anchor '{anchor}' 在文档中未找到对应的章节"
+                        f"ç®å½ï¿½?'{entry.get('display') or entry.get('title')}' "
+                        f"çanchor '{anchor}' å¨ææ¡£ä¸­æªæ¾å°å¯¹åºçç« è"
                     )
 
-                # 清理描述文本
+                # æ¸çæè¿°ææ¬
                 description = entry.get("description")
                 if description:
                     description = self._clean_text_from_json_artifacts(description)
@@ -801,7 +801,7 @@ class HTMLRenderer:
                     if not anchor:
                         continue
                     mapped = self.heading_label_map.get(anchor, {})
-                    # 清理描述文本
+                    # æ¸çæè¿°ææ¬
                     description = mapped.get("description")
                     if description:
                         description = self._clean_text_from_json_artifacts(description)
@@ -817,24 +817,24 @@ class HTMLRenderer:
 
     def _validate_toc_anchor(self, anchor: str, chapters: List[Dict[str, Any]]) -> bool:
         """
-        验证目录anchor是否在文档中存在对应的章节或heading�?
+        éªè¯ç®å½anchoræ¯å¦å¨ææ¡£ä¸­å­å¨å¯¹åºçç« èæheadingï¿½?
 
-        参数:
-            anchor: 需要验证的anchor
-            chapters: Document IR中的章节数组
+        åæ°:
+            anchor: éè¦éªè¯çanchor
+            chapters: Document IRä¸­çç« èæ°ç»
 
-        返回:
-            bool: anchor是否有效
+        è¿å:
+            bool: anchoræ¯å¦ææ
         """
-        # 检查是否是章节anchor
+        # æ£æ¥æ¯å¦æ¯ç« èanchor
         if anchor in self.chapter_anchor_map.values():
             return True
 
-        # 检查是否在heading_label_map�?
+        # æ£æ¥æ¯å¦å¨heading_label_mapï¿½?
         if anchor in self.heading_label_map:
             return True
 
-        # 检查章节的blocks中是否有这个anchor
+        # æ£æ¥ç« èçblocksä¸­æ¯å¦æè¿ä¸ªanchor
         for chapter in chapters or []:
             chapter_anchor = chapter.get("anchor")
             if chapter_anchor == anchor:
@@ -848,7 +848,7 @@ class HTMLRenderer:
         return False
 
     def _prepare_chapters(self, chapters: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """复制章节并展开其中序列化的block，避免渲染缺�?""
+        """å¤å¶ç« èå¹¶å±å¼å¶ä¸­åºååçblockï¼é¿åæ¸²æç¼ºï¿½?""
         prepared: List[Dict[str, Any]] = []
         for chapter in chapters or []:
             chapter_copy = copy.deepcopy(chapter)
@@ -857,7 +857,7 @@ class HTMLRenderer:
         return prepared
 
     def _expand_blocks_in_place(self, blocks: List[Dict[str, Any]] | None) -> List[Dict[str, Any]]:
-        """遍历block列表，将内嵌JSON串拆解为独立block"""
+        """éåblockåè¡¨ï¼å°ååµJSONä¸²æè§£ä¸ºç¬ç«block"""
         expanded: List[Dict[str, Any]] = []
         for block in blocks or []:
             extras = self._extract_embedded_blocks(block)
@@ -868,12 +868,12 @@ class HTMLRenderer:
 
     def _extract_embedded_blocks(self, block: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        在block内部查找被误写成字符串的block列表，并返回补充的block
+        å¨blockåé¨æ¥æ¾è¢«è¯¯åæå­ç¬¦ä¸²çblockåè¡¨ï¼å¹¶è¿åè¡¥åçblock
         """
         extracted: List[Dict[str, Any]] = []
 
         def traverse(node: Any) -> None:
-            """递归遍历block树，识别text字段内潜在的嵌套block JSON"""
+            """éå½éåblockæ ï¼è¯å«textå­æ®µåæ½å¨çåµå¥block JSON"""
             if isinstance(node, dict):
                 for key, value in list(node.items()):
                     if key == "text" and isinstance(value, str):
@@ -892,7 +892,7 @@ class HTMLRenderer:
 
     def _decode_embedded_block_payload(self, raw: str) -> List[Dict[str, Any]] | None:
         """
-        将字符串形式的block描述恢复为结构化列表�?
+        å°å­ç¬¦ä¸²å½¢å¼çblockæè¿°æ¢å¤ä¸ºç»æååè¡¨ï¿½?
         """
         if not isinstance(raw, str):
             return None
@@ -924,12 +924,12 @@ class HTMLRenderer:
 
     @staticmethod
     def _looks_like_block(payload: Dict[str, Any]) -> bool:
-        """粗略判断dict是否符合block结构"""
+        """ç²ç¥å¤æ­dictæ¯å¦ç¬¦åblockç»æ"""
         if not isinstance(payload, dict):
             return False
         block_type = payload.get("type")
         if block_type and isinstance(block_type, str):
-            # 排除内联类型（inlineRun 等），它们不是块级元�?
+            # æé¤åèç±»åï¼inlineRun ç­ï¼ï¼å®ä»¬ä¸æ¯åçº§åï¿½?
             inline_types = {"inlineRun", "inline", "text"}
             if block_type in inline_types:
                 return False
@@ -938,13 +938,13 @@ class HTMLRenderer:
         return any(key in payload for key in structural_keys)
 
     def _collect_blocks_from_payload(self, payload: Any) -> List[Dict[str, Any]]:
-        """递归收集payload中的block节点"""
+        """éå½æ¶épayloadä¸­çblockèç¹"""
         collected: List[Dict[str, Any]] = []
         if isinstance(payload, dict):
             block_list = payload.get("blocks")
             block_type = payload.get("type")
             
-            # 排除内联类型，它们不是块级元�?
+            # æé¤åèç±»åï¼å®ä»¬ä¸æ¯åçº§åï¿½?
             inline_types = {"inlineRun", "inline", "text"}
             if block_type in inline_types:
                 return collected
@@ -983,7 +983,7 @@ class HTMLRenderer:
         return collected
 
     def _coerce_block_dict(self, payload: Any) -> Dict[str, Any] | None:
-        """尝试将dict补充为合法block结构"""
+        """å°è¯å°dictè¡¥åä¸ºåæ³blockç»æ"""
         if not isinstance(payload, dict):
             return None
         block = copy.deepcopy(payload)
@@ -1001,16 +1001,16 @@ class HTMLRenderer:
 
     def _format_toc_entry(self, entry: Dict[str, Any]) -> str:
         """
-        将单个目录项转为带描述的HTML行�?
+        å°åä¸ªç®å½é¡¹è½¬ä¸ºå¸¦æè¿°çHTMLè¡ï¿½?
 
-        参数:
-            entry: 目录条目，需包含 `text` �?`anchor`�?
+        åæ°:
+            entry: ç®å½æ¡ç®ï¼éåå« `text` ï¿½?`anchor`ï¿½?
 
-        返回:
-            str: `<li>` 形式的HTML�?
+        è¿å:
+            str: `<li>` å½¢å¼çHTMLï¿½?
         """
         desc = entry.get("description")
-        # 清理描述文本中的JSON片段
+        # æ¸çæè¿°ææ¬ä¸­çJSONçæ®µ
         if desc:
             desc = self._clean_text_from_json_artifacts(desc)
         desc_html = f'<p class="toc-desc">{self._escape_html(desc)}</p>' if desc else ""
@@ -1020,13 +1020,13 @@ class HTMLRenderer:
 
     def _compute_heading_labels(self, chapters: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """
-        预计算各级标题的编号（章：一、二；节�?.1；小节：1.1.1）�?
+        é¢è®¡ç®åçº§æ é¢çç¼å·ï¼ç« ï¼ä¸ãäºï¼èï¿½?.1ï¼å°èï¼1.1.1ï¼ï¿½?
 
-        参数:
-            chapters: Document IR中的章节数组�?
+        åæ°:
+            chapters: Document IRä¸­çç« èæ°ç»ï¿½?
 
-        返回:
-            dict: 锚点到编�?描述的映射，方便TOC与正文引用�?
+        è¿å:
+            dict: éç¹å°ç¼ï¿½?æè¿°çæ å°ï¼æ¹ä¾¿TOCä¸æ­£æå¼ç¨ï¿½?
         """
         label_map: Dict[str, Dict[str, Any]] = {}
 
@@ -1041,8 +1041,8 @@ class HTMLRenderer:
                     continue
                 level = block.get("level", 2)
                 
-                # 为避免多个heading使用相同的anchor导致ID冲突或覆盖，
-                # 优先使用自身anchor，若无或重复则重新生�?
+                # ä¸ºé¿åå¤ä¸ªheadingä½¿ç¨ç¸åçanchorå¯¼è´IDå²çªæè¦çï¼
+                # ä¼åä½¿ç¨èªèº«anchorï¼è¥æ æéå¤åéæ°çï¿½?
                 original_anchor = block.get("anchor") or chapter.get("anchor")
                 anchor = original_anchor
                 counter = 1
@@ -1058,7 +1058,7 @@ class HTMLRenderer:
                 display_text = raw_text
 
                 if not chapter_heading_seen:
-                    label = f"{self._to_chinese_numeral(chap_idx)}�?
+                    label = f"{self._to_chinese_numeral(chap_idx)}ï¿½?
                     display_text = f"{label} {clean_title}".strip()
                     chapter_heading_seen = True
                     section_idx = 0
@@ -1085,7 +1085,7 @@ class HTMLRenderer:
                         label = ".".join(parts)
                     display_text = f"{label} {clean_title}".strip()
 
-                # 直接写入 block，避免只依赖 map 造成�?anchor 被覆�?
+                # ç´æ¥åå¥ blockï¼é¿ååªä¾èµ map é æï¿½?anchor è¢«è¦ï¿½?
                 block["display_text"] = display_text
                 
                 label_map[anchor] = {
@@ -1098,10 +1098,10 @@ class HTMLRenderer:
 
     @staticmethod
     def _strip_order_prefix(text: str) -> str:
-        """移除形如�?.0 ”或“一、”的前缀，得到纯标题"""
+        """ç§»é¤å½¢å¦ï¿½?.0 "æ"ä¸çåç¼ï¼å¾å°çº¯æ é¢"""
         if not text:
             return ""
-        separators = [" ", "�?, ".", "�?]
+        separators = [" ", "ï¿½?, ".", "ï¿½?]
         stripped = text.lstrip()
         for sep in separators:
             parts = stripped.split(sep, 1)
@@ -1111,31 +1111,31 @@ class HTMLRenderer:
 
     @staticmethod
     def _to_chinese_numeral(number: int) -> str:
-        """�?/2/3映射为中文序号（十内�?""
-        numerals = ["�?, "一", "�?, "�?, "�?, "�?, "�?, "�?, "�?, "�?, "�?]
+        """ï¿½?/2/3æ å°ä¸ºä¸­æåºå·ï¼ååï¿½?""
+        numerals = ["ï¿½?, "ä¸", "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?, "ï¿½?]
         if number <= 10:
             return numerals[number]
         tens, ones = divmod(number, 10)
         if number < 20:
-            return "�? + (numerals[ones] if ones else "")
+            return "ï¿½? + (numerals[ones] if ones else "")
         words = ""
         if tens > 0:
-            words += numerals[tens] + "�?
+            words += numerals[tens] + "ï¿½?
         if ones:
             words += numerals[ones]
         return words
 
-    # ====== 章节与块级渲�?======
+    # ====== ç« èä¸åçº§æ¸²ï¿½?======
 
     def _render_chapter(self, chapter: Dict[str, Any]) -> str:
         """
-        将章节blocks包裹�?section>，便于CSS控制�?
+        å°ç« èblocksåè£¹ï¿½?section>ï¼ä¾¿äºCSSæ§å¶ï¿½?
 
-        参数:
-            chapter: 单个章节JSON�?
+        åæ°:
+            chapter: åä¸ªç« èJSONï¿½?
 
-        返回:
-            str: section包裹的HTML�?
+        è¿å:
+            str: sectionåè£¹çHTMLï¿½?
         """
         section_id = self._escape_attr(chapter.get("anchor") or f"chapter-{chapter.get('chapterId', 'x')}")
         prev_chapter = self._current_chapter
@@ -1148,25 +1148,25 @@ class HTMLRenderer:
 
     def _render_blocks(self, blocks: List[Dict[str, Any]]) -> str:
         """
-        顺序渲染章节内所有block�?
+        é¡ºåºæ¸²æç« èåææblockï¿½?
 
-        参数:
-            blocks: 章节内部的block数组�?
+        åæ°:
+            blocks: ç« èåé¨çblockæ°ç»ï¿½?
 
-        返回:
-            str: 拼接后的HTML�?
+        è¿å:
+            str: æ¼æ¥åçHTMLï¿½?
         """
         return "".join(self._render_block(block) for block in blocks or [])
 
     def _render_block(self, block: Dict[str, Any]) -> str:
         """
-        根据block.type分派到不同的渲染函数�?
+        æ ¹æ®block.typeåæ´¾å°ä¸åçæ¸²æå½æ°ï¿½?
 
-        参数:
-            block: 单个block对象�?
+        åæ°:
+            block: åä¸ªblockå¯¹è±¡ï¿½?
 
-        返回:
-            str: 渲染后的HTML，未知类型会输出JSON调试信息�?
+        è¿å:
+            str: æ¸²æåçHTMLï¼æªç¥ç±»åä¼è¾åºJSONè°è¯ä¿¡æ¯ï¿½?
         """
         block_type = block.get("type")
         handlers = {
@@ -1192,11 +1192,11 @@ class HTMLRenderer:
         if handler:
             html_fragment = handler(block)
             return self._wrap_error_block(html_fragment, block)
-        # 兼容旧格式：缺少type但包含inlines时按paragraph处理
+        # å¼å®¹æ§æ ¼å¼ï¼ç¼ºå°typeä½åå«inlinesæ¶æparagraphå¤ç
         if isinstance(block, dict) and block.get("inlines"):
             html_fragment = self._render_paragraph({"inlines": block.get("inlines")})
             return self._wrap_error_block(html_fragment, block)
-        # 兼容直接传入字符串的场景
+        # å¼å®¹ç´æ¥ä¼ å¥å­ç¬¦ä¸²çåºæ¯
         if isinstance(block, str):
             html_fragment = self._render_paragraph({"inlines": [{"text": block}]})
             return self._wrap_error_block(html_fragment, {"meta": {}, "type": "paragraph"})
@@ -1207,7 +1207,7 @@ class HTMLRenderer:
         return self._wrap_error_block(fallback, block)
 
     def _wrap_error_block(self, html_fragment: str, block: Dict[str, Any]) -> str:
-        """若block标记了error元数据，则包裹提示容器并注入tooltip�?""
+        """è¥blockæ è®°äºerroråæ°æ®ï¼ååè£¹æç¤ºå®¹å¨å¹¶æ³¨å¥tooltipï¿½?""
         if not html_fragment:
             return html_fragment
         meta = block.get("meta") or {}
@@ -1215,7 +1215,7 @@ class HTMLRenderer:
         if not isinstance(log_ref, dict):
             return html_fragment
         raw_preview = (meta.get("rawJsonPreview") or "")[:1200]
-        error_message = meta.get("errorMessage") or "LLM返回块解析错�?
+        error_message = meta.get("errorMessage") or "LLMè¿ååè§£æéï¿½?
         importance = meta.get("importance") or "standard"
         ref_label = ""
         if log_ref.get("relativeFile") and log_ref.get("entryId"):
@@ -1230,7 +1230,7 @@ class HTMLRenderer:
         )
 
     def _render_heading(self, block: Dict[str, Any]) -> str:
-        """渲染heading block，确保锚点存�?""
+        """æ¸²æheading blockï¼ç¡®ä¿éç¹å­ï¿½?""
         original_level = max(1, min(6, block.get("level", 2)))
         if original_level <= 2:
             level = 2
@@ -1252,14 +1252,14 @@ class HTMLRenderer:
         return f'<h{level} id="{anchor_attr}">{self._escape_html(display_text)}{subtitle_html}</h{level}>'
 
     def _render_paragraph(self, block: Dict[str, Any]) -> str:
-        """渲染段落，内部通过inline run保持混排样式"""
+        """æ¸²ææ®µè½ï¼åé¨éè¿inline runä¿ææ··ææ ·å¼"""
         inlines_data = block.get("inlines", [])
         
-        # 检测并跳过包含文档元数�?JSON 的段�?
+        # æ£æµå¹¶è·³è¿åå«ææ¡£åæ°ï¿½?JSON çæ®µï¿½?
         if self._is_metadata_paragraph(inlines_data):
             return ""
         
-        # 仅包含单个display公式时直接渲染为块，避免<p>内嵌<div>
+        # ä»åå«åä¸ªdisplayå¬å¼æ¶ç´æ¥æ¸²æä¸ºåï¼é¿å<p>ååµ<div>
         if len(inlines_data) == 1:
             standalone = self._render_standalone_math_inline(inlines_data[0])
             if standalone:
@@ -1270,10 +1270,10 @@ class HTMLRenderer:
 
     def _is_metadata_paragraph(self, inlines: List[Any]) -> bool:
         """
-        检测段落是否只包含文档元数�?JSON�?
+        æ£æµæ®µè½æ¯å¦åªåå«ææ¡£åæ°ï¿½?JSONï¿½?
         
-        某些 LLM 生成的内容会将元数据（如 xrefs、widgets、footnotes、metadata�?
-        错误地作为段落内容输出，本方法识别并标记这种情况以便跳过渲染�?
+        æäº LLM çæçåå®¹ä¼å°åæ°æ®ï¼å¦ xrefsidgetsootnotesetadataï¿½?
+        éè¯¯å°ä½ä¸ºæ®µè½åå®¹è¾åºï¼æ¬æ¹æ³è¯å«å¹¶æ è®°è¿ç§æåµä»¥ä¾¿è·³è¿æ¸²æï¿½?
         """
         if not inlines or len(inlines) != 1:
             return False
@@ -1286,12 +1286,12 @@ class HTMLRenderer:
         text = text.strip()
         if not text.startswith("{") or not text.endswith("}"):
             return False
-        # 检测典型的元数据键
+        # æ£æµå¸åçåæ°æ®é®
         metadata_indicators = ['"xrefs"', '"widgets"', '"footnotes"', '"metadata"', '"sectionBudgets"']
         return any(indicator in text for indicator in metadata_indicators)
 
     def _render_standalone_math_inline(self, run: Dict[str, Any] | str) -> str | None:
-        """当段落只包含单个display公式时，转为math-block避免破坏行内布局"""
+        """å½æ®µè½åªåå«åä¸ªdisplayå¬å¼æ¶ï¼è½¬ä¸ºmath-blocké¿åç ´åè¡åå¸å±"""
         if isinstance(run, dict):
             text_value, marks = self._normalize_inline_payload(run)
             if marks:
@@ -1312,7 +1312,7 @@ class HTMLRenderer:
         return None
 
     def _render_list(self, block: Dict[str, Any]) -> str:
-        """渲染有序/无序/任务列表"""
+        """æ¸²ææåº/æ åº/ä»»å¡åè¡¨"""
         list_type = block.get("listType", "bullet")
         tag = "ol" if list_type == "ordered" else "ul"
         extra_class = "task-list" if list_type == "task" else ""
@@ -1327,17 +1327,17 @@ class HTMLRenderer:
 
     def _flatten_nested_cells(self, cells: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        展平错误嵌套的单元格结构�?
+        å±å¹³éè¯¯åµå¥çååæ ¼ç»æï¿½?
 
-        某些 LLM 生成的表格数据中，单元格被错误地递归嵌套�?
-        cells[0] 正常, cells[1].cells[0] 正常, cells[1].cells[1].cells[0] 正常...
-        本方法将这种嵌套结构展平为标准的平行单元格数组�?
+        æäº LLM çæçè¡¨æ ¼æ°æ®ä¸­ï¼ååæ ¼è¢«éè¯¯å°éå½åµå¥ï¿½?
+        cells[0] æ­£å¸¸, cells[1].cells[0] æ­£å¸¸, cells[1].cells[1].cells[0] æ­£å¸¸...
+        æ¬æ¹æ³å°è¿ç§åµå¥ç»æå±å¹³ä¸ºæ åçå¹³è¡ååæ ¼æ°ç»ï¿½?
 
-        参数:
-            cells: 可能包含嵌套结构的单元格数组�?
+        åæ°:
+            cells: å¯è½åå«åµå¥ç»æçååæ ¼æ°ç»ï¿½?
 
-        返回:
-            List[Dict]: 展平后的单元格数组�?
+        è¿å:
+            List[Dict]: å±å¹³åçååæ ¼æ°ç»ï¿½?
         """
         if not cells:
             return []
@@ -1345,20 +1345,20 @@ class HTMLRenderer:
         flattened: List[Dict[str, Any]] = []
 
         def _extract_cells(cell_or_list: Any) -> None:
-            """递归提取所有单元格"""
+            """éå½æåææååæ ¼"""
             if not isinstance(cell_or_list, dict):
                 return
 
-            # 如果当前对象�?blocks，说明它是一个有效的单元�?
+            # å¦æå½åå¯¹è±¡ï¿½?blocksï¼è¯´æå®æ¯ä¸ä¸ªææçååï¿½?
             if "blocks" in cell_or_list:
-                # 创建单元格副本，移除嵌套�?cells
+                # åå»ºååæ ¼å¯æ¬ï¼ç§»é¤åµå¥ï¿½?cells
                 clean_cell = {
                     k: v for k, v in cell_or_list.items()
                     if k != "cells"
                 }
                 flattened.append(clean_cell)
 
-            # 如果当前对象有嵌套的 cells，递归处理
+            # å¦æå½åå¯¹è±¡æåµå¥ç cellsï¼éå½å¤ç
             nested_cells = cell_or_list.get("cells")
             if isinstance(nested_cells, list):
                 for nested_cell in nested_cells:
@@ -1371,23 +1371,23 @@ class HTMLRenderer:
 
     def _fix_nested_table_rows(self, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        修复嵌套错误的表格行结构�?
+        ä¿®å¤åµå¥éè¯¯çè¡¨æ ¼è¡ç»æï¿½?
 
-        某些 LLM 生成的表格数据中，所有行的单元格都被嵌套在第一行中�?
-        导致表格只有1行但包含所有数据。本方法检测并修复这种情况�?
+        æäº LLM çæçè¡¨æ ¼æ°æ®ä¸­ï¼ææè¡çååæ ¼é½è¢«åµå¥å¨ç¬¬ä¸è¡ä¸­ï¿½?
+        å¯¼è´è¡¨æ ¼åªæ1è¡ä½åå«æææ°æ®ãæ¬æ¹æ³æ£æµå¹¶ä¿®å¤è¿ç§æåµï¿½?
 
-        参数:
-            rows: 原始的表格行数组�?
+        åæ°:
+            rows: åå§çè¡¨æ ¼è¡æ°ç»ï¿½?
 
-        返回:
-            List[Dict]: 修复后的表格行数组�?
+        è¿å:
+            List[Dict]: ä¿®å¤åçè¡¨æ ¼è¡æ°ç»ï¿½?
         """
         if not rows:
             return []
 
-        # 辅助函数：获取单元格文本
+        # è¾å©å½æ°ï¼è·åååæ ¼ææ¬
         def _get_cell_text(cell: Dict[str, Any]) -> str:
-            """获取单元格的文本内容"""
+            """è·åååæ ¼çææ¬åå®¹"""
             blocks = cell.get("blocks", [])
             for block in blocks:
                 if isinstance(block, dict) and block.get("type") == "paragraph":
@@ -1400,24 +1400,24 @@ class HTMLRenderer:
             return ""
 
         def _is_placeholder_cell(cell: Dict[str, Any]) -> bool:
-            """判断单元格是否是占位符（�?'--', '-', '�? 等）"""
+            """å¤æ­ååæ ¼æ¯å¦æ¯å ä½ç¬¦ï¼ï¿½?'--', '-', 'ï¿½? ç­ï¼"""
             text = _get_cell_text(cell)
-            return text in ("--", "-", "�?, "—�?, "", "N/A", "n/a")
+            return text in ("--", "-", "ï¿½?, "-ï¿½?, "", "N/A", "n/a")
 
         def _is_heading_like_cell(cell: Dict[str, Any]) -> bool:
-            """检测是否疑似被错误并入表格的章�?标题单元�?""
+            """æ£æµæ¯å¦çä¼¼è¢«éè¯¯å¹¶å¥è¡¨æ ¼çç« ï¿½?æ é¢ååï¿½?""
             text = _get_cell_text(cell)
             if not text:
                 return False
             stripped = text.strip()
-            # 章节号或"第X�?部分"常见格式，避免误删正常数字�?
+            # ç« èå·æ"ç¬¬Xï¿½?é¨å"å¸¸è§æ ¼å¼ï¼é¿åè¯¯å æ­£å¸¸æ°å­ï¿½?
             heading_patterns = (
                 r"^\d{1,2}(?:\.\d{1,2}){1,3}\s+",
-                r"^第[一二三四五六七八九十]+[章节部分]",
+                r"^ç¬¬[ä¸äºä¸åäºå­ä¸å«ä¹å]+[ç« èé¨å]",
             )
             return any(re.match(pat, stripped) for pat in heading_patterns)
 
-        # 第一阶段：处�?有表头行 + 数据被串在一�?的情�?
+        # ç¬¬ä¸é¶æ®µï¼å¤ï¿½?æè¡¨å¤´è¡ + æ°æ®è¢«ä¸²å¨ä¸ï¿½?çæï¿½?
         header_cells = self._flatten_nested_cells((rows[0] or {}).get("cells", []))
         header_count = len(header_cells)
         overflow_fixed = None
@@ -1459,13 +1459,13 @@ class HTMLRenderer:
             rows = overflow_fixed
 
         if len(rows) != 1:
-            # 只有一行的异常情况由后续逻辑处理；正常多行直接返�?
+            # åªæä¸è¡çå¼å¸¸æåµç±åç»­é»è¾å¤çï¼æ­£å¸¸å¤è¡ç´æ¥è¿ï¿½?
             return rows
 
         first_row = rows[0]
         original_cells = first_row.get("cells", [])
 
-        # 检查是否存在嵌套结�?
+        # æ£æ¥æ¯å¦å­å¨åµå¥ç»ï¿½?
         has_nested = any(
             isinstance(cell.get("cells"), list)
             for cell in original_cells
@@ -1475,22 +1475,22 @@ class HTMLRenderer:
         if not has_nested:
             return rows
 
-        # 展平所有单元格
+        # å±å¹³ææååæ ¼
         all_cells = self._flatten_nested_cells(original_cells)
 
         if len(all_cells) <= 2:
-            # 单元格太少，不需要重�?
+            # ååæ ¼å¤ªå°ï¼ä¸éè¦éï¿½?
             return rows
 
-        # 先过滤掉占位符单元格
+        # åè¿æ»¤æå ä½ç¬¦ååæ ¼
         all_cells = [c for c in all_cells if not _is_placeholder_cell(c)]
 
         if len(all_cells) <= 2:
             return rows
 
-        # 检测表头列数：查找带有 bold 标记或典型表头词的单元格
+        # æ£æµè¡¨å¤´åæ°ï¼æ¥æ¾å¸¦æ bold æ è®°æå¸åè¡¨å¤´è¯çååæ ¼
         def _is_header_cell(cell: Dict[str, Any]) -> bool:
-            """判断单元格是否像表头（有加粗标记或是典型表头词）"""
+            """å¤æ­ååæ ¼æ¯å¦åè¡¨å¤´ï¼æå ç²æ è®°ææ¯å¸åè¡¨å¤´è¯ï¼"""
             blocks = cell.get("blocks", [])
             for block in blocks:
                 if isinstance(block, dict) and block.get("type") == "paragraph":
@@ -1500,62 +1500,62 @@ class HTMLRenderer:
                             marks = inline.get("marks", [])
                             if any(isinstance(m, dict) and m.get("type") == "bold" for m in marks):
                                 return True
-            # 也检查典型的表头�?
+            # ä¹æ£æ¥å¸åçè¡¨å¤´ï¿½?
             text = _get_cell_text(cell)
             header_keywords = {
-                "时间", "日期", "名称", "类型", "状�?, "数量", "金额", "比例", "指标",
-                "平台", "渠道", "来源", "描述", "说明", "备注", "序号", "编号",
-                "事件", "关键", "数据", "支撑", "反应", "市场", "情感", "节点",
-                "维度", "要点", "详情", "标签", "影响", "趋势", "权重", "类别",
-                "信息", "内容", "风格", "偏好", "主要", "用户", "核心", "特征",
-                "分类", "范围", "对象", "项目", "阶段", "周期", "频率", "等级",
+                "æ¶é´", "æ¥æ", "åç§°", "ç±»å", "ç¶ï¿½?, "æ°é", "éé¢", "æ¯ä¾", "ææ ",
+                "å¹³å°", "æ¸ é", "æ¥æº", "æè¿°", "è¯´æ", "å¤æ³¨", "åºå·", "ç¼å·",
+                "äºä»¶", "å³é®", "æ°æ®", "æ¯æ", "ååº", "å¸åº", "ææ", "èç¹",
+                "ç»´åº¦", "è¦ç¹", "è¯¦æ", "æ ç­¾", "å½±å", "è¶å¿", "æé", "ç±»å«",
+                "ä¿¡æ¯", "åå®¹", "é£æ ¼", "åå¥½", "ä¸»è¦", "ç¨æ·", "æ ¸å¿", "ç¹å¾",
+                "åç±»", "èå´", "å¯¹è±¡", "é¡¹ç®", "é¶æ®µ", "å¨æ", "é¢ç", "ç­çº§",
             }
             return any(kw in text for kw in header_keywords) and len(text) <= 20
 
-        # 计算表头列数：统计连续的表头单元格数�?
+        # è®¡ç®è¡¨å¤´åæ°ï¼ç»è®¡è¿ç»­çè¡¨å¤´ååæ ¼æ°ï¿½?
         header_count = 0
         for cell in all_cells:
             if _is_header_cell(cell):
                 header_count += 1
             else:
-                # 遇到第一个非表头单元格，说明数据区开�?
+                # éå°ç¬¬ä¸ä¸ªéè¡¨å¤´ååæ ¼ï¼è¯´ææ°æ®åºå¼ï¿½?
                 break
 
-        # 如果没有检测到表头，尝试使用启发式方法
+        # å¦ææ²¡ææ£æµå°è¡¨å¤´ï¼å°è¯ä½¿ç¨å¯åå¼æ¹æ³
         if header_count == 0:
-            # 假设列数�?4 �?5（常见的表格列数�?
+            # åè®¾åæ°ï¿½?4 ï¿½?5ï¼å¸¸è§çè¡¨æ ¼åæ°ï¿½?
             total = len(all_cells)
             for possible_cols in [4, 5, 3, 6, 2]:
                 if total % possible_cols == 0:
                     header_count = possible_cols
                     break
             else:
-                # 尝试找到最接近的能整除的列�?
+                # å°è¯æ¾å°ææ¥è¿çè½æ´é¤çåï¿½?
                 for possible_cols in [4, 5, 3, 6, 2]:
                     remainder = total % possible_cols
-                    # 允许最�?个多余的单元格（可能是尾部的总结或注释）
+                    # åè®¸æï¿½?ä¸ªå¤ä½çååæ ¼ï¼å¯è½æ¯å°¾é¨çæ»ç»ææ³¨éï¼
                     if remainder <= 3:
                         header_count = possible_cols
                         break
                 else:
-                    # 无法确定列数，返回原始数�?
+                    # æ æ³ç¡®å®åæ°ï¼è¿ååå§æ°ï¿½?
                     return rows
 
-        # 计算有效的单元格数量（可能需要截断尾部多余的单元格）
+        # è®¡ç®ææçååæ ¼æ°éï¼å¯è½éè¦æªæ­å°¾é¨å¤ä½çååæ ¼ï¼
         total = len(all_cells)
         remainder = total % header_count
         if remainder > 0 and remainder <= 3:
-            # 截断尾部多余的单元格（可能是总结或注释）
+            # æªæ­å°¾é¨å¤ä½çååæ ¼ï¼å¯è½æ¯æ»ç»ææ³¨éï¼
             all_cells = all_cells[:total - remainder]
         elif remainder > 3:
-            # 余数太大，可能列数检测错误，返回原始数据
+            # ä½æ°å¤ªå¤§ï¼å¯è½åæ°æ£æµéè¯¯ï¼è¿ååå§æ°æ®
             return rows
 
-        # 重新组织成多�?
+        # éæ°ç»ç»æå¤ï¿½?
         fixed_rows: List[Dict[str, Any]] = []
         for i in range(0, len(all_cells), header_count):
             row_cells = all_cells[i:i + header_count]
-            # 标记第一行为表头
+            # æ è®°ç¬¬ä¸è¡ä¸ºè¡¨å¤´
             if i == 0:
                 for cell in row_cells:
                     cell["header"] = True
@@ -1565,22 +1565,22 @@ class HTMLRenderer:
 
     def _render_table(self, block: Dict[str, Any]) -> str:
         """
-        渲染表格，同时保留caption与单元格属性�?
+        æ¸²æè¡¨æ ¼ï¼åæ¶ä¿çcaptionä¸ååæ ¼å±æ§ï¿½?
 
-        参数:
-            block: table类型的block�?
+        åæ°:
+            block: tableç±»åçblockï¿½?
 
-        返回:
-            str: 包含<table>结构的HTML�?
+        è¿å:
+            str: åå«<table>ç»æçHTMLï¿½?
         """
-        # 先修复可能存在的嵌套行结构问�?
+        # åä¿®å¤å¯è½å­å¨çåµå¥è¡ç»æé®ï¿½?
         raw_rows = block.get("rows") or []
         fixed_rows = self._fix_nested_table_rows(raw_rows)
         rows = self._normalize_table_rows(fixed_rows)
         rows_html = ""
         for row in rows:
             row_cells = ""
-            # 展平可能存在的嵌套单元格结构（作为额外保护）
+            # å±å¹³å¯è½å­å¨çåµå¥ååæ ¼ç»æï¼ä½ä¸ºé¢å¤ä¿æ¤ï¼
             cells = self._flatten_nested_cells(row.get("cells", []))
             for cell in cells:
                 cell_tag = "th" if cell.get("header") or cell.get("isHeader") else "td"
@@ -1601,25 +1601,25 @@ class HTMLRenderer:
 
     def _render_swot_table(self, block: Dict[str, Any]) -> str:
         """
-        渲染四象限的SWOT分析，同时生成两种布局�?
-        1. 卡片布局（用于HTML网页显示�? 圆角矩形四象�?
-        2. 表格布局（用于PDF导出�? 结构化表格，支持分页
+        æ¸²æåè±¡éçSWOTåæï¼åæ¶çæä¸¤ç§å¸å±ï¿½?
+        1. å¡çå¸å±ï¼ç¨äºHTMLç½é¡µæ¾ç¤ºï¿½? åè§ç©å½¢åè±¡ï¿½?
+        2. è¡¨æ ¼å¸å±ï¼ç¨äºPDFå¯¼åºï¿½? ç»æåè¡¨æ ¼ï¼æ¯æåé¡µ
         
-        PDF分页策略�?
-        - 使用表格形式，每个S/W/O/T象限为独立表格区�?
-        - 允许在不同象限之间分�?
-        - 每个象限内的条目尽量保持在一�?
+        PDFåé¡µç­ç¥ï¿½?
+        - ä½¿ç¨è¡¨æ ¼å½¢å¼ï¼æ¯ä¸ªS/W/O/Tè±¡éä¸ºç¬ç«è¡¨æ ¼åºï¿½?
+        - åè®¸å¨ä¸åè±¡éä¹é´åï¿½?
+        - æ¯ä¸ªè±¡éåçæ¡ç®å°½éä¿æå¨ä¸ï¿½?
         """
-        title = block.get("title") or "SWOT 分析"
+        title = block.get("title") or "SWOT åæ"
         summary = block.get("summary")
         
-        # ========== 卡片布局（HTML用）==========
+        # ========== å¡çå¸å±ï¼HTMLç¨ï¼==========
         card_html = self._render_swot_card_layout(block, title, summary)
         
-        # ========== 表格布局（PDF用）==========
+        # ========== è¡¨æ ¼å¸å±ï¼PDFç¨ï¼==========
         table_html = self._render_swot_pdf_table_layout(block, title, summary)
         
-        # 返回包含两种布局的容�?
+        # è¿ååå«ä¸¤ç§å¸å±çå®¹ï¿½?
         return f"""
         <div class="swot-container">
           {card_html}
@@ -1628,18 +1628,18 @@ class HTMLRenderer:
         """
     
     def _render_swot_card_layout(self, block: Dict[str, Any], title: str, summary: str | None) -> str:
-        """渲染SWOT卡片布局（用于HTML网页显示�?""
+        """æ¸²æSWOTå¡çå¸å±ï¼ç¨äºHTMLç½é¡µæ¾ç¤ºï¿½?""
         quadrants = [
-            ("strengths", "优势 Strengths", "S", "strength"),
-            ("weaknesses", "劣势 Weaknesses", "W", "weakness"),
-            ("opportunities", "机会 Opportunities", "O", "opportunity"),
-            ("threats", "威胁 Threats", "T", "threat"),
+            ("strengths", "ä¼å¿ Strengths", "S", "strength"),
+            ("weaknesses", "å£å¿ Weaknesses", "W", "weakness"),
+            ("opportunities", "æºä¼ Opportunities", "O", "opportunity"),
+            ("threats", "å¨è Threats", "T", "threat"),
         ]
         cells_html = ""
         for idx, (key, label, code, css) in enumerate(quadrants):
             items = self._normalize_swot_items(block.get(key))
-            caption_text = f"{len(items)} 条要�? if items else "待补�?
-            list_html = "".join(self._render_swot_item(item) for item in items) if items else '<li class="swot-empty">尚未填入要点</li>'
+            caption_text = f"{len(items)} æ¡è¦ï¿½? if items else "å¾è¡¥ï¿½?
+            list_html = "".join(self._render_swot_item(item) for item in items) if items else '<li class="swot-empty">å°æªå¡«å¥è¦ç¹</li>'
             first_cell_class = " swot-cell--first" if idx == 0 else ""
             cells_html += f"""
         <div class="swot-cell swot-cell--pageable {css}{first_cell_class}" data-swot-key="{key}">
@@ -1656,10 +1656,10 @@ class HTMLRenderer:
         title_html = f'<div class="swot-card__title">{self._escape_html(title)}</div>' if title else ""
         legend = """
             <div class="swot-legend">
-              <span class="swot-legend__item strength">S 优势</span>
-              <span class="swot-legend__item weakness">W 劣势</span>
-              <span class="swot-legend__item opportunity">O 机会</span>
-              <span class="swot-legend__item threat">T 威胁</span>
+              <span class="swot-legend__item strength">S ä¼å¿</span>
+              <span class="swot-legend__item weakness">W å£å¿</span>
+              <span class="swot-legend__item opportunity">O æºä¼</span>
+              <span class="swot-legend__item threat">T å¨è</span>
             </div>
         """
         return f"""
@@ -1674,22 +1674,22 @@ class HTMLRenderer:
     
     def _render_swot_pdf_table_layout(self, block: Dict[str, Any], title: str, summary: str | None) -> str:
         """
-        渲染SWOT表格布局（用于PDF导出�?
+        æ¸²æSWOTè¡¨æ ¼å¸å±ï¼ç¨äºPDFå¯¼åºï¿½?
         
-        设计说明�?
-        - 整体为一个大表格，包含标题行�?个象限区�?
-        - 每个象限区域有自己的子标题行和内容行
-        - 使用合并单元格来显示象限标题
-        - 通过CSS控制分页行为
+        è®¾è®¡è¯´æï¿½?
+        - æ´ä½ä¸ºä¸ä¸ªå¤§è¡¨æ ¼ï¼åå«æ é¢è¡ï¿½?ä¸ªè±¡éåºï¿½?
+        - æ¯ä¸ªè±¡éåºåæèªå·±çå­æ é¢è¡ååå®¹è¡
+        - ä½¿ç¨åå¹¶ååæ ¼æ¥æ¾ç¤ºè±¡éæ é¢
+        - éè¿CSSæ§å¶åé¡µè¡ä¸º
         """
         quadrants = [
-            ("strengths", "S", "优势 Strengths", "swot-pdf-strength", "#1c7f6e"),
-            ("weaknesses", "W", "劣势 Weaknesses", "swot-pdf-weakness", "#c0392b"),
-            ("opportunities", "O", "机会 Opportunities", "swot-pdf-opportunity", "#1f5ab3"),
-            ("threats", "T", "威胁 Threats", "swot-pdf-threat", "#b36b16"),
+            ("strengths", "S", "ä¼å¿ Strengths", "swot-pdf-strength", "#1c7f6e"),
+            ("weaknesses", "W", "å£å¿ Weaknesses", "swot-pdf-weakness", "#c0392b"),
+            ("opportunities", "O", "æºä¼ Opportunities", "swot-pdf-opportunity", "#1f5ab3"),
+            ("threats", "T", "å¨è Threats", "swot-pdf-threat", "#b36b16"),
         ]
         
-        # 标题和摘�?
+        # æ é¢åæï¿½?
         summary_row = ""
         if summary:
             summary_row = f"""
@@ -1697,38 +1697,38 @@ class HTMLRenderer:
               <td colspan="4" class="swot-pdf-summary">{self._escape_html(summary)}</td>
             </tr>"""
         
-        # 生成四个象限的表格内�?
+        # çæåä¸ªè±¡éçè¡¨æ ¼åï¿½?
         quadrant_tables = ""
         for idx, (key, code, label, css_class, color) in enumerate(quadrants):
             items = self._normalize_swot_items(block.get(key))
             
-            # 生成每个象限的内容行
+            # çææ¯ä¸ªè±¡éçåå®¹è¡
             items_rows = ""
             if items:
                 for item_idx, item in enumerate(items):
-                    item_title = item.get("title") or item.get("label") or item.get("text") or "未命名要�?
+                    item_title = item.get("title") or item.get("label") or item.get("text") or "æªå½åè¦ï¿½?
                     item_detail = item.get("detail") or item.get("description") or ""
                     item_evidence = item.get("evidence") or item.get("source") or ""
                     item_impact = item.get("impact") or item.get("priority") or ""
-                    # item_score = item.get("score")  # 评分功能已禁�?
+                    # item_score = item.get("score")  # è¯ååè½å·²ç¦ï¿½?
                     
-                    # 构建详情内容
+                    # æå»ºè¯¦æåå®¹
                     detail_parts = []
                     if item_detail:
                         detail_parts.append(item_detail)
                     if item_evidence:
-                        detail_parts.append(f"佐证：{item_evidence}")
+                        detail_parts.append(f"ä½è¯ï¼{item_evidence}")
                     detail_text = "<br/>".join(detail_parts) if detail_parts else "-"
                     
-                    # 构建标签
+                    # æå»ºæ ç­¾
                     tags = []
                     if item_impact:
                         tags.append(f'<span class="swot-pdf-tag">{self._escape_html(item_impact)}</span>')
-                    # if item_score not in (None, ""):  # 评分功能已禁�?
-                    #     tags.append(f'<span class="swot-pdf-tag swot-pdf-tag--score">评分 {self._escape_html(item_score)}</span>')
+                    # if item_score not in (None, ""):  # è¯ååè½å·²ç¦ï¿½?
+                    #     tags.append(f'<span class="swot-pdf-tag swot-pdf-tag--score">è¯å {self._escape_html(item_score)}</span>')
                     tags_html = " ".join(tags)
                     
-                    # 第一行需要合并象限标题单元格
+                    # ç¬¬ä¸è¡éè¦åå¹¶è±¡éæ é¢ååæ ¼
                     if item_idx == 0:
                         rowspan = len(items)
                         items_rows += f"""
@@ -1751,7 +1751,7 @@ class HTMLRenderer:
               <td class="swot-pdf-item-tags">{tags_html}</td>
             </tr>"""
             else:
-                # 没有内容时显示占�?
+                # æ²¡æåå®¹æ¶æ¾ç¤ºå ï¿½?
                 items_rows = f"""
             <tr class="swot-pdf-item-row {css_class}">
               <td class="swot-pdf-quadrant-label {css_class}">
@@ -1759,10 +1759,10 @@ class HTMLRenderer:
                 <span class="swot-pdf-label-text">{self._escape_html(label.split()[0])}</span>
               </td>
               <td class="swot-pdf-item-num">-</td>
-              <td colspan="3" class="swot-pdf-empty">暂无要点</td>
+              <td colspan="3" class="swot-pdf-empty">ææ è¦ç¹</td>
             </tr>"""
             
-            # 每个象限作为一个独立的tbody，便于分页控�?
+            # æ¯ä¸ªè±¡éä½ä¸ºä¸ä¸ªç¬ç«çtbodyï¼ä¾¿äºåé¡µæ§ï¿½?
             quadrant_tables += f"""
           <tbody class="swot-pdf-quadrant {css_class}">
             {items_rows}
@@ -1774,11 +1774,11 @@ class HTMLRenderer:
             <caption class="swot-pdf-caption">{self._escape_html(title)}</caption>
             <thead class="swot-pdf-thead">
               <tr>
-                <th class="swot-pdf-th-quadrant">象限</th>
-                <th class="swot-pdf-th-num">序号</th>
-                <th class="swot-pdf-th-title">要点</th>
-                <th class="swot-pdf-th-detail">详细说明</th>
-                <th class="swot-pdf-th-tags">影响</th>
+                <th class="swot-pdf-th-quadrant">è±¡é</th>
+                <th class="swot-pdf-th-num">åºå·</th>
+                <th class="swot-pdf-th-title">è¦ç¹</th>
+                <th class="swot-pdf-th-detail">è¯¦ç»è¯´æ</th>
+                <th class="swot-pdf-th-tags">å½±å</th>
               </tr>
               {summary_row}
             </thead>
@@ -1788,7 +1788,7 @@ class HTMLRenderer:
         """
 
     def _normalize_swot_items(self, raw: Any) -> List[Dict[str, Any]]:
-        """将SWOT条目规整为统一结构，兼容字符串/对象两种写法"""
+        """å°SWOTæ¡ç®è§æ´ä¸ºç»ä¸ç»æï¼å¼å®¹å­ç¬¦ä¸²/å¯¹è±¡ä¸¤ç§åæ³"""
         normalized: List[Dict[str, Any]] = []
         if raw is None:
             return normalized
@@ -1811,7 +1811,7 @@ class HTMLRenderer:
             detail = entry.get("detail") or entry.get("description")
             evidence = entry.get("evidence") or entry.get("source")
             impact = entry.get("impact") or entry.get("priority")
-            # score = entry.get("score")  # 评分功能已禁�?
+            # score = entry.get("score")  # è¯ååè½å·²ç¦ï¿½?
             if not title and isinstance(detail, str):
                 title = detail
                 detail = None
@@ -1823,26 +1823,26 @@ class HTMLRenderer:
                     "detail": detail,
                     "evidence": evidence,
                     "impact": impact,
-                    # "score": score,  # 评分功能已禁�?
+                    # "score": score,  # è¯ååè½å·²ç¦ï¿½?
                 }
             )
         return normalized
 
     def _render_swot_item(self, item: Dict[str, Any]) -> str:
-        """输出单个SWOT条目的HTML片段"""
-        title = item.get("title") or item.get("label") or item.get("text") or "未命名要�?
+        """è¾åºåä¸ªSWOTæ¡ç®çHTMLçæ®µ"""
+        title = item.get("title") or item.get("label") or item.get("text") or "æªå½åè¦ï¿½?
         detail = item.get("detail") or item.get("description")
         evidence = item.get("evidence") or item.get("source")
         impact = item.get("impact") or item.get("priority")
-        # score = item.get("score")  # 评分功能已禁�?
+        # score = item.get("score")  # è¯ååè½å·²ç¦ï¿½?
         tags: List[str] = []
         if impact:
             tags.append(f'<span class="swot-tag">{self._escape_html(impact)}</span>')
-        # if score not in (None, ""):  # 评分功能已禁�?
-        #     tags.append(f'<span class="swot-tag neutral">评分 {self._escape_html(score)}</span>')
+        # if score not in (None, ""):  # è¯ååè½å·²ç¦ï¿½?
+        #     tags.append(f'<span class="swot-tag neutral">è¯å {self._escape_html(score)}</span>')
         tags_html = f'<span class="swot-item-tags">{"".join(tags)}</span>' if tags else ""
         detail_html = f'<div class="swot-item-desc">{self._escape_html(detail)}</div>' if detail else ""
-        evidence_html = f'<div class="swot-item-evidence">佐证：{self._escape_html(evidence)}</div>' if evidence else ""
+        evidence_html = f'<div class="swot-item-evidence">ä½è¯ï¼{self._escape_html(evidence)}</div>' if evidence else ""
         return f"""
             <li class="swot-item">
               <div class="swot-item-title">{self._escape_html(title)}{tags_html}</div>
@@ -1850,30 +1850,30 @@ class HTMLRenderer:
             </li>
         """
 
-    # ==================== PEST 分析�?====================
+    # ==================== PEST åæï¿½?====================
     
     def _render_pest_table(self, block: Dict[str, Any]) -> str:
         """
-        渲染四维度的PEST分析，同时生成两种布局�?
-        1. 卡片布局（用于HTML网页显示�? 横向条状堆叠
-        2. 表格布局（用于PDF导出�? 结构化表格，支持分页
+        æ¸²æåç»´åº¦çPESTåæï¼åæ¶çæä¸¤ç§å¸å±ï¿½?
+        1. å¡çå¸å±ï¼ç¨äºHTMLç½é¡µæ¾ç¤ºï¿½? æ¨ªåæ¡ç¶å å 
+        2. è¡¨æ ¼å¸å±ï¼ç¨äºPDFå¯¼åºï¿½? ç»æåè¡¨æ ¼ï¼æ¯æåé¡µ
         
-        PEST分析维度�?
-        - P: Political（政治因素）
-        - E: Economic（经济因素）
-        - S: Social（社会因素）
-        - T: Technological（技术因素）
+        PESTåæç»´åº¦ï¿½?
+        - P: Politicalï¼æ¿æ²»å ç´ ï¼
+        - E: Economicï¼ç»æµå ç´ ï¼
+        - S: Socialï¼ç¤¾ä¼å ç´ ï¼
+        - T: Technologicalï¼ææ¯å ç´ ï¼
         """
-        title = block.get("title") or "PEST 分析"
+        title = block.get("title") or "PEST åæ"
         summary = block.get("summary")
         
-        # ========== 卡片布局（HTML用）==========
+        # ========== å¡çå¸å±ï¼HTMLç¨ï¼==========
         card_html = self._render_pest_card_layout(block, title, summary)
         
-        # ========== 表格布局（PDF用）==========
+        # ========== è¡¨æ ¼å¸å±ï¼PDFç¨ï¼==========
         table_html = self._render_pest_pdf_table_layout(block, title, summary)
         
-        # 返回包含两种布局的容�?
+        # è¿ååå«ä¸¤ç§å¸å±çå®¹ï¿½?
         return f"""
         <div class="pest-container">
           {card_html}
@@ -1882,18 +1882,18 @@ class HTMLRenderer:
         """
     
     def _render_pest_card_layout(self, block: Dict[str, Any], title: str, summary: str | None) -> str:
-        """渲染PEST卡片布局（用于HTML网页显示�? 横向条状堆叠设计"""
+        """æ¸²æPESTå¡çå¸å±ï¼ç¨äºHTMLç½é¡µæ¾ç¤ºï¿½? æ¨ªåæ¡ç¶å å è®¾è®¡"""
         dimensions = [
-            ("political", "政治因素 Political", "P", "political"),
-            ("economic", "经济因素 Economic", "E", "economic"),
-            ("social", "社会因素 Social", "S", "social"),
-            ("technological", "技术因�?Technological", "T", "technological"),
+            ("political", "æ¿æ²»å ç´  Political", "P", "political"),
+            ("economic", "ç»æµå ç´  Economic", "E", "economic"),
+            ("social", "ç¤¾ä¼å ç´  Social", "S", "social"),
+            ("technological", "ææ¯å ï¿½?Technological", "T", "technological"),
         ]
         strips_html = ""
         for idx, (key, label, code, css) in enumerate(dimensions):
             items = self._normalize_pest_items(block.get(key))
-            caption_text = f"{len(items)} 条要�? if items else "待补�?
-            list_html = "".join(self._render_pest_item(item) for item in items) if items else '<li class="pest-empty">尚未填入要点</li>'
+            caption_text = f"{len(items)} æ¡è¦ï¿½? if items else "å¾è¡¥ï¿½?
+            list_html = "".join(self._render_pest_item(item) for item in items) if items else '<li class="pest-empty">å°æªå¡«å¥è¦ç¹</li>'
             first_strip_class = " pest-strip--first" if idx == 0 else ""
             strips_html += f"""
         <div class="pest-strip pest-strip--pageable {css}{first_strip_class}" data-pest-key="{key}">
@@ -1912,10 +1912,10 @@ class HTMLRenderer:
         title_html = f'<div class="pest-card__title">{self._escape_html(title)}</div>' if title else ""
         legend = """
             <div class="pest-legend">
-              <span class="pest-legend__item political">P 政治</span>
-              <span class="pest-legend__item economic">E 经济</span>
-              <span class="pest-legend__item social">S 社会</span>
-              <span class="pest-legend__item technological">T 技�?/span>
+              <span class="pest-legend__item political">P æ¿æ²»</span>
+              <span class="pest-legend__item economic">E ç»æµ</span>
+              <span class="pest-legend__item social">S ç¤¾ä¼</span>
+              <span class="pest-legend__item technological">T æï¿½?/span>
             </div>
         """
         return f"""
@@ -1930,22 +1930,22 @@ class HTMLRenderer:
     
     def _render_pest_pdf_table_layout(self, block: Dict[str, Any], title: str, summary: str | None) -> str:
         """
-        渲染PEST表格布局（用于PDF导出�?
+        æ¸²æPESTè¡¨æ ¼å¸å±ï¼ç¨äºPDFå¯¼åºï¿½?
         
-        设计说明�?
-        - 整体为一个大表格，包含标题行�?个维度区�?
-        - 每个维度有自己的子标题行和内容行
-        - 使用合并单元格来显示维度标题
-        - 通过CSS控制分页行为
+        è®¾è®¡è¯´æï¿½?
+        - æ´ä½ä¸ºä¸ä¸ªå¤§è¡¨æ ¼ï¼åå«æ é¢è¡ï¿½?ä¸ªç»´åº¦åºï¿½?
+        - æ¯ä¸ªç»´åº¦æèªå·±çå­æ é¢è¡ååå®¹è¡
+        - ä½¿ç¨åå¹¶ååæ ¼æ¥æ¾ç¤ºç»´åº¦æ é¢
+        - éè¿CSSæ§å¶åé¡µè¡ä¸º
         """
         dimensions = [
-            ("political", "P", "政治因素 Political", "pest-pdf-political", "#8e44ad"),
-            ("economic", "E", "经济因素 Economic", "pest-pdf-economic", "#16a085"),
-            ("social", "S", "社会因素 Social", "pest-pdf-social", "#e84393"),
-            ("technological", "T", "技术因�?Technological", "pest-pdf-technological", "#2980b9"),
+            ("political", "P", "æ¿æ²»å ç´  Political", "pest-pdf-political", "#8e44ad"),
+            ("economic", "E", "ç»æµå ç´  Economic", "pest-pdf-economic", "#16a085"),
+            ("social", "S", "ç¤¾ä¼å ç´  Social", "pest-pdf-social", "#e84393"),
+            ("technological", "T", "ææ¯å ï¿½?Technological", "pest-pdf-technological", "#2980b9"),
         ]
         
-        # 标题和摘�?
+        # æ é¢åæï¿½?
         summary_row = ""
         if summary:
             summary_row = f"""
@@ -1953,35 +1953,35 @@ class HTMLRenderer:
               <td colspan="4" class="pest-pdf-summary">{self._escape_html(summary)}</td>
             </tr>"""
         
-        # 生成四个维度的表格内�?
+        # çæåä¸ªç»´åº¦çè¡¨æ ¼åï¿½?
         dimension_tables = ""
         for idx, (key, code, label, css_class, color) in enumerate(dimensions):
             items = self._normalize_pest_items(block.get(key))
             
-            # 生成每个维度的内容行
+            # çææ¯ä¸ªç»´åº¦çåå®¹è¡
             items_rows = ""
             if items:
                 for item_idx, item in enumerate(items):
-                    item_title = item.get("title") or item.get("label") or item.get("text") or "未命名要�?
+                    item_title = item.get("title") or item.get("label") or item.get("text") or "æªå½åè¦ï¿½?
                     item_detail = item.get("detail") or item.get("description") or ""
                     item_source = item.get("source") or item.get("evidence") or ""
                     item_trend = item.get("trend") or item.get("impact") or ""
                     
-                    # 构建详情内容
+                    # æå»ºè¯¦æåå®¹
                     detail_parts = []
                     if item_detail:
                         detail_parts.append(item_detail)
                     if item_source:
-                        detail_parts.append(f"来源：{item_source}")
+                        detail_parts.append(f"æ¥æºï¼{item_source}")
                     detail_text = "<br/>".join(detail_parts) if detail_parts else "-"
                     
-                    # 构建标签
+                    # æå»ºæ ç­¾
                     tags = []
                     if item_trend:
                         tags.append(f'<span class="pest-pdf-tag">{self._escape_html(item_trend)}</span>')
                     tags_html = " ".join(tags)
                     
-                    # 第一行需要合并维度标题单元格
+                    # ç¬¬ä¸è¡éè¦åå¹¶ç»´åº¦æ é¢ååæ ¼
                     if item_idx == 0:
                         rowspan = len(items)
                         items_rows += f"""
@@ -2004,7 +2004,7 @@ class HTMLRenderer:
               <td class="pest-pdf-item-tags">{tags_html}</td>
             </tr>"""
             else:
-                # 没有内容时显示占�?
+                # æ²¡æåå®¹æ¶æ¾ç¤ºå ï¿½?
                 items_rows = f"""
             <tr class="pest-pdf-item-row {css_class}">
               <td class="pest-pdf-dimension-label {css_class}">
@@ -2012,10 +2012,10 @@ class HTMLRenderer:
                 <span class="pest-pdf-label-text">{self._escape_html(label.split()[0])}</span>
               </td>
               <td class="pest-pdf-item-num">-</td>
-              <td colspan="3" class="pest-pdf-empty">暂无要点</td>
+              <td colspan="3" class="pest-pdf-empty">ææ è¦ç¹</td>
             </tr>"""
             
-            # 每个维度作为一个独立的tbody，便于分页控�?
+            # æ¯ä¸ªç»´åº¦ä½ä¸ºä¸ä¸ªç¬ç«çtbodyï¼ä¾¿äºåé¡µæ§ï¿½?
             dimension_tables += f"""
           <tbody class="pest-pdf-dimension {css_class}">
             {items_rows}
@@ -2027,11 +2027,11 @@ class HTMLRenderer:
             <caption class="pest-pdf-caption">{self._escape_html(title)}</caption>
             <thead class="pest-pdf-thead">
               <tr>
-                <th class="pest-pdf-th-dimension">维度</th>
-                <th class="pest-pdf-th-num">序号</th>
-                <th class="pest-pdf-th-title">要点</th>
-                <th class="pest-pdf-th-detail">详细说明</th>
-                <th class="pest-pdf-th-tags">趋势/影响</th>
+                <th class="pest-pdf-th-dimension">ç»´åº¦</th>
+                <th class="pest-pdf-th-num">åºå·</th>
+                <th class="pest-pdf-th-title">è¦ç¹</th>
+                <th class="pest-pdf-th-detail">è¯¦ç»è¯´æ</th>
+                <th class="pest-pdf-th-tags">è¶å¿/å½±å</th>
               </tr>
               {summary_row}
             </thead>
@@ -2041,7 +2041,7 @@ class HTMLRenderer:
         """
 
     def _normalize_pest_items(self, raw: Any) -> List[Dict[str, Any]]:
-        """将PEST条目规整为统一结构，兼容字符串/对象两种写法"""
+        """å°PESTæ¡ç®è§æ´ä¸ºç»ä¸ç»æï¼å¼å®¹å­ç¬¦ä¸²/å¯¹è±¡ä¸¤ç§åæ³"""
         normalized: List[Dict[str, Any]] = []
         if raw is None:
             return normalized
@@ -2080,8 +2080,8 @@ class HTMLRenderer:
         return normalized
 
     def _render_pest_item(self, item: Dict[str, Any]) -> str:
-        """输出单个PEST条目的HTML片段"""
-        title = item.get("title") or item.get("label") or item.get("text") or "未命名要�?
+        """è¾åºåä¸ªPESTæ¡ç®çHTMLçæ®µ"""
+        title = item.get("title") or item.get("label") or item.get("text") or "æªå½åè¦ï¿½?
         detail = item.get("detail") or item.get("description")
         source = item.get("source") or item.get("evidence")
         trend = item.get("trend") or item.get("impact")
@@ -2090,7 +2090,7 @@ class HTMLRenderer:
             tags.append(f'<span class="pest-tag">{self._escape_html(trend)}</span>')
         tags_html = f'<span class="pest-item-tags">{"".join(tags)}</span>' if tags else ""
         detail_html = f'<div class="pest-item-desc">{self._escape_html(detail)}</div>' if detail else ""
-        source_html = f'<div class="pest-item-source">来源：{self._escape_html(source)}</div>' if source else ""
+        source_html = f'<div class="pest-item-source">æ¥æºï¼{self._escape_html(source)}</div>' if source else ""
         return f"""
             <li class="pest-item">
               <div class="pest-item-title">{self._escape_html(title)}{tags_html}</div>
@@ -2100,13 +2100,13 @@ class HTMLRenderer:
 
     def _normalize_table_rows(self, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        检测并修正仅有单列的竖排表，转换为标准网格�?
+        æ£æµå¹¶ä¿®æ­£ä»æååçç«æè¡¨ï¼è½¬æ¢ä¸ºæ åç½æ ¼ï¿½?
 
-        参数:
-            rows: 原始表格行�?
+        åæ°:
+            rows: åå§è¡¨æ ¼è¡ï¿½?
 
-        返回:
-            list[dict]: 若检测到竖排表则返回转置后的行，否则原样返回�?
+        è¿å:
+            list[dict]: è¥æ£æµå°ç«æè¡¨åè¿åè½¬ç½®åçè¡ï¼å¦ååæ ·è¿åï¿½?
         """
         if not rows:
             return []
@@ -2120,7 +2120,7 @@ class HTMLRenderer:
         return normalized or rows
 
     def _detect_transposed_header_span(self, rows: List[Dict[str, Any]], texts: List[str]) -> int:
-        """推断竖排表头的行数，用于后续转置"""
+        """æ¨æ­ç«æè¡¨å¤´çè¡æ°ï¼ç¨äºåç»­è½¬ç½®"""
         max_fields = min(8, len(rows) // 2)
         header_span = 0
         for idx, text in enumerate(texts):
@@ -2140,7 +2140,7 @@ class HTMLRenderer:
         return header_span
 
     def _is_potential_table_header(self, text: str) -> bool:
-        """根据长度与字符特征判断是否像表头字段"""
+        """æ ¹æ®é¿åº¦ä¸å­ç¬¦ç¹å¾å¤æ­æ¯å¦åè¡¨å¤´å­æ®µ"""
         if not text:
             return False
         stripped = text.strip()
@@ -2149,7 +2149,7 @@ class HTMLRenderer:
         return not any(ch.isdigit() or ch in self.TABLE_COMPLEX_CHARS for ch in stripped)
 
     def _looks_like_table_value(self, text: str) -> bool:
-        """判断该文本是否更像数据值，用于辅助判断转置"""
+        """å¤æ­è¯¥ææ¬æ¯å¦æ´åæ°æ®å¼ï¼ç¨äºè¾å©å¤æ­è½¬ç½®"""
         if not text:
             return False
         stripped = text.strip()
@@ -2158,7 +2158,7 @@ class HTMLRenderer:
         return any(ch.isdigit() or ch in self.TABLE_COMPLEX_CHARS for ch in stripped)
 
     def _transpose_single_cell_table(self, rows: List[Dict[str, Any]], span: int) -> List[Dict[str, Any]]:
-        """将单列多行的表格转换为标准表�?+ 若干数据�?""
+        """å°ååå¤è¡çè¡¨æ ¼è½¬æ¢ä¸ºæ åè¡¨ï¿½?+ è¥å¹²æ°æ®ï¿½?""
         total = len(rows)
         if total <= span or (total - span) % span != 0:
             return []
@@ -2186,7 +2186,7 @@ class HTMLRenderer:
         return normalized
 
     def _extract_row_text(self, row: Dict[str, Any]) -> str:
-        """提取表格行中的纯文本，方便启发式分析"""
+        """æåè¡¨æ ¼è¡ä¸­ççº¯ææ¬ï¼æ¹ä¾¿å¯åå¼åæ"""
         cells = row.get("cells") or []
         if not cells:
             return ""
@@ -2206,12 +2206,12 @@ class HTMLRenderer:
         return "".join(texts)
 
     def _render_blockquote(self, block: Dict[str, Any]) -> str:
-        """渲染引用块，可嵌套其他block"""
+        """æ¸²æå¼ç¨åï¼å¯åµå¥å¶ä»block"""
         inner = self._render_blocks(block.get("blocks", []))
         return f"<blockquote>{inner}</blockquote>"
 
     def _render_engine_quote(self, block: Dict[str, Any]) -> str:
-        """渲染单Engine发言块，带独立配色与标题"""
+        """æ¸²æåEngineåè¨åï¼å¸¦ç¬ç«éè²ä¸æ é¢"""
         engine_raw = (block.get("engine") or "").lower()
         engine = engine_raw if engine_raw in ENGINE_AGENT_TITLES else "insight"
         expected_title = ENGINE_AGENT_TITLES.get(engine, ENGINE_AGENT_TITLES["insight"])
@@ -2229,13 +2229,13 @@ class HTMLRenderer:
         )
 
     def _render_code(self, block: Dict[str, Any]) -> str:
-        """渲染代码块，附带语言信息"""
+        """æ¸²æä»£ç åï¼éå¸¦è¯­è¨ä¿¡æ¯"""
         lang = block.get("lang") or ""
         content = self._escape_html(block.get("content", ""))
         return f'<pre class="code-block" data-lang="{self._escape_attr(lang)}"><code>{content}</code></pre>'
 
     def _render_math(self, block: Dict[str, Any]) -> str:
-        """渲染数学公式，占位符交给外部MathJax或后处理"""
+        """æ¸²ææ°å­¦å¬å¼ï¼å ä½ç¬¦äº¤ç»å¤é¨MathJaxæåå¤ç"""
         latex_raw = block.get("latex", "")
         latex = self._escape_html(self._normalize_latex_string(latex_raw))
         math_id = self._escape_attr(block.get("mathId", "")) if block.get("mathId") else ""
@@ -2243,19 +2243,19 @@ class HTMLRenderer:
         return f'<div class="math-block"{id_attr}>$$ {latex} $$</div>'
 
     def _render_figure(self, block: Dict[str, Any]) -> str:
-        """根据新规范默认不渲染外部图片，改为友好提�?""
-        caption = block.get("caption") or "图像内容已省略（仅允许HTML原生图表与表格）"
+        """æ ¹æ®æ°è§èé»è®¤ä¸æ¸²æå¤é¨å¾çï¼æ¹ä¸ºåå¥½æï¿½?""
+        caption = block.get("caption") or "å¾ååå®¹å·²çç¥ï¼ä»åè®¸HTMLåçå¾è¡¨ä¸è¡¨æ ¼ï¼"
         return f'<div class="figure-placeholder">{self._escape_html(caption)}</div>'
 
     def _render_callout(self, block: Dict[str, Any]) -> str:
         """
-        渲染高亮提示盒，tone决定颜色�?
+        æ¸²æé«äº®æç¤ºçï¼toneå³å®é¢è²ï¿½?
 
-        参数:
-            block: callout类型的block�?
+        åæ°:
+            block: calloutç±»åçblockï¿½?
 
-        返回:
-            str: callout HTML，若内部包含不允许的块会被拆分�?
+        è¿å:
+            str: callout HTMLï¼è¥åé¨åå«ä¸åè®¸çåä¼è¢«æåï¿½?
         """
         tone = block.get("tone", "info")
         title = block.get("title")
@@ -2269,7 +2269,7 @@ class HTMLRenderer:
     def _split_callout_content(
         self, blocks: List[Dict[str, Any]] | None
     ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """限定callout内部仅包含轻量内容，其余块剥离到外层"""
+        """éå®calloutåé¨ä»åå«è½»éåå®¹ï¼å¶ä½åå¥ç¦»å°å¤å±"""
         if not blocks:
             return [], []
         safe: List[Dict[str, Any]] = []
@@ -2296,7 +2296,7 @@ class HTMLRenderer:
     def _sanitize_callout_list(
         self, block: Dict[str, Any]
     ) -> tuple[Dict[str, Any] | None, List[Dict[str, Any]]]:
-        """当列表项包含结构型block时，将其截断移出callout"""
+        """å½åè¡¨é¡¹åå«ç»æåblockæ¶ï¼å°å¶æªæ­ç§»åºcallout"""
         items = block.get("items") or []
         if not items:
             return block, []
@@ -2318,7 +2318,7 @@ class HTMLRenderer:
         return new_block, trailing
 
     def _render_kpi_grid(self, block: Dict[str, Any]) -> str:
-        """渲染KPI卡片栅格，包含指标值与涨跌�?""
+        """æ¸²æKPIå¡çæ æ ¼ï¼åå«ææ å¼ä¸æ¶¨è·ï¿½?""
         if self._should_skip_overview_kpi(block):
             return ""
         cards = ""
@@ -2341,7 +2341,7 @@ class HTMLRenderer:
         self, base: Dict[str, Any] | None, override: Dict[str, Any] | None
     ) -> Dict[str, Any]:
         """
-        递归合并两个字典，override覆盖base，均为新副本，避免副作用�?
+        éå½åå¹¶ä¸¤ä¸ªå­å¸ï¼overrideè¦çbaseï¼åä¸ºæ°å¯æ¬ï¼é¿åå¯ä½ç¨ï¿½?
         """
         result = copy.deepcopy(base) if isinstance(base, dict) else {}
         if not isinstance(override, dict):
@@ -2354,7 +2354,7 @@ class HTMLRenderer:
         return result
 
     def _looks_like_chart_dataset(self, candidate: Any) -> bool:
-        """启发式判断对象是否包含Chart.js常见的labels/datasets结构"""
+        """å¯åå¼å¤æ­å¯¹è±¡æ¯å¦åå«Chart.jså¸¸è§çlabels/datasetsç»æ"""
         if not isinstance(candidate, dict):
             return False
         labels = candidate.get("labels")
@@ -2363,8 +2363,8 @@ class HTMLRenderer:
 
     def _coerce_chart_data_structure(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        兼容LLM输出的Chart.js完整配置（含type/data/options）�?
-        若data中嵌套一个真正的labels/datasets结构，则提取并返回该结构�?
+        å¼å®¹LLMè¾åºçChart.jså®æ´éç½®ï¼å«type/data/optionsï¼ï¿½?
+        è¥dataä¸­åµå¥ä¸ä¸ªçæ­£çlabels/datasetsç»æï¼åæåå¹¶è¿åè¯¥ç»æï¿½?
         """
         if not isinstance(data, dict):
             return {}
@@ -2380,10 +2380,10 @@ class HTMLRenderer:
         self, block: Dict[str, Any]
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
         """
-        预处理widget数据，兼容部分block将Chart.js配置写入data字段的情况�?
+        é¢å¤çwidgetæ°æ®ï¼å¼å®¹é¨åblockå°Chart.jséç½®åå¥dataå­æ®µçæåµï¿½?
 
-        返回:
-            tuple(props, data): 归一化后的props与chart数据
+        è¿å:
+            tuple(props, data): å½ä¸ååçpropsä¸chartæ°æ®
         """
         props = copy.deepcopy(block.get("props") or {})
         raw_data = block.get("data")
@@ -2408,7 +2408,7 @@ class HTMLRenderer:
 
     @staticmethod
     def _is_chart_data_empty(data: Dict[str, Any] | None) -> bool:
-        """检查图表数据是否为空或缺少有效datasets"""
+        """æ£æ¥å¾è¡¨æ°æ®æ¯å¦ä¸ºç©ºæç¼ºå°æædatasets"""
         if not isinstance(data, dict):
             return True
 
@@ -2426,7 +2426,7 @@ class HTMLRenderer:
         return True
 
     def _chart_cache_key(self, block: Dict[str, Any]) -> str:
-        """使用修复器的缓存算法生成稳定的key，便于跨阶段共享结果"""
+        """ä½¿ç¨ä¿®å¤å¨çç¼å­ç®æ³çæç¨³å®çkeyï¼ä¾¿äºè·¨é¶æ®µå±äº«ç»æ"""
         if hasattr(self, "chart_repairer") and block:
             try:
                 return self.chart_repairer.build_cache_key(block)
@@ -2435,15 +2435,15 @@ class HTMLRenderer:
         return str(id(block))
 
     def _note_chart_failure(self, cache_key: str, reason: str) -> None:
-        """记录修复失败原因，后续渲染直接使用占位提�?""
+        """è®°å½ä¿®å¤å¤±è´¥åå ï¼åç»­æ¸²æç´æ¥ä½¿ç¨å ä½æï¿½?""
         if not cache_key:
             return
         if not reason:
-            reason = "LLM返回的图表信息格式有误，无法正常显示"
+            reason = "LLMè¿åçå¾è¡¨ä¿¡æ¯æ ¼å¼æè¯¯ï¼æ æ³æ­£å¸¸æ¾ç¤º"
         self._chart_failure_notes[cache_key] = reason
 
     def _record_chart_failure_stat(self, cache_key: str | None = None) -> None:
-        """确保失败计数只统计一�?""
+        """ç¡®ä¿å¤±è´¥è®¡æ°åªç»è®¡ä¸ï¿½?""
         if cache_key and cache_key in self._chart_failure_recorded:
             return
         self.chart_validation_stats['failed'] += 1
@@ -2452,10 +2452,10 @@ class HTMLRenderer:
 
     def _apply_cached_review_stats(self, block: Dict[str, Any]) -> None:
         """
-        在已审查过的图表上重新累计统计信息，避免重复修复�?
+        å¨å·²å®¡æ¥è¿çå¾è¡¨ä¸éæ°ç´¯è®¡ç»è®¡ä¿¡æ¯ï¼é¿åéå¤ä¿®å¤ï¿½?
 
-        当渲染流程重置了统计但图表已经审查过（_chart_reviewed=True），
-        直接根据记录的状态累加各项计数，防止再次触发 ChartRepairer�?
+        å½æ¸²ææµç¨éç½®äºç»è®¡ä½å¾è¡¨å·²ç»å®¡æ¥è¿ï¼_chart_reviewed=Trueï¼ï¼
+        ç´æ¥æ ¹æ®è®°å½çç¶æç´¯å åé¡¹è®¡æ°ï¼é²æ­¢åæ¬¡è§¦å ChartRepairerï¿½?
         """
         if not isinstance(block, dict):
             return
@@ -2480,8 +2480,8 @@ class HTMLRenderer:
         validation_result: ValidationResult | None = None,
         fallback_reason: str | None = None
     ) -> str:
-        """拼接友好的失败提�?""
-        base = "LLM返回的图表信息格式有误，已尝试本地与多模型修复但仍无法正常显示�?
+        """æ¼æ¥åå¥½çå¤±è´¥æï¿½?""
+        base = "LLMè¿åçå¾è¡¨ä¿¡æ¯æ ¼å¼æè¯¯ï¼å·²å°è¯æ¬å°ä¸å¤æ¨¡åä¿®å¤ä½ä»æ æ³æ­£å¸¸æ¾ç¤ºï¿½?
         detail = None
         if validation_result:
             if validation_result.errors:
@@ -2491,7 +2491,7 @@ class HTMLRenderer:
         if not detail and fallback_reason:
             detail = fallback_reason
         if detail:
-            text = f"{base} 提示：{detail}"
+            text = f"{base} æç¤ºï¼{detail}"
             return text[:180] + ("..." if len(text) > 180 else "")
         return base
 
@@ -2501,8 +2501,8 @@ class HTMLRenderer:
         reason: str,
         widget_id: str | None = None
     ) -> str:
-        """输出图表失败时的简洁占位提示，避免破坏HTML/PDF布局"""
-        safe_title = self._escape_html(title or "图表未能展示")
+        """è¾åºå¾è¡¨å¤±è´¥æ¶çç®æ´å ä½æç¤ºï¼é¿åç ´åHTML/PDFå¸å±"""
+        safe_title = self._escape_html(title or "å¾è¡¨æªè½å±ç¤º")
         safe_reason = self._escape_html(reason)
         widget_attr = f' data-widget-id="{self._escape_attr(widget_id)}"' if widget_id else ""
         return f"""
@@ -2518,7 +2518,7 @@ class HTMLRenderer:
         """
 
     def _has_chart_failure(self, block: Dict[str, Any]) -> tuple[bool, str | None]:
-        """检查是否已有修复失败记�?""
+        """æ£æ¥æ¯å¦å·²æä¿®å¤å¤±è´¥è®°ï¿½?""
         cache_key = self._chart_cache_key(block)
         if block.get("_chart_renderable") is False:
             return True, block.get("_chart_error_reason")
@@ -2532,10 +2532,10 @@ class HTMLRenderer:
         chapter_context: Dict[str, Any] | None = None,
     ) -> None:
         """
-        补全图表block中的缺失字段（如scales、datasets），提升容错性�?
+        è¡¥å¨å¾è¡¨blockä¸­çç¼ºå¤±å­æ®µï¼å¦scalesatasetsï¼ï¼æåå®¹éæ§ï¿½?
 
-        - 将错误挂在block顶层的scales合并进props.options�?
-        - 当data缺失或datasets为空时，尝试使用章节级的data作为兜底�?
+        - å°éè¯¯æå¨blocké¡¶å±çscalesåå¹¶è¿props.optionsï¿½?
+        - å½dataç¼ºå¤±ædatasetsä¸ºç©ºæ¶ï¼å°è¯ä½¿ç¨ç« èçº§çdataä½ä¸ºååºï¿½?
         """
 
         if not isinstance(block, dict):
@@ -2548,25 +2548,25 @@ class HTMLRenderer:
         if not (isinstance(widget_type, str) and widget_type.startswith("chart.js")):
             return
 
-        # 确保props存在
+        # ç¡®ä¿propså­å¨
         props = block.get("props")
         if not isinstance(props, dict):
             block["props"] = {}
             props = block["props"]
 
-        # 将顶层scales合并进options，避免配置丢�?
+        # å°é¡¶å±scalesåå¹¶è¿optionsï¼é¿åéç½®ä¸¢ï¿½?
         scales = block.get("scales")
         if isinstance(scales, dict):
             options = props.get("options") if isinstance(props.get("options"), dict) else {}
             props["options"] = self._merge_dicts(options, {"scales": scales})
 
-        # 确保data存在
+        # ç¡®ä¿dataå­å¨
         data = block.get("data")
         if not isinstance(data, dict):
             data = {}
             block["data"] = data
 
-        # 如果datasets为空，尝试使用章节级data填充
+        # å¦ædatasetsä¸ºç©ºï¼å°è¯ä½¿ç¨ç« èçº§dataå¡«å
         if chapter_context and self._is_chart_data_empty(data):
             chapter_data = chapter_context.get("data") if isinstance(chapter_context, dict) else None
             if isinstance(chapter_data, dict):
@@ -2580,7 +2580,7 @@ class HTMLRenderer:
 
                     block["data"] = merged_data
 
-        # 若仍缺少labels且数据点包含x值，自动生成便于fallback和坐标刻�?
+        # è¥ä»ç¼ºå°labelsä¸æ°æ®ç¹åå«xå¼ï¼èªå¨çæä¾¿äºfallbackååæ å»ï¿½?
         data_ref = block.get("data")
         if isinstance(data_ref, dict) and not data_ref.get("labels"):
             datasets_ref = data_ref.get("datasets")
@@ -2591,9 +2591,9 @@ class HTMLRenderer:
                     labels_from_data = []
                     for idx, point in enumerate(ds_data):
                         if isinstance(point, dict):
-                            label_text = point.get("x") or point.get("label") or f"点{idx + 1}"
+                            label_text = point.get("x") or point.get("label") or f"ç¹{idx + 1}"
                         else:
-                            label_text = f"点{idx + 1}"
+                            label_text = f"ç¹{idx + 1}"
                         labels_from_data.append(str(label_text))
 
                     if labels_from_data:
@@ -2607,9 +2607,9 @@ class HTMLRenderer:
         increment_stats: bool = True
     ) -> tuple[bool, str | None]:
         """
-        确保图表已完成审�?修复，并将结果回写到原始block�?
+        ç¡®ä¿å¾è¡¨å·²å®æå®¡ï¿½?ä¿®å¤ï¼å¹¶å°ç»æååå°åå§blockï¿½?
 
-        返回:
+        è¿å:
             (renderable, fail_reason)
         """
         if not isinstance(block, dict):
@@ -2623,7 +2623,7 @@ class HTMLRenderer:
         is_wordcloud = 'wordcloud' in widget_type.lower() if isinstance(widget_type, str) else False
         cache_key = self._chart_cache_key(block)
 
-        # 已有失败记录或显式标记为不可渲染，直接复用结�?
+        # å·²æå¤±è´¥è®°å½ææ¾å¼æ è®°ä¸ºä¸å¯æ¸²æï¼ç´æ¥å¤ç¨ç»ï¿½?
         if block.get("_chart_renderable") is False:
             if increment_stats:
                 self.chart_validation_stats['total'] += 1
@@ -2643,7 +2643,7 @@ class HTMLRenderer:
             renderable = not failed and block.get("_chart_renderable", True) is not False
             return renderable, block.get("_chart_error_reason") or cached_reason
 
-        # 首次审查：先补全结构，再验证/修复
+        # é¦æ¬¡å®¡æ¥ï¼åè¡¥å¨ç»æï¼åéªè¯/ä¿®å¤
         self._normalize_chart_block(block, chapter_context)
 
         if increment_stats:
@@ -2661,20 +2661,20 @@ class HTMLRenderer:
 
         if not validation_result.is_valid:
             logger.warning(
-                f"图表 {block.get('widgetId', 'unknown')} 验证失败: {validation_result.errors}"
+                f"å¾è¡¨ {block.get('widgetId', 'unknown')} éªè¯å¤±è´¥: {validation_result.errors}"
             )
 
             repair_result = self.chart_repairer.repair(block, validation_result)
 
             if repair_result.success and repair_result.repaired_block:
-                # 修复成功，回写修复后的数�?
+                # ä¿®å¤æåï¼ååä¿®å¤åçæ°ï¿½?
                 repaired_block = repair_result.repaired_block
                 block.clear()
                 block.update(repaired_block)
                 method = repair_result.method or "local"
                 logger.info(
-                    f"图表 {block.get('widgetId', 'unknown')} 修复成功 "
-                    f"(方法: {method}): {repair_result.changes}"
+                    f"å¾è¡¨ {block.get('widgetId', 'unknown')} ä¿®å¤æå "
+                    f"(æ¹æ³: {method}): {repair_result.changes}"
                 )
 
                 if increment_stats:
@@ -2687,7 +2687,7 @@ class HTMLRenderer:
                 block["_chart_reviewed"] = True
                 return True, None
 
-            # 修复失败，记录失败并输出占位提示
+            # ä¿®å¤å¤±è´¥ï¼è®°å½å¤±è´¥å¹¶è¾åºå ä½æç¤º
             fail_reason = self._format_chart_error_reason(validation_result)
             block["_chart_renderable"] = False
             block["_chart_error_reason"] = fail_reason
@@ -2698,17 +2698,17 @@ class HTMLRenderer:
             if increment_stats:
                 self._record_chart_failure_stat(cache_key)
             logger.warning(
-                f"图表 {block.get('widgetId', 'unknown')} 修复失败，已跳过渲染: {fail_reason}"
+                f"å¾è¡¨ {block.get('widgetId', 'unknown')} ä¿®å¤å¤±è´¥ï¼å·²è·³è¿æ¸²æ: {fail_reason}"
             )
             return False, fail_reason
 
-        # 验证通过
+        # éªè¯éè¿
         if increment_stats:
             self.chart_validation_stats['valid'] += 1
             if validation_result.warnings:
                 logger.info(
-                    f"图表 {block.get('widgetId', 'unknown')} 验证通过�?
-                    f"但有警告: {validation_result.warnings}"
+                    f"å¾è¡¨ {block.get('widgetId', 'unknown')} éªè¯éè¿ï¿½?
+                    f"ä½æè­¦å: {validation_result.warnings}"
                 )
         block["_chart_review_status"] = "valid"
         block["_chart_review_method"] = "none"
@@ -2723,15 +2723,15 @@ class HTMLRenderer:
         clone: bool = False
     ) -> Dict[str, Any]:
         """
-        全局审查并修复图表，将修复结果回写到原始 IR，避免多次渲染重复修复�?
+        å¨å±å®¡æ¥å¹¶ä¿®å¤å¾è¡¨ï¼å°ä¿®å¤ç»æååå°åå§ IRï¼é¿åå¤æ¬¡æ¸²æéå¤ä¿®å¤ï¿½?
 
-        参数:
-            document_ir: 原始 Document IR
-            reset_stats: 是否重置统计数据
-            clone: 是否返回修复后的深拷贝（原始 IR 仍会被回写修复结果）
+        åæ°:
+            document_ir: åå§ Document IR
+            reset_stats: æ¯å¦éç½®ç»è®¡æ°æ®
+            clone: æ¯å¦è¿åä¿®å¤åçæ·±æ·è´ï¼åå§ IR ä»ä¼è¢«ååä¿®å¤ç»æï¼
 
-        返回:
-            修复后的 IR（可能是原对象或其深拷贝�?
+        è¿å:
+            ä¿®å¤åç IRï¼å¯è½æ¯åå¯¹è±¡æå¶æ·±æ·è´ï¿½?
         """
         if reset_stats:
             self._reset_chart_validation_stats()
@@ -2772,15 +2772,15 @@ class HTMLRenderer:
 
     def _render_widget(self, block: Dict[str, Any]) -> str:
         """
-        渲染ECharts等交互组件的占位容器，并记录配置JSON�?
+        æ¸²æEChartsç­äº¤äºç»ä»¶çå ä½å®¹å¨ï¼å¹¶è®°å½éç½®JSONï¿½?
 
-        在渲染前进行图表验证和修复：
-        1. validate：ChartValidator 检�?block �?data/props/options 结构�?
-        2. repair：若失败，先本地修补，再调用 LLM API�?
-        3. 失败兜底：写�?_chart_renderable=False �?_chart_error_reason，输出错误占位而非抛异常�?
+        å¨æ¸²æåè¿è¡å¾è¡¨éªè¯åä¿®å¤ï¼
+        1. validateï¼ChartValidator æ£ï¿½?block ï¿½?data/props/options ç»æï¿½?
+        2. repairï¼è¥å¤±è´¥ï¼åæ¬å°ä¿®è¡¥ï¼åè°ç¨ LLM APIï¿½?
+        3. å¤±è´¥ååºï¼åï¿½?_chart_renderable=False ï¿½?_chart_error_reasonï¼è¾åºéè¯¯å ä½èéæå¼å¸¸ï¿½?
         """
         widget_type = block.get('widgetType', '')
-        # 支持 chart.js �?echarts 前缀的兼�?
+        # æ¯æ chart.js ï¿½?echarts åç¼çå¼ï¿½?
         is_chart = isinstance(widget_type, str) and (widget_type.startswith('chart.js') or widget_type.startswith('echarts'))
         is_wordcloud = isinstance(widget_type, str) and 'wordcloud' in widget_type.lower()
         reviewed = bool(block.get("_chart_reviewed"))
@@ -2796,13 +2796,13 @@ class HTMLRenderer:
 
         widget_id = block.get('widgetId')
         props_snapshot = block.get("props") if isinstance(block.get("props"), dict) else {}
-        display_title = props_snapshot.get("title") or block.get("title") or widget_id or "图表"
+        display_title = props_snapshot.get("title") or block.get("title") or widget_id or "å¾è¡¨"
 
         if is_chart and not renderable:
-            reason = fail_reason or "LLM返回的图表信息格式有误，无法正常显示"
+            reason = fail_reason or "LLMè¿åçå¾è¡¨ä¿¡æ¯æ ¼å¼æè¯¯ï¼æ æ³æ­£å¸¸æ¾ç¤º"
             return self._render_chart_error_placeholder(display_title, reason, widget_id)
 
-        # 渲染图表HTML
+        # æ¸²æå¾è¡¨HTML
         self.chart_counter += 1
         container_id = f"echart-{self.chart_counter}"
         config_id = f"chart-config-{self.chart_counter}"
@@ -2838,7 +2838,7 @@ class HTMLRenderer:
         """
 
     def _render_widget_fallback(self, data: Dict[str, Any], widget_id: str | None = None) -> str:
-        """渲染图表数据的文本兜底视图，避免Chart.js加载失败时出现空�?""
+        """æ¸²æå¾è¡¨æ°æ®çææ¬ååºè§å¾ï¼é¿åChart.jså è½½å¤±è´¥æ¶åºç°ç©ºï¿½?""
         if not isinstance(data, dict):
             return ""
         labels = data.get("labels") or []
@@ -2848,7 +2848,7 @@ class HTMLRenderer:
 
         widget_attr = f' data-widget-id="{self._escape_attr(widget_id)}"' if widget_id else ""
         header_cells = "".join(
-            f"<th>{self._escape_html(ds.get('label') or f'系列{idx + 1}')}</th>"
+            f"<th>{self._escape_html(ds.get('label') or f'ç³»å{idx + 1}')}</th>"
             for idx, ds in enumerate(datasets)
         )
         body_rows = ""
@@ -2863,7 +2863,7 @@ class HTMLRenderer:
         <div class="chart-fallback" data-prebuilt="true"{widget_attr}>
           <table>
             <thead>
-              <tr><th>类别</th>{header_cells}</tr>
+              <tr><th>ç±»å«</th>{header_cells}</tr>
             </thead>
             <tbody>
               {body_rows}
@@ -2879,9 +2879,9 @@ class HTMLRenderer:
         widget_id: str | None = None,
         block_data: Any | None = None,
     ) -> str:
-        """为词云提供表格兜底，避免WordCloud渲染失败后页面空�?""
+        """ä¸ºè¯äºæä¾è¡¨æ ¼ååºï¼é¿åWordCloudæ¸²æå¤±è´¥åé¡µé¢ç©ºï¿½?""
         def _collect_items(raw: Any) -> list[dict]:
-            """将多种词云输入格式（数组/对象/元组/纯文本）规整为统一的词条列�?""
+            """å°å¤ç§è¯äºè¾å¥æ ¼å¼ï¼æ°ç»/å¯¹è±¡/åç»/çº¯ææ¬ï¼è§æ´ä¸ºç»ä¸çè¯æ¡åï¿½?""
             collected: list[dict] = []
             skip_keys = {"items", "data", "words", "labels", "datasets", "sourceData"}
             if isinstance(raw, list):
@@ -2892,7 +2892,7 @@ class HTMLRenderer:
                         category = item.get("category") or ""
                         if text:
                             collected.append({"word": str(text), "weight": weight, "category": str(category)})
-                        # 若嵌套了 items/words/data 列表，递归提取
+                        # è¥åµå¥äº items/words/data åè¡¨ï¼éå½æå
                         for nested_key in ("items", "words", "data"):
                             nested = item.get(nested_key)
                             if isinstance(nested, list):
@@ -2906,7 +2906,7 @@ class HTMLRenderer:
                     elif isinstance(item, str):
                         collected.append({"word": item, "weight": 1.0, "category": ""})
             elif isinstance(raw, dict):
-                # 若包�?items/words/data 列表，优先递归提取，不把键名当�?
+                # è¥åï¿½?items/words/data åè¡¨ï¼ä¼åéå½æåï¼ä¸æé®åå½ï¿½?
                 handled = False
                 for nested_key in ("items", "words", "data"):
                     nested = raw.get(nested_key)
@@ -2916,7 +2916,7 @@ class HTMLRenderer:
                 if handled:
                     return collected
 
-                # 非Chart结构且不包含skip_keys时，把key/value当作词云条目
+                # éChartç»æä¸ä¸åå«skip_keysæ¶ï¼ækey/valueå½ä½è¯äºæ¡ç®
                 if not {"labels", "datasets"}.intersection(raw.keys()):
                     for text, weight in raw.items():
                         if text in skip_keys:
@@ -2928,7 +2928,7 @@ class HTMLRenderer:
         seen: set[str] = set()
         candidates = []
         if isinstance(props, dict):
-            # 仅接受明确的词条数组字段，避免将嵌套items误当作词�?
+            # ä»æ¥åæç¡®çè¯æ¡æ°ç»å­æ®µï¼é¿åå°åµå¥itemsè¯¯å½ä½è¯ï¿½?
             if "data" in props and isinstance(props.get("data"), list):
                 candidates.append(props["data"])
             if "words" in props and isinstance(props.get("words"), list):
@@ -2937,7 +2937,7 @@ class HTMLRenderer:
                 candidates.append(props["items"])
         candidates.append((props or {}).get("sourceData"))
 
-        # 允许使用block.data兜底，避免缺失props时出现空�?
+        # åè®¸ä½¿ç¨block.dataååºï¼é¿åç¼ºå¤±propsæ¶åºç°ç©ºï¿½?
         if block_data is not None:
             if isinstance(block_data, dict) and "items" in block_data and isinstance(block_data.get("items"), list):
                 candidates.append(block_data["items"])
@@ -2956,7 +2956,7 @@ class HTMLRenderer:
             return ""
 
         def _format_weight(value: Any) -> str:
-            """统一格式化权重，支持百分�?数值与字符串回退"""
+            """ç»ä¸æ ¼å¼åæéï¼æ¯æç¾åï¿½?æ°å¼ä¸å­ç¬¦ä¸²åé"""
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 if 0 <= value <= 1.5:
                     return f"{value * 100:.1f}%"
@@ -2974,7 +2974,7 @@ class HTMLRenderer:
         <div class="chart-fallback" data-prebuilt="true"{widget_attr}>
           <table>
             <thead>
-              <tr><th>关键�?/th><th>权重</th><th>类别</th></tr>
+              <tr><th>å³é®ï¿½?/th><th>æé</th><th>ç±»å«</th></tr>
             </thead>
             <tbody>
               {rows}
@@ -2984,42 +2984,42 @@ class HTMLRenderer:
         """
 
     def _log_chart_validation_stats(self):
-        """输出图表验证统计信息"""
+        """è¾åºå¾è¡¨éªè¯ç»è®¡ä¿¡æ¯"""
         stats = self.chart_validation_stats
         if stats['total'] == 0:
             return
 
         logger.info("=" * 60)
-        logger.info("图表验证统计")
+        logger.info("å¾è¡¨éªè¯ç»è®¡")
         logger.info("=" * 60)
-        logger.info(f"总图表数�? {stats['total']}")
-        logger.info(f"  �?验证通过: {stats['valid']} ({stats['valid']/stats['total']*100:.1f}%)")
+        logger.info(f"æ»å¾è¡¨æ°ï¿½? {stats['total']}")
+        logger.info(f"  ï¿½?éªè¯éè¿: {stats['valid']} ({stats['valid']/stats['total']*100:.1f}%)")
 
         if stats['repaired_locally'] > 0:
             logger.info(
-                f"  �?本地修复: {stats['repaired_locally']} "
+                f"  ï¿½?æ¬å°ä¿®å¤: {stats['repaired_locally']} "
                 f"({stats['repaired_locally']/stats['total']*100:.1f}%)"
             )
 
         if stats['repaired_api'] > 0:
             logger.info(
-                f"  �?API修复: {stats['repaired_api']} "
+                f"  ï¿½?APIä¿®å¤: {stats['repaired_api']} "
                 f"({stats['repaired_api']/stats['total']*100:.1f}%)"
             )
 
         if stats['failed'] > 0:
             logger.warning(
-                f"  �?修复失败: {stats['failed']} "
+                f"  ï¿½?ä¿®å¤å¤±è´¥: {stats['failed']} "
                 f"({stats['failed']/stats['total']*100:.1f}%) - "
-                f"这些图表将展示简洁占位提�?
+                f"è¿äºå¾è¡¨å°å±ç¤ºç®æ´å ä½æï¿½?
             )
 
         logger.info("=" * 60)
 
-    # ====== 前置信息防护 ======
+    # ====== åç½®ä¿¡æ¯é²æ¤ ======
 
     def _kpi_signature_from_items(self, items: Any) -> tuple | None:
-        """将KPI数组转换为可比较的签�?""
+        """å°KPIæ°ç»è½¬æ¢ä¸ºå¯æ¯è¾çç­¾ï¿½?""
         if not isinstance(items, list):
             return None
         normalized = []
@@ -3031,19 +3031,19 @@ class HTMLRenderer:
 
     def _normalize_kpi_item(self, item: Any) -> tuple[str, str, str, str, str] | None:
         """
-        将单条KPI记录规整为可对比的签名�?
+        å°åæ¡KPIè®°å½è§æ´ä¸ºå¯å¯¹æ¯çç­¾åï¿½?
 
-        参数:
-            item: KPI数组中的原始字典，可能缺失字段或类型混杂�?
+        åæ°:
+            item: KPIæ°ç»ä¸­çåå§å­å¸ï¼å¯è½ç¼ºå¤±å­æ®µæç±»åæ··æï¿½?
 
-        返回:
-            tuple | None: (label, value, unit, delta, tone) 的五元组；若输入非法则为None�?
+        è¿å:
+            tuple | None: (label, value, unit, delta, tone) çäºåç»ï¼è¥è¾å¥éæ³åä¸ºNoneï¿½?
         """
         if not isinstance(item, dict):
             return None
 
         def normalize(value: Any) -> str:
-            """统一各类值的表现形式，便于生成稳定签�?""
+            """ç»ä¸åç±»å¼çè¡¨ç°å½¢å¼ï¼ä¾¿äºçæç¨³å®ç­¾ï¿½?""
             if value is None:
                 return ""
             if isinstance(value, (int, float)):
@@ -3058,7 +3058,7 @@ class HTMLRenderer:
         return label, value, unit, delta, tone
 
     def _should_skip_overview_kpi(self, block: Dict[str, Any]) -> bool:
-        """若KPI内容与封面一致，则判定为重复总览"""
+        """è¥KPIåå®¹ä¸å°é¢ä¸è´ï¼åå¤å®ä¸ºéå¤æ»è§"""
         if not self.hero_kpi_signature:
             return False
         block_signature = self._kpi_signature_from_items(block.get("items"))
@@ -3066,18 +3066,18 @@ class HTMLRenderer:
             return False
         return block_signature == self.hero_kpi_signature
 
-    # ====== 行内渲染 ======
+    # ====== è¡åæ¸²æ ======
 
     def _normalize_inline_payload(self, run: Dict[str, Any]) -> tuple[str, List[Dict[str, Any]]]:
-        """将嵌套inline node展平成基础文本与marks"""
+        """å°åµå¥inline nodeå±å¹³æåºç¡ææ¬ä¸marks"""
         if not isinstance(run, dict):
             return ("" if run is None else str(run)), []
 
-        # 处理 inlineRun 类型：递归展开�?inlines 数组
+        # å¤ç inlineRun ç±»åï¼éå½å±å¼ï¿½?inlines æ°ç»
         if run.get("type") == "inlineRun":
             inner_inlines = run.get("inlines") or []
             outer_marks = run.get("marks") or []
-            # 递归合并所有内�?inlines 的文�?
+            # éå½åå¹¶ææåï¿½?inlines çæï¿½?
             texts = []
             all_marks = list(outer_marks)
             for inline in inner_inlines:
@@ -3133,7 +3133,7 @@ class HTMLRenderer:
                     else:
                         inline_payload = self._coerce_inline_payload(payload)
                         if inline_payload:
-                            # 处理 inlineRun 类型
+                            # å¤ç inlineRun ç±»å
                             if inline_payload.get("type") == "inlineRun":
                                 return self._normalize_inline_payload(inline_payload)
                             nested_text = inline_payload.get("text")
@@ -3149,7 +3149,7 @@ class HTMLRenderer:
 
     @staticmethod
     def _normalize_latex_string(raw: Any) -> str:
-        """去除外层数学定界符，兼容 $...$�?$...$$、\\(\\)、\\[\\] 等格�?""
+        """å»é¤å¤å±æ°å­¦å®çç¬¦ï¼å¼å®¹ $...$ï¿½?$...$$\(\\)\[\\] ç­æ ¼ï¿½?""
         if not isinstance(raw, str):
             return ""
         latex = raw.strip()
@@ -3173,10 +3173,10 @@ class HTMLRenderer:
         allow_display_block: bool = False
     ) -> str | None:
         """
-        识别纯文本中的数学定界符并渲染为math-inline/math-block，提升兼容性�?
+        è¯å«çº¯ææ¬ä¸­çæ°å­¦å®çç¬¦å¹¶æ¸²æä¸ºmath-inline/math-blockï¼æåå¼å®¹æ§ï¿½?
 
-        - 支持 $...$�?$...$$、\\(\\)、\\[\\]�?
-        - 若未检测到公式，返回None�?
+        - æ¯æ $...$ï¿½?$...$$\(\\)\[\\]ï¿½?
+        - è¥æªæ£æµå°å¬å¼ï¼è¿åNoneï¿½?
         """
         if not isinstance(text, str) or not text:
             return None
@@ -3195,7 +3195,7 @@ class HTMLRenderer:
             prefix = text[cursor:start]
             raw = next(g for g in m.groups()[1:] if g is not None)
             latex = self._normalize_latex_string(raw)
-            # 若已有math_id，直接使用，避免与SVG注入ID不一致；否则按局部序号生�?
+            # è¥å·²æmath_idï¼ç´æ¥ä½¿ç¨ï¼é¿åä¸SVGæ³¨å¥IDä¸ä¸è´ï¼å¦åæå±é¨åºå·çï¿½?
             if id_iter:
                 mid = next(id_iter, f"auto-math-{idx}")
             else:
@@ -3209,7 +3209,7 @@ class HTMLRenderer:
             )
             use_block = allow_display_block and is_display and is_standalone
             if use_block:
-                # 独立display公式，跳过两侧空白，直接渲染块级
+                # ç¬ç«displayå¬å¼ï¼è·³è¿ä¸¤ä¾§ç©ºç½ï¼ç´æ¥æ¸²æåçº§
                 parts.append(f'<div class="math-block"{id_attr}>$$ {self._escape_html(latex)} $$</div>')
                 cursor = len(text)
                 break
@@ -3225,11 +3225,11 @@ class HTMLRenderer:
 
     @staticmethod
     def _coerce_inline_payload(payload: Dict[str, Any]) -> Dict[str, Any] | None:
-        """尽力将字符串里的内联节点恢复为dict，修复渲染遗�?""
+        """å°½åå°å­ç¬¦ä¸²éçåèèç¹æ¢å¤ä¸ºdictï¼ä¿®å¤æ¸²æéï¿½?""
         if not isinstance(payload, dict):
             return None
         inline_type = payload.get("type")
-        # 支持 inlineRun 类型：包含嵌套的 inlines 数组
+        # æ¯æ inlineRun ç±»åï¼åå«åµå¥ç inlines æ°ç»
         if inline_type == "inlineRun":
             return payload
         if inline_type and inline_type not in {"inline", "text"}:
@@ -3240,13 +3240,13 @@ class HTMLRenderer:
 
     def _render_inline(self, run: Dict[str, Any]) -> str:
         """
-        渲染单个inline run，支持多种marks叠加�?
+        æ¸²æåä¸ªinline runï¼æ¯æå¤ç§markså å ï¿½?
 
-        参数:
-            run: �?text �?marks 的内联节点�?
+        åæ°:
+            run: ï¿½?text ï¿½?marks çåèèç¹ï¿½?
 
-        返回:
-            str: 已包裹标�?样式的HTML片段�?
+        è¿å:
+            str: å·²åè£¹æ ï¿½?æ ·å¼çHTMLçæ®µï¿½?
         """
         text_value, marks = self._normalize_inline_payload(run)
         math_mark = next((mark for mark in marks if mark.get("type") == "math"), None)
@@ -3258,7 +3258,7 @@ class HTMLRenderer:
             id_attr = f' data-math-id="{math_id}"' if math_id else ""
             return f'<span class="math-inline"{id_attr}>\\( {self._escape_html(latex)} \\)</span>'
 
-        # 尝试从纯文本中提取数学公式（即便没有math mark�?
+        # å°è¯ä»çº¯ææ¬ä¸­æåæ°å­¦å¬å¼ï¼å³ä¾¿æ²¡æmath markï¿½?
         math_id_hint = run.get("mathIds") or run.get("mathId")
         mathified = self._render_text_with_inline_math(text_value, math_id_hint)
         if mathified is not None:
@@ -3287,7 +3287,7 @@ class HTMLRenderer:
                 if href_raw and href_raw != "#":
                     href = self._escape_attr(href_raw)
                     title = self._escape_attr(mark.get("title") or "")
-                    # 如果是页内锚点（比如 #citation-1），就不�?target="_blank"
+                    # å¦ææ¯é¡µåéç¹ï¼æ¯å¦ #citation-1ï¼ï¼å°±ä¸ï¿½?target="_blank"
                     if href.startswith("#"):
                         prefix.append(f'<a href="{href}" title="{title}">')
                     else:
@@ -3332,7 +3332,7 @@ class HTMLRenderer:
         return "".join(prefix) + text + "".join(suffix)
 
     def _render_markdown_bold_fallback(self, text: str) -> str:
-        """在LLM未使用marks时兜底转�?*粗体**"""
+        """å¨LLMæªä½¿ç¨marksæ¶ååºè½¬ï¿½?*ç²ä½**"""
         if not text:
             return ""
         result: List[str] = []
@@ -3352,68 +3352,68 @@ class HTMLRenderer:
             cursor = end + 2
         return "".join(result)
 
-    # ====== 文本 / 安全工具 ======
+    # ====== ææ¬ / å®å¨å·¥å· ======
 
     def _clean_text_from_json_artifacts(self, text: Any) -> str:
         """
-        清理文本中的JSON片段和伪造的结构标记�?
+        æ¸çææ¬ä¸­çJSONçæ®µåä¼ªé çç»ææ è®°ï¿½?
 
-        LLM有时会在文本字段中混入未完成的JSON片段，如�?
-        "描述文本，{ \"chapterId\": \"S3" �?"描述文本，{ \"level\": 2"
+        LLMææ¶ä¼å¨ææ¬å­æ®µä¸­æ··å¥æªå®æçJSONçæ®µï¼å¦ï¿½?
+        "æè¿°ææ¬ï¼{ \"chapterId\": \"S3" ï¿½?"æè¿°ææ¬ï¼{ \"level\": 2"
 
-        此方法会�?
-        1. 移除不完整的JSON对象（以 { 开头但未正确闭合的�?
-        2. 移除不完整的JSON数组（以 [ 开头但未正确闭合的�?
-        3. 移除孤立的JSON键值对片段
+        æ­¤æ¹æ³ä¼ï¿½?
+        1. ç§»é¤ä¸å®æ´çJSONå¯¹è±¡ï¼ä»¥ { å¼å¤´ä½æªæ­£ç¡®é­åçï¿½?
+        2. ç§»é¤ä¸å®æ´çJSONæ°ç»ï¼ä»¥ [ å¼å¤´ä½æªæ­£ç¡®é­åçï¿½?
+        3. ç§»é¤å­¤ç«çJSONé®å¼å¯¹çæ®µ
 
-        参数:
-            text: 可能包含JSON片段的文�?
+        åæ°:
+            text: å¯è½åå«JSONçæ®µçæï¿½?
 
-        返回:
-            str: 清理后的纯文�?
+        è¿å:
+            str: æ¸çåççº¯æï¿½?
         """
         if not text:
             return ""
 
         text_str = self._safe_text(text)
 
-        # 模式1: 移除以逗号+空白+{开头的不完整JSON对象
-        # 例如: "文本，{ \"key\": \"value\"" �?"文本，{\\n  \"key\""
+        # æ¨¡å¼1: ç§»é¤ä»¥éå·+ç©ºç½+{å¼å¤´çä¸å®æ´JSONå¯¹è±¡
+        # ä¾å¦: "ææ¬ï¼{ \"key\": \"value\"" ï¿½?"ææ¬ï¼{\\n  \"key\""
         text_str = re.sub(r',\s*\{[^}]*$', '', text_str)
 
-        # 模式2: 移除以逗号+空白+[开头的不完整JSON数组
+        # æ¨¡å¼2: ç§»é¤ä»¥éå·+ç©ºç½+[å¼å¤´çä¸å®æ´JSONæ°ç»
         text_str = re.sub(r',\s*\[[^\]]*$', '', text_str)
 
-        # 模式3: 移除孤立�?{ 加上后续内容（如果没有匹配的 }�?
-        # 检查是否有未闭合的 {
+        # æ¨¡å¼3: ç§»é¤å­¤ç«ï¿½?{ å ä¸åç»­åå®¹ï¼å¦ææ²¡æå¹éç }ï¿½?
+        # æ£æ¥æ¯å¦ææªé­åç {
         open_brace_pos = text_str.rfind('{')
         if open_brace_pos != -1:
             close_brace_pos = text_str.rfind('}')
             if close_brace_pos < open_brace_pos:
-                # { �?} 后面或没�?}，说明是未闭合的
-                # 截断�?{ 之前
-                text_str = text_str[:open_brace_pos].rstrip(',，�?\t\n')
+                # { ï¿½?} åé¢ææ²¡ï¿½?}ï¼è¯´ææ¯æªé­åç
+                # æªæ­ï¿½?{ ä¹å
+                text_str = text_str[:open_brace_pos].rstrip(',ï¼ï¿½?\t\n')
 
-        # 模式4: 类似处理 [
+        # æ¨¡å¼4: ç±»ä¼¼å¤ç [
         open_bracket_pos = text_str.rfind('[')
         if open_bracket_pos != -1:
             close_bracket_pos = text_str.rfind(']')
             if close_bracket_pos < open_bracket_pos:
-                # [ �?] 后面或没�?]，说明是未闭合的
-                text_str = text_str[:open_bracket_pos].rstrip(',，�?\t\n')
+                # [ ï¿½?] åé¢ææ²¡ï¿½?]ï¼è¯´ææ¯æªé­åç
+                text_str = text_str[:open_bracket_pos].rstrip(',ï¼ï¿½?\t\n')
 
-        # 模式5: 移除看起来像JSON键值对的片段，�?"chapterId": "S3
-        # 这种情况通常出现在上面的模式之后
+        # æ¨¡å¼5: ç§»é¤çèµ·æ¥åJSONé®å¼å¯¹ççæ®µï¼ï¿½?"chapterId": "S3
+        # è¿ç§æåµéå¸¸åºç°å¨ä¸é¢çæ¨¡å¼ä¹å
         text_str = re.sub(r',?\s*"[^"]+"\s*:\s*"[^"]*$', '', text_str)
         text_str = re.sub(r',?\s*"[^"]+"\s*:\s*[^,}\]]*$', '', text_str)
 
-        # 清理末尾的逗号和空�?
-        text_str = text_str.rstrip(',，�?\t\n')
+        # æ¸çæ«å°¾çéå·åç©ºï¿½?
+        text_str = text_str.rstrip(',ï¼ï¿½?\t\n')
 
         return text_str.strip()
 
     def _safe_text(self, value: Any) -> str:
-        """将任意值安全转换为字符串，None与复杂对象容�?""
+        """å°ä»»æå¼å®å¨è½¬æ¢ä¸ºå­ç¬¦ä¸²ï¼Noneä¸å¤æå¯¹è±¡å®¹ï¿½?""
         if value is None:
             return ""
         if isinstance(value, str):
@@ -3426,31 +3426,31 @@ class HTMLRenderer:
             return str(value)
 
     def _escape_html(self, value: Any) -> str:
-        """HTML文本上下文的转义"""
+        """HTMLææ¬ä¸ä¸æçè½¬ä¹"""
         return html.escape(self._safe_text(value), quote=False)
 
     def _escape_attr(self, value: Any) -> str:
-        """HTML属性上下文转义并去掉危险换�?""
+        """HTMLå±æ§ä¸ä¸æè½¬ä¹å¹¶å»æå±é©æ¢ï¿½?""
         escaped = html.escape(self._safe_text(value), quote=True)
         return escaped.replace("\n", " ").replace("\r", " ")
 
-    # ====== CSS / JS（样式与脚本�?======
+    # ====== CSS / JSï¼æ ·å¼ä¸èæ¬ï¿½?======
 
     def _build_css(self, tokens: Dict[str, Any]) -> str:
-        """根据主题token拼接整页CSS，包括响应式与打印样�?""
-        # 安全获取各个配置项，确保都是字典类型
+        """æ ¹æ®ä¸»é¢tokenæ¼æ¥æ´é¡µCSSï¼åæ¬ååºå¼ä¸æå°æ ·ï¿½?""
+        # å®å¨è·ååä¸ªéç½®é¡¹ï¼ç¡®ä¿é½æ¯å­å¸ç±»å
         colors_raw = tokens.get("colors")
         colors = colors_raw if isinstance(colors_raw, dict) else {}
 
         typography_raw = tokens.get("typography")
         typography = typography_raw if isinstance(typography_raw, dict) else {}
 
-        # 安全获取fonts，确保是字典类型
+        # å®å¨è·åfontsï¼ç¡®ä¿æ¯å­å¸ç±»å
         fonts_raw = tokens.get("fonts") or typography.get("fonts")
         if isinstance(fonts_raw, dict):
             fonts = fonts_raw
         else:
-            # 如果fonts是字符串或None，构造一个字�?
+            # å¦æfontsæ¯å­ç¬¦ä¸²æNoneï¼æé ä¸ä¸ªå­ï¿½?
             font_family = typography.get("fontFamily")
             if isinstance(font_family, str):
                 fonts = {"body": font_family, "heading": font_family}
@@ -3493,1638 +3493,1638 @@ class HTMLRenderer:
         return f"""
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-:root {{ /* 含义：亮色主题变量区域；设置：在本块内调整相关属�?*/
-  --bg-color: {bg}; /* 含义：页面背景色主色调；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --text-color: {text_color}; /* 含义：正文文本基础颜色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --primary-color: {primary_palette["main"]}; /* 含义：主色调（按�?高亮）；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --primary-color-light: {primary_palette["light"]}; /* 含义：主色调浅色，用于悬�?渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --primary-color-dark: {primary_palette["dark"]}; /* 含义：主色调深色，用于强调；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --secondary-color: {secondary_palette["main"]}; /* 含义：次级色（提�?标签）；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --secondary-color-light: {secondary_palette["light"]}; /* 含义：次级色浅色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --secondary-color-dark: {secondary_palette["dark"]}; /* 含义：次级色深色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --card-bg: {card}; /* 含义：卡�?容器背景色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --border-color: {border}; /* 含义：常规边框色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --shadow-color: {shadow}; /* 含义：阴影基色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-bg: #f4f7ff; /* 含义：Insight 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-border: #dce7ff; /* 含义：Insight 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-text: #1f4b99; /* 含义：Insight 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-media-bg: #fff6ec; /* 含义：Media 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-media-border: #ffd9b3; /* 含义：Media 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-media-text: #b65a1a; /* 含义：Media 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-query-bg: #f1fbf5; /* 含义：Query 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-query-border: #c7ebd6; /* 含义：Query 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-query-text: #1d6b3f; /* 含义：Query 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-shadow: 0 12px 30px rgba(0,0,0,0.04); /* 含义：Engine 引用阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-strength: #1c7f6e; /* 含义：SWOT 优势主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-weakness: #c0392b; /* 含义：SWOT 劣势主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-opportunity: #1f5ab3; /* 含义：SWOT 机会主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-threat: #b36b16; /* 含义：SWOT 威胁主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-on-light: #0f1b2b; /* 含义：SWOT 亮底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-on-dark: #f7fbff; /* 含义：SWOT 暗底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-text: var(--text-color); /* 含义：SWOT 文本主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-muted: rgba(0,0,0,0.58); /* 含义：SWOT 次文本色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-surface: rgba(255,255,255,0.92); /* 含义：SWOT 卡片表面色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-chip-bg: rgba(0,0,0,0.04); /* 含义：SWOT 标签底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-tag-border: var(--border-color); /* 含义：SWOT 标签边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-bg: linear-gradient(135deg, rgba(76,132,255,0.04), rgba(28,127,110,0.06)), var(--card-bg); /* 含义：SWOT 卡片背景渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-border: var(--border-color); /* 含义：SWOT 卡片边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-shadow: 0 14px 28px var(--shadow-color); /* 含义：SWOT 卡片阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-blur: none; /* 含义：SWOT 卡片模糊；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-base: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5)); /* 含义：SWOT 象限基础底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-border: rgba(0,0,0,0.04); /* 含义：SWOT 象限边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-strength-bg: linear-gradient(135deg, rgba(28,127,110,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* 含义：SWOT 优势象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-weakness-bg: linear-gradient(135deg, rgba(192,57,43,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* 含义：SWOT 劣势象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-opportunity-bg: linear-gradient(135deg, rgba(31,90,179,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* 含义：SWOT 机会象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-threat-bg: linear-gradient(135deg, rgba(179,107,22,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* 含义：SWOT 威胁象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-strength-border: rgba(28,127,110,0.35); /* 含义：SWOT 优势边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-weakness-border: rgba(192,57,43,0.35); /* 含义：SWOT 劣势边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-opportunity-border: rgba(31,90,179,0.35); /* 含义：SWOT 机会边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-threat-border: rgba(179,107,22,0.35); /* 含义：SWOT 威胁边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-item-border: rgba(0,0,0,0.05); /* 含义：SWOT 条目边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  /* PEST 分析变量 - 紫青色系 */
-  --pest-political: #8e44ad; /* 含义：PEST 政治维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-economic: #16a085; /* 含义：PEST 经济维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-social: #e84393; /* 含义：PEST 社会维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-technological: #2980b9; /* 含义：PEST 技术维度主色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-on-light: #1a1a2e; /* 含义：PEST 亮底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-on-dark: #f8f9ff; /* 含义：PEST 暗底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-text: var(--text-color); /* 含义：PEST 文本主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-muted: rgba(0,0,0,0.55); /* 含义：PEST 次文本色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-surface: rgba(255,255,255,0.88); /* 含义：PEST 卡片表面色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-chip-bg: rgba(0,0,0,0.05); /* 含义：PEST 标签底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-tag-border: var(--border-color); /* 含义：PEST 标签边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-bg: linear-gradient(145deg, rgba(142,68,173,0.03), rgba(22,160,133,0.04)), var(--card-bg); /* 含义：PEST 卡片背景渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-border: var(--border-color); /* 含义：PEST 卡片边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-shadow: 0 16px 32px var(--shadow-color); /* 含义：PEST 卡片阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-blur: none; /* 含义：PEST 卡片模糊；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-base: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.7)); /* 含义：PEST 条带基础底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-border: rgba(0,0,0,0.06); /* 含义：PEST 条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-political-bg: linear-gradient(90deg, rgba(142,68,173,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* 含义：PEST 政治条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-economic-bg: linear-gradient(90deg, rgba(22,160,133,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* 含义：PEST 经济条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-social-bg: linear-gradient(90deg, rgba(232,67,147,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* 含义：PEST 社会条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-technological-bg: linear-gradient(90deg, rgba(41,128,185,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* 含义：PEST 技术条带底色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-political-border: rgba(142,68,173,0.4); /* 含义：PEST 政治条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-economic-border: rgba(22,160,133,0.4); /* 含义：PEST 经济条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-social-border: rgba(232,67,147,0.4); /* 含义：PEST 社会条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-technological-border: rgba(41,128,185,0.4); /* 含义：PEST 技术条带边框；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-item-border: rgba(0,0,0,0.06); /* 含义：PEST 条目边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-}} /* 结束 :root */
-.dark-mode {{ /* 含义：暗色主题变量区域；设置：在本块内调整相关属�?*/
-  --bg-color: #121212; /* 含义：页面背景色主色调；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --text-color: #e0e0e0; /* 含义：正文文本基础颜色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --primary-color: #6ea8fe; /* 含义：主色调（按�?高亮）；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --primary-color-light: #91caff; /* 含义：主色调浅色，用于悬�?渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --primary-color-dark: #1f6feb; /* 含义：主色调深色，用于强调；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --secondary-color: #f28b82; /* 含义：次级色（提�?标签）；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --secondary-color-light: #f9b4ae; /* 含义：次级色浅色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --secondary-color-dark: #d9655c; /* 含义：次级色深色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --card-bg: #1f1f1f; /* 含义：卡�?容器背景色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --border-color: #2c2c2c; /* 含义：常规边框色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --shadow-color: rgba(0, 0, 0, 0.4); /* 含义：阴影基色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-bg: rgba(145, 202, 255, 0.08); /* 含义：Insight 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-border: rgba(145, 202, 255, 0.45); /* 含义：Insight 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-insight-text: #9dc2ff; /* 含义：Insight 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-media-bg: rgba(255, 196, 138, 0.08); /* 含义：Media 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-media-border: rgba(255, 196, 138, 0.45); /* 含义：Media 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-media-text: #ffcb9b; /* 含义：Media 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-query-bg: rgba(141, 215, 165, 0.08); /* 含义：Query 引擎卡片背景；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-query-border: rgba(141, 215, 165, 0.45); /* 含义：Query 引擎边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-query-text: #a7e2ba; /* 含义：Query 引擎文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-shadow: 0 12px 28px rgba(0, 0, 0, 0.35); /* 含义：Engine 引用阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-strength: #1c7f6e; /* 含义：SWOT 优势主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-weakness: #e06754; /* 含义：SWOT 劣势主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-opportunity: #5a8cff; /* 含义：SWOT 机会主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-threat: #d48a2c; /* 含义：SWOT 威胁主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-on-light: #0f1b2b; /* 含义：SWOT 亮底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-on-dark: #e6f0ff; /* 含义：SWOT 暗底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-text: #e6f0ff; /* 含义：SWOT 文本主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-muted: rgba(230,240,255,0.75); /* 含义：SWOT 次文本色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-surface: rgba(255,255,255,0.08); /* 含义：SWOT 卡片表面色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --swot-chip-bg: rgba(255,255,255,0.14); /* 含义：SWOT 标签底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-tag-border: rgba(255,255,255,0.24); /* 含义：SWOT 标签边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-bg: radial-gradient(140% 140% at 18% 18%, rgba(110,168,254,0.18), transparent 55%), radial-gradient(120% 140% at 82% 0%, rgba(28,127,110,0.16), transparent 52%), linear-gradient(160deg, #0b1424 0%, #0b1f31 52%, #0a1626 100%); /* 含义：SWOT 卡片背景渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-border: rgba(255,255,255,0.14); /* 含义：SWOT 卡片边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-shadow: 0 24px 60px rgba(0, 0, 0, 0.58); /* 含义：SWOT 卡片阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-card-blur: blur(12px); /* 含义：SWOT 卡片模糊；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-base: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); /* 含义：SWOT 象限基础底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-border: rgba(255,255,255,0.2); /* 含义：SWOT 象限边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-strength-bg: linear-gradient(150deg, rgba(28,127,110,0.28), rgba(28,127,110,0.12)), var(--swot-cell-base); /* 含义：SWOT 优势象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-weakness-bg: linear-gradient(150deg, rgba(192,57,43,0.32), rgba(192,57,43,0.14)), var(--swot-cell-base); /* 含义：SWOT 劣势象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-opportunity-bg: linear-gradient(150deg, rgba(31,90,179,0.28), rgba(31,90,179,0.12)), var(--swot-cell-base); /* 含义：SWOT 机会象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-threat-bg: linear-gradient(150deg, rgba(179,107,22,0.32), rgba(179,107,22,0.14)), var(--swot-cell-base); /* 含义：SWOT 威胁象限底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-strength-border: rgba(28,127,110,0.65); /* 含义：SWOT 优势边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-weakness-border: rgba(192,57,43,0.68); /* 含义：SWOT 劣势边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-opportunity-border: rgba(31,90,179,0.68); /* 含义：SWOT 机会边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-cell-threat-border: rgba(179,107,22,0.68); /* 含义：SWOT 威胁边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --swot-item-border: rgba(255,255,255,0.14); /* 含义：SWOT 条目边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  /* PEST 分析变量 - 暗色模式 */
-  --pest-political: #a569bd; /* 含义：PEST 政治维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-economic: #48c9b0; /* 含义：PEST 经济维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-social: #f06292; /* 含义：PEST 社会维度主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-technological: #5dade2; /* 含义：PEST 技术维度主色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-on-light: #1a1a2e; /* 含义：PEST 亮底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-on-dark: #f0f4ff; /* 含义：PEST 暗底文字色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-text: #f0f4ff; /* 含义：PEST 文本主色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-muted: rgba(240,244,255,0.7); /* 含义：PEST 次文本色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-surface: rgba(255,255,255,0.06); /* 含义：PEST 卡片表面色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-chip-bg: rgba(255,255,255,0.12); /* 含义：PEST 标签底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-tag-border: rgba(255,255,255,0.22); /* 含义：PEST 标签边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-bg: radial-gradient(130% 130% at 15% 15%, rgba(165,105,189,0.16), transparent 50%), radial-gradient(110% 130% at 85% 5%, rgba(72,201,176,0.14), transparent 48%), linear-gradient(155deg, #12162a 0%, #161b30 50%, #0f1425 100%); /* 含义：PEST 卡片背景渐变；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-border: rgba(255,255,255,0.12); /* 含义：PEST 卡片边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-shadow: 0 28px 65px rgba(0, 0, 0, 0.55); /* 含义：PEST 卡片阴影；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-card-blur: blur(10px); /* 含义：PEST 卡片模糊；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-base: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); /* 含义：PEST 条带基础底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-border: rgba(255,255,255,0.18); /* 含义：PEST 条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-political-bg: linear-gradient(90deg, rgba(142,68,173,0.25), rgba(142,68,173,0.1)), var(--pest-strip-base); /* 含义：PEST 政治条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-economic-bg: linear-gradient(90deg, rgba(22,160,133,0.25), rgba(22,160,133,0.1)), var(--pest-strip-base); /* 含义：PEST 经济条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-social-bg: linear-gradient(90deg, rgba(232,67,147,0.25), rgba(232,67,147,0.1)), var(--pest-strip-base); /* 含义：PEST 社会条带底色；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-technological-bg: linear-gradient(90deg, rgba(41,128,185,0.25), rgba(41,128,185,0.1)), var(--pest-strip-base); /* 含义：PEST 技术条带底色；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-political-border: rgba(165,105,189,0.6); /* 含义：PEST 政治条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-economic-border: rgba(72,201,176,0.6); /* 含义：PEST 经济条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-social-border: rgba(240,98,146,0.6); /* 含义：PEST 社会条带边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --pest-strip-technological-border: rgba(93,173,226,0.6); /* 含义：PEST 技术条带边框；设置：在 themeTokens 中覆盖或改此默认�?*/
-  --pest-item-border: rgba(255,255,255,0.12); /* 含义：PEST 条目边框；设置：�?themeTokens 中覆盖或改此默认�?*/
-}} /* 结束 .dark-mode */
-* {{ box-sizing: border-box; }} /* 含义：全局统一盒模型，避免内外边距计算误差；设置：通常保持 border-box，如需原生行为可改�?content-box */
-body {{ /* 含义：全局排版与背景设置；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  font-family: {body_font}; /* 含义：字体族；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0)) fixed, var(--bg-color); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  line-height: 1.7; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-  min-height: 100vh; /* 含义：最小高度，防止塌陷；设置：按需调整数�?颜色/变量 */
-  transition: background-color 0.45s ease, color 0.45s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 body */
-.report-header, main, .hero-section, .chapter, .chart-card, .callout, .engine-quote, .kpi-card, .toc, .table-wrap {{ /* 含义：常用容器的统一过渡动画；设置：在本块内调整相关属�?*/
-  transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .report-header, main, .hero-section, .chapter, .chart-card, .callout, .engine-quote, .kpi-card, .toc, .table-wrap */
-.report-header {{ /* 含义：页眉吸顶区域；设置：在本块内调整相关属�?*/
-  position: sticky; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  top: 0; /* 含义：顶部偏移量；设置：按需调整数�?颜色/变量 */
-  z-index: 10; /* 含义：层叠顺序；设置：按需调整数�?颜色/变量 */
-  background: var(--card-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  padding: 20px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-bottom: 1px solid var(--border-color); /* 含义：底部边框；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 16px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 2px 6px var(--shadow-color); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .report-header */
-.tagline {{ /* 含义：标题标语行；设置：在本块内调整相关属�?*/
-  margin: 4px 0 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-size: 0.95rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .tagline */
-.hero-section {{ /* 含义：封面摘要主容器；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  gap: 24px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  padding: 24px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 20px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(23,162,184,0.1)); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border: 1px solid rgba(0,0,0,0.08); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 32px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-section */
-.hero-content {{ /* 含义：封面左侧文字区；设置：在本块内调整相关属�?*/
-  flex: 2; /* 含义：flex 占位比例；设置：按需调整数�?颜色/变量 */
-  min-width: 260px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-content */
-.hero-side {{ /* 含义：封面右�?KPI 栏；设置：在本块内调整相关属�?*/
-  flex: 1; /* 含义：flex 占位比例；设置：按需调整数�?颜色/变量 */
-  min-width: 220px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-  display: grid; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* 含义：网格列模板；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-side */
+:root {{ /* å«ä¹ï¼äº®è²ä¸»é¢åéåºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --bg-color: {bg}; /* å«ä¹ï¼é¡µé¢èæ¯è²ä¸»è²è°ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --text-color: {text_color}; /* å«ä¹ï¼æ­£æææ¬åºç¡é¢è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color: {primary_palette["main"]}; /* å«ä¹ï¼ä¸»è²è°ï¼æï¿½?é«äº®ï¼ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color-light: {primary_palette["light"]}; /* å«ä¹ï¼ä¸»è²è°æµè²ï¼ç¨äºæ¬ï¿½?æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color-dark: {primary_palette["dark"]}; /* å«ä¹ï¼ä¸»è²è°æ·±è²ï¼ç¨äºå¼ºè°ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color: {secondary_palette["main"]}; /* å«ä¹ï¼æ¬¡çº§è²ï¼æï¿½?æ ç­¾ï¼ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color-light: {secondary_palette["light"]}; /* å«ä¹ï¼æ¬¡çº§è²æµè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color-dark: {secondary_palette["dark"]}; /* å«ä¹ï¼æ¬¡çº§è²æ·±è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --card-bg: {card}; /* å«ä¹ï¼å¡ï¿½?å®¹å¨èæ¯è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --border-color: {border}; /* å«ä¹ï¼å¸¸è§è¾¹æ¡è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --shadow-color: {shadow}; /* å«ä¹ï¼é´å½±åºè²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-bg: #f4f7ff; /* å«ä¹ï¼Insight å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-border: #dce7ff; /* å«ä¹ï¼Insight å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-text: #1f4b99; /* å«ä¹ï¼Insight å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-bg: #fff6ec; /* å«ä¹ï¼Media å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-border: #ffd9b3; /* å«ä¹ï¼Media å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-text: #b65a1a; /* å«ä¹ï¼Media å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-bg: #f1fbf5; /* å«ä¹ï¼Query å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-border: #c7ebd6; /* å«ä¹ï¼Query å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-text: #1d6b3f; /* å«ä¹ï¼Query å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-shadow: 0 12px 30px rgba(0,0,0,0.04); /* å«ä¹ï¼Engine å¼ç¨é´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-strength: #1c7f6e; /* å«ä¹ï¼SWOT ä¼å¿ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-weakness: #c0392b; /* å«ä¹ï¼SWOT å£å¿ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-opportunity: #1f5ab3; /* å«ä¹ï¼SWOT æºä¼ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-threat: #b36b16; /* å«ä¹ï¼SWOT å¨èä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-on-light: #0f1b2b; /* å«ä¹ï¼SWOT äº®åºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-on-dark: #f7fbff; /* å«ä¹ï¼SWOT æåºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-text: var(--text-color); /* å«ä¹ï¼SWOT ææ¬ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-muted: rgba(0,0,0,0.58); /* å«ä¹ï¼SWOT æ¬¡ææ¬è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-surface: rgba(255,255,255,0.92); /* å«ä¹ï¼SWOT å¡çè¡¨é¢è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-chip-bg: rgba(0,0,0,0.04); /* å«ä¹ï¼SWOT æ ç­¾åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-tag-border: var(--border-color); /* å«ä¹ï¼SWOT æ ç­¾è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-bg: linear-gradient(135deg, rgba(76,132,255,0.04), rgba(28,127,110,0.06)), var(--card-bg); /* å«ä¹ï¼SWOT å¡çèæ¯æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-border: var(--border-color); /* å«ä¹ï¼SWOT å¡çè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-shadow: 0 14px 28px var(--shadow-color); /* å«ä¹ï¼SWOT å¡çé´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-blur: none; /* å«ä¹ï¼SWOT å¡çæ¨¡ç³ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-base: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5)); /* å«ä¹ï¼SWOT è±¡éåºç¡åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-border: rgba(0,0,0,0.04); /* å«ä¹ï¼SWOT è±¡éè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-strength-bg: linear-gradient(135deg, rgba(28,127,110,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* å«ä¹ï¼SWOT ä¼å¿è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-weakness-bg: linear-gradient(135deg, rgba(192,57,43,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* å«ä¹ï¼SWOT å£å¿è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-opportunity-bg: linear-gradient(135deg, rgba(31,90,179,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* å«ä¹ï¼SWOT æºä¼è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-threat-bg: linear-gradient(135deg, rgba(179,107,22,0.07), rgba(255,255,255,0.78)), var(--card-bg); /* å«ä¹ï¼SWOT å¨èè±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-strength-border: rgba(28,127,110,0.35); /* å«ä¹ï¼SWOT ä¼å¿è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-weakness-border: rgba(192,57,43,0.35); /* å«ä¹ï¼SWOT å£å¿è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-opportunity-border: rgba(31,90,179,0.35); /* å«ä¹ï¼SWOT æºä¼è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-threat-border: rgba(179,107,22,0.35); /* å«ä¹ï¼SWOT å¨èè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-item-border: rgba(0,0,0,0.05); /* å«ä¹ï¼SWOT æ¡ç®è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  /* PEST åæåé - ç´«éè²ç³» */
+  --pest-political: #8e44ad; /* å«ä¹ï¼PEST æ¿æ²»ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-economic: #16a085; /* å«ä¹ï¼PEST ç»æµç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-social: #e84393; /* å«ä¹ï¼PEST ç¤¾ä¼ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-technological: #2980b9; /* å«ä¹ï¼PEST ææ¯ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-on-light: #1a1a2e; /* å«ä¹ï¼PEST äº®åºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-on-dark: #f8f9ff; /* å«ä¹ï¼PEST æåºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-text: var(--text-color); /* å«ä¹ï¼PEST ææ¬ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-muted: rgba(0,0,0,0.55); /* å«ä¹ï¼PEST æ¬¡ææ¬è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-surface: rgba(255,255,255,0.88); /* å«ä¹ï¼PEST å¡çè¡¨é¢è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-chip-bg: rgba(0,0,0,0.05); /* å«ä¹ï¼PEST æ ç­¾åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-tag-border: var(--border-color); /* å«ä¹ï¼PEST æ ç­¾è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-bg: linear-gradient(145deg, rgba(142,68,173,0.03), rgba(22,160,133,0.04)), var(--card-bg); /* å«ä¹ï¼PEST å¡çèæ¯æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-border: var(--border-color); /* å«ä¹ï¼PEST å¡çè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-shadow: 0 16px 32px var(--shadow-color); /* å«ä¹ï¼PEST å¡çé´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-blur: none; /* å«ä¹ï¼PEST å¡çæ¨¡ç³ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-base: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.7)); /* å«ä¹ï¼PEST æ¡å¸¦åºç¡åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-border: rgba(0,0,0,0.06); /* å«ä¹ï¼PEST æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-political-bg: linear-gradient(90deg, rgba(142,68,173,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* å«ä¹ï¼PEST æ¿æ²»æ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-economic-bg: linear-gradient(90deg, rgba(22,160,133,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* å«ä¹ï¼PEST ç»æµæ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-social-bg: linear-gradient(90deg, rgba(232,67,147,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* å«ä¹ï¼PEST ç¤¾ä¼æ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-technological-bg: linear-gradient(90deg, rgba(41,128,185,0.08), rgba(255,255,255,0.85)), var(--card-bg); /* å«ä¹ï¼PEST ææ¯æ¡å¸¦åºè²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-political-border: rgba(142,68,173,0.4); /* å«ä¹ï¼PEST æ¿æ²»æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-economic-border: rgba(22,160,133,0.4); /* å«ä¹ï¼PEST ç»æµæ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-social-border: rgba(232,67,147,0.4); /* å«ä¹ï¼PEST ç¤¾ä¼æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-technological-border: rgba(41,128,185,0.4); /* å«ä¹ï¼PEST ææ¯æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-item-border: rgba(0,0,0,0.06); /* å«ä¹ï¼PEST æ¡ç®è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+}} /* ç»æ :root */
+.dark-mode {{ /* å«ä¹ï¼æè²ä¸»é¢åéåºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --bg-color: #121212; /* å«ä¹ï¼é¡µé¢èæ¯è²ä¸»è²è°ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --text-color: #e0e0e0; /* å«ä¹ï¼æ­£æææ¬åºç¡é¢è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color: #6ea8fe; /* å«ä¹ï¼ä¸»è²è°ï¼æï¿½?é«äº®ï¼ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color-light: #91caff; /* å«ä¹ï¼ä¸»è²è°æµè²ï¼ç¨äºæ¬ï¿½?æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --primary-color-dark: #1f6feb; /* å«ä¹ï¼ä¸»è²è°æ·±è²ï¼ç¨äºå¼ºè°ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color: #f28b82; /* å«ä¹ï¼æ¬¡çº§è²ï¼æï¿½?æ ç­¾ï¼ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color-light: #f9b4ae; /* å«ä¹ï¼æ¬¡çº§è²æµè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --secondary-color-dark: #d9655c; /* å«ä¹ï¼æ¬¡çº§è²æ·±è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --card-bg: #1f1f1f; /* å«ä¹ï¼å¡ï¿½?å®¹å¨èæ¯è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --border-color: #2c2c2c; /* å«ä¹ï¼å¸¸è§è¾¹æ¡è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --shadow-color: rgba(0, 0, 0, 0.4); /* å«ä¹ï¼é´å½±åºè²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-bg: rgba(145, 202, 255, 0.08); /* å«ä¹ï¼Insight å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-border: rgba(145, 202, 255, 0.45); /* å«ä¹ï¼Insight å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-insight-text: #9dc2ff; /* å«ä¹ï¼Insight å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-bg: rgba(255, 196, 138, 0.08); /* å«ä¹ï¼Media å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-border: rgba(255, 196, 138, 0.45); /* å«ä¹ï¼Media å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-media-text: #ffcb9b; /* å«ä¹ï¼Media å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-bg: rgba(141, 215, 165, 0.08); /* å«ä¹ï¼Query å¼æå¡çèæ¯ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-border: rgba(141, 215, 165, 0.45); /* å«ä¹ï¼Query å¼æè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-query-text: #a7e2ba; /* å«ä¹ï¼Query å¼ææå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-shadow: 0 12px 28px rgba(0, 0, 0, 0.35); /* å«ä¹ï¼Engine å¼ç¨é´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-strength: #1c7f6e; /* å«ä¹ï¼SWOT ä¼å¿ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-weakness: #e06754; /* å«ä¹ï¼SWOT å£å¿ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-opportunity: #5a8cff; /* å«ä¹ï¼SWOT æºä¼ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-threat: #d48a2c; /* å«ä¹ï¼SWOT å¨èä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-on-light: #0f1b2b; /* å«ä¹ï¼SWOT äº®åºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-on-dark: #e6f0ff; /* å«ä¹ï¼SWOT æåºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-text: #e6f0ff; /* å«ä¹ï¼SWOT ææ¬ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-muted: rgba(230,240,255,0.75); /* å«ä¹ï¼SWOT æ¬¡ææ¬è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-surface: rgba(255,255,255,0.08); /* å«ä¹ï¼SWOT å¡çè¡¨é¢è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-chip-bg: rgba(255,255,255,0.14); /* å«ä¹ï¼SWOT æ ç­¾åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-tag-border: rgba(255,255,255,0.24); /* å«ä¹ï¼SWOT æ ç­¾è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-bg: radial-gradient(140% 140% at 18% 18%, rgba(110,168,254,0.18), transparent 55%), radial-gradient(120% 140% at 82% 0%, rgba(28,127,110,0.16), transparent 52%), linear-gradient(160deg, #0b1424 0%, #0b1f31 52%, #0a1626 100%); /* å«ä¹ï¼SWOT å¡çèæ¯æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-border: rgba(255,255,255,0.14); /* å«ä¹ï¼SWOT å¡çè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-shadow: 0 24px 60px rgba(0, 0, 0, 0.58); /* å«ä¹ï¼SWOT å¡çé´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-card-blur: blur(12px); /* å«ä¹ï¼SWOT å¡çæ¨¡ç³ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-base: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); /* å«ä¹ï¼SWOT è±¡éåºç¡åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-border: rgba(255,255,255,0.2); /* å«ä¹ï¼SWOT è±¡éè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-strength-bg: linear-gradient(150deg, rgba(28,127,110,0.28), rgba(28,127,110,0.12)), var(--swot-cell-base); /* å«ä¹ï¼SWOT ä¼å¿è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-weakness-bg: linear-gradient(150deg, rgba(192,57,43,0.32), rgba(192,57,43,0.14)), var(--swot-cell-base); /* å«ä¹ï¼SWOT å£å¿è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-opportunity-bg: linear-gradient(150deg, rgba(31,90,179,0.28), rgba(31,90,179,0.12)), var(--swot-cell-base); /* å«ä¹ï¼SWOT æºä¼è±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-threat-bg: linear-gradient(150deg, rgba(179,107,22,0.32), rgba(179,107,22,0.14)), var(--swot-cell-base); /* å«ä¹ï¼SWOT å¨èè±¡éåºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-strength-border: rgba(28,127,110,0.65); /* å«ä¹ï¼SWOT ä¼å¿è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-weakness-border: rgba(192,57,43,0.68); /* å«ä¹ï¼SWOT å£å¿è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-opportunity-border: rgba(31,90,179,0.68); /* å«ä¹ï¼SWOT æºä¼è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-cell-threat-border: rgba(179,107,22,0.68); /* å«ä¹ï¼SWOT å¨èè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --swot-item-border: rgba(255,255,255,0.14); /* å«ä¹ï¼SWOT æ¡ç®è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  /* PEST åæåé - æè²æ¨¡å¼ */
+  --pest-political: #a569bd; /* å«ä¹ï¼PEST æ¿æ²»ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-economic: #48c9b0; /* å«ä¹ï¼PEST ç»æµç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-social: #f06292; /* å«ä¹ï¼PEST ç¤¾ä¼ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-technological: #5dade2; /* å«ä¹ï¼PEST ææ¯ç»´åº¦ä¸»è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-on-light: #1a1a2e; /* å«ä¹ï¼PEST äº®åºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-on-dark: #f0f4ff; /* å«ä¹ï¼PEST æåºæå­è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-text: #f0f4ff; /* å«ä¹ï¼PEST ææ¬ä¸»è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-muted: rgba(240,244,255,0.7); /* å«ä¹ï¼PEST æ¬¡ææ¬è²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-surface: rgba(255,255,255,0.06); /* å«ä¹ï¼PEST å¡çè¡¨é¢è²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-chip-bg: rgba(255,255,255,0.12); /* å«ä¹ï¼PEST æ ç­¾åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-tag-border: rgba(255,255,255,0.22); /* å«ä¹ï¼PEST æ ç­¾è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-bg: radial-gradient(130% 130% at 15% 15%, rgba(165,105,189,0.16), transparent 50%), radial-gradient(110% 130% at 85% 5%, rgba(72,201,176,0.14), transparent 48%), linear-gradient(155deg, #12162a 0%, #161b30 50%, #0f1425 100%); /* å«ä¹ï¼PEST å¡çèæ¯æ¸åï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-border: rgba(255,255,255,0.12); /* å«ä¹ï¼PEST å¡çè¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-shadow: 0 28px 65px rgba(0, 0, 0, 0.55); /* å«ä¹ï¼PEST å¡çé´å½±ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-card-blur: blur(10px); /* å«ä¹ï¼PEST å¡çæ¨¡ç³ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-base: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); /* å«ä¹ï¼PEST æ¡å¸¦åºç¡åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-border: rgba(255,255,255,0.18); /* å«ä¹ï¼PEST æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-political-bg: linear-gradient(90deg, rgba(142,68,173,0.25), rgba(142,68,173,0.1)), var(--pest-strip-base); /* å«ä¹ï¼PEST æ¿æ²»æ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-economic-bg: linear-gradient(90deg, rgba(22,160,133,0.25), rgba(22,160,133,0.1)), var(--pest-strip-base); /* å«ä¹ï¼PEST ç»æµæ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-social-bg: linear-gradient(90deg, rgba(232,67,147,0.25), rgba(232,67,147,0.1)), var(--pest-strip-base); /* å«ä¹ï¼PEST ç¤¾ä¼æ¡å¸¦åºè²ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-technological-bg: linear-gradient(90deg, rgba(41,128,185,0.25), rgba(41,128,185,0.1)), var(--pest-strip-base); /* å«ä¹ï¼PEST ææ¯æ¡å¸¦åºè²ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-political-border: rgba(165,105,189,0.6); /* å«ä¹ï¼PEST æ¿æ²»æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-economic-border: rgba(72,201,176,0.6); /* å«ä¹ï¼PEST ç»æµæ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-social-border: rgba(240,98,146,0.6); /* å«ä¹ï¼PEST ç¤¾ä¼æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-strip-technological-border: rgba(93,173,226,0.6); /* å«ä¹ï¼PEST ææ¯æ¡å¸¦è¾¹æ¡ï¼è®¾ç½®ï¼å¨ themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --pest-item-border: rgba(255,255,255,0.12); /* å«ä¹ï¼PEST æ¡ç®è¾¹æ¡ï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+}} /* ç»æ .dark-mode */
+* {{ box-sizing: border-box; }} /* å«ä¹ï¼å¨å±ç»ä¸çæ¨¡åï¼é¿ååå¤è¾¹è·è®¡ç®è¯¯å·®ï¼è®¾ç½®ï¼éå¸¸ä¿æ border-boxï¼å¦éåçè¡ä¸ºå¯æ¹ï¿½?content-box */
+body {{ /* å«ä¹ï¼å¨å±æçä¸èæ¯è®¾ç½®ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-family: {body_font}; /* å«ä¹ï¼å­ä½æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0)) fixed, var(--bg-color); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.7; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-height: 100vh; /* å«ä¹ï¼æå°é«åº¦ï¼é²æ­¢å¡é·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: background-color 0.45s ease, color 0.45s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ body */
+.report-header, main, .hero-section, .chapter, .chart-card, .callout, .engine-quote, .kpi-card, .toc, .table-wrap {{ /* å«ä¹ï¼å¸¸ç¨å®¹å¨çç»ä¸è¿æ¸¡å¨ç»ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .report-header, main, .hero-section, .chapter, .chart-card, .callout, .engine-quote, .kpi-card, .toc, .table-wrap */
+.report-header {{ /* å«ä¹ï¼é¡µçå¸é¡¶åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  position: sticky; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  top: 0; /* å«ä¹ï¼é¡¶é¨åç§»éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  z-index: 10; /* å«ä¹ï¼å±å é¡ºåºï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--card-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 20px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-bottom: 1px solid var(--border-color); /* å«ä¹ï¼åºé¨è¾¹æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 16px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 2px 6px var(--shadow-color); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .report-header */
+.tagline {{ /* å«ä¹ï¼æ é¢æ è¯­è¡ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 4px 0 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.95rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .tagline */
+.hero-section {{ /* å«ä¹ï¼å°é¢æè¦ä¸»å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 24px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 24px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 20px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(23,162,184,0.1)); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid rgba(0,0,0,0.08); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 32px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-section */
+.hero-content {{ /* å«ä¹ï¼å°é¢å·¦ä¾§æå­åºï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  flex: 2; /* å«ä¹ï¼flex å ä½æ¯ä¾ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 260px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-content */
+.hero-side {{ /* å«ä¹ï¼å°é¢å³ï¿½?KPI æ ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  flex: 1; /* å«ä¹ï¼flex å ä½æ¯ä¾ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 220px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: grid; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* å«ä¹ï¼ç½æ ¼åæ¨¡æ¿ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-side */
 @media screen {{
   .hero-side {{
-    margin-top: 28px; /* 含义：仅在屏幕显示时下移，避免遮挡；设置：按需调整数�?*/
+    margin-top: 28px; /* å«ä¹ï¼ä»å¨å±å¹æ¾ç¤ºæ¶ä¸ç§»ï¼é¿åé®æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?*/
   }}
 }}
-.hero-kpi {{ /* 含义：封�?KPI 卡片；设置：在本块内调整相关属�?*/
-  background: var(--card-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 14px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  padding: 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 6px 16px var(--shadow-color); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-kpi */
-.hero-kpi .label {{ /* 含义�?hero-kpi .label 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-kpi .label */
-.hero-kpi .value {{ /* 含义�?hero-kpi .value 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.8rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-kpi .value */
-.hero-highlights {{ /* 含义：封面亮点列表；设置：在本块内调整相关属�?*/
-  list-style: none; /* 含义：列表样式；设置：按需调整数�?颜色/变量 */
-  padding: 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  margin: 16px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  gap: 10px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-highlights */
-.hero-highlights li {{ /* 含义�?hero-highlights li 样式区域；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-highlights li */
-.badge {{ /* 含义：徽章标签；设置：在本块内调整相关属�?*/
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  padding: 6px 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 999px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.05); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .badge */
-.broken-link {{ /* 含义：无效链接提示样式；设置：在本块内调整相关属�?*/
-  text-decoration: underline dotted; /* 含义：文本装饰；设置：按需调整数�?颜色/变量 */
-  color: var(--primary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .broken-link */
-.hero-actions {{ /* 含义：封面操作按钮容器；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-actions */
-.ghost-btn {{ /* 含义：次级按钮样式；设置：在本块内调整相关属�?*/
-  border: 1px solid var(--primary-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  background: transparent; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: var(--primary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border-radius: 999px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  padding: 8px 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  cursor: pointer; /* 含义：鼠标指针样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .ghost-btn */
-.hero-summary {{ /* 含义：封面摘要文字；设置：在本块内调整相关属�?*/
-  font-size: 1.05rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 500; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-top: 0; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .hero-summary */
-.llm-error-block {{ /* 含义：LLM 错误提示容器；设置：在本块内调整相关属�?*/
-  border: 1px dashed var(--secondary-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  margin: 12px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  background: rgba(229,62,62,0.06); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .llm-error-block */
-.llm-error-block.importance-critical {{ /* 含义�?llm-error-block.importance-critical 样式区域；设置：在本块内调整相关属�?*/
-  border-color: var(--secondary-color-dark); /* 含义：border-color 样式属性；设置：按需调整数�?颜色/变量 */
-  background: rgba(229,62,62,0.12); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .llm-error-block.importance-critical */
-.llm-error-block::after {{ /* 含义�?llm-error-block::after 样式区域；设置：在本块内调整相关属�?*/
-  content: attr(data-raw); /* 含义：content 样式属性；设置：按需调整数�?颜色/变量 */
-  white-space: pre-wrap; /* 含义：空白与换行策略；设置：按需调整数�?颜色/变量 */
-  position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  left: 0; /* 含义：left 样式属性；设置：按需调整数�?颜色/变量 */
-  right: 0; /* 含义：right 样式属性；设置：按需调整数�?颜色/变量 */
-  bottom: 100%; /* 含义：bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  max-height: 240px; /* 含义：max-height 样式属性；设置：按需调整数�?颜色/变量 */
-  overflow: auto; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.85); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #fff; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 8px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  opacity: 0; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-  pointer-events: none; /* 含义：pointer-events 样式属性；设置：按需调整数�?颜色/变量 */
-  transition: opacity 0.2s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-  z-index: 20; /* 含义：层叠顺序；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .llm-error-block::after */
-.llm-error-block:hover::after {{ /* 含义�?llm-error-block:hover::after 样式区域；设置：在本块内调整相关属�?*/
-  opacity: 1; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .llm-error-block:hover::after */
-.report-header h1 {{ /* 含义：页眉主标题；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  font-size: 1.6rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--primary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .report-header h1 */
-.report-header .subtitle {{ /* 含义：页眉副标题；设置：在本块内调整相关属�?*/
-  margin: 4px 0 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .report-header .subtitle */
-.header-actions {{ /* 含义：页眉按钮组；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .header-actions */
-theme-button {{ /* 含义：主题切换组件；设置：在本块内调整相关属�?*/
-  display: inline-block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  vertical-align: middle; /* 含义：vertical-align 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 theme-button */
-.cover {{ /* 含义：封面区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0 40px; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .cover */
-.cover h1 {{ /* 含义�?cover h1 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 2.4rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  margin: 0.4em 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .cover h1 */
-.cover-hint {{ /* 含义�?cover-hint 样式区域；设置：在本块内调整相关属�?*/
-  letter-spacing: 0.4em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-size: 0.95rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .cover-hint */
-.cover-subtitle {{ /* 含义�?cover-subtitle 样式区域；设置：在本块内调整相关属�?*/
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .cover-subtitle */
-.action-btn {{ /* 含义：主按钮基础样式；设置：在本块内调整相关属�?*/
-  --mouse-x: 50%; /* 含义：主题变�?mouse-x；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --mouse-y: 50%; /* 含义：主题变�?mouse-y；设置：�?themeTokens 中覆盖或改此默认�?*/
-  border: none; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #fff; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  padding: 11px 22px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  cursor: pointer; /* 含义：鼠标指针样式；设置：按需调整数�?颜色/变量 */
-  font-size: 0.92rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.025em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-  min-width: 140px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-  white-space: nowrap; /* 含义：空白与换行策略；设置：按需调整数�?颜色/变量 */
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: center; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 10px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  overflow: hidden; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn */
-.action-btn::before {{ /* 含义�?action-btn::before 样式区域；设置：在本块内调整相关属�?*/
-  content: ''; /* 含义：content 样式属性；设置：按需调整数�?颜色/变量 */
-  position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  top: 0; /* 含义：顶部偏移量；设置：按需调整数�?颜色/变量 */
-  left: 0; /* 含义：left 样式属性；设置：按需调整数�?颜色/变量 */
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 100%; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  opacity: 0; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-  transition: opacity 0.35s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn::before */
-.action-btn::after {{ /* 含义�?action-btn::after 样式区域；设置：在本块内调整相关属�?*/
-  content: ''; /* 含义：content 样式属性；设置：按需调整数�?颜色/变量 */
-  position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  top: var(--mouse-y); /* 含义：顶部偏移量；设置：按需调整数�?颜色/变量 */
-  left: var(--mouse-x); /* 含义：left 样式属性；设置：按需调整数�?颜色/变量 */
-  width: 0; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 0; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 50%; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  transform: translate(-50%, -50%); /* 含义：transform 样式属性；设置：按需调整数�?颜色/变量 */
-  transition: width 0.45s ease-out, height 0.45s ease-out; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-  pointer-events: none; /* 含义：pointer-events 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn::after */
-.action-btn:hover {{ /* 含义�?action-btn:hover 样式区域；设置：在本块内调整相关属�?*/
-  transform: translateY(-2px); /* 含义：transform 样式属性；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn:hover */
-.action-btn:hover::before {{ /* 含义�?action-btn:hover::before 样式区域；设置：在本块内调整相关属�?*/
-  opacity: 1; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn:hover::before */
-.action-btn:hover::after {{ /* 含义�?action-btn:hover::after 样式区域；设置：在本块内调整相关属�?*/
-  width: 280%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 280%; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn:hover::after */
-.action-btn:active {{ /* 含义�?action-btn:active 样式区域；设置：在本块内调整相关属�?*/
-  transform: translateY(0) scale(0.98); /* 含义：transform 样式属性；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn:active */
-.action-btn .btn-icon {{ /* 含义�?action-btn .btn-icon 样式区域；设置：在本块内调整相关属�?*/
-  width: 18px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 18px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  flex-shrink: 0; /* 含义：flex-shrink 样式属性；设置：按需调整数�?颜色/变量 */
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15)); /* 含义：滤镜效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .action-btn .btn-icon */
+.hero-kpi {{ /* å«ä¹ï¼å°ï¿½?KPI å¡çï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: var(--card-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 14px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 6px 16px var(--shadow-color); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-kpi */
+.hero-kpi .label {{ /* å«ä¹ï¿½?hero-kpi .label æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-kpi .label */
+.hero-kpi .value {{ /* å«ä¹ï¿½?hero-kpi .value æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.8rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-kpi .value */
+.hero-highlights {{ /* å«ä¹ï¼å°é¢äº®ç¹åè¡¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  list-style: none; /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 16px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 10px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-highlights */
+.hero-highlights li {{ /* å«ä¹ï¿½?hero-highlights li æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-highlights li */
+.badge {{ /* å«ä¹ï¼å¾½ç« æ ç­¾ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 6px 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 999px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.05); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .badge */
+.broken-link {{ /* å«ä¹ï¼æ æé¾æ¥æç¤ºæ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-decoration: underline dotted; /* å«ä¹ï¼ææ¬è£é¥°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--primary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .broken-link */
+.hero-actions {{ /* å«ä¹ï¼å°é¢æä½æé®å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-actions */
+.ghost-btn {{ /* å«ä¹ï¼æ¬¡çº§æé®æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border: 1px solid var(--primary-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: transparent; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--primary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 999px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 8px 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  cursor: pointer; /* å«ä¹ï¼é¼ æ æéæ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .ghost-btn */
+.hero-summary {{ /* å«ä¹ï¼å°é¢æè¦æå­ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.05rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 500; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 0; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .hero-summary */
+.llm-error-block {{ /* å«ä¹ï¼LLM éè¯¯æç¤ºå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border: 1px dashed var(--secondary-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 12px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(229,62,62,0.06); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .llm-error-block */
+.llm-error-block.importance-critical {{ /* å«ä¹ï¿½?llm-error-block.importance-critical æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border-color: var(--secondary-color-dark); /* å«ä¹ï¼border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(229,62,62,0.12); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .llm-error-block.importance-critical */
+.llm-error-block::after {{ /* å«ä¹ï¿½?llm-error-block::after æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  content: attr(data-raw); /* å«ä¹ï¼content æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  white-space: pre-wrap; /* å«ä¹ï¼ç©ºç½ä¸æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  left: 0; /* å«ä¹ï¼left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  right: 0; /* å«ä¹ï¼right æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  bottom: 100%; /* å«ä¹ï¼bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  max-height: 240px; /* å«ä¹ï¼max-height æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: auto; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.85); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #fff; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 8px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  pointer-events: none; /* å«ä¹ï¼pointer-events æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: opacity 0.2s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  z-index: 20; /* å«ä¹ï¼å±å é¡ºåºï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .llm-error-block::after */
+.llm-error-block:hover::after {{ /* å«ä¹ï¿½?llm-error-block:hover::after æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  opacity: 1; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .llm-error-block:hover::after */
+.report-header h1 {{ /* å«ä¹ï¼é¡µçä¸»æ é¢ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.6rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--primary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .report-header h1 */
+.report-header .subtitle {{ /* å«ä¹ï¼é¡µçå¯æ é¢ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 4px 0 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .report-header .subtitle */
+.header-actions {{ /* å«ä¹ï¼é¡µçæé®ç»ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .header-actions */
+theme-button {{ /* å«ä¹ï¼ä¸»é¢åæ¢ç»ä»¶ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  vertical-align: middle; /* å«ä¹ï¼vertical-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ theme-button */
+.cover {{ /* å«ä¹ï¼å°é¢åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0 40px; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .cover */
+.cover h1 {{ /* å«ä¹ï¿½?cover h1 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 2.4rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0.4em 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .cover h1 */
+.cover-hint {{ /* å«ä¹ï¿½?cover-hint æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  letter-spacing: 0.4em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.95rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .cover-hint */
+.cover-subtitle {{ /* å«ä¹ï¿½?cover-subtitle æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .cover-subtitle */
+.action-btn {{ /* å«ä¹ï¼ä¸»æé®åºç¡æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --mouse-x: 50%; /* å«ä¹ï¼ä¸»é¢åï¿½?mouse-xï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --mouse-y: 50%; /* å«ä¹ï¼ä¸»é¢åï¿½?mouse-yï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  border: none; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #fff; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 11px 22px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  cursor: pointer; /* å«ä¹ï¼é¼ æ æéæ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.92rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.025em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 140px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  white-space: nowrap; /* å«ä¹ï¼ç©ºç½ä¸æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: center; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 10px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: hidden; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn */
+.action-btn::before {{ /* å«ä¹ï¿½?action-btn::before æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  content: ''; /* å«ä¹ï¼content æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  top: 0; /* å«ä¹ï¼é¡¶é¨åç§»éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  left: 0; /* å«ä¹ï¼left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 100%; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: opacity 0.35s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn::before */
+.action-btn::after {{ /* å«ä¹ï¿½?action-btn::after æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  content: ''; /* å«ä¹ï¼content æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  top: var(--mouse-y); /* å«ä¹ï¼é¡¶é¨åç§»éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  left: var(--mouse-x); /* å«ä¹ï¼left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 0; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 0; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 50%; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transform: translate(-50%, -50%); /* å«ä¹ï¼transform æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: width 0.45s ease-out, height 0.45s ease-out; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  pointer-events: none; /* å«ä¹ï¼pointer-events æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn::after */
+.action-btn:hover {{ /* å«ä¹ï¿½?action-btn:hover æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transform: translateY(-2px); /* å«ä¹ï¼transform æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn:hover */
+.action-btn:hover::before {{ /* å«ä¹ï¿½?action-btn:hover::before æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  opacity: 1; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn:hover::before */
+.action-btn:hover::after {{ /* å«ä¹ï¿½?action-btn:hover::after æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 280%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 280%; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn:hover::after */
+.action-btn:active {{ /* å«ä¹ï¿½?action-btn:active æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transform: translateY(0) scale(0.98); /* å«ä¹ï¼transform æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn:active */
+.action-btn .btn-icon {{ /* å«ä¹ï¿½?action-btn .btn-icon æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 18px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 18px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-shrink: 0; /* å«ä¹ï¼flex-shrink æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15)); /* å«ä¹ï¼æ»¤éææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .action-btn .btn-icon */
 .theme-toggle-btn .sun-icon,
-.theme-toggle-btn .moon-icon {{ /* 含义：主题切换按钮图标样式；设置：在本块内调整相关属�?*/
-  transition: transform 0.3s ease, opacity 0.3s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .theme-toggle-btn 图标 */
-.theme-toggle-btn .sun-icon {{ /* 含义：太阳图标样式；设置：在本块内调整相关属�?*/
-  color: #F59E0B; /* 含义：太阳图标颜色；设置：按需调整数�?颜色/变量 */
-  stroke: #F59E0B; /* 含义：太阳图标描边颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .theme-toggle-btn .sun-icon */
-.theme-toggle-btn .moon-icon {{ /* 含义：月亮图标样式；设置：在本块内调整相关属�?*/
-  color: #6366F1; /* 含义：月亮图标颜色；设置：按需调整数�?颜色/变量 */
-  stroke: #6366F1; /* 含义：月亮图标描边颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .theme-toggle-btn .moon-icon */
-.theme-toggle-btn:hover .sun-icon {{ /* 含义：悬停时太阳图标效果；设置：在本块内调整相关属�?*/
-  transform: rotate(15deg); /* 含义：旋转变换；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .theme-toggle-btn:hover .sun-icon */
-.theme-toggle-btn:hover .moon-icon {{ /* 含义：悬停时月亮图标效果；设置：在本块内调整相关属�?*/
-  transform: rotate(-15deg) scale(1.1); /* 含义：旋转和缩放变换；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .theme-toggle-btn:hover .moon-icon */
-body.exporting {{ /* 含义：body.exporting 样式区域；设置：在本块内调整相关属�?*/
-  cursor: progress; /* 含义：鼠标指针样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 body.exporting */
-.export-overlay {{ /* 含义：导出遮罩层；设置：在本块内调整相关属�?*/
-  position: fixed; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  inset: 0; /* 含义：inset 样式属性；设置：按需调整数�?颜色/变量 */
-  background: rgba(3, 9, 26, 0.55); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  backdrop-filter: blur(2px); /* 含义：背景模糊；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: center; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  opacity: 0; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-  pointer-events: none; /* 含义：pointer-events 样式属性；设置：按需调整数�?颜色/变量 */
-  transition: opacity 0.3s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-  z-index: 999; /* 含义：层叠顺序；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-overlay */
-.export-overlay.active {{ /* 含义�?export-overlay.active 样式区域；设置：在本块内调整相关属�?*/
-  opacity: 1; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-  pointer-events: all; /* 含义：pointer-events 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-overlay.active */
-.export-dialog {{ /* 含义�?export-dialog 样式区域；设置：在本块内调整相关属�?*/
-  background: rgba(12, 19, 38, 0.92); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  padding: 24px 32px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 18px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  color: #fff; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  min-width: 280px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 16px 40px rgba(0,0,0,0.45); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-dialog */
-.export-spinner {{ /* 含义�?export-spinner 样式区域；设置：在本块内调整相关属�?*/
-  width: 48px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 48px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  border-radius: 50%; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 3px solid rgba(255,255,255,0.2); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-top-color: var(--secondary-color); /* 含义：border-top-color 样式属性；设置：按需调整数�?颜色/变量 */
-  margin: 0 auto 16px; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  animation: export-spin 1s linear infinite; /* 含义：animation 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-spinner */
-.export-status {{ /* 含义�?export-status 样式区域；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  font-size: 1rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-status */
+.theme-toggle-btn .moon-icon {{ /* å«ä¹ï¼ä¸»é¢åæ¢æé®å¾æ æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transition: transform 0.3s ease, opacity 0.3s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .theme-toggle-btn å¾æ  */
+.theme-toggle-btn .sun-icon {{ /* å«ä¹ï¼å¤ªé³å¾æ æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: #F59E0B; /* å«ä¹ï¼å¤ªé³å¾æ é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  stroke: #F59E0B; /* å«ä¹ï¼å¤ªé³å¾æ æè¾¹é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .theme-toggle-btn .sun-icon */
+.theme-toggle-btn .moon-icon {{ /* å«ä¹ï¼æäº®å¾æ æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: #6366F1; /* å«ä¹ï¼æäº®å¾æ é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  stroke: #6366F1; /* å«ä¹ï¼æäº®å¾æ æè¾¹é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .theme-toggle-btn .moon-icon */
+.theme-toggle-btn:hover .sun-icon {{ /* å«ä¹ï¼æ¬åæ¶å¤ªé³å¾æ ææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transform: rotate(15deg); /* å«ä¹ï¼æè½¬åæ¢ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .theme-toggle-btn:hover .sun-icon */
+.theme-toggle-btn:hover .moon-icon {{ /* å«ä¹ï¼æ¬åæ¶æäº®å¾æ ææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transform: rotate(-15deg) scale(1.1); /* å«ä¹ï¼æè½¬åç¼©æ¾åæ¢ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .theme-toggle-btn:hover .moon-icon */
+body.exporting {{ /* å«ä¹ï¼body.exporting æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  cursor: progress; /* å«ä¹ï¼é¼ æ æéæ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ body.exporting */
+.export-overlay {{ /* å«ä¹ï¼å¯¼åºé®ç½©å±ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  position: fixed; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  inset: 0; /* å«ä¹ï¼inset æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(3, 9, 26, 0.55); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  backdrop-filter: blur(2px); /* å«ä¹ï¼èæ¯æ¨¡ç³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: center; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  pointer-events: none; /* å«ä¹ï¼pointer-events æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: opacity 0.3s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  z-index: 999; /* å«ä¹ï¼å±å é¡ºåºï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-overlay */
+.export-overlay.active {{ /* å«ä¹ï¿½?export-overlay.active æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  opacity: 1; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  pointer-events: all; /* å«ä¹ï¼pointer-events æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-overlay.active */
+.export-dialog {{ /* å«ä¹ï¿½?export-dialog æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: rgba(12, 19, 38, 0.92); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 24px 32px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 18px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #fff; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 280px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-dialog */
+.export-spinner {{ /* å«ä¹ï¿½?export-spinner æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 48px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 48px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 50%; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 3px solid rgba(255,255,255,0.2); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-top-color: var(--secondary-color); /* å«ä¹ï¼border-top-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0 auto 16px; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  animation: export-spin 1s linear infinite; /* å«ä¹ï¼animation æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-spinner */
+.export-status {{ /* å«ä¹ï¿½?export-status æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-status */
 .exporting *,
-.exporting *::before, /* 含义�?exporting * 样式属性；设置：按需调整数�?颜色/变量 */
-.exporting *::after {{ /* 含义�?exporting *::after 样式区域；设置：在本块内调整相关属�?*/
-  animation: none !important; /* 含义：animation 样式属性；设置：按需调整数�?颜色/变量 */
-  transition: none !important; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .exporting *::after */
-.export-progress {{ /* 含义�?export-progress 样式区域；设置：在本块内调整相关属�?*/
-  width: 220px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 6px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  background: rgba(255,255,255,0.25); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 999px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  overflow: hidden; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-  margin: 20px auto 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-progress */
-.export-progress-bar {{ /* 含义�?export-progress-bar 样式区域；设置：在本块内调整相关属�?*/
-  position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  top: 0; /* 含义：顶部偏移量；设置：按需调整数�?颜色/变量 */
-  bottom: 0; /* 含义：bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  width: 45%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  border-radius: inherit; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  animation: export-progress 1.4s ease-in-out infinite; /* 含义：animation 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .export-progress-bar */
-@keyframes export-spin {{ /* 含义：@keyframes export-spin 样式区域；设置：在本块内调整相关属�?*/
-  from {{ transform: rotate(0deg); }} /* 含义：关键帧起点，保�?0° 角度；设置：可改为其他起始旋转或缩放状�?*/
-  to {{ transform: rotate(360deg); }} /* 含义：关键帧终点，旋转一圈；设置：可改为自定义终态角�?效果 */
-}} /* 结束 @keyframes export-spin */
-@keyframes export-progress {{ /* 含义：@keyframes export-progress 样式区域；设置：在本块内调整相关属�?*/
-  0% {{ left: -45%; }} /* 含义：进度动画起点，条形从左侧之外进入；设置：调整起�?left 百分�?*/
-  50% {{ left: 20%; }} /* 含义：进度动画中点，条形位于容器中段；设置：按需调整偏移比例 */
-  100% {{ left: 110%; }} /* 含义：进度动画终点，条形滑出右侧；设置：调整收尾 left 百分�?*/
-}} /* 结束 @keyframes export-progress */
-main {{ /* 含义：主体内容容器；设置：在本块内调整相关属�?*/
-  max-width: {container_width}; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  margin: 40px auto; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: {gutter}; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: var(--card-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 16px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 10px 30px var(--shadow-color); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 main */
-h1, h2, h3, h4, h5, h6 {{ /* 含义：标题通用样式；设置：在本块内调整相关属�?*/
-  font-family: {heading_font}; /* 含义：字体族；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  margin-top: 2em; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 0.6em; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  line-height: 1.35; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 h1, h2, h3, h4, h5, h6 */
-h2 {{ /* 含义：h2 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 h2 */
-h3 {{ /* 含义：h3 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.4rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 h3 */
-h4 {{ /* 含义：h4 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.2rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 h4 */
-p {{ /* 含义：段落样式；设置：在本块内调整相关属�?*/
-  margin: 1em 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  text-align: justify; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-}} /* 结束 p */
-ul, ol {{ /* 含义：列表样式；设置：在本块内调整相关属�?*/
-  margin-left: 1.5em; /* 含义：margin-left 样式属性；设置：按需调整数�?颜色/变量 */
-  padding-left: 0; /* 含义：左侧内边距/缩进；设置：按需调整数�?颜色/变量 */
-}} /* 结束 ul, ol */
-img, canvas, svg {{ /* 含义：媒体元素尺寸限制；设置：在本块内调整相关属�?*/
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  height: auto; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-}} /* 结束 img, canvas, svg */
-.meta-card {{ /* 含义：元信息卡片；设置：在本块内调整相关属�?*/
-  background: rgba(0,0,0,0.02); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  padding: 20px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .meta-card */
-.meta-card ul {{ /* 含义�?meta-card ul 样式区域；设置：在本块内调整相关属�?*/
-  list-style: none; /* 含义：列表样式；设置：按需调整数�?颜色/变量 */
-  padding: 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .meta-card ul */
-.meta-card li {{ /* 含义�?meta-card li 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  border-bottom: 1px dashed var(--border-color); /* 含义：底部边框；设置：按需调整数�?颜色/变量 */
-  padding: 8px 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .meta-card li */
-.toc {{ /* 含义：目录容器；设置：在本块内调整相关属�?*/
-  margin-top: 30px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  padding: 20px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.01); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc */
-.toc-title {{ /* 含义�?toc-title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 10px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc-title */
-.toc ul {{ /* 含义�?toc ul 样式区域；设置：在本块内调整相关属�?*/
-  list-style: none; /* 含义：列表样式；设置：按需调整数�?颜色/变量 */
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc ul */
-.toc li {{ /* 含义�?toc li 样式区域；设置：在本块内调整相关属�?*/
-  margin: 4px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc li */
-.toc li.level-1 {{ /* 含义�?toc li.level-1 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.05rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-top: 12px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc li.level-1 */
-.toc li.level-2 {{ /* 含义�?toc li.level-2 样式区域；设置：在本块内调整相关属�?*/
-  margin-left: 12px; /* 含义：margin-left 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc li.level-2 */
-.toc li a {{ /* 含义�?toc li a 样式区域；设置：在本块内调整相关属�?*/
-  color: var(--primary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  text-decoration: none; /* 含义：文本装饰；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc li a */
-.toc li.level-3 {{ /* 含义�?toc li.level-3 样式区域；设置：在本块内调整相关属�?*/
-  margin-left: 16px; /* 含义：margin-left 样式属性；设置：按需调整数�?颜色/变量 */
-  font-size: 0.95em; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc li.level-3 */
-.toc-desc {{ /* 含义�?toc-desc 样式区域；设置：在本块内调整相关属�?*/
-  margin: 2px 0 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc-desc */
-.toc-desc {{ /* 含义�?toc-desc 样式区域；设置：在本块内调整相关属�?*/
-  margin: 2px 0 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .toc-desc */
-.chapter {{ /* 含义：章节容器；设置：在本块内调整相关属�?*/
-  margin-top: 40px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  padding-top: 32px; /* 含义：padding-top 样式属性；设置：按需调整数�?颜色/变量 */
-  border-top: 1px solid rgba(0,0,0,0.05); /* 含义：border-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chapter */
-.chapter:first-of-type {{ /* 含义�?chapter:first-of-type 样式区域；设置：在本块内调整相关属�?*/
-  border-top: none; /* 含义：border-top 样式属性；设置：按需调整数�?颜色/变量 */
-  padding-top: 0; /* 含义：padding-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chapter:first-of-type */
-blockquote {{ /* 含义：引用块 - PDF基础样式；设置：在本块内调整相关属�?*/
-  padding: 12px 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.04); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-radius: 8px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border-left: none; /* 含义：移除左侧色条；设置：按需调整数�?颜色/变量 */
-}} /* 结束 blockquote */
-/* ==================== Blockquote 液态玻璃效�?- 仅屏幕显�?==================== */
+.exporting *::before, /* å«ä¹ï¿½?exporting * æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.exporting *::after {{ /* å«ä¹ï¿½?exporting *::after æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  animation: none !important; /* å«ä¹ï¼animation æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: none !important; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .exporting *::after */
+.export-progress {{ /* å«ä¹ï¿½?export-progress æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 220px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 6px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(255,255,255,0.25); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 999px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: hidden; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px auto 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-progress */
+.export-progress-bar {{ /* å«ä¹ï¿½?export-progress-bar æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  top: 0; /* å«ä¹ï¼é¡¶é¨åç§»éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  bottom: 0; /* å«ä¹ï¼bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 45%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: inherit; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  animation: export-progress 1.4s ease-in-out infinite; /* å«ä¹ï¼animation æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .export-progress-bar */
+@keyframes export-spin {{ /* å«ä¹ï¼@keyframes export-spin æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  from {{ transform: rotate(0deg); }} /* å«ä¹ï¼å³é®å¸§èµ·ç¹ï¼ä¿ï¿½?0�° è§åº¦ï¼è®¾ç½®ï¼å¯æ¹ä¸ºå¶ä»èµ·å§æè½¬æç¼©æ¾ç¶ï¿½?*/
+  to {{ transform: rotate(360deg); }} /* å«ä¹ï¼å³é®å¸§ç»ç¹ï¼æè½¬ä¸åï¼è®¾ç½®ï¼å¯æ¹ä¸ºèªå®ä¹ç»æè§ï¿½?ææ */
+}} /* ç»æ @keyframes export-spin */
+@keyframes export-progress {{ /* å«ä¹ï¼@keyframes export-progress æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  0% {{ left: -45%; }} /* å«ä¹ï¼è¿åº¦å¨ç»èµ·ç¹ï¼æ¡å½¢ä»å·¦ä¾§ä¹å¤è¿å¥ï¼è®¾ç½®ï¼è°æ´èµ·ï¿½?left ç¾åï¿½?*/
+  50% {{ left: 20%; }} /* å«ä¹ï¼è¿åº¦å¨ç»ä¸­ç¹ï¼æ¡å½¢ä½äºå®¹å¨ä¸­æ®µï¼è®¾ç½®ï¼æéè°æ´åç§»æ¯ä¾ */
+  100% {{ left: 110%; }} /* å«ä¹ï¼è¿åº¦å¨ç»ç»ç¹ï¼æ¡å½¢æ»åºå³ä¾§ï¼è®¾ç½®ï¼è°æ´æ¶å°¾ left ç¾åï¿½?*/
+}} /* ç»æ @keyframes export-progress */
+main {{ /* å«ä¹ï¼ä¸»ä½åå®¹å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  max-width: {container_width}; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 40px auto; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: {gutter}; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--card-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 16px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 10px 30px var(--shadow-color); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ main */
+h1, h2, h3, h4, h5, h6 {{ /* å«ä¹ï¼æ é¢éç¨æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-family: {heading_font}; /* å«ä¹ï¼å­ä½æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 2em; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 0.6em; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.35; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ h1, h2, h3, h4, h5, h6 */
+h2 {{ /* å«ä¹ï¼h2 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ h2 */
+h3 {{ /* å«ä¹ï¼h3 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.4rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ h3 */
+h4 {{ /* å«ä¹ï¼h4 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.2rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ h4 */
+p {{ /* å«ä¹ï¼æ®µè½æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 1em 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: justify; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ p */
+ul, ol {{ /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-left: 1.5em; /* å«ä¹ï¼margin-left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding-left: 0; /* å«ä¹ï¼å·¦ä¾§åè¾¹è·/ç¼©è¿ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ ul, ol */
+img, canvas, svg {{ /* å«ä¹ï¼åªä½åç´ å°ºå¯¸éå¶ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: auto; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ img, canvas, svg */
+.meta-card {{ /* å«ä¹ï¼åä¿¡æ¯å¡çï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: rgba(0,0,0,0.02); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 20px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .meta-card */
+.meta-card ul {{ /* å«ä¹ï¿½?meta-card ul æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  list-style: none; /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .meta-card ul */
+.meta-card li {{ /* å«ä¹ï¿½?meta-card li æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-bottom: 1px dashed var(--border-color); /* å«ä¹ï¼åºé¨è¾¹æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 8px 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .meta-card li */
+.toc {{ /* å«ä¹ï¼ç®å½å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 30px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 20px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.01); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc */
+.toc-title {{ /* å«ä¹ï¿½?toc-title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 10px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc-title */
+.toc ul {{ /* å«ä¹ï¿½?toc ul æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  list-style: none; /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc ul */
+.toc li {{ /* å«ä¹ï¿½?toc li æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 4px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc li */
+.toc li.level-1 {{ /* å«ä¹ï¿½?toc li.level-1 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.05rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 12px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc li.level-1 */
+.toc li.level-2 {{ /* å«ä¹ï¿½?toc li.level-2 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-left: 12px; /* å«ä¹ï¼margin-left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc li.level-2 */
+.toc li a {{ /* å«ä¹ï¿½?toc li a æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: var(--primary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-decoration: none; /* å«ä¹ï¼ææ¬è£é¥°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc li a */
+.toc li.level-3 {{ /* å«ä¹ï¿½?toc li.level-3 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-left: 16px; /* å«ä¹ï¼margin-left æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.95em; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc li.level-3 */
+.toc-desc {{ /* å«ä¹ï¿½?toc-desc æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 2px 0 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc-desc */
+.toc-desc {{ /* å«ä¹ï¿½?toc-desc æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 2px 0 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .toc-desc */
+.chapter {{ /* å«ä¹ï¼ç« èå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 40px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding-top: 32px; /* å«ä¹ï¼padding-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-top: 1px solid rgba(0,0,0,0.05); /* å«ä¹ï¼border-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chapter */
+.chapter:first-of-type {{ /* å«ä¹ï¿½?chapter:first-of-type æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border-top: none; /* å«ä¹ï¼border-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding-top: 0; /* å«ä¹ï¼padding-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chapter:first-of-type */
+blockquote {{ /* å«ä¹ï¼å¼ç¨å - PDFåºç¡æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 12px 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.04); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 8px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-left: none; /* å«ä¹ï¼ç§»é¤å·¦ä¾§è²æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ blockquote */
+/* ==================== Blockquote æ¶²æç»çæï¿½?- ä»å±å¹æ¾ï¿½?==================== */
 @media screen {{
-  blockquote {{ /* 含义：引用块液态玻�?- 透明悬浮设计；设置：在本块内调整相关属�?*/
-    position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-    margin: 20px 0; /* 含义：外边距增加悬浮空间；设置：按需调整数�?颜色/变量 */
-    padding: 18px 22px; /* 含义：内边距；设置：按需调整数�?颜色/变量 */
-    border: none; /* 含义：移除默认边框；设置：按需调整数�?颜色/变量 */
-    border-radius: 20px; /* 含义：大圆角增强液态感；设置：按需调整数�?颜色/变量 */
-    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%); /* 含义：极淡透明渐变；设置：按需调整数�?颜色/变量 */
-    backdrop-filter: blur(24px) saturate(180%); /* 含义：强背景模糊实现玻璃透视；设置：按需调整数�?颜色/变量 */
-    -webkit-backdrop-filter: blur(24px) saturate(180%); /* 含义：Safari 背景模糊；设置：按需调整数�?颜色/变量 */
+  blockquote {{ /* å«ä¹ï¼å¼ç¨åæ¶²æç»ï¿½?- éææ¬æµ®è®¾è®¡ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·å¢å æ¬æµ®ç©ºé´ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    padding: 18px 22px; /* å«ä¹ï¼åè¾¹è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border: none; /* å«ä¹ï¼ç§»é¤é»è®¤è¾¹æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border-radius: 20px; /* å«ä¹ï¼å¤§åè§å¢å¼ºæ¶²ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%); /* å«ä¹ï¼ææ·¡éææ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    backdrop-filter: blur(24px) saturate(180%); /* å«ä¹ï¼å¼ºèæ¯æ¨¡ç³å®ç°ç»çéè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    -webkit-backdrop-filter: blur(24px) saturate(180%); /* å«ä¹ï¼Safari èæ¯æ¨¡ç³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 8px 32px rgba(0, 0, 0, 0.12),
       0 2px 8px rgba(0, 0, 0, 0.06),
       inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-      inset 0 2px 4px rgba(255, 255, 255, 0.15); /* 含义：多层阴影营造悬浮感；设置：按需调整数�?颜色/变量 */
-    transform: translateY(0); /* 含义：初始位置；设置：按需调整数�?颜色/变量 */
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease; /* 含义：弹性过渡动画；设置：按需调整数�?颜色/变量 */
-    overflow: visible; /* 含义：允许光效溢出；设置：按需调整数�?颜色/变量 */
-    isolation: isolate; /* 含义：创建层叠上下文；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 blockquote 液态玻璃基础 */
-  blockquote:hover {{ /* 含义：悬停时增强悬浮效果；设置：在本块内调整相关属�?*/
-    transform: translateY(-3px); /* 含义：上浮效果；设置：按需调整数�?颜色/变量 */
+      inset 0 2px 4px rgba(255, 255, 255, 0.15); /* å«ä¹ï¼å¤å±é´å½±è¥é æ¬æµ®æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    transform: translateY(0); /* å«ä¹ï¼åå§ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease; /* å«ä¹ï¼å¼¹æ§è¿æ¸¡å¨ç»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    overflow: visible; /* å«ä¹ï¼åè®¸åææº¢åºï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    isolation: isolate; /* å«ä¹ï¼åå»ºå±å ä¸ä¸æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ blockquote æ¶²æç»çåºç¡ */
+  blockquote:hover {{ /* å«ä¹ï¼æ¬åæ¶å¢å¼ºæ¬æµ®ææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    transform: translateY(-3px); /* å«ä¹ï¼ä¸æµ®ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 16px 48px rgba(0, 0, 0, 0.15),
       0 4px 16px rgba(0, 0, 0, 0.08),
       inset 0 0 0 1px rgba(255, 255, 255, 0.25),
-      inset 0 2px 6px rgba(255, 255, 255, 0.2); /* 含义：增强阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 blockquote:hover */
-  blockquote::after {{ /* 含义：顶部高光反射；设置：在本块内调整相关属�?*/
-    content: ''; /* 含义：伪元素内容；设置：按需调整数�?颜色/变量 */
-    position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-    top: 0; /* 含义：顶部位置；设置：按需调整数�?颜色/变量 */
-    left: 0; /* 含义：左边位置；设置：按需调整数�?颜色/变量 */
-    right: 0; /* 含义：右边位置；设置：按需调整数�?颜色/变量 */
-    height: 50%; /* 含义：覆盖上半部分；设置：按需调整数�?颜色/变量 */
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%); /* 含义：顶部高光渐变；设置：按需调整数�?颜色/变量 */
-    border-radius: 20px 20px 0 0; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-    pointer-events: none; /* 含义：不响应鼠标；设置：按需调整数�?颜色/变量 */
-    z-index: -1; /* 含义：置于内容下方；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 blockquote::after */
-  /* 暗色模式 blockquote 液态玻�?*/
-  .dark-mode blockquote {{ /* 含义：暗色模式引用块液态玻璃；设置：在本块内调整相关属�?*/
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); /* 含义：暗色透明渐变；设置：按需调整数�?颜色/变量 */
+      inset 0 2px 6px rgba(255, 255, 255, 0.2); /* å«ä¹ï¼å¢å¼ºé´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ blockquote:hover */
+  blockquote::after {{ /* å«ä¹ï¼é¡¶é¨é«ååå°ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    content: ''; /* å«ä¹ï¼ä¼ªåç´ åå®¹ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    top: 0; /* å«ä¹ï¼é¡¶é¨ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    left: 0; /* å«ä¹ï¼å·¦è¾¹ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    right: 0; /* å«ä¹ï¼å³è¾¹ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    height: 50%; /* å«ä¹ï¼è¦çä¸åé¨åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%); /* å«ä¹ï¼é¡¶é¨é«åæ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border-radius: 20px 20px 0 0; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    pointer-events: none; /* å«ä¹ï¼ä¸ååºé¼ æ ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    z-index: -1; /* å«ä¹ï¼ç½®äºåå®¹ä¸æ¹ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ blockquote::after */
+  /* æè²æ¨¡å¼ blockquote æ¶²æç»ï¿½?*/
+  .dark-mode blockquote {{ /* å«ä¹ï¼æè²æ¨¡å¼å¼ç¨åæ¶²æç»çï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); /* å«ä¹ï¼æè²éææ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 8px 32px rgba(0, 0, 0, 0.4),
       0 2px 8px rgba(0, 0, 0, 0.2),
       inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 2px 4px rgba(255, 255, 255, 0.05); /* 含义：暗色阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode blockquote */
-  .dark-mode blockquote:hover {{ /* 含义：暗色悬停效果；设置：在本块内调整相关属�?*/
+      inset 0 2px 4px rgba(255, 255, 255, 0.05); /* å«ä¹ï¼æè²é´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode blockquote */
+  .dark-mode blockquote:hover {{ /* å«ä¹ï¼æè²æ¬åææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
     box-shadow: 
       0 20px 56px rgba(0, 0, 0, 0.5),
       0 6px 20px rgba(0, 0, 0, 0.25),
       inset 0 0 0 1px rgba(255, 255, 255, 0.15),
-      inset 0 2px 6px rgba(255, 255, 255, 0.08); /* 含义：暗色增强阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode blockquote:hover */
-  .dark-mode blockquote::after {{ /* 含义：暗色顶部高光；设置：在本块内调整相关属�?*/
-    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%); /* 含义：暗色高光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode blockquote::after */
-}} /* 结束 @media screen blockquote 液态玻�?*/
-.engine-quote {{ /* 含义：引擎发言块；设置：在本块内调整相关属�?*/
-  --engine-quote-bg: var(--engine-insight-bg); /* 含义：主题变�?engine-quote-bg；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-border: var(--engine-insight-border); /* 含义：主题变�?engine-quote-border；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-text: var(--engine-insight-text); /* 含义：主题变�?engine-quote-text；设置：�?themeTokens 中覆盖或改此默认�?*/
-  margin: 22px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: 16px 18px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 14px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--engine-quote-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  background: var(--engine-quote-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: var(--engine-quote-shadow); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  line-height: 1.65; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .engine-quote */
-.engine-quote__header {{ /* 含义�?engine-quote__header 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  gap: 10px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  font-weight: 650; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--engine-quote-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 8px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.02em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .engine-quote__header */
-.engine-quote__dot {{ /* 含义�?engine-quote__dot 样式区域；设置：在本块内调整相关属�?*/
-  width: 10px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 10px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  border-radius: 50%; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: var(--engine-quote-text); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 0 0 8px rgba(0,0,0,0.02); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .engine-quote__dot */
-.engine-quote__title {{ /* 含义�?engine-quote__title 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 0.98rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .engine-quote__title */
-.engine-quote__body > *:first-child {{ margin-top: 0; }} /* 含义�?engine-quote__body > * 样式属性；设置：按需调整数�?颜色/变量 */
-.engine-quote__body > *:last-child {{ margin-bottom: 0; }} /* 含义�?engine-quote__body > * 样式属性；设置：按需调整数�?颜色/变量 */
-.engine-quote.engine-media {{ /* 含义�?engine-quote.engine-media 样式区域；设置：在本块内调整相关属�?*/
-  --engine-quote-bg: var(--engine-media-bg); /* 含义：主题变�?engine-quote-bg；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-border: var(--engine-media-border); /* 含义：主题变�?engine-quote-border；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-text: var(--engine-media-text); /* 含义：主题变�?engine-quote-text；设置：�?themeTokens 中覆盖或改此默认�?*/
-}} /* 结束 .engine-quote.engine-media */
-.engine-quote.engine-query {{ /* 含义�?engine-quote.engine-query 样式区域；设置：在本块内调整相关属�?*/
-  --engine-quote-bg: var(--engine-query-bg); /* 含义：主题变�?engine-quote-bg；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-border: var(--engine-query-border); /* 含义：主题变�?engine-quote-border；设置：�?themeTokens 中覆盖或改此默认�?*/
-  --engine-quote-text: var(--engine-query-text); /* 含义：主题变�?engine-quote-text；设置：�?themeTokens 中覆盖或改此默认�?*/
-}} /* 结束 .engine-quote.engine-query */
-.table-wrap {{ /* 含义：表格滚动容器；设置：在本块内调整相关属�?*/
-  overflow-x: auto; /* 含义：横向溢出处理；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .table-wrap */
-table {{ /* 含义：表格基础样式；设置：在本块内调整相关属�?*/
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  border-collapse: collapse; /* 含义：border-collapse 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 table */
-table th, table td {{ /* 含义：表格单元格；设置：在本块内调整相关属�?*/
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 table th, table td */
-table th {{ /* 含义：table th 样式区域；设置：在本块内调整相关属�?*/
-  background: rgba(0,0,0,0.03); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 table th */
-.align-center {{ text-align: center; }} /* 含义�?align-center  text-align 样式属性；设置：按需调整数�?颜色/变量 */
-.align-right {{ text-align: right; }} /* 含义�?align-right  text-align 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-card {{ /* 含义：SWOT 卡片容器；设置：在本块内调整相关属�?*/
-  margin: 26px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: 18px 18px 14px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 16px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-card-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  background: var(--swot-card-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: var(--swot-card-shadow); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  backdrop-filter: var(--swot-card-blur); /* 含义：背景模糊；设置：按需调整数�?颜色/变量 */
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  overflow: hidden; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-card */
-.swot-card__head {{ /* 含义�?swot-card__head 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 16px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-card__head */
-.swot-card__title {{ /* 含义�?swot-card__title 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.15rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 750; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 4px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-card__title */
-.swot-card__summary {{ /* 含义�?swot-card__summary 样式区域；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.82; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-card__summary */
-.swot-legend {{ /* 含义�?swot-legend 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-legend */
-.swot-legend__item {{ /* 含义�?swot-legend__item 样式区域；设置：在本块内调整相关属�?*/
-  padding: 6px 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 999px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-on-dark); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-tag-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.16); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35); /* 含义：文字阴影；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-legend__item */
-.swot-legend__item.strength {{ background: var(--swot-strength); }} /* 含义�?swot-legend__item.strength  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-legend__item.weakness {{ background: var(--swot-weakness); }} /* 含义�?swot-legend__item.weakness  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-legend__item.opportunity {{ background: var(--swot-opportunity); }} /* 含义�?swot-legend__item.opportunity  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-legend__item.threat {{ background: var(--swot-threat); }} /* 含义�?swot-legend__item.threat  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-grid {{ /* 含义：SWOT 象限网格；设置：在本块内调整相关属�?*/
-  display: grid; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* 含义：网格列模板；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  margin-top: 14px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-grid */
-.swot-cell {{ /* 含义：SWOT 象限单元格；设置：在本块内调整相关属�?*/
-  border-radius: 14px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-cell-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  padding: 12px 12px 10px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: var(--swot-cell-base); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-cell */
-.swot-cell.strength {{ border-color: var(--swot-cell-strength-border); background: var(--swot-cell-strength-bg); }} /* 含义�?swot-cell.strength  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-cell.weakness {{ border-color: var(--swot-cell-weakness-border); background: var(--swot-cell-weakness-bg); }} /* 含义�?swot-cell.weakness  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-cell.opportunity {{ border-color: var(--swot-cell-opportunity-border); background: var(--swot-cell-opportunity-bg); }} /* 含义�?swot-cell.opportunity  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-cell.threat {{ border-color: var(--swot-cell-threat-border); background: var(--swot-cell-threat-bg); }} /* 含义�?swot-cell.threat  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-cell__meta {{ /* 含义�?swot-cell__meta 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 10px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 8px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-cell__meta */
-.swot-pill {{ /* 含义�?swot-pill 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: center; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  width: 36px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 36px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  font-weight: 800; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-on-dark); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-tag-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.18); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pill */
-.swot-pill.strength {{ background: var(--swot-strength); }} /* 含义�?swot-pill.strength  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pill.weakness {{ background: var(--swot-weakness); }} /* 含义�?swot-pill.weakness  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pill.opportunity {{ background: var(--swot-opportunity); }} /* 含义�?swot-pill.opportunity  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pill.threat {{ background: var(--swot-threat); }} /* 含义�?swot-pill.threat  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-cell__title {{ /* 含义�?swot-cell__title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 750; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.01em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-cell__title */
-.swot-cell__caption {{ /* 含义�?swot-cell__caption 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.7; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-cell__caption */
-.swot-list {{ /* 含义：SWOT 条目列表；设置：在本块内调整相关属�?*/
-  list-style: none; /* 含义：列表样式；设置：按需调整数�?颜色/变量 */
-  padding: 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-direction: column; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-list */
-.swot-item {{ /* 含义：SWOT 条目；设置：在本块内调整相关属�?*/
-  padding: 10px 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: var(--swot-surface); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-item-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 12px 22px rgba(0,0,0,0.08); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-item */
-.swot-item-title {{ /* 含义�?swot-item-title 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  font-weight: 650; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-item-title */
-.swot-item-tags {{ /* 含义�?swot-item-tags 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 6px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-item-tags */
-.swot-tag {{ /* 含义�?swot-tag 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  padding: 4px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: var(--swot-chip-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--swot-tag-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 6px 14px rgba(0,0,0,0.12); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  line-height: 1.2; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-tag */
-.swot-tag.neutral {{ /* 含义�?swot-tag.neutral 样式区域；设置：在本块内调整相关属�?*/
-  opacity: 0.9; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-tag.neutral */
-.swot-item-desc {{ /* 含义�?swot-item-desc 样式区域；设置：在本块内调整相关属�?*/
-  margin-top: 4px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.92; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-item-desc */
-.swot-item-evidence {{ /* 含义�?swot-item-evidence 样式区域；设置：在本块内调整相关属�?*/
-  margin-top: 4px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.94; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-item-evidence */
-.swot-empty {{ /* 含义�?swot-empty 样式区域；设置：在本块内调整相关属�?*/
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px dashed var(--swot-card-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  color: var(--swot-muted); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.7; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-empty */
+      inset 0 2px 6px rgba(255, 255, 255, 0.08); /* å«ä¹ï¼æè²å¢å¼ºé´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode blockquote:hover */
+  .dark-mode blockquote::after {{ /* å«ä¹ï¼æè²é¡¶é¨é«åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%); /* å«ä¹ï¼æè²é«åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode blockquote::after */
+}} /* ç»æ @media screen blockquote æ¶²æç»ï¿½?*/
+.engine-quote {{ /* å«ä¹ï¼å¼æåè¨åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --engine-quote-bg: var(--engine-insight-bg); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-bgï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-border: var(--engine-insight-border); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-borderï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-text: var(--engine-insight-text); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-textï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  margin: 22px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 16px 18px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 14px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--engine-quote-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--engine-quote-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: var(--engine-quote-shadow); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.65; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .engine-quote */
+.engine-quote__header {{ /* å«ä¹ï¿½?engine-quote__header æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 10px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 650; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--engine-quote-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 8px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.02em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .engine-quote__header */
+.engine-quote__dot {{ /* å«ä¹ï¿½?engine-quote__dot æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 10px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 10px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 50%; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--engine-quote-text); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 0 0 8px rgba(0,0,0,0.02); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .engine-quote__dot */
+.engine-quote__title {{ /* å«ä¹ï¿½?engine-quote__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 0.98rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .engine-quote__title */
+.engine-quote__body > *:first-child {{ margin-top: 0; }} /* å«ä¹ï¿½?engine-quote__body > * æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.engine-quote__body > *:last-child {{ margin-bottom: 0; }} /* å«ä¹ï¿½?engine-quote__body > * æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.engine-quote.engine-media {{ /* å«ä¹ï¿½?engine-quote.engine-media æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --engine-quote-bg: var(--engine-media-bg); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-bgï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-border: var(--engine-media-border); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-borderï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-text: var(--engine-media-text); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-textï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+}} /* ç»æ .engine-quote.engine-media */
+.engine-quote.engine-query {{ /* å«ä¹ï¿½?engine-quote.engine-query æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  --engine-quote-bg: var(--engine-query-bg); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-bgï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-border: var(--engine-query-border); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-borderï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+  --engine-quote-text: var(--engine-query-text); /* å«ä¹ï¼ä¸»é¢åï¿½?engine-quote-textï¼è®¾ç½®ï¼ï¿½?themeTokens ä¸­è¦çææ¹æ­¤é»è®¤ï¿½?*/
+}} /* ç»æ .engine-quote.engine-query */
+.table-wrap {{ /* å«ä¹ï¼è¡¨æ ¼æ»å¨å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  overflow-x: auto; /* å«ä¹ï¼æ¨ªåæº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .table-wrap */
+table {{ /* å«ä¹ï¼è¡¨æ ¼åºç¡æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-collapse: collapse; /* å«ä¹ï¼border-collapse æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ table */
+table th, table td {{ /* å«ä¹ï¼è¡¨æ ¼ååæ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ table th, table td */
+table th {{ /* å«ä¹ï¼table th æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: rgba(0,0,0,0.03); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ table th */
+.align-center {{ text-align: center; }} /* å«ä¹ï¿½?align-center  text-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.align-right {{ text-align: right; }} /* å«ä¹ï¿½?align-right  text-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-card {{ /* å«ä¹ï¼SWOT å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 26px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 18px 18px 14px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 16px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-card-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--swot-card-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: var(--swot-card-shadow); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  backdrop-filter: var(--swot-card-blur); /* å«ä¹ï¼èæ¯æ¨¡ç³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: hidden; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-card */
+.swot-card__head {{ /* å«ä¹ï¿½?swot-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 16px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-card__head */
+.swot-card__title {{ /* å«ä¹ï¿½?swot-card__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.15rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 750; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 4px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-card__title */
+.swot-card__summary {{ /* å«ä¹ï¿½?swot-card__summary æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.82; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-card__summary */
+.swot-legend {{ /* å«ä¹ï¿½?swot-legend æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-legend */
+.swot-legend__item {{ /* å«ä¹ï¿½?swot-legend__item æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 6px 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 999px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-on-dark); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-tag-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.16); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35); /* å«ä¹ï¼æå­é´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-legend__item */
+.swot-legend__item.strength {{ background: var(--swot-strength); }} /* å«ä¹ï¿½?swot-legend__item.strength  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-legend__item.weakness {{ background: var(--swot-weakness); }} /* å«ä¹ï¿½?swot-legend__item.weakness  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-legend__item.opportunity {{ background: var(--swot-opportunity); }} /* å«ä¹ï¿½?swot-legend__item.opportunity  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-legend__item.threat {{ background: var(--swot-threat); }} /* å«ä¹ï¿½?swot-legend__item.threat  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-grid {{ /* å«ä¹ï¼SWOT è±¡éç½æ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: grid; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* å«ä¹ï¼ç½æ ¼åæ¨¡æ¿ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 14px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-grid */
+.swot-cell {{ /* å«ä¹ï¼SWOT è±¡éååæ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border-radius: 14px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-cell-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px 12px 10px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--swot-cell-base); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-cell */
+.swot-cell.strength {{ border-color: var(--swot-cell-strength-border); background: var(--swot-cell-strength-bg); }} /* å«ä¹ï¿½?swot-cell.strength  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-cell.weakness {{ border-color: var(--swot-cell-weakness-border); background: var(--swot-cell-weakness-bg); }} /* å«ä¹ï¿½?swot-cell.weakness  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-cell.opportunity {{ border-color: var(--swot-cell-opportunity-border); background: var(--swot-cell-opportunity-bg); }} /* å«ä¹ï¿½?swot-cell.opportunity  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-cell.threat {{ border-color: var(--swot-cell-threat-border); background: var(--swot-cell-threat-bg); }} /* å«ä¹ï¿½?swot-cell.threat  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-cell__meta {{ /* å«ä¹ï¿½?swot-cell__meta æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 10px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 8px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-cell__meta */
+.swot-pill {{ /* å«ä¹ï¿½?swot-pill æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: center; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 36px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 36px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 800; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-on-dark); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-tag-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pill */
+.swot-pill.strength {{ background: var(--swot-strength); }} /* å«ä¹ï¿½?swot-pill.strength  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pill.weakness {{ background: var(--swot-weakness); }} /* å«ä¹ï¿½?swot-pill.weakness  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pill.opportunity {{ background: var(--swot-opportunity); }} /* å«ä¹ï¿½?swot-pill.opportunity  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pill.threat {{ background: var(--swot-threat); }} /* å«ä¹ï¿½?swot-pill.threat  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-cell__title {{ /* å«ä¹ï¿½?swot-cell__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 750; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.01em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-cell__title */
+.swot-cell__caption {{ /* å«ä¹ï¿½?swot-cell__caption æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.7; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-cell__caption */
+.swot-list {{ /* å«ä¹ï¼SWOT æ¡ç®åè¡¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  list-style: none; /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-direction: column; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-list */
+.swot-item {{ /* å«ä¹ï¼SWOT æ¡ç®ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 10px 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--swot-surface); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-item-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 12px 22px rgba(0,0,0,0.08); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-item */
+.swot-item-title {{ /* å«ä¹ï¿½?swot-item-title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 650; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-item-title */
+.swot-item-tags {{ /* å«ä¹ï¿½?swot-item-tags æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 6px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-item-tags */
+.swot-tag {{ /* å«ä¹ï¿½?swot-tag æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 4px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--swot-chip-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--swot-tag-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.2; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-tag */
+.swot-tag.neutral {{ /* å«ä¹ï¿½?swot-tag.neutral æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  opacity: 0.9; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-tag.neutral */
+.swot-item-desc {{ /* å«ä¹ï¿½?swot-item-desc æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 4px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.92; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-item-desc */
+.swot-item-evidence {{ /* å«ä¹ï¿½?swot-item-evidence æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 4px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.94; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-item-evidence */
+.swot-empty {{ /* å«ä¹ï¿½?swot-empty æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px dashed var(--swot-card-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--swot-muted); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.7; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-empty */
 
-/* ========== SWOT PDF表格布局样式（默认隐藏）========== */
-.swot-pdf-wrapper {{ /* 含义：SWOT PDF 表格容器；设置：在本块内调整相关属�?*/
-  display: none; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-wrapper */
+/* ========== SWOT PDFè¡¨æ ¼å¸å±æ ·å¼ï¼é»è®¤éèï¼========== */
+.swot-pdf-wrapper {{ /* å«ä¹ï¼SWOT PDF è¡¨æ ¼å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: none; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-wrapper */
 
-/* SWOT PDF表格样式定义（用于PDF渲染时显示） */
-.swot-pdf-table {{ /* 含义�?swot-pdf-table 样式区域；设置：在本块内调整相关属�?*/
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  border-collapse: collapse; /* 含义：border-collapse 样式属性；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  font-size: 13px; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  table-layout: fixed; /* 含义：表格布局算法；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-table */
-.swot-pdf-caption {{ /* 含义�?swot-pdf-caption 样式区域；设置：在本块内调整相关属�?*/
-  caption-side: top; /* 含义：caption-side 样式属性；设置：按需调整数�?颜色/变量 */
-  text-align: left; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-size: 1.15rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  padding: 12px 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-caption */
-.swot-pdf-thead th {{ /* 含义�?swot-pdf-thead th 样式区域；设置：在本块内调整相关属�?*/
-  background: #f8f9fa; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  padding: 10px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  text-align: left; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #dee2e6; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  color: #495057; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-thead th */
-.swot-pdf-th-quadrant {{ width: 80px; }} /* 含义�?swot-pdf-th-quadrant  width 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-th-num {{ width: 50px; text-align: center; }} /* 含义�?swot-pdf-th-num  width 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-th-title {{ width: 22%; }} /* 含义�?swot-pdf-th-title  width 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-th-detail {{ width: auto; }} /* 含义�?swot-pdf-th-detail  width 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-th-tags {{ width: 100px; text-align: center; }} /* 含义�?swot-pdf-th-tags  width 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-summary {{ /* 含义�?swot-pdf-summary 样式区域；设置：在本块内调整相关属�?*/
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: #f8f9fa; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #666; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-style: italic; /* 含义：font-style 样式属性；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #dee2e6; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-summary */
-.swot-pdf-quadrant {{ /* 含义�?swot-pdf-quadrant 样式区域；设置：在本块内调整相关属�?*/
-  break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-quadrant */
-.swot-pdf-quadrant-label {{ /* 含义�?swot-pdf-quadrant-label 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  vertical-align: middle; /* 含义：vertical-align 样式属性；设置：按需调整数�?颜色/变量 */
-  padding: 12px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #dee2e6; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  writing-mode: horizontal-tb; /* 含义：writing-mode 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-quadrant-label */
-.swot-pdf-quadrant-label.swot-pdf-strength {{ background: rgba(28,127,110,0.15); color: #1c7f6e; border-left: 4px solid #1c7f6e; }} /* 含义�?swot-pdf-quadrant-label.swot-pdf-strength  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-quadrant-label.swot-pdf-weakness {{ background: rgba(192,57,43,0.12); color: #c0392b; border-left: 4px solid #c0392b; }} /* 含义�?swot-pdf-quadrant-label.swot-pdf-weakness  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-quadrant-label.swot-pdf-opportunity {{ background: rgba(31,90,179,0.12); color: #1f5ab3; border-left: 4px solid #1f5ab3; }} /* 含义�?swot-pdf-quadrant-label.swot-pdf-opportunity  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-quadrant-label.swot-pdf-threat {{ background: rgba(179,107,22,0.12); color: #b36b16; border-left: 4px solid #b36b16; }} /* 含义�?swot-pdf-quadrant-label.swot-pdf-threat  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-code {{ /* 含义�?swot-pdf-code 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  font-size: 1.5rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 800; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 4px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-code */
-.swot-pdf-label-text {{ /* 含义�?swot-pdf-label-text 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  font-size: 0.75rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.02em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-label-text */
-.swot-pdf-item-row td {{ /* 含义�?swot-pdf-item-row td 样式区域；设置：在本块内调整相关属�?*/
-  padding: 10px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #dee2e6; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  vertical-align: top; /* 含义：vertical-align 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-item-row td */
-.swot-pdf-item-row.swot-pdf-strength td {{ background: rgba(28,127,110,0.03); }} /* 含义�?swot-pdf-item-row.swot-pdf-strength td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-item-row.swot-pdf-weakness td {{ background: rgba(192,57,43,0.03); }} /* 含义�?swot-pdf-item-row.swot-pdf-weakness td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-item-row.swot-pdf-opportunity td {{ background: rgba(31,90,179,0.03); }} /* 含义�?swot-pdf-item-row.swot-pdf-opportunity td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-item-row.swot-pdf-threat td {{ background: rgba(179,107,22,0.03); }} /* 含义�?swot-pdf-item-row.swot-pdf-threat td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.swot-pdf-item-num {{ /* 含义�?swot-pdf-item-num 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: #6c757d; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-item-num */
-.swot-pdf-item-title {{ /* 含义�?swot-pdf-item-title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: #212529; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-item-title */
-.swot-pdf-item-detail {{ /* 含义�?swot-pdf-item-detail 样式区域；设置：在本块内调整相关属�?*/
-  color: #495057; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  line-height: 1.5; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-item-detail */
-.swot-pdf-item-tags {{ /* 含义�?swot-pdf-item-tags 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-item-tags */
-.swot-pdf-tag {{ /* 含义�?swot-pdf-tag 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  padding: 3px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 4px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  font-size: 0.75rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  background: #e9ecef; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #495057; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  margin: 2px; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-tag */
-.swot-pdf-tag--score {{ /* 含义�?swot-pdf-tag--score 样式区域；设置：在本块内调整相关属�?*/
-  background: #fff3cd; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #856404; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-tag--score */
-.swot-pdf-empty {{ /* 含义�?swot-pdf-empty 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  color: #adb5bd; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-style: italic; /* 含义：font-style 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .swot-pdf-empty */
+/* SWOT PDFè¡¨æ ¼æ ·å¼å®ä¹ï¼ç¨äºPDFæ¸²ææ¶æ¾ç¤ºï¼ */
+.swot-pdf-table {{ /* å«ä¹ï¿½?swot-pdf-table æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-collapse: collapse; /* å«ä¹ï¼border-collapse æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 13px; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  table-layout: fixed; /* å«ä¹ï¼è¡¨æ ¼å¸å±ç®æ³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-table */
+.swot-pdf-caption {{ /* å«ä¹ï¿½?swot-pdf-caption æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  caption-side: top; /* å«ä¹ï¼caption-side æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: left; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.15rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-caption */
+.swot-pdf-thead th {{ /* å«ä¹ï¿½?swot-pdf-thead th æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: #f8f9fa; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 10px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: left; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #dee2e6; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #495057; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-thead th */
+.swot-pdf-th-quadrant {{ width: 80px; }} /* å«ä¹ï¿½?swot-pdf-th-quadrant  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-th-num {{ width: 50px; text-align: center; }} /* å«ä¹ï¿½?swot-pdf-th-num  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-th-title {{ width: 22%; }} /* å«ä¹ï¿½?swot-pdf-th-title  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-th-detail {{ width: auto; }} /* å«ä¹ï¿½?swot-pdf-th-detail  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-th-tags {{ width: 100px; text-align: center; }} /* å«ä¹ï¿½?swot-pdf-th-tags  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-summary {{ /* å«ä¹ï¿½?swot-pdf-summary æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: #f8f9fa; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #666; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-style: italic; /* å«ä¹ï¼font-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #dee2e6; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-summary */
+.swot-pdf-quadrant {{ /* å«ä¹ï¿½?swot-pdf-quadrant æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-quadrant */
+.swot-pdf-quadrant-label {{ /* å«ä¹ï¿½?swot-pdf-quadrant-label æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  vertical-align: middle; /* å«ä¹ï¼vertical-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #dee2e6; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  writing-mode: horizontal-tb; /* å«ä¹ï¼writing-mode æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-quadrant-label */
+.swot-pdf-quadrant-label.swot-pdf-strength {{ background: rgba(28,127,110,0.15); color: #1c7f6e; border-left: 4px solid #1c7f6e; }} /* å«ä¹ï¿½?swot-pdf-quadrant-label.swot-pdf-strength  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-quadrant-label.swot-pdf-weakness {{ background: rgba(192,57,43,0.12); color: #c0392b; border-left: 4px solid #c0392b; }} /* å«ä¹ï¿½?swot-pdf-quadrant-label.swot-pdf-weakness  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-quadrant-label.swot-pdf-opportunity {{ background: rgba(31,90,179,0.12); color: #1f5ab3; border-left: 4px solid #1f5ab3; }} /* å«ä¹ï¿½?swot-pdf-quadrant-label.swot-pdf-opportunity  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-quadrant-label.swot-pdf-threat {{ background: rgba(179,107,22,0.12); color: #b36b16; border-left: 4px solid #b36b16; }} /* å«ä¹ï¿½?swot-pdf-quadrant-label.swot-pdf-threat  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-code {{ /* å«ä¹ï¿½?swot-pdf-code æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.5rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 800; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 4px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-code */
+.swot-pdf-label-text {{ /* å«ä¹ï¿½?swot-pdf-label-text æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.75rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.02em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-label-text */
+.swot-pdf-item-row td {{ /* å«ä¹ï¿½?swot-pdf-item-row td æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 10px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #dee2e6; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  vertical-align: top; /* å«ä¹ï¼vertical-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-item-row td */
+.swot-pdf-item-row.swot-pdf-strength td {{ background: rgba(28,127,110,0.03); }} /* å«ä¹ï¿½?swot-pdf-item-row.swot-pdf-strength td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-item-row.swot-pdf-weakness td {{ background: rgba(192,57,43,0.03); }} /* å«ä¹ï¿½?swot-pdf-item-row.swot-pdf-weakness td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-item-row.swot-pdf-opportunity td {{ background: rgba(31,90,179,0.03); }} /* å«ä¹ï¿½?swot-pdf-item-row.swot-pdf-opportunity td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-item-row.swot-pdf-threat td {{ background: rgba(179,107,22,0.03); }} /* å«ä¹ï¿½?swot-pdf-item-row.swot-pdf-threat td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.swot-pdf-item-num {{ /* å«ä¹ï¿½?swot-pdf-item-num æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #6c757d; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-item-num */
+.swot-pdf-item-title {{ /* å«ä¹ï¿½?swot-pdf-item-title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #212529; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-item-title */
+.swot-pdf-item-detail {{ /* å«ä¹ï¿½?swot-pdf-item-detail æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: #495057; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.5; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-item-detail */
+.swot-pdf-item-tags {{ /* å«ä¹ï¿½?swot-pdf-item-tags æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-item-tags */
+.swot-pdf-tag {{ /* å«ä¹ï¿½?swot-pdf-tag æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 3px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 4px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.75rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: #e9ecef; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #495057; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 2px; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-tag */
+.swot-pdf-tag--score {{ /* å«ä¹ï¿½?swot-pdf-tag--score æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: #fff3cd; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #856404; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-tag--score */
+.swot-pdf-empty {{ /* å«ä¹ï¿½?swot-pdf-empty æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #adb5bd; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-style: italic; /* å«ä¹ï¼font-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .swot-pdf-empty */
 
-/* 打印模式下的SWOT分页控制（保留卡片布局的打印支持） */
-@media print {{ /* 含义：打印模式样式；设置：在本块内调整相关属�?*/
-  .swot-card {{ /* 含义：SWOT 卡片容器；设置：在本块内调整相关属�?*/
-    break-inside: auto; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-card */
-  .swot-card__head {{ /* 含义�?swot-card__head 样式区域；设置：在本块内调整相关属�?*/
-    break-after: avoid; /* 含义：break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-after: avoid; /* 含义：page-break-after 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-card__head */
-  .swot-pdf-quadrant {{ /* 含义�?swot-pdf-quadrant 样式区域；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-pdf-quadrant */
-}} /* 结束 @media print */
+/* æå°æ¨¡å¼ä¸çSWOTåé¡µæ§å¶ï¼ä¿çå¡çå¸å±çæå°æ¯æï¼ */
+@media print {{ /* å«ä¹ï¼æå°æ¨¡å¼æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  .swot-card {{ /* å«ä¹ï¼SWOT å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: auto; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-card */
+  .swot-card__head {{ /* å«ä¹ï¿½?swot-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-after: avoid; /* å«ä¹ï¼break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-after: avoid; /* å«ä¹ï¼page-break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-card__head */
+  .swot-pdf-quadrant {{ /* å«ä¹ï¿½?swot-pdf-quadrant æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-pdf-quadrant */
+}} /* ç»æ @media print */
 
-/* ==================== PEST 分析样式 ==================== */
-.pest-card {{ /* 含义：PEST 卡片容器；设置：在本块内调整相关属�?*/
-  margin: 28px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: 20px 20px 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 18px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--pest-card-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  background: var(--pest-card-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: var(--pest-card-shadow); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  backdrop-filter: var(--pest-card-blur); /* 含义：背景模糊；设置：按需调整数�?颜色/变量 */
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  overflow: hidden; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-card */
-.pest-card__head {{ /* 含义�?pest-card__head 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 16px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 16px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-card__head */
-.pest-card__title {{ /* 含义�?pest-card__title 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.18rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 750; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 4px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(135deg, var(--pest-political), var(--pest-technological)); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  -webkit-background-clip: text; /* 含义�?webkit-background-clip 样式属性；设置：按需调整数�?颜色/变量 */
-  -webkit-text-fill-color: transparent; /* 含义�?webkit-text-fill-color 样式属性；设置：按需调整数�?颜色/变量 */
-  background-clip: text; /* 含义：background-clip 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-card__title */
-.pest-card__summary {{ /* 含义�?pest-card__summary 样式区域；设置：在本块内调整相关属�?*/
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.8; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-card__summary */
-.pest-legend {{ /* 含义�?pest-legend 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-legend */
-.pest-legend__item {{ /* 含义�?pest-legend__item 样式区域；设置：在本块内调整相关属�?*/
-  padding: 6px 14px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 8px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-on-dark); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--pest-tag-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* 含义：文字阴影；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-legend__item */
-.pest-legend__item.political {{ background: var(--pest-political); }} /* 含义�?pest-legend__item.political  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-legend__item.economic {{ background: var(--pest-economic); }} /* 含义�?pest-legend__item.economic  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-legend__item.social {{ background: var(--pest-social); }} /* 含义�?pest-legend__item.social  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-legend__item.technological {{ background: var(--pest-technological); }} /* 含义�?pest-legend__item.technological  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strips {{ /* 含义：PEST 条带容器；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-direction: column; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-  gap: 14px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strips */
-.pest-strip {{ /* 含义：PEST 条带；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  border-radius: 14px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--pest-strip-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  background: var(--pest-strip-base); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  overflow: hidden; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  transition: transform 0.2s ease, box-shadow 0.2s ease; /* 含义：过渡动画时�?属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip */
-.pest-strip:hover {{ /* 含义�?pest-strip:hover 样式区域；设置：在本块内调整相关属�?*/
-  transform: translateY(-2px); /* 含义：transform 样式属性；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 10px 24px rgba(0,0,0,0.1); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip:hover */
-.pest-strip.political {{ border-color: var(--pest-strip-political-border); background: var(--pest-strip-political-bg); }} /* 含义�?pest-strip.political  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip.economic {{ border-color: var(--pest-strip-economic-border); background: var(--pest-strip-economic-bg); }} /* 含义�?pest-strip.economic  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip.social {{ border-color: var(--pest-strip-social-border); background: var(--pest-strip-social-bg); }} /* 含义�?pest-strip.social  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip.technological {{ border-color: var(--pest-strip-technological-border); background: var(--pest-strip-technological-bg); }} /* 含义�?pest-strip.technological  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip__indicator {{ /* 含义�?pest-strip__indicator 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: center; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  width: 56px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  min-width: 56px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-  padding: 16px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-on-dark); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  text-shadow: 0 2px 4px rgba(0,0,0,0.25); /* 含义：文字阴影；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip__indicator */
-.pest-strip__indicator.political {{ background: linear-gradient(180deg, var(--pest-political), rgba(142,68,173,0.8)); }} /* 含义�?pest-strip__indicator.political  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip__indicator.economic {{ background: linear-gradient(180deg, var(--pest-economic), rgba(22,160,133,0.8)); }} /* 含义�?pest-strip__indicator.economic  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip__indicator.social {{ background: linear-gradient(180deg, var(--pest-social), rgba(232,67,147,0.8)); }} /* 含义�?pest-strip__indicator.social  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-strip__indicator.technological {{ background: linear-gradient(180deg, var(--pest-technological), rgba(41,128,185,0.8)); }} /* 含义�?pest-strip__indicator.technological  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-code {{ /* 含义�?pest-code 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 1.6rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 900; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.02em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-code */
-.pest-strip__content {{ /* 含义�?pest-strip__content 样式区域；设置：在本块内调整相关属�?*/
-  flex: 1; /* 含义：flex 占位比例；设置：按需调整数�?颜色/变量 */
-  padding: 14px 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  min-width: 0; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip__content */
-.pest-strip__header {{ /* 含义�?pest-strip__header 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  align-items: baseline; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 10px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip__header */
-.pest-strip__title {{ /* 含义�?pest-strip__title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  font-size: 1rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip__title */
-.pest-strip__caption {{ /* 含义�?pest-strip__caption 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.65; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-strip__caption */
-.pest-list {{ /* 含义：PEST 条目列表；设置：在本块内调整相关属�?*/
-  list-style: none; /* 含义：列表样式；设置：按需调整数�?颜色/变量 */
-  padding: 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-direction: column; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-list */
-.pest-item {{ /* 含义：PEST 条目；设置：在本块内调整相关属�?*/
-  padding: 10px 14px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: var(--pest-surface); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--pest-item-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 8px 18px rgba(0,0,0,0.06); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-item */
-.pest-item-title {{ /* 含义�?pest-item-title 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  justify-content: space-between; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  font-weight: 650; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-item-title */
-.pest-item-tags {{ /* 含义�?pest-item-tags 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 6px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  font-size: 0.82rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-item-tags */
-.pest-tag {{ /* 含义�?pest-tag 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  padding: 3px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 6px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: var(--pest-chip-bg); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--pest-tag-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-  line-height: 1.2; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-tag */
-.pest-item-desc {{ /* 含义�?pest-item-desc 样式区域；设置：在本块内调整相关属�?*/
-  margin-top: 5px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.88; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-  font-size: 0.95rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-item-desc */
-.pest-item-source {{ /* 含义�?pest-item-source 样式区域；设置：在本块内调整相关属�?*/
-  margin-top: 4px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  font-size: 0.88rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.9; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-item-source */
-.pest-empty {{ /* 含义�?pest-empty 样式区域；设置：在本块内调整相关属�?*/
-  padding: 14px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px dashed var(--pest-card-border); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  color: var(--pest-muted); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  opacity: 0.65; /* 含义：透明度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-empty */
+/* ==================== PEST åææ ·å¼ ==================== */
+.pest-card {{ /* å«ä¹ï¼PEST å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 28px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 20px 20px 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 18px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--pest-card-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--pest-card-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: var(--pest-card-shadow); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  backdrop-filter: var(--pest-card-blur); /* å«ä¹ï¼èæ¯æ¨¡ç³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: hidden; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-card */
+.pest-card__head {{ /* å«ä¹ï¿½?pest-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 16px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 16px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-card__head */
+.pest-card__title {{ /* å«ä¹ï¿½?pest-card__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.18rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 750; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 4px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(135deg, var(--pest-political), var(--pest-technological)); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  -webkit-background-clip: text; /* å«ä¹ï¿½?webkit-background-clip æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  -webkit-text-fill-color: transparent; /* å«ä¹ï¿½?webkit-text-fill-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background-clip: text; /* å«ä¹ï¼background-clip æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-card__title */
+.pest-card__summary {{ /* å«ä¹ï¿½?pest-card__summary æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.8; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-card__summary */
+.pest-legend {{ /* å«ä¹ï¿½?pest-legend æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-legend */
+.pest-legend__item {{ /* å«ä¹ï¿½?pest-legend__item æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 6px 14px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 8px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-on-dark); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--pest-tag-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* å«ä¹ï¼æå­é´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-legend__item */
+.pest-legend__item.political {{ background: var(--pest-political); }} /* å«ä¹ï¿½?pest-legend__item.political  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-legend__item.economic {{ background: var(--pest-economic); }} /* å«ä¹ï¿½?pest-legend__item.economic  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-legend__item.social {{ background: var(--pest-social); }} /* å«ä¹ï¿½?pest-legend__item.social  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-legend__item.technological {{ background: var(--pest-technological); }} /* å«ä¹ï¿½?pest-legend__item.technological  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strips {{ /* å«ä¹ï¼PEST æ¡å¸¦å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-direction: column; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 14px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strips */
+.pest-strip {{ /* å«ä¹ï¼PEST æ¡å¸¦ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 14px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--pest-strip-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--pest-strip-base); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow: hidden; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* å«ä¹ï¼è¿æ¸¡å¨ç»æ¶ï¿½?å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip */
+.pest-strip:hover {{ /* å«ä¹ï¿½?pest-strip:hover æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  transform: translateY(-2px); /* å«ä¹ï¼transform æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 10px 24px rgba(0,0,0,0.1); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip:hover */
+.pest-strip.political {{ border-color: var(--pest-strip-political-border); background: var(--pest-strip-political-bg); }} /* å«ä¹ï¿½?pest-strip.political  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip.economic {{ border-color: var(--pest-strip-economic-border); background: var(--pest-strip-economic-bg); }} /* å«ä¹ï¿½?pest-strip.economic  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip.social {{ border-color: var(--pest-strip-social-border); background: var(--pest-strip-social-bg); }} /* å«ä¹ï¿½?pest-strip.social  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip.technological {{ border-color: var(--pest-strip-technological-border); background: var(--pest-strip-technological-bg); }} /* å«ä¹ï¿½?pest-strip.technological  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip__indicator {{ /* å«ä¹ï¿½?pest-strip__indicator æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: center; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 56px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 56px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 16px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-on-dark); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25); /* å«ä¹ï¼æå­é´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip__indicator */
+.pest-strip__indicator.political {{ background: linear-gradient(180deg, var(--pest-political), rgba(142,68,173,0.8)); }} /* å«ä¹ï¿½?pest-strip__indicator.political  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip__indicator.economic {{ background: linear-gradient(180deg, var(--pest-economic), rgba(22,160,133,0.8)); }} /* å«ä¹ï¿½?pest-strip__indicator.economic  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip__indicator.social {{ background: linear-gradient(180deg, var(--pest-social), rgba(232,67,147,0.8)); }} /* å«ä¹ï¿½?pest-strip__indicator.social  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-strip__indicator.technological {{ background: linear-gradient(180deg, var(--pest-technological), rgba(41,128,185,0.8)); }} /* å«ä¹ï¿½?pest-strip__indicator.technological  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-code {{ /* å«ä¹ï¿½?pest-code æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 1.6rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 900; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.02em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-code */
+.pest-strip__content {{ /* å«ä¹ï¿½?pest-strip__content æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  flex: 1; /* å«ä¹ï¼flex å ä½æ¯ä¾ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 14px 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-width: 0; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip__content */
+.pest-strip__header {{ /* å«ä¹ï¿½?pest-strip__header æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: baseline; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 10px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip__header */
+.pest-strip__title {{ /* å«ä¹ï¿½?pest-strip__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip__title */
+.pest-strip__caption {{ /* å«ä¹ï¿½?pest-strip__caption æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.65; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-strip__caption */
+.pest-list {{ /* å«ä¹ï¼PEST æ¡ç®åè¡¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  list-style: none; /* å«ä¹ï¼åè¡¨æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-direction: column; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-list */
+.pest-item {{ /* å«ä¹ï¼PEST æ¡ç®ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 10px 14px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--pest-surface); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--pest-item-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-item */
+.pest-item-title {{ /* å«ä¹ï¿½?pest-item-title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: space-between; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 650; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-item-title */
+.pest-item-tags {{ /* å«ä¹ï¿½?pest-item-tags æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 6px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.82rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-item-tags */
+.pest-tag {{ /* å«ä¹ï¿½?pest-tag æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 3px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 6px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: var(--pest-chip-bg); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--pest-tag-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.2; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-tag */
+.pest-item-desc {{ /* å«ä¹ï¿½?pest-item-desc æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 5px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.88; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.95rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-item-desc */
+.pest-item-source {{ /* å«ä¹ï¿½?pest-item-source æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 4px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.88rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.9; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-item-source */
+.pest-empty {{ /* å«ä¹ï¿½?pest-empty æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 14px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px dashed var(--pest-card-border); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--pest-muted); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  opacity: 0.65; /* å«ä¹ï¼éæåº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-empty */
 
-/* ========== PEST PDF表格布局样式（默认隐藏）========== */
-.pest-pdf-wrapper {{ /* 含义：PEST PDF 容器；设置：在本块内调整相关属�?*/
-  display: none; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-wrapper */
+/* ========== PEST PDFè¡¨æ ¼å¸å±æ ·å¼ï¼é»è®¤éèï¼========== */
+.pest-pdf-wrapper {{ /* å«ä¹ï¼PEST PDF å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: none; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-wrapper */
 
-/* PEST PDF表格样式定义（用于PDF渲染时显示） */
-.pest-pdf-table {{ /* 含义�?pest-pdf-table 样式区域；设置：在本块内调整相关属�?*/
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  border-collapse: collapse; /* 含义：border-collapse 样式属性；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  font-size: 13px; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  table-layout: fixed; /* 含义：表格布局算法；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-table */
-.pest-pdf-caption {{ /* 含义�?pest-pdf-caption 样式区域；设置：在本块内调整相关属�?*/
-  caption-side: top; /* 含义：caption-side 样式属性；设置：按需调整数�?颜色/变量 */
-  text-align: left; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-size: 1.15rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  padding: 12px 0; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-caption */
-.pest-pdf-thead th {{ /* 含义�?pest-pdf-thead th 样式区域；设置：在本块内调整相关属�?*/
-  background: #f5f3f7; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  padding: 10px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  text-align: left; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #e0dce3; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  color: #4a4458; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-thead th */
-.pest-pdf-th-dimension {{ width: 85px; }} /* 含义�?pest-pdf-th-dimension  width 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-th-num {{ width: 50px; text-align: center; }} /* 含义�?pest-pdf-th-num  width 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-th-title {{ width: 22%; }} /* 含义�?pest-pdf-th-title  width 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-th-detail {{ width: auto; }} /* 含义�?pest-pdf-th-detail  width 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-th-tags {{ width: 100px; text-align: center; }} /* 含义�?pest-pdf-th-tags  width 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-summary {{ /* 含义�?pest-pdf-summary 样式区域；设置：在本块内调整相关属�?*/
-  padding: 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  background: #f8f6fa; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #666; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-style: italic; /* 含义：font-style 样式属性；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #e0dce3; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-summary */
-.pest-pdf-dimension {{ /* 含义�?pest-pdf-dimension 样式区域；设置：在本块内调整相关属�?*/
-  break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-dimension */
-.pest-pdf-dimension-label {{ /* 含义�?pest-pdf-dimension-label 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  vertical-align: middle; /* 含义：vertical-align 样式属性；设置：按需调整数�?颜色/变量 */
-  padding: 12px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #e0dce3; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  writing-mode: horizontal-tb; /* 含义：writing-mode 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-dimension-label */
-.pest-pdf-dimension-label.pest-pdf-political {{ background: rgba(142,68,173,0.12); color: #8e44ad; border-left: 4px solid #8e44ad; }} /* 含义�?pest-pdf-dimension-label.pest-pdf-political  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-dimension-label.pest-pdf-economic {{ background: rgba(22,160,133,0.12); color: #16a085; border-left: 4px solid #16a085; }} /* 含义�?pest-pdf-dimension-label.pest-pdf-economic  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-dimension-label.pest-pdf-social {{ background: rgba(232,67,147,0.12); color: #e84393; border-left: 4px solid #e84393; }} /* 含义�?pest-pdf-dimension-label.pest-pdf-social  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-dimension-label.pest-pdf-technological {{ background: rgba(41,128,185,0.12); color: #2980b9; border-left: 4px solid #2980b9; }} /* 含义�?pest-pdf-dimension-label.pest-pdf-technological  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-code {{ /* 含义�?pest-pdf-code 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  font-size: 1.5rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 800; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  margin-bottom: 4px; /* 含义：margin-bottom 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-code */
-.pest-pdf-label-text {{ /* 含义�?pest-pdf-label-text 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  font-size: 0.75rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  letter-spacing: 0.02em; /* 含义：字间距；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-label-text */
-.pest-pdf-item-row td {{ /* 含义�?pest-pdf-item-row td 样式区域；设置：在本块内调整相关属�?*/
-  padding: 10px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px solid #e0dce3; /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  vertical-align: top; /* 含义：vertical-align 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-item-row td */
-.pest-pdf-item-row.pest-pdf-political td {{ background: rgba(142,68,173,0.03); }} /* 含义�?pest-pdf-item-row.pest-pdf-political td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-item-row.pest-pdf-economic td {{ background: rgba(22,160,133,0.03); }} /* 含义�?pest-pdf-item-row.pest-pdf-economic td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-item-row.pest-pdf-social td {{ background: rgba(232,67,147,0.03); }} /* 含义�?pest-pdf-item-row.pest-pdf-social td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-item-row.pest-pdf-technological td {{ background: rgba(41,128,185,0.03); }} /* 含义�?pest-pdf-item-row.pest-pdf-technological td  background 样式属性；设置：按需调整数�?颜色/变量 */
-.pest-pdf-item-num {{ /* 含义�?pest-pdf-item-num 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: #6c757d; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-item-num */
-.pest-pdf-item-title {{ /* 含义�?pest-pdf-item-title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: #212529; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-item-title */
-.pest-pdf-item-detail {{ /* 含义�?pest-pdf-item-detail 样式区域；设置：在本块内调整相关属�?*/
-  color: #495057; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  line-height: 1.5; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-item-detail */
-.pest-pdf-item-tags {{ /* 含义�?pest-pdf-item-tags 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-item-tags */
-.pest-pdf-tag {{ /* 含义�?pest-pdf-tag 样式区域；设置：在本块内调整相关属�?*/
-  display: inline-block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  padding: 3px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 4px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  font-size: 0.75rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  background: #ece9f1; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #5a4f6a; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  margin: 2px; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-tag */
-.pest-pdf-empty {{ /* 含义�?pest-pdf-empty 样式区域；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  color: #adb5bd; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-style: italic; /* 含义：font-style 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .pest-pdf-empty */
+/* PEST PDFè¡¨æ ¼æ ·å¼å®ä¹ï¼ç¨äºPDFæ¸²ææ¶æ¾ç¤ºï¼ */
+.pest-pdf-table {{ /* å«ä¹ï¿½?pest-pdf-table æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-collapse: collapse; /* å«ä¹ï¼border-collapse æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 13px; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  table-layout: fixed; /* å«ä¹ï¼è¡¨æ ¼å¸å±ç®æ³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-table */
+.pest-pdf-caption {{ /* å«ä¹ï¿½?pest-pdf-caption æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  caption-side: top; /* å«ä¹ï¼caption-side æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: left; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.15rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px 0; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-caption */
+.pest-pdf-thead th {{ /* å«ä¹ï¿½?pest-pdf-thead th æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: #f5f3f7; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 10px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: left; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #e0dce3; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #4a4458; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-thead th */
+.pest-pdf-th-dimension {{ width: 85px; }} /* å«ä¹ï¿½?pest-pdf-th-dimension  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-th-num {{ width: 50px; text-align: center; }} /* å«ä¹ï¿½?pest-pdf-th-num  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-th-title {{ width: 22%; }} /* å«ä¹ï¿½?pest-pdf-th-title  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-th-detail {{ width: auto; }} /* å«ä¹ï¿½?pest-pdf-th-detail  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-th-tags {{ width: 100px; text-align: center; }} /* å«ä¹ï¿½?pest-pdf-th-tags  width æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-summary {{ /* å«ä¹ï¿½?pest-pdf-summary æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: #f8f6fa; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #666; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-style: italic; /* å«ä¹ï¼font-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #e0dce3; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-summary */
+.pest-pdf-dimension {{ /* å«ä¹ï¿½?pest-pdf-dimension æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-dimension */
+.pest-pdf-dimension-label {{ /* å«ä¹ï¿½?pest-pdf-dimension-label æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  vertical-align: middle; /* å«ä¹ï¼vertical-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 12px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #e0dce3; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  writing-mode: horizontal-tb; /* å«ä¹ï¼writing-mode æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-dimension-label */
+.pest-pdf-dimension-label.pest-pdf-political {{ background: rgba(142,68,173,0.12); color: #8e44ad; border-left: 4px solid #8e44ad; }} /* å«ä¹ï¿½?pest-pdf-dimension-label.pest-pdf-political  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-dimension-label.pest-pdf-economic {{ background: rgba(22,160,133,0.12); color: #16a085; border-left: 4px solid #16a085; }} /* å«ä¹ï¿½?pest-pdf-dimension-label.pest-pdf-economic  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-dimension-label.pest-pdf-social {{ background: rgba(232,67,147,0.12); color: #e84393; border-left: 4px solid #e84393; }} /* å«ä¹ï¿½?pest-pdf-dimension-label.pest-pdf-social  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-dimension-label.pest-pdf-technological {{ background: rgba(41,128,185,0.12); color: #2980b9; border-left: 4px solid #2980b9; }} /* å«ä¹ï¿½?pest-pdf-dimension-label.pest-pdf-technological  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-code {{ /* å«ä¹ï¿½?pest-pdf-code æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.5rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 800; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-bottom: 4px; /* å«ä¹ï¼margin-bottom æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-code */
+.pest-pdf-label-text {{ /* å«ä¹ï¿½?pest-pdf-label-text æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.75rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  letter-spacing: 0.02em; /* å«ä¹ï¼å­é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-label-text */
+.pest-pdf-item-row td {{ /* å«ä¹ï¿½?pest-pdf-item-row td æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 10px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid #e0dce3; /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  vertical-align: top; /* å«ä¹ï¼vertical-align æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-item-row td */
+.pest-pdf-item-row.pest-pdf-political td {{ background: rgba(142,68,173,0.03); }} /* å«ä¹ï¿½?pest-pdf-item-row.pest-pdf-political td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-item-row.pest-pdf-economic td {{ background: rgba(22,160,133,0.03); }} /* å«ä¹ï¿½?pest-pdf-item-row.pest-pdf-economic td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-item-row.pest-pdf-social td {{ background: rgba(232,67,147,0.03); }} /* å«ä¹ï¿½?pest-pdf-item-row.pest-pdf-social td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-item-row.pest-pdf-technological td {{ background: rgba(41,128,185,0.03); }} /* å«ä¹ï¿½?pest-pdf-item-row.pest-pdf-technological td  background æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.pest-pdf-item-num {{ /* å«ä¹ï¿½?pest-pdf-item-num æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #6c757d; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-item-num */
+.pest-pdf-item-title {{ /* å«ä¹ï¿½?pest-pdf-item-title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #212529; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-item-title */
+.pest-pdf-item-detail {{ /* å«ä¹ï¿½?pest-pdf-item-detail æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: #495057; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.5; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-item-detail */
+.pest-pdf-item-tags {{ /* å«ä¹ï¿½?pest-pdf-item-tags æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-item-tags */
+.pest-pdf-tag {{ /* å«ä¹ï¿½?pest-pdf-tag æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 3px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 4px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.75rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: #ece9f1; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #5a4f6a; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 2px; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-tag */
+.pest-pdf-empty {{ /* å«ä¹ï¿½?pest-pdf-empty æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #adb5bd; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-style: italic; /* å«ä¹ï¼font-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .pest-pdf-empty */
 
-/* 打印模式下的PEST分页控制 */
-@media print {{ /* 含义：打印模式样式；设置：在本块内调整相关属�?*/
-  .pest-card {{ /* 含义：PEST 卡片容器；设置：在本块内调整相关属�?*/
-    break-inside: auto; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-card */
-  .pest-card__head {{ /* 含义�?pest-card__head 样式区域；设置：在本块内调整相关属�?*/
-    break-after: avoid; /* 含义：break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-after: avoid; /* 含义：page-break-after 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-card__head */
-  .pest-pdf-dimension {{ /* 含义�?pest-pdf-dimension 样式区域；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-pdf-dimension */
-  .pest-strip {{ /* 含义：PEST 条带；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-strip */
-}} /* 结束 @media print */
-.callout {{ /* 含义：高亮提示框 - PDF基础样式；设置：在本块内调整相关属�?*/
-  padding: 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 8px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.02); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border-left: none; /* 含义：移除左侧色条；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .callout */
-.callout.tone-warning {{ border-color: #ff9800; }} /* 含义�?callout.tone-warning  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.callout.tone-success {{ border-color: #2ecc71; }} /* 含义�?callout.tone-success  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-.callout.tone-danger {{ border-color: #e74c3c; }} /* 含义�?callout.tone-danger  border-color 样式属性；设置：按需调整数�?颜色/变量 */
-/* ==================== Callout 液态玻璃效�?- 仅屏幕显�?==================== */
+/* æå°æ¨¡å¼ä¸çPESTåé¡µæ§å¶ */
+@media print {{ /* å«ä¹ï¼æå°æ¨¡å¼æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  .pest-card {{ /* å«ä¹ï¼PEST å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: auto; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-card */
+  .pest-card__head {{ /* å«ä¹ï¿½?pest-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-after: avoid; /* å«ä¹ï¼break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-after: avoid; /* å«ä¹ï¼page-break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-card__head */
+  .pest-pdf-dimension {{ /* å«ä¹ï¿½?pest-pdf-dimension æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-pdf-dimension */
+  .pest-strip {{ /* å«ä¹ï¼PEST æ¡å¸¦ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-strip */
+}} /* ç»æ @media print */
+.callout {{ /* å«ä¹ï¼é«äº®æç¤ºæ¡ - PDFåºç¡æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 8px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.02); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-left: none; /* å«ä¹ï¼ç§»é¤å·¦ä¾§è²æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .callout */
+.callout.tone-warning {{ border-color: #ff9800; }} /* å«ä¹ï¿½?callout.tone-warning  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.callout.tone-success {{ border-color: #2ecc71; }} /* å«ä¹ï¿½?callout.tone-success  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.callout.tone-danger {{ border-color: #e74c3c; }} /* å«ä¹ï¿½?callout.tone-danger  border-color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+/* ==================== Callout æ¶²æç»çæï¿½?- ä»å±å¹æ¾ï¿½?==================== */
 @media screen {{
-  .callout {{ /* 含义：高亮提示框液态玻�?- 透明悬浮设计；设置：在本块内调整相关属�?*/
-    --callout-accent: var(--primary-color); /* 含义：callout 主色调；设置：按需调整数�?颜色/变量 */
-    --callout-glow-color: rgba(0, 123, 255, 0.35); /* 含义：callout 发光色；设置：按需调整数�?颜色/变量 */
-    position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-    margin: 24px 0; /* 含义：增加外边距强化悬浮感；设置：按需调整数�?颜色/变量 */
-    padding: 20px 24px; /* 含义：内边距；设置：按需调整数�?颜色/变量 */
-    border: none; /* 含义：移除默认边框；设置：按需调整数�?颜色/变量 */
-    border-radius: 24px; /* 含义：大圆角增强液态感；设置：按需调整数�?颜色/变量 */
-    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%); /* 含义：极淡透明渐变；设置：按需调整数�?颜色/变量 */
-    backdrop-filter: blur(28px) saturate(200%); /* 含义：强背景模糊实现玻璃透视；设置：按需调整数�?颜色/变量 */
-    -webkit-backdrop-filter: blur(28px) saturate(200%); /* 含义：Safari 背景模糊；设置：按需调整数�?颜色/变量 */
+  .callout {{ /* å«ä¹ï¼é«äº®æç¤ºæ¡æ¶²æç»ï¿½?- éææ¬æµ®è®¾è®¡ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-accent: var(--primary-color); /* å«ä¹ï¼callout ä¸»è²è°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    --callout-glow-color: rgba(0, 123, 255, 0.35); /* å«ä¹ï¼callout ååè²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    margin: 24px 0; /* å«ä¹ï¼å¢å å¤è¾¹è·å¼ºåæ¬æµ®æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    padding: 20px 24px; /* å«ä¹ï¼åè¾¹è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border: none; /* å«ä¹ï¼ç§»é¤é»è®¤è¾¹æ¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border-radius: 24px; /* å«ä¹ï¼å¤§åè§å¢å¼ºæ¶²ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%); /* å«ä¹ï¼ææ·¡éææ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    backdrop-filter: blur(28px) saturate(200%); /* å«ä¹ï¼å¼ºèæ¯æ¨¡ç³å®ç°ç»çéè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    -webkit-backdrop-filter: blur(28px) saturate(200%); /* å«ä¹ï¼Safari èæ¯æ¨¡ç³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 12px 40px rgba(0, 0, 0, 0.1),
       0 4px 12px rgba(0, 0, 0, 0.05),
       inset 0 0 0 1.5px rgba(255, 255, 255, 0.18),
-      inset 0 2px 6px rgba(255, 255, 255, 0.12); /* 含义：多层阴影营造悬浮感；设置：按需调整数�?颜色/变量 */
-    transform: translateY(0); /* 含义：初始位置；设置：按需调整数�?颜色/变量 */
-    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s ease; /* 含义：弹性过渡动画；设置：按需调整数�?颜色/变量 */
-    overflow: hidden; /* 含义：隐藏溢出内容；设置：按需调整数�?颜色/变量 */
-    isolation: isolate; /* 含义：创建层叠上下文；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout 液态玻璃基础 */
-  .callout:hover {{ /* 含义：悬停时增强悬浮效果；设置：在本块内调整相关属�?*/
-    transform: translateY(-4px); /* 含义：上浮效果；设置：按需调整数�?颜色/变量 */
+      inset 0 2px 6px rgba(255, 255, 255, 0.12); /* å«ä¹ï¼å¤å±é´å½±è¥é æ¬æµ®æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    transform: translateY(0); /* å«ä¹ï¼åå§ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s ease; /* å«ä¹ï¼å¼¹æ§è¿æ¸¡å¨ç»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    overflow: hidden; /* å«ä¹ï¼éèæº¢åºåå®¹ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    isolation: isolate; /* å«ä¹ï¼åå»ºå±å ä¸ä¸æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout æ¶²æç»çåºç¡ */
+  .callout:hover {{ /* å«ä¹ï¼æ¬åæ¶å¢å¼ºæ¬æµ®ææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    transform: translateY(-4px); /* å«ä¹ï¼ä¸æµ®ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 20px 56px rgba(0, 0, 0, 0.12),
       0 8px 20px rgba(0, 0, 0, 0.06),
       inset 0 0 0 1.5px rgba(255, 255, 255, 0.22),
-      inset 0 3px 8px rgba(255, 255, 255, 0.15); /* 含义：增强阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout:hover */
-  .callout::after {{ /* 含义：顶部弧形高光反射；设置：在本块内调整相关属�?*/
-    content: ''; /* 含义：伪元素内容；设置：按需调整数�?颜色/变量 */
-    position: absolute; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-    top: 0; /* 含义：顶部位置；设置：按需调整数�?颜色/变量 */
-    left: 0; /* 含义：左边位置；设置：按需调整数�?颜色/变量 */
-    right: 0; /* 含义：右边位置；设置：按需调整数�?颜色/变量 */
-    height: 55%; /* 含义：覆盖上半部分；设置：按需调整数�?颜色/变量 */
-    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 60%, transparent 100%); /* 含义：顶部高光渐变；设置：按需调整数�?颜色/变量 */
-    border-radius: 24px 24px 0 0; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-    pointer-events: none; /* 含义：不响应鼠标；设置：按需调整数�?颜色/变量 */
-    z-index: -1; /* 含义：置于内容下方；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout::after */
-  /* Callout tone 变体 - 不同颜色发光 */
-  .callout.tone-info {{ /* 含义：信息类�?callout；设置：在本块内调整相关属�?*/
-    --callout-accent: #3b82f6; /* 含义：信息蓝色调；设置：按需调整数�?颜色/变量 */
-    --callout-glow-color: rgba(59, 130, 246, 0.4); /* 含义：信息蓝发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout.tone-info */
-  .callout.tone-warning {{ /* 含义：警告类�?callout；设置：在本块内调整相关属�?*/
-    --callout-accent: #f59e0b; /* 含义：警告橙色调；设置：按需调整数�?颜色/变量 */
-    --callout-glow-color: rgba(245, 158, 11, 0.4); /* 含义：警告橙发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout.tone-warning */
-  .callout.tone-success {{ /* 含义：成功类�?callout；设置：在本块内调整相关属�?*/
-    --callout-accent: #10b981; /* 含义：成功绿色调；设置：按需调整数�?颜色/变量 */
-    --callout-glow-color: rgba(16, 185, 129, 0.4); /* 含义：成功绿发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout.tone-success */
-  .callout.tone-danger {{ /* 含义：危险类�?callout；设置：在本块内调整相关属�?*/
-    --callout-accent: #ef4444; /* 含义：危险红色调；设置：按需调整数�?颜色/变量 */
-    --callout-glow-color: rgba(239, 68, 68, 0.4); /* 含义：危险红发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .callout.tone-danger */
-  /* 暗色模式 callout 液态玻�?*/
-  .dark-mode .callout {{ /* 含义：暗色模�?callout 液态玻璃；设置：在本块内调整相关属�?*/
-    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%); /* 含义：暗色透明渐变；设置：按需调整数�?颜色/变量 */
+      inset 0 3px 8px rgba(255, 255, 255, 0.15); /* å«ä¹ï¼å¢å¼ºé´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout:hover */
+  .callout::after {{ /* å«ä¹ï¼é¡¶é¨å¼§å½¢é«ååå°ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    content: ''; /* å«ä¹ï¼ä¼ªåç´ åå®¹ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    position: absolute; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    top: 0; /* å«ä¹ï¼é¡¶é¨ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    left: 0; /* å«ä¹ï¼å·¦è¾¹ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    right: 0; /* å«ä¹ï¼å³è¾¹ä½ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    height: 55%; /* å«ä¹ï¼è¦çä¸åé¨åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 60%, transparent 100%); /* å«ä¹ï¼é¡¶é¨é«åæ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border-radius: 24px 24px 0 0; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    pointer-events: none; /* å«ä¹ï¼ä¸ååºé¼ æ ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    z-index: -1; /* å«ä¹ï¼ç½®äºåå®¹ä¸æ¹ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout::after */
+  /* Callout tone åä½ - ä¸åé¢è²åå */
+  .callout.tone-info {{ /* å«ä¹ï¼ä¿¡æ¯ç±»ï¿½?calloutï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-accent: #3b82f6; /* å«ä¹ï¼ä¿¡æ¯èè²è°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    --callout-glow-color: rgba(59, 130, 246, 0.4); /* å«ä¹ï¼ä¿¡æ¯èååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout.tone-info */
+  .callout.tone-warning {{ /* å«ä¹ï¼è­¦åç±»ï¿½?calloutï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-accent: #f59e0b; /* å«ä¹ï¼è­¦åæ©è²è°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    --callout-glow-color: rgba(245, 158, 11, 0.4); /* å«ä¹ï¼è­¦åæ©ååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout.tone-warning */
+  .callout.tone-success {{ /* å«ä¹ï¼æåç±»ï¿½?calloutï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-accent: #10b981; /* å«ä¹ï¼æåç»¿è²è°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    --callout-glow-color: rgba(16, 185, 129, 0.4); /* å«ä¹ï¼æåç»¿ååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout.tone-success */
+  .callout.tone-danger {{ /* å«ä¹ï¼å±é©ç±»ï¿½?calloutï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-accent: #ef4444; /* å«ä¹ï¼å±é©çº¢è²è°ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    --callout-glow-color: rgba(239, 68, 68, 0.4); /* å«ä¹ï¼å±é©çº¢ååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .callout.tone-danger */
+  /* æè²æ¨¡å¼ callout æ¶²æç»ï¿½?*/
+  .dark-mode .callout {{ /* å«ä¹ï¼æè²æ¨¡ï¿½?callout æ¶²æç»çï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%); /* å«ä¹ï¼æè²éææ¸åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
     box-shadow: 
       0 12px 40px rgba(0, 0, 0, 0.35),
       0 4px 12px rgba(0, 0, 0, 0.18),
       inset 0 0 0 1.5px rgba(255, 255, 255, 0.08),
-      inset 0 2px 6px rgba(255, 255, 255, 0.04); /* 含义：暗色阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout */
-  .dark-mode .callout:hover {{ /* 含义：暗色悬停效果；设置：在本块内调整相关属�?*/
+      inset 0 2px 6px rgba(255, 255, 255, 0.04); /* å«ä¹ï¼æè²é´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout */
+  .dark-mode .callout:hover {{ /* å«ä¹ï¼æè²æ¬åææï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
     box-shadow: 
       0 24px 64px rgba(0, 0, 0, 0.45),
       0 10px 28px rgba(0, 0, 0, 0.22),
       inset 0 0 0 1.5px rgba(255, 255, 255, 0.12),
-      inset 0 3px 8px rgba(255, 255, 255, 0.06); /* 含义：暗色增强阴影；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout:hover */
-  .dark-mode .callout::after {{ /* 含义：暗色顶部高光；设置：在本块内调整相关属�?*/
-    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 50%, transparent 100%); /* 含义：暗色高光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout::after */
-  /* 暗色模式发光颜色增强 */
-  .dark-mode .callout.tone-info {{ /* 含义：暗色信息类型；设置：在本块内调整相关属�?*/
-    --callout-glow-color: rgba(96, 165, 250, 0.5); /* 含义：暗色信息发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout.tone-info */
-  .dark-mode .callout.tone-warning {{ /* 含义：暗色警告类型；设置：在本块内调整相关属�?*/
-    --callout-glow-color: rgba(251, 191, 36, 0.5); /* 含义：暗色警告发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout.tone-warning */
-  .dark-mode .callout.tone-success {{ /* 含义：暗色成功类型；设置：在本块内调整相关属�?*/
-    --callout-glow-color: rgba(52, 211, 153, 0.5); /* 含义：暗色成功发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout.tone-success */
-  .dark-mode .callout.tone-danger {{ /* 含义：暗色危险类型；设置：在本块内调整相关属�?*/
-    --callout-glow-color: rgba(248, 113, 113, 0.5); /* 含义：暗色危险发光；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .dark-mode .callout.tone-danger */
-}} /* 结束 @media screen callout 液态玻�?*/
-.kpi-grid {{ /* 含义：KPI 栅格容器；设置：在本块内调整相关属�?*/
-  display: grid; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 含义：网格列模板；设置：按需调整数�?颜色/变量 */
-  gap: 16px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .kpi-grid */
-.kpi-card {{ /* 含义：KPI 卡片；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-direction: column; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-  gap: 8px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  padding: 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.02); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .kpi-card */
-.kpi-value {{ /* 含义�?kpi-value 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 2rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-wrap: nowrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  gap: 4px 6px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  line-height: 1.25; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-  word-break: break-word; /* 含义：单词断行规则；设置：按需调整数�?颜色/变量 */
-  overflow-wrap: break-word; /* 含义：长单词换行；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .kpi-value */
-.kpi-value small {{ /* 含义�?kpi-value small 样式区域；设置：在本块内调整相关属�?*/
-  font-size: 0.65em; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  align-self: baseline; /* 含义：align-self 样式属性；设置：按需调整数�?颜色/变量 */
-  white-space: nowrap; /* 含义：空白与换行策略；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .kpi-value small */
-.kpi-label {{ /* 含义�?kpi-label 样式区域；设置：在本块内调整相关属�?*/
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  line-height: 1.35; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-  word-break: break-word; /* 含义：单词断行规则；设置：按需调整数�?颜色/变量 */
-  overflow-wrap: break-word; /* 含义：长单词换行；设置：按需调整数�?颜色/变量 */
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .kpi-label */
-.delta.up {{ color: #27ae60; }} /* 含义�?delta.up  color 样式属性；设置：按需调整数�?颜色/变量 */
-.delta.down {{ color: #e74c3c; }} /* 含义�?delta.down  color 样式属性；设置：按需调整数�?颜色/变量 */
-.delta.neutral {{ color: var(--secondary-color); }} /* 含义�?delta.neutral  color 样式属性；设置：按需调整数�?颜色/变量 */
-.delta {{ /* 含义�?delta 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  line-height: 1.3; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-  word-break: break-word; /* 含义：单词断行规则；设置：按需调整数�?颜色/变量 */
-  overflow-wrap: break-word; /* 含义：长单词换行；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .delta */
-.chart-card {{ /* 含义：图表卡片容器；设置：在本块内调整相关属�?*/
-  margin: 30px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  padding: 20px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.01); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-card */
-.chart-card.chart-card--error {{ /* 含义�?chart-card.chart-card--error 样式区域；设置：在本块内调整相关属�?*/
-  border-style: dashed; /* 含义：border-style 样式属性；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(135deg, rgba(0,0,0,0.015), rgba(0,0,0,0.04)); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-card.chart-card--error */
-.chart-error {{ /* 含义�?chart-error 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  gap: 12px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  padding: 14px 12px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 10px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.03); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-error */
-.chart-error__icon {{ /* 含义�?chart-error__icon 样式区域；设置：在本块内调整相关属�?*/
-  width: 28px; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  height: 28px; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  flex-shrink: 0; /* 含义：flex-shrink 样式属性；设置：按需调整数�?颜色/变量 */
-  border-radius: 50%; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  justify-content: center; /* 含义：flex 主轴对齐；设置：按需调整数�?颜色/变量 */
-  font-weight: 700; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color-dark); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  background: rgba(0,0,0,0.06); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  font-size: 0.9rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-error__icon */
-.chart-error__title {{ /* 含义�?chart-error__title 样式区域；设置：在本块内调整相关属�?*/
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-error__title */
-.chart-error__desc {{ /* 含义�?chart-error__desc 样式区域；设置：在本块内调整相关属�?*/
-  margin: 4px 0 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  line-height: 1.6; /* 含义：行高，提升可读性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-error__desc */
-.chart-card.wordcloud-card .chart-container {{ /* 含义�?chart-card.wordcloud-card .chart-container 样式区域；设置：在本块内调整相关属�?*/
-  min-height: 180px; /* 含义：最小高度，防止塌陷；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-card.wordcloud-card .chart-container */
-.chart-container {{ /* 含义：图�?canvas 容器；设置：在本块内调整相关属�?*/
-  position: relative; /* 含义：定位方式；设置：按需调整数�?颜色/变量 */
-  min-height: 220px; /* 含义：最小高度，防止塌陷；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-container */
-.chart-fallback {{ /* 含义：图表兜底表格；设置：在本块内调整相关属�?*/
-  display: none; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  margin-top: 12px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  overflow-x: auto; /* 含义：横向溢出处理；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-fallback */
-.no-js .chart-fallback {{ /* 含义�?no-js .chart-fallback 样式区域；设置：在本块内调整相关属�?*/
-  display: block; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .no-js .chart-fallback */
-.no-js .chart-container {{ /* 含义�?no-js .chart-container 样式区域；设置：在本块内调整相关属�?*/
-  display: none; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .no-js .chart-container */
-.chart-fallback table {{ /* 含义�?chart-fallback table 样式区域；设置：在本块内调整相关属�?*/
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  border-collapse: collapse; /* 含义：border-collapse 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-fallback table */
+      inset 0 3px 8px rgba(255, 255, 255, 0.06); /* å«ä¹ï¼æè²å¢å¼ºé´å½±ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout:hover */
+  .dark-mode .callout::after {{ /* å«ä¹ï¼æè²é¡¶é¨é«åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 50%, transparent 100%); /* å«ä¹ï¼æè²é«åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout::after */
+  /* æè²æ¨¡å¼ååé¢è²å¢å¼º */
+  .dark-mode .callout.tone-info {{ /* å«ä¹ï¼æè²ä¿¡æ¯ç±»åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-glow-color: rgba(96, 165, 250, 0.5); /* å«ä¹ï¼æè²ä¿¡æ¯ååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout.tone-info */
+  .dark-mode .callout.tone-warning {{ /* å«ä¹ï¼æè²è­¦åç±»åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-glow-color: rgba(251, 191, 36, 0.5); /* å«ä¹ï¼æè²è­¦åååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout.tone-warning */
+  .dark-mode .callout.tone-success {{ /* å«ä¹ï¼æè²æåç±»åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-glow-color: rgba(52, 211, 153, 0.5); /* å«ä¹ï¼æè²æåååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout.tone-success */
+  .dark-mode .callout.tone-danger {{ /* å«ä¹ï¼æè²å±é©ç±»åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    --callout-glow-color: rgba(248, 113, 113, 0.5); /* å«ä¹ï¼æè²å±é©ååï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .dark-mode .callout.tone-danger */
+}} /* ç»æ @media screen callout æ¶²æç»ï¿½?*/
+.kpi-grid {{ /* å«ä¹ï¼KPI æ æ ¼å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: grid; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* å«ä¹ï¼ç½æ ¼åæ¨¡æ¿ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 16px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .kpi-grid */
+.kpi-card {{ /* å«ä¹ï¼KPI å¡çï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-direction: column; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 8px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.02); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .kpi-card */
+.kpi-value {{ /* å«ä¹ï¿½?kpi-value æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 2rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: nowrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 4px 6px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.25; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  word-break: break-word; /* å«ä¹ï¼åè¯æ­è¡è§åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-wrap: break-word; /* å«ä¹ï¼é¿åè¯æ¢è¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .kpi-value */
+.kpi-value small {{ /* å«ä¹ï¿½?kpi-value small æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-size: 0.65em; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-self: baseline; /* å«ä¹ï¼align-self æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  white-space: nowrap; /* å«ä¹ï¼ç©ºç½ä¸æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .kpi-value small */
+.kpi-label {{ /* å«ä¹ï¿½?kpi-label æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.35; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  word-break: break-word; /* å«ä¹ï¼åè¯æ­è¡è§åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-wrap: break-word; /* å«ä¹ï¼é¿åè¯æ¢è¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .kpi-label */
+.delta.up {{ color: #27ae60; }} /* å«ä¹ï¿½?delta.up  color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.delta.down {{ color: #e74c3c; }} /* å«ä¹ï¿½?delta.down  color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.delta.neutral {{ color: var(--secondary-color); }} /* å«ä¹ï¿½?delta.neutral  color æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+.delta {{ /* å«ä¹ï¿½?delta æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.3; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  word-break: break-word; /* å«ä¹ï¼åè¯æ­è¡è§åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-wrap: break-word; /* å«ä¹ï¼é¿åè¯æ¢è¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .delta */
+.chart-card {{ /* å«ä¹ï¼å¾è¡¨å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 30px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 20px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.01); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-card */
+.chart-card.chart-card--error {{ /* å«ä¹ï¿½?chart-card.chart-card--error æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border-style: dashed; /* å«ä¹ï¼border-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(135deg, rgba(0,0,0,0.015), rgba(0,0,0,0.04)); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-card.chart-card--error */
+.chart-error {{ /* å«ä¹ï¿½?chart-error æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 12px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 14px 12px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 10px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.03); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-error */
+.chart-error__icon {{ /* å«ä¹ï¿½?chart-error__icon æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 28px; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: 28px; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-shrink: 0; /* å«ä¹ï¼flex-shrink æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 50%; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  justify-content: center; /* å«ä¹ï¼flex ä¸»è½´å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 700; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color-dark); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: rgba(0,0,0,0.06); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.9rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-error__icon */
+.chart-error__title {{ /* å«ä¹ï¿½?chart-error__title æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-error__title */
+.chart-error__desc {{ /* å«ä¹ï¿½?chart-error__desc æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 4px 0 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  line-height: 1.6; /* å«ä¹ï¼è¡é«ï¼æåå¯è¯»æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-error__desc */
+.chart-card.wordcloud-card .chart-container {{ /* å«ä¹ï¿½?chart-card.wordcloud-card .chart-container æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  min-height: 180px; /* å«ä¹ï¼æå°é«åº¦ï¼é²æ­¢å¡é·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-card.wordcloud-card .chart-container */
+.chart-container {{ /* å«ä¹ï¼å¾ï¿½?canvas å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  position: relative; /* å«ä¹ï¼å®ä½æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  min-height: 220px; /* å«ä¹ï¼æå°é«åº¦ï¼é²æ­¢å¡é·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-container */
+.chart-fallback {{ /* å«ä¹ï¼å¾è¡¨ååºè¡¨æ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: none; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 12px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-x: auto; /* å«ä¹ï¼æ¨ªåæº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-fallback */
+.no-js .chart-fallback {{ /* å«ä¹ï¿½?no-js .chart-fallback æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: block; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .no-js .chart-fallback */
+.no-js .chart-container {{ /* å«ä¹ï¿½?no-js .chart-container æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: none; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .no-js .chart-container */
+.chart-fallback table {{ /* å«ä¹ï¿½?chart-fallback table æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-collapse: collapse; /* å«ä¹ï¼border-collapse æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-fallback table */
 .chart-fallback th,
-.chart-fallback td {{ /* 含义�?chart-fallback td 样式区域；设置：在本块内调整相关属�?*/
-  border: 1px solid var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  padding: 6px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  text-align: left; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-fallback td */
-.chart-fallback th {{ /* 含义�?chart-fallback th 样式区域；设置：在本块内调整相关属�?*/
-  background: rgba(0,0,0,0.04); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-fallback th */
-.wordcloud-fallback .wordcloud-badges {{ /* 含义�?wordcloud-fallback .wordcloud-badges 样式区域；设置：在本块内调整相关属�?*/
-  display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-  gap: 6px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  margin-top: 6px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .wordcloud-fallback .wordcloud-badges */
-.wordcloud-badge {{ /* 含义：词云徽章；设置：在本块内调整相关属�?*/
-  display: inline-flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  align-items: center; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  gap: 4px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-  padding: 4px 8px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 999px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  border: 1px solid rgba(74, 144, 226, 0.35); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  color: var(--text-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.14) 0%, rgba(74, 144, 226, 0.24) 100%); /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .wordcloud-badge */
-.dark-mode .wordcloud-badge {{ /* 含义�?dark-mode .wordcloud-badge 样式区域；设置：在本块内调整相关属�?*/
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .dark-mode .wordcloud-badge */
-.wordcloud-badge small {{ /* 含义�?wordcloud-badge small 样式区域；设置：在本块内调整相关属�?*/
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  font-weight: 600; /* 含义：字重；设置：按需调整数�?颜色/变量 */
-  font-size: 0.75rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .wordcloud-badge small */
-.chart-note {{ /* 含义：图表降级提示；设置：在本块内调整相关属�?*/
-  margin-top: 8px; /* 含义：margin-top 样式属性；设置：按需调整数�?颜色/变量 */
-  font-size: 0.85rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .chart-note */
-figure {{ /* 含义：figure 样式区域；设置：在本块内调整相关属�?*/
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-}} /* 结束 figure */
-figure img {{ /* 含义：figure img 样式区域；设置：在本块内调整相关属�?*/
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-}} /* 结束 figure img */
-.figure-placeholder {{ /* 含义�?figure-placeholder 样式区域；设置：在本块内调整相关属�?*/
-  padding: 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border: 1px dashed var(--border-color); /* 含义：边框样式；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  color: var(--secondary-color); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-size: 0.95rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  margin: 20px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .figure-placeholder */
-.math-block {{ /* 含义：块级公式；设置：在本块内调整相关属�?*/
-  text-align: center; /* 含义：文本对齐；设置：按需调整数�?颜色/变量 */
-  font-size: 1.1rem; /* 含义：字号；设置：按需调整数�?颜色/变量 */
-  margin: 24px 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .math-block */
-.math-inline {{ /* 含义：行内公式；设置：在本块内调整相关属�?*/
-  font-family: {fonts.get("heading", fonts.get("body", "sans-serif"))}; /* 含义：字体族；设置：按需调整数�?颜色/变量 */
-  font-style: italic; /* 含义：font-style 样式属性；设置：按需调整数�?颜色/变量 */
-  white-space: nowrap; /* 含义：空白与换行策略；设置：按需调整数�?颜色/变量 */
-  padding: 0 0.15em; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .math-inline */
-pre.code-block {{ /* 含义：代码块；设置：在本块内调整相关属�?*/
-  background: #1e1e1e; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  color: #fff; /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-  padding: 16px; /* 含义：内边距，控制内容与容器边缘的距离；设置：按需调整数�?颜色/变量 */
-  border-radius: 12px; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  overflow-x: auto; /* 含义：横向溢出处理；设置：按需调整数�?颜色/变量 */
-}} /* 结束 pre.code-block */
-@media (max-width: 768px) {{ /* 含义：移动端断点样式；设置：在本块内调整相关属�?*/
-  .report-header {{ /* 含义：页眉吸顶区域；设置：在本块内调整相关属�?*/
-    flex-direction: column; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-    align-items: flex-start; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .report-header */
-  main {{ /* 含义：主体内容容器；设置：在本块内调整相关属�?*/
-    margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-    border-radius: 0; /* 含义：圆角；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 main */
-}} /* 结束 @media (max-width: 768px) */
-@media print {{ /* 含义：打印模式样式；设置：在本块内调整相关属�?*/
-  .no-print {{ display: none !important; }} /* 含义�?no-print  display 样式属性；设置：按需调整数�?颜色/变量 */
-  body {{ /* 含义：全局排版与背景设置；设置：在本块内调整相关属�?*/
-    background: #fff; /* 含义：背景色或渐变效果；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 body */
-  main {{ /* 含义：主体内容容器；设置：在本块内调整相关属�?*/
-    box-shadow: none; /* 含义：阴影效果；设置：按需调整数�?颜色/变量 */
-    margin: 0; /* 含义：外边距，控制与周围元素的距离；设置：按需调整数�?颜色/变量 */
-    max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 main */
+.chart-fallback td {{ /* å«ä¹ï¿½?chart-fallback td æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  border: 1px solid var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 6px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: left; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-fallback td */
+.chart-fallback th {{ /* å«ä¹ï¿½?chart-fallback th æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: rgba(0,0,0,0.04); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-fallback th */
+.wordcloud-fallback .wordcloud-badges {{ /* å«ä¹ï¿½?wordcloud-fallback .wordcloud-badges æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 6px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin-top: 6px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .wordcloud-fallback .wordcloud-badges */
+.wordcloud-badge {{ /* å«ä¹ï¼è¯äºå¾½ç« ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  display: inline-flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  align-items: center; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  gap: 4px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 4px 8px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 999px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px solid rgba(74, 144, 226, 0.35); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--text-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.14) 0%, rgba(74, 144, 226, 0.24) 100%); /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .wordcloud-badge */
+.dark-mode .wordcloud-badge {{ /* å«ä¹ï¿½?dark-mode .wordcloud-badge æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .dark-mode .wordcloud-badge */
+.wordcloud-badge small {{ /* å«ä¹ï¿½?wordcloud-badge small æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-weight: 600; /* å«ä¹ï¼å­éï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.75rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .wordcloud-badge small */
+.chart-note {{ /* å«ä¹ï¼å¾è¡¨éçº§æç¤ºï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin-top: 8px; /* å«ä¹ï¼margin-top æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.85rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .chart-note */
+figure {{ /* å«ä¹ï¼figure æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ figure */
+figure img {{ /* å«ä¹ï¼figure img æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ figure img */
+.figure-placeholder {{ /* å«ä¹ï¿½?figure-placeholder æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  padding: 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border: 1px dashed var(--border-color); /* å«ä¹ï¼è¾¹æ¡æ ·å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: var(--secondary-color); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 0.95rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 20px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .figure-placeholder */
+.math-block {{ /* å«ä¹ï¼åçº§å¬å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  text-align: center; /* å«ä¹ï¼ææ¬å¯¹é½ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-size: 1.1rem; /* å«ä¹ï¼å­å·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  margin: 24px 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .math-block */
+.math-inline {{ /* å«ä¹ï¼è¡åå¬å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  font-family: {fonts.get("heading", fonts.get("body", "sans-serif"))}; /* å«ä¹ï¼å­ä½æï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  font-style: italic; /* å«ä¹ï¼font-style æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  white-space: nowrap; /* å«ä¹ï¼ç©ºç½ä¸æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 0 0.15em; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .math-inline */
+pre.code-block {{ /* å«ä¹ï¼ä»£ç åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  background: #1e1e1e; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  color: #fff; /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  padding: 16px; /* å«ä¹ï¼åè¾¹è·ï¼æ§å¶åå®¹ä¸å®¹å¨è¾¹ç¼çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  border-radius: 12px; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-x: auto; /* å«ä¹ï¼æ¨ªåæº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ pre.code-block */
+@media (max-width: 768px) {{ /* å«ä¹ï¼ç§»å¨ç«¯æ­ç¹æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  .report-header {{ /* å«ä¹ï¼é¡µçå¸é¡¶åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    flex-direction: column; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    align-items: flex-start; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .report-header */
+  main {{ /* å«ä¹ï¼ä¸»ä½åå®¹å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    border-radius: 0; /* å«ä¹ï¼åè§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ main */
+}} /* ç»æ @media (max-width: 768px) */
+@media print {{ /* å«ä¹ï¼æå°æ¨¡å¼æ ·å¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  .no-print {{ display: none !important; }} /* å«ä¹ï¿½?no-print  display æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  body {{ /* å«ä¹ï¼å¨å±æçä¸èæ¯è®¾ç½®ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    background: #fff; /* å«ä¹ï¼èæ¯è²ææ¸åææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ body */
+  main {{ /* å«ä¹ï¼ä¸»ä½åå®¹å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    box-shadow: none; /* å«ä¹ï¼é´å½±ææï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    margin: 0; /* å«ä¹ï¼å¤è¾¹è·ï¼æ§å¶ä¸å¨å´åç´ çè·ç¦»ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ main */
   .chapter > *,
   .hero-section,
   .callout,
@@ -5135,150 +5135,150 @@ pre.code-block {{ /* 含义：代码块；设置：在本块内调整相关属�
 .pest-card,
 .table-wrap,
 figure,
-blockquote {{ /* 含义：引用块；设置：在本块内调整相关属�?*/
-  break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 blockquote */
+blockquote {{ /* å«ä¹ï¼å¼ç¨åï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ blockquote */
   .chapter h2,
   .chapter h3,
-  .chapter h4 {{ /* 含义�?chapter h4 样式区域；设置：在本块内调整相关属�?*/
-    break-after: avoid; /* 含义：break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-after: avoid; /* 含义：page-break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .chapter h4 */
+  .chapter h4 {{ /* å«ä¹ï¿½?chapter h4 æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-after: avoid; /* å«ä¹ï¼break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-after: avoid; /* å«ä¹ï¼page-break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .chapter h4 */
   .chart-card,
-  .table-wrap {{ /* 含义：表格滚动容器；设置：在本块内调整相关属�?*/
-    overflow: visible !important; /* 含义：溢出处理；设置：按需调整数�?颜色/变量 */
-    max-width: 100% !important; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-    box-sizing: border-box; /* 含义：尺寸计算方式；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .table-wrap */
-  .chart-card canvas {{ /* 含义�?chart-card canvas 样式区域；设置：在本块内调整相关属�?*/
-    width: 100% !important; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-    height: auto !important; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-    max-width: 100% !important; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .chart-card canvas */
+  .table-wrap {{ /* å«ä¹ï¼è¡¨æ ¼æ»å¨å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    overflow: visible !important; /* å«ä¹ï¼æº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    max-width: 100% !important; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    box-sizing: border-box; /* å«ä¹ï¼å°ºå¯¸è®¡ç®æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .table-wrap */
+  .chart-card canvas {{ /* å«ä¹ï¿½?chart-card canvas æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    width: 100% !important; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    height: auto !important; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    max-width: 100% !important; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .chart-card canvas */
   .swot-card,
-  .swot-cell {{ /* 含义：SWOT 象限单元格；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-cell */
-  .swot-card {{ /* 含义：SWOT 卡片容器；设置：在本块内调整相关属�?*/
-    color: var(--swot-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-    /* 允许卡片内部分页，避免整体被抬到下一�?*/
-    break-inside: auto !important; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto !important; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-card */
-  .swot-card__head {{ /* 含义�?swot-card__head 样式区域；设置：在本块内调整相关属�?*/
-    break-after: avoid; /* 含义：break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-after: avoid; /* 含义：page-break-after 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-card__head */
-  .swot-grid {{ /* 含义：SWOT 象限网格；设置：在本块内调整相关属�?*/
-    break-before: avoid; /* 含义：break-before 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-before: avoid; /* 含义：page-break-before 样式属性；设置：按需调整数�?颜色/变量 */
-    break-inside: auto; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    display: flex; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-    flex-wrap: wrap; /* 含义：换行策略；设置：按需调整数�?颜色/变量 */
-    gap: 10px; /* 含义：子元素间距；设置：按需调整数�?颜色/变量 */
-    align-items: stretch; /* 含义：flex 对齐方式（交叉轴）；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-grid */
-  .swot-grid .swot-cell {{ /* 含义�?swot-grid .swot-cell 样式区域；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-grid .swot-cell */
-  .swot-legend {{ /* 含义�?swot-legend 样式区域；设置：在本块内调整相关属�?*/
-    display: none !important; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-legend */
-  .swot-grid .swot-cell {{ /* 含义�?swot-grid .swot-cell 样式区域；设置：在本块内调整相关属�?*/
-    flex: 1 1 320px; /* 含义：flex 占位比例；设置：按需调整数�?颜色/变量 */
-    min-width: 240px; /* 含义：最小宽度；设置：按需调整数�?颜色/变量 */
-    height: auto; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .swot-grid .swot-cell */
-  /* PEST 打印样式 */
+  .swot-cell {{ /* å«ä¹ï¼SWOT è±¡éååæ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-cell */
+  .swot-card {{ /* å«ä¹ï¼SWOT å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    color: var(--swot-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    /* åè®¸å¡çåé¨åé¡µï¼é¿åæ´ä½è¢«æ¬å°ä¸ä¸ï¿½?*/
+    break-inside: auto !important; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto !important; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-card */
+  .swot-card__head {{ /* å«ä¹ï¿½?swot-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-after: avoid; /* å«ä¹ï¼break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-after: avoid; /* å«ä¹ï¼page-break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-card__head */
+  .swot-grid {{ /* å«ä¹ï¼SWOT è±¡éç½æ ¼ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-before: avoid; /* å«ä¹ï¼break-before æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-before: avoid; /* å«ä¹ï¼page-break-before æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    break-inside: auto; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    display: flex; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    flex-wrap: wrap; /* å«ä¹ï¼æ¢è¡ç­ç¥ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    gap: 10px; /* å«ä¹ï¼å­åç´ é´è·ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    align-items: stretch; /* å«ä¹ï¼flex å¯¹é½æ¹å¼ï¼äº¤åè½´ï¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-grid */
+  .swot-grid .swot-cell {{ /* å«ä¹ï¿½?swot-grid .swot-cell æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-grid .swot-cell */
+  .swot-legend {{ /* å«ä¹ï¿½?swot-legend æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    display: none !important; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-legend */
+  .swot-grid .swot-cell {{ /* å«ä¹ï¿½?swot-grid .swot-cell æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    flex: 1 1 320px; /* å«ä¹ï¼flex å ä½æ¯ä¾ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    min-width: 240px; /* å«ä¹ï¼æå°å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    height: auto; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .swot-grid .swot-cell */
+  /* PEST æå°æ ·å¼ */
   .pest-card,
-  .pest-strip {{ /* 含义：PEST 条带；设置：在本块内调整相关属�?*/
-    break-inside: avoid; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: avoid; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-strip */
-  .pest-card {{ /* 含义：PEST 卡片容器；设置：在本块内调整相关属�?*/
-    color: var(--pest-text); /* 含义：文字颜色；设置：按需调整数�?颜色/变量 */
-    break-inside: auto !important; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto !important; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-card */
-  .pest-card__head {{ /* 含义�?pest-card__head 样式区域；设置：在本块内调整相关属�?*/
-    break-after: avoid; /* 含义：break-after 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-after: avoid; /* 含义：page-break-after 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-card__head */
-  .pest-strips {{ /* 含义：PEST 条带容器；设置：在本块内调整相关属�?*/
-    break-before: avoid; /* 含义：break-before 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-before: avoid; /* 含义：page-break-before 样式属性；设置：按需调整数�?颜色/变量 */
-    break-inside: auto; /* 含义：break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-    page-break-inside: auto; /* 含义：page-break-inside 样式属性；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-strips */
-  .pest-legend {{ /* 含义�?pest-legend 样式区域；设置：在本块内调整相关属�?*/
-    display: none !important; /* 含义：布局展示方式；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-legend */
-  .pest-strip {{ /* 含义：PEST 条带；设置：在本块内调整相关属�?*/
-    flex-direction: row; /* 含义：flex 主轴方向；设置：按需调整数�?颜色/变量 */
-  }} /* 结束 .pest-strip */
-.table-wrap {{ /* 含义：表格滚动容器；设置：在本块内调整相关属�?*/
-  overflow-x: auto; /* 含义：横向溢出处理；设置：按需调整数�?颜色/变量 */
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .table-wrap */
-.table-wrap table {{ /* 含义�?table-wrap table 样式区域；设置：在本块内调整相关属�?*/
-  table-layout: fixed; /* 含义：表格布局算法；设置：按需调整数�?颜色/变量 */
-  width: 100%; /* 含义：宽度设置；设置：按需调整数�?颜色/变量 */
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .table-wrap table */
+  .pest-strip {{ /* å«ä¹ï¼PEST æ¡å¸¦ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-inside: avoid; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: avoid; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-strip */
+  .pest-card {{ /* å«ä¹ï¼PEST å¡çå®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    color: var(--pest-text); /* å«ä¹ï¼æå­é¢è²ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    break-inside: auto !important; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto !important; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-card */
+  .pest-card__head {{ /* å«ä¹ï¿½?pest-card__head æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-after: avoid; /* å«ä¹ï¼break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-after: avoid; /* å«ä¹ï¼page-break-after æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-card__head */
+  .pest-strips {{ /* å«ä¹ï¼PEST æ¡å¸¦å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    break-before: avoid; /* å«ä¹ï¼break-before æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-before: avoid; /* å«ä¹ï¼page-break-before æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    break-inside: auto; /* å«ä¹ï¼break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+    page-break-inside: auto; /* å«ä¹ï¼page-break-inside æ ·å¼å±æ§ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-strips */
+  .pest-legend {{ /* å«ä¹ï¿½?pest-legend æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    display: none !important; /* å«ä¹ï¼å¸å±å±ç¤ºæ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-legend */
+  .pest-strip {{ /* å«ä¹ï¼PEST æ¡å¸¦ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+    flex-direction: row; /* å«ä¹ï¼flex ä¸»è½´æ¹åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  }} /* ç»æ .pest-strip */
+.table-wrap {{ /* å«ä¹ï¼è¡¨æ ¼æ»å¨å®¹å¨ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  overflow-x: auto; /* å«ä¹ï¼æ¨ªåæº¢åºå¤çï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .table-wrap */
+.table-wrap table {{ /* å«ä¹ï¿½?table-wrap table æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  table-layout: fixed; /* å«ä¹ï¼è¡¨æ ¼å¸å±ç®æ³ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  width: 100%; /* å«ä¹ï¼å®½åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .table-wrap table */
 .table-wrap table th,
-.table-wrap table td {{ /* 含义�?table-wrap table td 样式区域；设置：在本块内调整相关属�?*/
-  word-break: break-word; /* 含义：单词断行规则；设置：按需调整数�?颜色/变量 */
-  overflow-wrap: break-word; /* 含义：长单词换行；设置：按需调整数�?颜色/变量 */
-}} /* 结束 .table-wrap table td */
-/* 防止图片和图表溢�?*/
-img, canvas, svg {{ /* 含义：媒体元素尺寸限制；设置：在本块内调整相关属�?*/
-  max-width: 100% !important; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-  height: auto !important; /* 含义：高度设置；设置：按需调整数�?颜色/变量 */
-}} /* 结束 img, canvas, svg */
-/* 确保所有容器不超出页面宽度 */
-* {{ /* 含义�? 样式区域；设置：在本块内调整相关属�?*/
-  box-sizing: border-box; /* 含义：尺寸计算方式；设置：按需调整数�?颜色/变量 */
-  max-width: 100%; /* 含义：最大宽度；设置：按需调整数�?颜色/变量 */
-}} /* 结束 * */
-}} /* 结束 @media print */
+.table-wrap table td {{ /* å«ä¹ï¿½?table-wrap table td æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  word-break: break-word; /* å«ä¹ï¼åè¯æ­è¡è§åï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  overflow-wrap: break-word; /* å«ä¹ï¼é¿åè¯æ¢è¡ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ .table-wrap table td */
+/* é²æ­¢å¾çåå¾è¡¨æº¢ï¿½?*/
+img, canvas, svg {{ /* å«ä¹ï¼åªä½åç´ å°ºå¯¸éå¶ï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  max-width: 100% !important; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  height: auto !important; /* å«ä¹ï¼é«åº¦è®¾ç½®ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ img, canvas, svg */
+/* ç¡®ä¿ææå®¹å¨ä¸è¶åºé¡µé¢å®½åº¦ */
+* {{ /* å«ä¹ï¿½? æ ·å¼åºåï¼è®¾ç½®ï¼å¨æ¬ååè°æ´ç¸å³å±ï¿½?*/
+  box-sizing: border-box; /* å«ä¹ï¼å°ºå¯¸è®¡ç®æ¹å¼ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+  max-width: 100%; /* å«ä¹ï¼æå¤§å®½åº¦ï¼è®¾ç½®ï¼æéè°æ´æ°ï¿½?é¢è²/åé */
+}} /* ç»æ * */
+}} /* ç»æ @media print */
 
 """
 
     def _hydration_script(self) -> str:
         """
-        返回页面底部的JS，负�?Chart.js 注水、词云渲染及按钮交互�?
+        è¿åé¡µé¢åºé¨çJSï¼è´ï¿½?Chart.js æ³¨æ°´ãè¯äºæ¸²æåæé®äº¤äºï¿½?
 
-        交互层级梳理�?
-        1) 主题切换�?theme-toggle）：监听自定义组�?change 事件，detail �?'light'/'dark'�?
-           作用：切�?body.dark-mode、刷�?Chart.js 与词云颜色�?
-        2) 打印按钮�?print-btn）：触发 window.print()，受 CSS @media print 控制版式�?
-        3) 导出按钮�?export-btn）：调用 exportPdf()，内部使�?html2canvas + jsPDF�?
-           并显�?#export-overlay（遮罩、状态文案、进度条）�?
-        4) 图表注水：扫描所�?data-config-id �?canvas，解析相�?JSON，实例化 Chart.js�?
-           失败时降级为表格/词云徽章展示，并在卡片上标记 data-chart-state�?
-        5) 窗口 resize：debounce 后重绘词云，确保响应式�?
+        äº¤äºå±çº§æ¢³çï¿½?
+        1) ä¸»é¢åæ¢ï¿½?theme-toggleï¼ï¼çå¬èªå®ä¹ç»ï¿½?change äºä»¶ï¼detail ï¿½?'light'/'dark'ï¿½?
+           ä½ç¨ï¼åï¿½?body.dark-modeãå·ï¿½?Chart.js ä¸è¯äºé¢è²ï¿½?
+        2) æå°æé®ï¿½?print-btnï¼ï¼è§¦å window.print()ï¼å CSS @media print æ§å¶çå¼ï¿½?
+        3) å¯¼åºæé®ï¿½?export-btnï¼ï¼è°ç¨ exportPdf()ï¼åé¨ä½¿ï¿½?html2canvas + jsPDFï¿½?
+           å¹¶æ¾ï¿½?#export-overlayï¼é®ç½©ãç¶æææ¡ãè¿åº¦æ¡ï¼ï¿½?
+        4) å¾è¡¨æ³¨æ°´ï¼æ«ææï¿½?data-config-id ï¿½?canvasï¼è§£æç¸ï¿½?JSONï¼å®ä¾å Chart.jsï¿½?
+           å¤±è´¥æ¶éçº§ä¸ºè¡¨æ ¼/è¯äºå¾½ç« å±ç¤ºï¼å¹¶å¨å¡çä¸æ è®° data-chart-stateï¿½?
+        5) çªå£ resizeï¼debounce åéç»è¯äºï¼ç¡®ä¿ååºå¼ï¿½?
         """
         return """
 <script>
 document.documentElement.classList.remove('no-js');
 document.documentElement.classList.add('js-ready');
 
-/* ========== Theme Button Web Component (已注释，改用 action-btn 风格) ========== */
+/* ========== Theme Button Web Component (å·²æ³¨éï¼æ¹ç¨ action-btn é£æ ¼) ========== */
 /*
 (() => {
   const themeButtonFunc = (root, initTheme, changeTheme) => {
     const checkbox = root.querySelector('.theme-checkbox');
-    // 初始化状�?
+    // åå§åç¶ï¿½?
     if (initTheme === 'dark') {
       checkbox.checked = true;
     }
-    // 核心交互：勾选切�?dark/light，外部通过 changeTheme 回调同步主题
+    // æ ¸å¿äº¤äºï¼å¾éåï¿½?dark/lightï¼å¤é¨éè¿ changeTheme åè°åæ­¥ä¸»é¢
     checkbox.addEventListener('change', (e) => {
       const isDark = e.target.checked;
       changeTheme(isDark ? 'dark' : 'light');
@@ -5296,7 +5296,7 @@ document.documentElement.classList.add('js-ready');
       container.setAttribute("class", "container");
       container.style.fontSize = `${size * 10}px`;
 
-      // 组件结构：checkbox + label，label 内含天空/星星/云层与月亮圆点，视觉上是主题切换拨钮
+      // ç»ä»¶ç»æï¼checkbox + labelï¼label åå«å¤©ç©º/ææ/äºå±ä¸æäº®åç¹ï¼è§è§ä¸æ¯ä¸»é¢åæ¢æ¨é®
       container.innerHTML = [
         '<div class="toggle-wrapper">',
         '  <input type="checkbox" class="theme-checkbox" id="theme-toggle-input">',
@@ -5373,15 +5373,15 @@ document.documentElement.classList.add('js-ready');
 const wordCloudRegistry = new Map();
 const STABLE_CHART_TYPES = ['line', 'bar'];
 const CHART_TYPE_LABELS = {
-  line: '折线�?,
-  bar: '柱状�?,
-  doughnut: '圆环�?,
-  pie: '饼图',
-  radar: '雷达�?,
-  polarArea: '极地区域�?
+  line: 'æçº¿ï¿½?,
+  bar: 'æ±ç¶ï¿½?,
+  doughnut: 'åç¯ï¿½?,
+  pie: 'é¥¼å¾',
+  radar: 'é·è¾¾ï¿½?,
+  polarArea: 'æå°åºåï¿½?
 };
 
-// 与PDF矢量渲染保持一致的颜色替换/提亮规则
+// ä¸PDFç¢éæ¸²æä¿æä¸è´çé¢è²æ¿æ¢/æäº®è§å
 const DEFAULT_CHART_COLORS = [
   '#4A90E2', '#E85D75', '#50C878', '#FFB347',
   '#9B59B6', '#3498DB', '#E67E22', '#16A085',
@@ -5428,7 +5428,7 @@ function normalizeColorToken(color) {
   if (typeof color !== 'string') return color;
   const trimmed = color.trim();
   if (!trimmed) return null;
-  // 支持 var(--token, fallback) 形式，优先解析fallback
+  // æ¯æ var(--token, fallback) å½¢å¼ï¼ä¼åè§£æfallback
   const varWithFallback = trimmed.match(/^var\(\s*--[^,)+]+,\s*([^)]+)\)/i);
   if (varWithFallback && varWithFallback[1]) {
     const fallback = varWithFallback[1].trim();
@@ -5597,7 +5597,7 @@ function normalizeDatasetColors(payload, chartType) {
   data.datasets.forEach((dataset, idx) => {
     if (!isPlainObject(dataset)) return;
     if (type === 'line') {
-      dataset.fill = true;  // 对折线图强制开启填充，便于区域对比
+      dataset.fill = true;  // å¯¹æçº¿å¾å¼ºå¶å¼å¯å¡«åï¼ä¾¿äºåºåå¯¹æ¯
     }
     const paletteColor = normalizeColorToken(DEFAULT_CHART_COLORS[idx % DEFAULT_CHART_COLORS.length]);
     const borderInput = dataset.borderColor;
@@ -5633,15 +5633,15 @@ function normalizeDatasetColors(payload, chartType) {
       dataset.backgroundColor = normalizedColors;
       dataset.borderColor = normalizedColors.map(col => ensureAlpha(liftDarkColor(col), 1));
       const changeLabel = fixedTransparentCount
-        ? `dataset${idx}: 修正${fixedTransparentCount}个透明扇区`
-        : `dataset${idx}: 标准化扇区颜�?${normalizedColors.length})`;
+        ? `dataset${idx}: ä¿®æ­£${fixedTransparentCount}ä¸ªéææåº`
+        : `dataset${idx}: æ ååæåºé¢ï¿½?${normalizedColors.length})`;
       changes.push(changeLabel);
       return;
     }
 
     if (!borderInput) {
       dataset.borderColor = liftedBase;
-      changes.push(`dataset${idx}: 补全边框色`);
+      changes.push(`dataset${idx}: è¡¥å¨è¾¹æ¡è²`);
     } else if (borderIsArray) {
       dataset.borderColor = borderInput.map(col => liftDarkColor(col));
     } else {
@@ -5666,7 +5666,7 @@ function normalizeDatasetColors(payload, chartType) {
         dataset.backgroundColor = ensureAlpha(liftDarkColor(bgSeed), typeAlpha);
       }
       if (dataset.fill || type !== 'line') {
-        changes.push(`dataset${idx}: 应用淡化填充以避免遮挡`);
+        changes.push(`dataset${idx}: åºç¨æ·¡åå¡«åä»¥é¿åé®æ¡`);
       }
     } else if (!dataset.backgroundColor) {
       dataset.backgroundColor = ensureAlpha(liftedBase, 0.85);
@@ -5758,7 +5758,7 @@ function resolveChartTypes(payload) {
 }
 
 function describeChartType(type) {
-  return CHART_TYPE_LABELS[type] || type || '图表';
+  return CHART_TYPE_LABELS[type] || type || 'å¾è¡¨';
 }
 
 function setChartDegradeNote(card, fromType, toType) {
@@ -5770,7 +5770,7 @@ function setChartDegradeNote(card, fromType, toType) {
     note.className = 'chart-note';
     card.appendChild(note);
   }
-  note.textContent = `${describeChartType(fromType)}渲染失败，已自动切换�?{describeChartType(toType)}以确保兼容。`;
+  note.textContent = `${describeChartType(fromType)}æ¸²æå¤±è´¥ï¼å·²èªå¨åæ¢ï¿½?{describeChartType(toType)}ä»¥ç¡®ä¿å¼å®¹;
 }
 
 function clearChartDegradeNote(card) {
@@ -5863,7 +5863,7 @@ function wordcloudColor(category) {
 }
 
 function renderWordCloudFallback(canvas, items, reason) {
-  // 词云失败时的显示形式：隐�?canvas，展示徽章列表（�?权重），保证“可见数据”而非空白
+  // è¯äºå¤±è´¥æ¶çæ¾ç¤ºå½¢å¼ï¼éï¿½?canvasï¼å±ç¤ºå¾½ç« åè¡¨ï¼ï¿½?æéï¼ï¼ä¿è¯"å¯è§æ°æ®"èéç©ºç½
   const card = canvas.closest('.chart-card') || canvas.parentElement;
   if (!card) return;
   const wrapper = canvas.parentElement && canvas.parentElement.classList && canvas.parentElement.classList.contains('chart-container')
@@ -5910,12 +5910,12 @@ function renderWordCloudFallback(canvas, items, reason) {
   if (reason) {
     const notice = document.createElement('p');
     notice.className = 'chart-fallback__notice';
-    notice.textContent = `词云未能渲染${reason ? `�?{reason}）` : ''}，已展示关键词列表。`;
+    notice.textContent = `è¯äºæªè½æ¸²æ${reason ? `ï¿½?{reason}ï¼` : ''}ï¼å·²å±ç¤ºå³é®è¯åè¡¨;
     fallback.appendChild(notice);
   }
   if (!items || !items.length) {
     const empty = document.createElement('p');
-    empty.textContent = '暂无可用数据�?;
+    empty.textContent = 'ææ å¯ç¨æ°æ®ï¿½?;
     fallback.appendChild(empty);
     return;
   }
@@ -5935,17 +5935,17 @@ function renderWordCloud(canvas, payload, skipRegistry) {
     ? canvas.parentElement
     : null;
   if (!items.length) {
-    renderWordCloudFallback(canvas, items, '无有效数�?);
+    renderWordCloudFallback(canvas, items, 'æ æææ°ï¿½?);
     return;
   }
   if (typeof WordCloud === 'undefined') {
-    renderWordCloudFallback(canvas, items, '词云依赖未加�?);
+    renderWordCloudFallback(canvas, items, 'è¯äºä¾èµæªå ï¿½?);
     return;
   }
   const theme = resolveWordcloudTheme();
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   const width = Math.max(260, (container ? container.clientWidth : canvas.clientWidth || canvas.width || 320));
-  const height = Math.max(120, Math.round(width / 5)); // 5:1 宽高�?
+  const height = Math.max(120, Math.round(width / 5)); // 5:1 å®½é«ï¿½?
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   canvas.style.width = `${width}px`;
@@ -6028,7 +6028,7 @@ function renderWordCloud(canvas, payload, skipRegistry) {
       wordCloudRegistry.set(canvas, () => renderWordCloud(canvas, payload, true));
     }
   } catch (err) {
-    console.error('WordCloud 渲染失败', err);
+    console.error('WordCloud æ¸²æå¤±è´¥', err);
     renderWordCloudFallback(canvas, items, err && err.message ? err.message : '');
   }
 }
@@ -6040,7 +6040,7 @@ function createFallbackTable(labels, datasets) {
   const primaryDataset = datasets.find(ds => Array.isArray(ds && ds.data));
   const resolvedLabels = Array.isArray(labels) && labels.length
     ? labels
-    : (primaryDataset && primaryDataset.data ? primaryDataset.data.map((_, idx) => `数据�?${idx + 1}`) : []);
+    : (primaryDataset && primaryDataset.data ? primaryDataset.data.map((_, idx) => `æ°æ®ï¿½?${idx + 1}`) : []);
   if (!resolvedLabels.length) {
     return null;
   }
@@ -6048,11 +6048,11 @@ function createFallbackTable(labels, datasets) {
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
   const categoryHeader = document.createElement('th');
-  categoryHeader.textContent = '类别';
+  categoryHeader.textContent = 'ç±»å«';
   headRow.appendChild(categoryHeader);
   datasets.forEach((dataset, index) => {
     const th = document.createElement('th');
-    th.textContent = dataset && dataset.label ? dataset.label : `系列${index + 1}`;
+    th.textContent = dataset && dataset.label ? dataset.label : `ç³»å${index + 1}`;
     headRow.appendChild(th);
   });
   thead.appendChild(headRow);
@@ -6071,7 +6071,7 @@ function createFallbackTable(labels, datasets) {
       } else if (series !== undefined && series !== null && series !== '') {
         cell.textContent = series;
       } else {
-        cell.textContent = '�?;
+        cell.textContent = 'ï¿½?;
       }
       row.appendChild(cell);
     });
@@ -6082,7 +6082,7 @@ function createFallbackTable(labels, datasets) {
 }
 
 function renderChartFallback(canvas, payload, reason) {
-  // 图表失败时的显示形式：切换到表格数据（categories x series），并在卡片上标�?fallback 状�?
+  // å¾è¡¨å¤±è´¥æ¶çæ¾ç¤ºå½¢å¼ï¼åæ¢å°è¡¨æ ¼æ°æ®ï¼categories x seriesï¼ï¼å¹¶å¨å¡çä¸æ ï¿½?fallback ç¶ï¿½?
   const card = canvas.closest('.chart-card') || canvas.parentElement;
   if (!card) return;
   clearChartDegradeNote(card);
@@ -6117,14 +6117,14 @@ function renderChartFallback(canvas, payload, reason) {
     (payload && payload.props && payload.props.title) ||
     (payload && payload.widgetId) ||
     canvas.getAttribute('id') ||
-    '图表';
+    'å¾è¡¨';
   const existingNotice = fallback.querySelector('.chart-fallback__notice');
   if (existingNotice) {
     existingNotice.remove();
   }
   const notice = document.createElement('p');
   notice.className = 'chart-fallback__notice';
-  notice.textContent = `${fallbackTitle}：图表未能渲染，已展示表格数�?{reason ? `�?{reason}）` : ''}`;
+  notice.textContent = `${fallbackTitle}ï¼å¾è¡¨æªè½æ¸²æï¼å·²å±ç¤ºè¡¨æ ¼æ°ï¿½?{reason ? `ï¿½?{reason}ï¼` : ''}`;
   fallback.insertBefore(notice, fallback.firstChild || null);
   if (!prebuilt) {
     const table = createFallbackTable(
@@ -6172,58 +6172,58 @@ function buildChartOptions(payload) {
 
 function validateChartData(payload, type) {
   /**
-   * 前端验证图表数据
-   * 返回: { valid: boolean, errors: string[] }
+   * åç«¯éªè¯å¾è¡¨æ°æ®
+   * è¿å: { valid: boolean, errors: string[] }
    */
   const errors = [];
 
   if (!payload || typeof payload !== 'object') {
-    errors.push('无效的payload');
+    errors.push('æ æçpayload');
     return { valid: false, errors };
   }
 
   const data = payload.data;
   if (!data || typeof data !== 'object') {
-    errors.push('缺少data字段');
+    errors.push('ç¼ºå°dataå­æ®µ');
     return { valid: false, errors };
   }
 
-  // 特殊图表类型（scatter, bubble�?
+  // ç¹æ®å¾è¡¨ç±»åï¼scatter, bubbleï¿½?
   const specialTypes = { 'scatter': true, 'bubble': true };
   if (specialTypes[type]) {
-    // 这些类型需要特殊的数据格式 {x, y} �?{x, y, r}
-    // 跳过标准验证
+    // è¿äºç±»åéè¦ç¹æ®çæ°æ®æ ¼å¼ {x, y} ï¿½?{x, y, r}
+    // è·³è¿æ åéªè¯
     return { valid: true, errors };
   }
 
-  // 标准图表类型验证
+  // æ åå¾è¡¨ç±»åéªè¯
   const datasets = data.datasets;
   if (!Array.isArray(datasets)) {
-    errors.push('datasets必须是数�?);
+    errors.push('datasetså¿é¡»æ¯æ°ï¿½?);
     return { valid: false, errors };
   }
 
   if (datasets.length === 0) {
-    errors.push('datasets数组为空');
+    errors.push('datasetsæ°ç»ä¸ºç©º');
     return { valid: false, errors };
   }
 
-  // 验证每个dataset
+  // éªè¯æ¯ä¸ªdataset
   for (let i = 0; i < datasets.length; i++) {
     const dataset = datasets[i];
     if (!dataset || typeof dataset !== 'object') {
-      errors.push(`datasets[${i}]不是对象`);
+      errors.push(`datasets[${i}]ä¸æ¯å¯¹è±¡`);
       continue;
     }
 
     if (!Array.isArray(dataset.data)) {
-      errors.push(`datasets[${i}].data不是数组`);
+      errors.push(`datasets[${i}].dataä¸æ¯æ°ç»`);
     } else if (dataset.data.length === 0) {
-      errors.push(`datasets[${i}].data为空`);
+      errors.push(`datasets[${i}].dataä¸ºç©º`);
     }
   }
 
-  // 需要labels的图表类�?
+  // éè¦labelsçå¾è¡¨ç±»ï¿½?
   const labelRequiredTypes = {
     'line': true, 'bar': true, 'radar': true,
     'polarArea': true, 'pie': true, 'doughnut': true
@@ -6232,9 +6232,9 @@ function validateChartData(payload, type) {
   if (labelRequiredTypes[type]) {
     const labels = data.labels;
     if (!Array.isArray(labels)) {
-      errors.push('缺少labels数组');
+      errors.push('ç¼ºå°labelsæ°ç»');
     } else if (labels.length === 0) {
-      errors.push('labels数组为空');
+      errors.push('labelsæ°ç»ä¸ºç©º');
     }
   }
 
@@ -6279,17 +6279,17 @@ function hydrateCharts() {
     try {
       payload = JSON.parse(configScript.textContent);
     } catch (err) {
-      console.error('Widget JSON 解析失败', err);
-      renderChartFallback(container, { widgetId: container.dataset.configId }, '配置解析失败');
+      console.error('Widget JSON è§£æå¤±è´¥', err);
+      renderChartFallback(container, { widgetId: container.dataset.configId }, 'éç½®è§£æå¤±è´¥');
       return;
     }
     if (isWordCloudWidget(payload)) {
-      // 词云暂时保留或后续也替换�?echarts-wordcloud，当前可略过或用原有逻辑挂载到canvas
+      // è¯äºææ¶ä¿çæåç»­ä¹æ¿æ¢ï¿½?echarts-wordcloudï¼å½åå¯ç¥è¿æç¨åæé»è¾æè½½å°canvas
       renderWordCloud(container, payload);
       return;
     }
     if (typeof echarts === 'undefined') {
-      renderChartFallback(container, payload, 'ECharts 未加�?);
+      renderChartFallback(container, payload, 'ECharts æªå ï¿½?);
       return;
     }
 
@@ -6312,12 +6312,12 @@ function hydrateCharts() {
       myChart.setOption(options);
       chartRegistry.push(myChart);
       
-      // 添加 resize 监听
+      // æ·»å  resize çå¬
       window.addEventListener('resize', () => {
           myChart.resize();
       });
     } catch (err) {
-      console.error('图表渲染失败', err);
+      console.error('å¾è¡¨æ¸²æå¤±è´¥', err);
       renderChartFallback(container, payload, err.message);
     }
   });
@@ -6366,19 +6366,19 @@ function hideExportOverlay(delay) {
   }
 }
 
-// exportPdf已移�?
+// exportPdfå·²ç§»ï¿½?
 function exportPdf() {
-  // 导出按钮交互：禁用按�?打开遮罩，使�?html2canvas + jsPDF 渲染 main，再恢复按钮与遮�?
+  // å¯¼åºæé®äº¤äºï¼ç¦ç¨æï¿½?æå¼é®ç½©ï¼ä½¿ï¿½?html2canvas + jsPDF æ¸²æ mainï¼åæ¢å¤æé®ä¸é®ï¿½?
   const target = document.querySelector('main');
   if (!target || typeof jspdf === 'undefined' || typeof jspdf.jsPDF !== 'function') {
-    alert('PDF导出依赖未就�?);
+    alert('PDFå¯¼åºä¾èµæªå°±ï¿½?);
     return;
   }
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) {
     exportBtn.disabled = true;
   }
-  showExportOverlay('正在导出PDF，请稍�?..');
+  showExportOverlay('æ­£å¨å¯¼åºPDFï¼è¯·ç¨ï¿½?..');
   document.body.classList.add('exporting');
   const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
   try {
@@ -6386,9 +6386,9 @@ function exportPdf() {
       pdf.addFileToVFS('SourceHanSerifSC-Medium.ttf', window.pdfFontData);
       pdf.addFont('SourceHanSerifSC-Medium.ttf', 'SourceHanSerif', 'normal');
       pdf.setFont('SourceHanSerif');
-      console.log('PDF字体已成功加�?);
+      console.log('PDFå­ä½å·²æåå ï¿½?);
     } else {
-      console.warn('PDF字体数据未找到，将使用默认字�?);
+      console.warn('PDFå­ä½æ°æ®æªæ¾å°ï¼å°ä½¿ç¨é»è®¤å­ï¿½?);
     }
   } catch (err) {
     console.warn('Custom PDF font setup failed, fallback to default', err);
@@ -6418,7 +6418,7 @@ function exportPdf() {
         try {
           fn();
         } catch (err) {
-          console.error('词云重新渲染失败', err);
+          console.error('è¯äºéæ°æ¸²æå¤±è´¥', err);
         }
       }
     });
@@ -6453,24 +6453,24 @@ function exportPdf() {
       callback: (doc) => doc.save('report.pdf')
     });
   } catch (err) {
-    console.error('PDF 导出失败', err);
-    updateExportOverlay('导出失败，请稍后重试');
+    console.error('PDF å¯¼åºå¤±è´¥', err);
+    updateExportOverlay('å¯¼åºå¤±è´¥ï¼è¯·ç¨åéè¯');
     hideExportOverlay(1200);
     restoreButton();
-    alert('PDF导出失败，请稍后重试');
+    alert('PDFå¯¼åºå¤±è´¥ï¼è¯·ç¨åéè¯');
     return;
   }
   if (renderTask && typeof renderTask.then === 'function') {
     renderTask.then(() => {
-      updateExportOverlay('导出完成，正在保�?..');
+      updateExportOverlay('å¯¼åºå®æï¼æ­£å¨ä¿ï¿½?..');
       hideExportOverlay(800);
       restoreButton();
     }).catch(err => {
-      console.error('PDF 导出失败', err);
-      updateExportOverlay('导出失败，请稍后重试');
+      console.error('PDF å¯¼åºå¤±è´¥', err);
+      updateExportOverlay('å¯¼åºå¤±è´¥ï¼è¯·ç¨åéè¯');
       hideExportOverlay(1200);
       restoreButton();
-      alert('PDF导出失败，请稍后重试');
+      alert('PDFå¯¼åºå¤±è´¥ï¼è¯·ç¨åéè¯');
     });
   } else {
     hideExportOverlay();
@@ -6486,7 +6486,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }, 260);
-  // 旧版 Web Component 主题按钮（已注释�?
+  // æ§ç Web Component ä¸»é¢æé®ï¼å·²æ³¨éï¿½?
   // const themeBtn = document.getElementById('theme-toggle');
   // if (themeBtn) {
   //   themeBtn.addEventListener('change', (e) => {
@@ -6500,7 +6500,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //   });
   // }
 
-  // 新版 action-btn 风格主题按钮
+  // æ°ç action-btn é£æ ¼ä¸»é¢æé®
   const themeBtnNew = document.getElementById('theme-toggle-btn');
   if (themeBtnNew) {
     const sunIcon = themeBtnNew.querySelector('.sun-icon');
@@ -6532,10 +6532,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const printBtn = document.getElementById('print-btn');
   if (printBtn) {
-    // 打印按钮：直接调用浏览器打印，依�?@media print 控制布局
+    // æå°æé®ï¼ç´æ¥è°ç¨æµè§å¨æå°ï¼ä¾ï¿½?@media print æ§å¶å¸å±
     printBtn.addEventListener('click', () => window.print());
   }
-  // 为所�?action-btn 添加鼠标追踪光晕效果
+  // ä¸ºæï¿½?action-btn æ·»å é¼ æ è¿½è¸ªåæææ
   document.querySelectorAll('.action-btn').forEach(btn => {
     btn.addEventListener('mousemove', (e) => {
       const rect = btn.getBoundingClientRect();
@@ -6551,7 +6551,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) {
-    // 导出按钮：调�?exportPdf（html2canvas + jsPDF），并驱动遮�?进度提示
+    // å¯¼åºæé®ï¼è°ï¿½?exportPdfï¼html2canvas + jsPDFï¼ï¼å¹¶é©±å¨é®ï¿½?è¿åº¦æç¤º
     exportBtn.addEventListener('click', exportPdf);
   }
   window.addEventListener('resize', rerenderWordclouds);

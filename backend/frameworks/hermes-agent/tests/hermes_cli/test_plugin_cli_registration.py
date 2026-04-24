@@ -23,7 +23,7 @@ from hermes_cli.plugins import (
 )
 
 
-# ── PluginContext.register_cli_command ─────────────────────────────────────
+# -- PluginContext.register_cli_command -------------------------------------
 
 
 class TestRegisterCliCommand:
@@ -63,7 +63,7 @@ class TestRegisterCliCommand:
         assert mgr._cli_commands["nocb"]["handler_fn"] is None
 
 
-# ── Memory plugin CLI discovery ───────────────────────────────────────────
+# -- Memory plugin CLI discovery -------------------------------------------
 
 
 class TestMemoryPluginCliDiscovery:
@@ -170,7 +170,7 @@ class TestMemoryPluginCliDiscovery:
         assert len(cmds) == 0
 
 
-# ── Honcho register_cli ──────────────────────────────────────────────────
+# -- Honcho register_cli --------------------------------------------------
 
 
 class TestHonchoRegisterCli:
@@ -227,7 +227,7 @@ class TestHonchoRegisterCli:
             parser.parse_args(["mode", "honcho"])
 
 
-# ── ProviderCollector no-op ──────────────────────────────────────────────
+# -- ProviderCollector no-op ----------------------------------------------
 
 
 class TestProviderCollectorCliNoop:
@@ -239,5 +239,5 @@ class TestProviderCollectorCliNoop:
         collector.register_cli_command(
             name="test", help="test", setup_fn=lambda s: None
         )
-        # Should not store anything �?CLI is discovered via file convention
+        # Should not store anything â?CLI is discovered via file convention
         assert not hasattr(collector, "_cli_commands")

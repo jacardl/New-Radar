@@ -23,7 +23,7 @@ _TELEGRAM_API_HOST = "api.telegram.org"
 
 # DNS-over-HTTPS providers used to discover Telegram API IPs that may differ
 # from the (potentially unreachable) IP returned by the local system resolver.
-_DOH_TIMEOUT = 4.0  # seconds �?bounded so connect() isn't noticeably delayed
+_DOH_TIMEOUT = 4.0  # seconds é¥?bounded so connect() isn't noticeably delayed
 
 _DOH_PROVIDERS: list[dict] = [
     {

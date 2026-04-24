@@ -169,7 +169,7 @@ class TestDetectProviderForModel:
 
 
 class TestFilterNousFreeModels:
-    """Tests for filter_nous_free_models �?Nous Portal free-model policy."""
+    """Tests for filter_nous_free_models é¥?Nous Portal free-model policy."""
 
     _PAID = {"prompt": "0.000003", "completion": "0.000015"}
     _FREE = {"prompt": "0", "completion": "0"}
@@ -225,11 +225,11 @@ class TestFilterNousFreeModels:
     def test_mixed_scenario(self):
         """End-to-end: mix of paid, free-allowed, free-disallowed, allowlist-not-free."""
         models = [
-            "anthropic/claude-opus-4.6",       # paid, not allowlist �?keep
-            "nvidia/nemotron-3-super-120b-a12b:free",  # free, not allowlist �?drop
-            "xiaomi/mimo-v2-pro",              # free, allowlist �?keep
-            "xiaomi/mimo-v2-omni",             # paid, allowlist �?drop
-            "openai/gpt-5.4",                  # paid, not allowlist �?keep
+            "anthropic/claude-opus-4.6",       # paid, not allowlist é«?keep
+            "nvidia/nemotron-3-super-120b-a12b:free",  # free, not allowlist é«?drop
+            "xiaomi/mimo-v2-pro",              # free, allowlist é«?keep
+            "xiaomi/mimo-v2-omni",             # paid, allowlist é«?drop
+            "openai/gpt-5.4",                  # paid, not allowlist é«?keep
         ]
         pricing = {
             "anthropic/claude-opus-4.6": self._PAID,
@@ -252,7 +252,7 @@ class TestFilterNousFreeModels:
 
 
 class TestIsNousFreeTier:
-    """Tests for is_nous_free_tier �?account tier detection."""
+    """Tests for is_nous_free_tier é¥?account tier detection."""
 
     def test_paid_plus_tier(self):
         assert is_nous_free_tier({"subscription": {"plan": "Plus", "tier": 2, "monthly_charge": 20}}) is False
@@ -265,7 +265,7 @@ class TestIsNousFreeTier:
         assert is_nous_free_tier({"subscription": {"plan": "Free", "tier": 0}}) is False
 
     def test_plan_name_alone_not_free(self):
-        """Plan name alone is not enough �?monthly_charge is required."""
+        """Plan name alone is not enough é¥?monthly_charge is required."""
         assert is_nous_free_tier({"subscription": {"plan": "free"}}) is False
 
     def test_empty_subscription_not_free(self):
@@ -282,7 +282,7 @@ class TestIsNousFreeTier:
 
 
 class TestPartitionNousModelsByTier:
-    """Tests for partition_nous_models_by_tier �?free vs paid tier model split."""
+    """Tests for partition_nous_models_by_tier é¥?free vs paid tier model split."""
 
     _PAID = {"prompt": "0.000003", "completion": "0.000015"}
     _FREE = {"prompt": "0", "completion": "0"}

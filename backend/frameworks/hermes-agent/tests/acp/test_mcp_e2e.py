@@ -1,9 +1,9 @@
 """End-to-end tests for ACP MCP server registration and tool-result reporting.
 
 Exercises the full flow through the ACP server layer:
-  new_session(mcpServers) �?MCP tools registered �?prompt() �?
-    tool_progress_callback (ToolCallStart) �?
-    step_callback with results (ToolCallUpdate with rawOutput) �?
+  new_session(mcpServers) é«?MCP tools registered é«?prompt() é«?
+    tool_progress_callback (ToolCallStart) é«?
+    step_callback with results (ToolCallUpdate with rawOutput) é«?
     session_update events arrive at the mock client
 """
 
@@ -47,12 +47,12 @@ def acp_agent(mock_manager):
 
 
 # ---------------------------------------------------------------------------
-# E2E: MCP registration �?prompt �?tool events
+# E2E: MCP registration é«?prompt é«?tool events
 # ---------------------------------------------------------------------------
 
 
 class TestMcpRegistrationE2E:
-    """Full flow: session with MCP servers �?prompt with tool calls �?ACP events."""
+    """Full flow: session with MCP servers é«?prompt with tool calls é«?ACP events."""
 
     @pytest.mark.asyncio
     async def test_session_with_mcp_servers_registers_tools(self, acp_agent, mock_manager):
@@ -112,7 +112,7 @@ class TestMcpRegistrationE2E:
 
     @pytest.mark.asyncio
     async def test_prompt_with_tool_calls_emits_acp_events(self, acp_agent, mock_manager):
-        """Prompt �?agent fires callbacks �?ACP ToolCallStart + ToolCallUpdate events."""
+        """Prompt é«?agent fires callbacks é«?ACP ToolCallStart + ToolCallUpdate events."""
         resp = await acp_agent.new_session(cwd="/tmp")
         session_id = resp.session_id
         state = mock_manager.get_session(session_id)
@@ -158,7 +158,7 @@ class TestMcpRegistrationE2E:
         # Collect all session_update calls
         updates = []
         for call in mock_conn.session_update.call_args_list:
-            # session_update(session_id, update) �?grab the update
+            # session_update(session_id, update) é¥?grab the update
             update_arg = call[1].get("update") or call[0][1]
             updates.append(update_arg)
 
@@ -237,7 +237,7 @@ class TestMcpSanitizationE2E:
 
     @pytest.mark.asyncio
     async def test_slashed_server_name_registers_cleanly(self, acp_agent, mock_manager):
-        """Server name 'ai.exa/exa' should not crash �?tools get sanitized names."""
+        """Server name 'ai.exa/exa' should not crash é¥?tools get sanitized names."""
         servers = [
             McpServerHttp(
                 name="ai.exa/exa",

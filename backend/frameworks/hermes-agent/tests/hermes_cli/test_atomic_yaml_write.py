@@ -1,4 +1,4 @@
-"""Tests for utils.atomic_yaml_write �?crash-safe YAML file writes."""
+"""Tests for utils.atomic_yaml_write é¥?crash-safe YAML file writes."""
 
 from pathlib import Path
 from unittest.mock import patch

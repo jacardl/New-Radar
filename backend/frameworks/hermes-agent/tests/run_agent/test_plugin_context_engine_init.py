@@ -1,6 +1,6 @@
 """Tests that plugin context engines get update_model() called during init.
 
-Regression test for #9071 �?plugin engines were never initialized with
+Regression test for #9071 é¥?plugin engines were never initialized with
 context_length, causing the CLI status bar to show 'ctx --'.
 """
 
@@ -85,5 +85,5 @@ def test_plugin_engine_update_model_args():
     assert kw["context_length"] == 131_072
     assert "model" in kw
     assert "provider" in kw
-    # Should NOT pass api_mode �?the ABC doesn't accept it
+    # Should NOT pass api_mode é¥?the ABC doesn't accept it
     assert "api_mode" not in kw

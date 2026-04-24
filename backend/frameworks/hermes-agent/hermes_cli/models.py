@@ -1,7 +1,7 @@
 """
 Canonical model catalogs and lightweight validation helpers.
 
-Add, remove, or reorder entries here �?both `hermes setup` and
+Add, remove, or reorder entries here é¥?both `hermes setup` and
 `hermes` provider-selection will pick up the change automatically.
 """
 
@@ -274,7 +274,7 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
         "google/gemini-3-pro-preview",
         "google/gemini-3-flash-preview",
     ],
-    # Alibaba DashScope Coding platform (coding-intl) �?default endpoint.
+    # Alibaba DashScope Coding platform (coding-intl) é¥?default endpoint.
     # Supports Qwen models + third-party providers (GLM, Kimi, MiniMax).
     # Users with classic DashScope keys should override DASHSCOPE_BASE_URL
     # to https://dashscope-intl.aliyuncs.com/compatible-mode/v1 (OpenAI-compat)
@@ -289,7 +289,7 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
         "kimi-k2.5",
         "MiniMax-M2.5",
     ],
-    # Curated HF model list �?only agentic models that map to OpenRouter defaults.
+    # Curated HF model list é¥?only agentic models that map to OpenRouter defaults.
     "huggingface": [
         "Qwen/Qwen3.5-397B-A17B",
         "Qwen/Qwen3.5-35B-A3B",
@@ -306,7 +306,7 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
 # Nous Portal free-model filtering
 # ---------------------------------------------------------------------------
 # Models that are ALLOWED to appear when priced as free on Nous Portal.
-# Any other free model is hidden �?prevents promotional/temporary free models
+# Any other free model is hidden é¥?prevents promotional/temporary free models
 # from cluttering the selection when users are paying subscribers.
 # Models in this list are ALSO filtered out if they are NOT free (i.e. they
 # should only appear in the menu when they are genuinely free).
@@ -334,13 +334,13 @@ def filter_nous_free_models(
     """Filter the Nous Portal model list according to free-model policy.
 
     Rules:
-      �?Paid models that are NOT in the allowlist �?keep (normal case).
-      �?Free models that are NOT in the allowlist �?drop.
-      �?Allowlist models that ARE free �?keep.
-      �?Allowlist models that are NOT free �?drop.
+      é¥?Paid models that are NOT in the allowlist é«?keep (normal case).
+      é¥?Free models that are NOT in the allowlist é«?drop.
+      é¥?Allowlist models that ARE free é«?keep.
+      é¥?Allowlist models that are NOT free é«?drop.
     """
     if not pricing:
-        return model_ids  # no pricing data �?can't filter, show everything
+        return model_ids  # no pricing data é¥?can't filter, show everything
 
     result: list[str] = []
     for mid in model_ids:
@@ -398,7 +398,7 @@ def is_nous_free_tier(account_info: dict[str, Any]) -> bool:
     """Return True if the account info indicates a free (unpaid) tier.
 
     Checks ``subscription.monthly_charge == 0``.  Returns False when
-    the field is missing or unparseable (assumes paid �?don't block users).
+    the field is missing or unparseable (assumes paid é¥?don't block users).
     """
     sub = account_info.get("subscription")
     if not isinstance(sub, dict):
@@ -442,7 +442,7 @@ def partition_nous_models_by_tier(
 
 
 # ---------------------------------------------------------------------------
-# TTL cache for free-tier detection �?avoids repeated API calls within a
+# TTL cache for free-tier detection é¥?avoids repeated API calls within a
 # session while still picking up upgrades quickly.
 # ---------------------------------------------------------------------------
 _FREE_TIER_CACHE_TTL: int = 180  # seconds (3 minutes)
@@ -456,7 +456,7 @@ def check_nous_free_tier() -> bool:
     hitting the Portal API on every call.  The cache is short-lived so
     that an account upgrade is reflected within a few minutes.
 
-    Returns False (assume paid) on any error �?never blocks paying users.
+    Returns False (assume paid) on any error é¥?never blocks paying users.
     """
     global _free_tier_cache
     import time
@@ -489,18 +489,18 @@ def check_nous_free_tier() -> bool:
         return result
     except Exception:
         _free_tier_cache = (False, now)
-        return False  # default to paid on error �?don't block users
+        return False  # default to paid on error é¥?don't block users
 
 
 # ---------------------------------------------------------------------------
-# Canonical provider list �?single source of truth for provider identity.
+# Canonical provider list é¥?single source of truth for provider identity.
 # Every code path that lists, displays, or iterates providers derives from
 # this list:  hermes model, /model, /provider, list_authenticated_providers.
 #
 # Fields:
-#   slug        �?internal provider ID (used in config.yaml, --provider flag)
-#   label       �?short display name
-#   tui_desc    �?longer description for the `hermes model` interactive picker
+#   slug        é¥?internal provider ID (used in config.yaml, --provider flag)
+#   label       é¥?short display name
+#   tui_desc    é¥?longer description for the `hermes model` interactive picker
 # ---------------------------------------------------------------------------
 
 class ProviderEntry(NamedTuple):
@@ -512,30 +512,30 @@ class ProviderEntry(NamedTuple):
 CANONICAL_PROVIDERS: list[ProviderEntry] = [
     ProviderEntry("nous",           "Nous Portal",              "Nous Portal (Nous Research subscription)"),
     ProviderEntry("openrouter",     "OpenRouter",               "OpenRouter (100+ models, pay-per-use)"),
-    ProviderEntry("anthropic",      "Anthropic",                "Anthropic (Claude models �?API key or Claude Code)"),
+    ProviderEntry("anthropic",      "Anthropic",                "Anthropic (Claude models é¥?API key or Claude Code)"),
     ProviderEntry("openai-codex",   "OpenAI Codex",             "OpenAI Codex"),
-    ProviderEntry("xiaomi",         "Xiaomi MiMo",              "Xiaomi MiMo (MiMo-V2 models �?pro, omni, flash)"),
+    ProviderEntry("xiaomi",         "Xiaomi MiMo",              "Xiaomi MiMo (MiMo-V2 models é¥?pro, omni, flash)"),
     ProviderEntry("qwen-oauth",     "Qwen OAuth (Portal)",      "Qwen OAuth (reuses local Qwen CLI login)"),
     ProviderEntry("copilot",        "GitHub Copilot",           "GitHub Copilot (uses GITHUB_TOKEN or gh auth token)"),
     ProviderEntry("copilot-acp",    "GitHub Copilot ACP",       "GitHub Copilot ACP (spawns `copilot --acp --stdio`)"),
     ProviderEntry("huggingface",    "Hugging Face",             "Hugging Face Inference Providers (20+ open models)"),
-    ProviderEntry("gemini",         "Google AI Studio",         "Google AI Studio (Gemini models �?OpenAI-compatible endpoint)"),
-    ProviderEntry("deepseek",       "DeepSeek",                 "DeepSeek (DeepSeek-V3, R1, coder �?direct API)"),
-    ProviderEntry("xai",            "xAI",                      "xAI (Grok models �?direct API)"),
+    ProviderEntry("gemini",         "Google AI Studio",         "Google AI Studio (Gemini models é¥?OpenAI-compatible endpoint)"),
+    ProviderEntry("deepseek",       "DeepSeek",                 "DeepSeek (DeepSeek-V3, R1, coder é¥?direct API)"),
+    ProviderEntry("xai",            "xAI",                      "xAI (Grok models é¥?direct API)"),
     ProviderEntry("zai",            "Z.AI / GLM",               "Z.AI / GLM (Zhipu AI direct API)"),
     ProviderEntry("kimi-coding",    "Kimi / Moonshot",          "Kimi / Moonshot (Moonshot AI direct API)"),
     ProviderEntry("kimi-coding-cn", "Kimi / Moonshot (China)",  "Kimi / Moonshot China (Moonshot CN direct API)"),
     ProviderEntry("minimax",        "MiniMax",                  "MiniMax (global direct API)"),
     ProviderEntry("minimax-cn",     "MiniMax (China)",          "MiniMax China (domestic direct API)"),
     ProviderEntry("alibaba",        "Alibaba Cloud (DashScope)","Alibaba Cloud / DashScope Coding (Qwen + multi-provider)"),
-    ProviderEntry("arcee",          "Arcee AI",                 "Arcee AI (Trinity models �?direct API)"),
+    ProviderEntry("arcee",          "Arcee AI",                 "Arcee AI (Trinity models é¥?direct API)"),
     ProviderEntry("kilocode",       "Kilo Code",                "Kilo Code (Kilo Gateway API)"),
     ProviderEntry("opencode-zen",   "OpenCode Zen",             "OpenCode Zen (35+ curated models, pay-as-you-go)"),
     ProviderEntry("opencode-go",    "OpenCode Go",              "OpenCode Go (open models, $10/month subscription)"),
     ProviderEntry("ai-gateway",     "Vercel AI Gateway",        "Vercel AI Gateway (200+ models, pay-per-use)"),
 ]
 
-# Derived dicts �?used throughout the codebase
+# Derived dicts é¥?used throughout the codebase
 _PROVIDER_LABELS = {p.slug: p.label for p in CANONICAL_PROVIDERS}
 _PROVIDER_LABELS["custom"] = "Custom endpoint"  # special case: not a named provider
 
@@ -676,10 +676,10 @@ def model_ids(*, force_refresh: bool = False) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Pricing helpers �?fetch live pricing from OpenRouter-compatible /v1/models
+# Pricing helpers é¥?fetch live pricing from OpenRouter-compatible /v1/models
 # ---------------------------------------------------------------------------
 
-# Cache: maps model_id �?{"prompt": str, "completion": str} per endpoint
+# Cache: maps model_id é«?{"prompt": str, "completion": str} per endpoint
 _pricing_cache: dict[str, dict[str, dict[str, str]]] = {}
 
 
@@ -690,12 +690,12 @@ def _format_price_per_mtok(per_token_str: str) -> str:
     right-justified in a column (the decimal point stays in the same position).
 
     Examples:
-        "0.000003"   �?"$3.00"      (per million tokens)
-        "0.00003"    �?"$30.00"
-        "0.00000015" �?"$0.15"
-        "0.0000001"  �?"$0.10"
-        "0.00018"    �?"$180.00"
-        "0"          �?"free"
+        "0.000003"   é«?"$3.00"      (per million tokens)
+        "0.00003"    é«?"$30.00"
+        "0.00000015" é«?"$0.15"
+        "0.0000001"  é«?"$0.10"
+        "0.00018"    é«?"$180.00"
+        "0"          é«?"free"
     """
     try:
         val = float(per_token_str)
@@ -760,7 +760,7 @@ def format_model_pricing_table(
         lines.append(f"{indent}{'-' * name_col} {'-' * price_col}  {'-' * price_col}")
 
     for mid, inp, out, cache, is_cur in rows:
-        marker = "  �?current" if is_cur else ""
+        marker = "  é«?current" if is_cur else ""
         if has_cache:
             lines.append(f"{indent}{mid:<{name_col}} {inp:>{price_col}}  {out:>{price_col}}  {cache:>{cache_col}}{marker}")
         else:
@@ -916,10 +916,10 @@ def parse_model_input(raw: str, current_provider: str) -> tuple[str, str]:
 
     Supports ``provider:model`` syntax to switch providers at runtime::
 
-        openrouter:anthropic/claude-sonnet-4.5  �? ("openrouter", "anthropic/claude-sonnet-4.5")
-        nous:hermes-3                           �? ("nous", "hermes-3")
-        anthropic/claude-sonnet-4.5             �? (current_provider, "anthropic/claude-sonnet-4.5")
-        gpt-5.4                                 �? (current_provider, "gpt-5.4")
+        openrouter:anthropic/claude-sonnet-4.5  é«? ("openrouter", "anthropic/claude-sonnet-4.5")
+        nous:hermes-3                           é«? ("nous", "hermes-3")
+        anthropic/claude-sonnet-4.5             é«? (current_provider, "anthropic/claude-sonnet-4.5")
+        gpt-5.4                                 é«? (current_provider, "gpt-5.4")
 
     The colon is only treated as a provider delimiter if the left side is a
     recognized provider name or alias.  This avoids misinterpreting model names
@@ -935,8 +935,8 @@ def parse_model_input(raw: str, current_provider: str) -> tuple[str, str]:
         model_part = stripped[colon + 1:].strip()
         if provider_part and model_part and provider_part in _KNOWN_PROVIDER_NAMES:
             # Support custom:name:model triple syntax for named custom
-            # providers.  ``custom:local:qwen`` �?("custom:local", "qwen").
-            # Single colon ``custom:qwen`` �?("custom", "qwen") as before.
+            # providers.  ``custom:local:qwen`` é«?("custom:local", "qwen").
+            # Single colon ``custom:qwen`` é«?("custom", "qwen") as before.
             if provider_part == "custom" and ":" in model_part:
                 second_colon = model_part.find(":")
                 custom_name = model_part[:second_colon].strip()
@@ -991,14 +991,14 @@ def detect_provider_for_model(
 ) -> Optional[tuple[str, str]]:
     """Auto-detect the best provider for a model name.
 
-    Returns ``(provider_id, model_name)`` �?the model name may be remapped
-    (e.g. bare ``deepseek-chat`` �?``deepseek/deepseek-chat`` for OpenRouter).
+    Returns ``(provider_id, model_name)`` é¥?the model name may be remapped
+    (e.g. bare ``deepseek-chat`` é«?``deepseek/deepseek-chat`` for OpenRouter).
     Returns ``None`` when no confident match is found.
 
     Priority:
-    0. Bare provider name �?switch to that provider's default model
+    0. Bare provider name é«?switch to that provider's default model
     1. Direct provider with credentials (highest)
-    2. Direct provider without credentials �?remap to OpenRouter slug
+    2. Direct provider without credentials é«?remap to OpenRouter slug
     3. OpenRouter catalog match
     """
     name = (model_name or "").strip()
@@ -1010,7 +1010,7 @@ def detect_provider_for_model(
     # --- Step 0: bare provider name typed as model ---
     # If someone types `/model nous` or `/model anthropic`, treat it as a
     # provider switch and pick the first model from that provider's catalog.
-    # Skip "custom" and "openrouter" �?custom has no model catalog, and
+    # Skip "custom" and "openrouter" é¥?custom has no model catalog, and
     # openrouter requires an explicit model name to be useful.
     resolved_provider = _PROVIDER_ALIASES.get(name_lower, name_lower)
     if resolved_provider not in {"custom", "openrouter"}:
@@ -1022,7 +1022,7 @@ def detect_provider_for_model(
         ):
             return (resolved_provider, default_models[0])
 
-    # Aggregators list other providers' models �?never auto-switch TO them
+    # Aggregators list other providers' models é¥?never auto-switch TO them
     _AGGREGATORS = {"nous", "openrouter"}
 
     # If the model belongs to the current provider's catalog, don't suggest switching
@@ -1057,11 +1057,11 @@ def detect_provider_for_model(
         if has_creds:
             return (direct_match, name)
 
-        # No direct creds �?try to find this model on OpenRouter instead
+        # No direct creds é¥?try to find this model on OpenRouter instead
         or_slug = _find_openrouter_slug(name)
         if or_slug:
             return ("openrouter", or_slug)
-        # Still return the direct provider �?credential resolution will
+        # Still return the direct provider é¥?credential resolution will
         # give a clear error rather than silently using the wrong provider
         return (direct_match, name)
 
@@ -1083,9 +1083,9 @@ def _find_openrouter_slug(model_name: str) -> Optional[str]:
     """Find the full OpenRouter model slug for a bare or partial model name.
 
     Handles:
-    - Exact match: ``anthropic/claude-opus-4.6`` �?as-is
-    - Bare name: ``deepseek-chat`` �?``deepseek/deepseek-chat``
-    - Bare name: ``claude-opus-4.6`` �?``anthropic/claude-opus-4.6``
+    - Exact match: ``anthropic/claude-opus-4.6`` é«?as-is
+    - Bare name: ``deepseek-chat`` é«?``deepseek/deepseek-chat``
+    - Bare name: ``claude-opus-4.6`` é«?``anthropic/claude-opus-4.6``
     """
     name_lower = model_name.strip().lower()
     if not name_lower:
@@ -1109,7 +1109,7 @@ def _find_openrouter_slug(model_name: str) -> Optional[str]:
 def normalize_provider(provider: Optional[str]) -> str:
     """Normalize provider aliases to Hermes' canonical provider ids.
 
-    Note: ``"auto"`` passes through unchanged �?use
+    Note: ``"auto"`` passes through unchanged é¥?use
     ``hermes_cli.auth.resolve_provider()`` to resolve it to a concrete
     provider based on credentials and environment.
     """
@@ -1169,7 +1169,7 @@ def model_supports_fast_mode(model_id: Optional[str]) -> bool:
     raw = _strip_vendor_prefix(str(model_id or ""))
     if raw in _PRIORITY_PROCESSING_MODELS:
         return True
-    # Anthropic fast mode �?strip date suffixes (e.g. claude-opus-4-6-20260401)
+    # Anthropic fast mode é¥?strip date suffixes (e.g. claude-opus-4-6-20260401)
     # and OpenRouter variant tags (:fast, :beta) for matching.
     base = raw.split(":")[0]
     return base in _ANTHROPIC_FAST_MODE_MODELS
@@ -1190,7 +1190,7 @@ def resolve_fast_mode_overrides(model_id: Optional[str]) -> dict[str, Any] | Non
     - Anthropic models: ``{"speed": "fast"}`` (Anthropic Fast Mode beta)
 
     The overrides are injected into the API request kwargs by
-    ``_build_api_kwargs`` in run_agent.py �?each API path handles its own
+    ``_build_api_kwargs`` in run_agent.py é¥?each API path handles its own
     keys (service_tier for OpenAI/Codex, speed for Anthropic Messages).
     """
     if not model_supports_fast_mode(model_id):
@@ -1828,7 +1828,7 @@ def validate_requested_model(
                     "persist": True,
                     "recognized": True,
                     "corrected_model": auto[0],
-                    "message": f"Auto-corrected `{requested}` �?`{auto[0]}`",
+                    "message": f"Auto-corrected `{requested}` é«?`{auto[0]}`",
                 }
 
             suggestions = get_close_matches(requested, api_models, n=3, cutoff=0.5)
@@ -1890,7 +1890,7 @@ def validate_requested_model(
                     "persist": True,
                     "recognized": True,
                     "corrected_model": auto[0],
-                    "message": f"Auto-corrected `{requested}` �?`{auto[0]}`",
+                    "message": f"Auto-corrected `{requested}` é«?`{auto[0]}`",
                 }
             suggestions = get_close_matches(requested_for_lookup, codex_models, n=3, cutoff=0.5)
             suggestion_text = ""
@@ -1920,7 +1920,7 @@ def validate_requested_model(
                 "message": None,
             }
         else:
-            # API responded but model is not listed.  Accept anyway �?
+            # API responded but model is not listed.  Accept anyway é¥?
             # the user may have access to models not shown in the public
             # listing (e.g. Z.AI Pro/Max plans can use glm-5 on coding
             # endpoints even though it's not in /models).  Warn but allow.
@@ -1933,7 +1933,7 @@ def validate_requested_model(
                     "persist": True,
                     "recognized": True,
                     "corrected_model": auto[0],
-                    "message": f"Auto-corrected `{requested}` �?`{auto[0]}`",
+                    "message": f"Auto-corrected `{requested}` é«?`{auto[0]}`",
                 }
 
             suggestions = get_close_matches(requested, api_models, n=3, cutoff=0.5)
@@ -1952,7 +1952,7 @@ def validate_requested_model(
                 ),
             }
 
-    # api_models is None �?couldn't reach API.  Accept and persist,
+    # api_models is None é¥?couldn't reach API.  Accept and persist,
     # but warn so typos don't silently break things.
     provider_label = _PROVIDER_LABELS.get(normalized, normalized)
     return {

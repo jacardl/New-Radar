@@ -255,15 +255,15 @@ class TestAutoVoiceReply:
     # | Telegram      | text  | all        | skip | yes    | 1 audio      |
     # | Discord text  | voice | all        | yes  | skip*  | 1 audio      |
     # | Discord text  | text  | all        | skip | yes    | 1 audio      |
-    # | Discord VC    | voice | all        | skip†| yes    | 1 audio (VC) |
+    # | Discord VC    | voice | all        | skipé¥ç yes    | 1 audio (VC) |
     # | Web UI        | voice | off        | yes  | skip   | 1 audio      |
     # | Web UI        | voice | all        | yes  | skip*  | 1 audio      |
     # | Web UI        | text  | all        | skip | yes    | 1 audio      |
     # | Slack         | voice | all        | yes  | skip*  | 1 audio      |
     # | Slack         | text  | all        | skip | yes    | 1 audio      |
     #
-    # * skip_double: voice input �?base already handles
-    # �?Discord play_tts override skips when in VC
+    # * skip_double: voice input é«?base already handles
+    # é¥?Discord play_tts override skips when in VC
 
     # -- Telegram/Slack/Web: voice input, base handles ---------------------
 
@@ -447,7 +447,7 @@ class TestDiscordPlayTtsSkip:
     @pytest.mark.asyncio
     async def test_play_tts_not_skipped_when_not_in_vc(self):
         adapter = self._make_discord_adapter()
-        # No voice connection �?play_tts falls through to send_voice
+        # No voice connection é¥?play_tts falls through to send_voice
         result = await adapter.play_tts(chat_id="123", audio_path="/tmp/test.ogg")
         # send_voice will fail (no client), but play_tts should NOT return early
         assert result.success is False
@@ -461,7 +461,7 @@ class TestDiscordPlayTtsSkip:
         adapter._voice_text_channels[111] = 999  # different channel
 
         result = await adapter.play_tts(chat_id="123", audio_path="/tmp/test.ogg")
-        # Different channel �?should NOT skip, falls through to send_voice (fails)
+        # Different channel é¥?should NOT skip, falls through to send_voice (fails)
         assert result.success is False
 
 
@@ -557,7 +557,7 @@ class TestVoiceReceiver:
         receiver = self._make_receiver()
         receiver.map_ssrc(100, 42)
         # 48kHz, stereo, 16-bit = 192000 bytes/sec
-        # MIN_SPEECH_DURATION = 0.5s �?need 96000 bytes
+        # MIN_SPEECH_DURATION = 0.5s é«?need 96000 bytes
         pcm_data = bytearray(b"\x00" * 96000)
         receiver._buffers[100] = pcm_data
         # Set last_packet_time far enough in the past to exceed SILENCE_THRESHOLD
@@ -589,7 +589,7 @@ class TestVoiceReceiver:
 
     def test_check_silence_unknown_user_discarded(self):
         receiver = self._make_receiver()
-        # No SSRC mapping �?user_id will be 0
+        # No SSRC mapping é¥?user_id will be 0
         receiver._buffers[100] = bytearray(b"\x00" * 96000)
         receiver._last_packet_time[100] = time.monotonic() - 3.0
         completed = receiver.check_silence()
@@ -606,7 +606,7 @@ class TestVoiceReceiver:
 
     def test_on_packet_skips_when_not_running(self):
         receiver = self._make_receiver()
-        # Not started �?_running is False
+        # Not started é¥?_running is False
         receiver._on_packet(b"\x00" * 100)
         assert len(receiver._buffers) == 0
 
@@ -615,7 +615,7 @@ class TestVoiceReceiver:
         receiver.start()
         receiver.pause()
         receiver._on_packet(b"\x00" * 100)
-        # Paused �?should not process
+        # Paused é¥?should not process
         assert len(receiver._buffers) == 0
 
     def test_on_packet_skips_short_data(self):
@@ -800,14 +800,14 @@ class TestVoiceChannelCommands:
 
     @pytest.mark.asyncio
     async def test_input_no_adapter(self, runner):
-        """No Discord adapter �?early return, no crash."""
+        """No Discord adapter é¥?early return, no crash."""
         from gateway.config import Platform
         # No adapters set
         await runner._handle_voice_channel_input(111, 42, "Hello")
 
     @pytest.mark.asyncio
     async def test_input_no_text_channel(self, runner):
-        """No text channel mapped for guild �?early return."""
+        """No text channel mapped for guild é¥?early return."""
         from gateway.config import Platform
         mock_adapter = AsyncMock()
         mock_adapter._voice_text_channels = {}
@@ -991,7 +991,7 @@ class TestDiscordVoiceChannelMethods:
 
     @pytest.mark.asyncio
     async def test_leave_voice_channel_no_connection(self):
-        """Leave when not connected �?no crash."""
+        """Leave when not connected é¥?no crash."""
         adapter = self._make_adapter()
         await adapter.leave_voice_channel(111)  # should not raise
 
@@ -1088,7 +1088,7 @@ class TestDiscordVoiceChannelMethods:
 
     @pytest.mark.asyncio
     async def test_process_voice_input_stt_failure(self):
-        """STT failure �?callback not called."""
+        """STT failure é¥?callback not called."""
         adapter = self._make_adapter()
         callback = AsyncMock()
         adapter._voice_input_callback = callback
@@ -1341,7 +1341,7 @@ class TestAutoTtsEmptyTextGuard:
         speech_text = re.sub(r'[*_`#\[\]()]', '', text_content)[:4000].strip()
         # Note: base.py regex only strips individual chars, not full code blocks
         # So code blocks are partially stripped but may leave content
-        # The real fix is in base.py �?empty check after strip
+        # The real fix is in base.py é¥?empty check after strip
 
     def test_base_empty_check_in_source(self):
         """base.py must check speech_text is non-empty before calling TTS."""
@@ -1453,7 +1453,7 @@ class TestStreamTtsToSpeaker:
         stream_tts_to_speaker(text_q, stop_evt, done_evt, display_callback=lambda t: spoken.append(t))
         assert done_evt.is_set()
         # Display callback gets raw text (before markdown stripping)
-        # But the actual TTS audio would be stripped �?we verify pipeline doesn't crash
+        # But the actual TTS audio would be stripped é¥?we verify pipeline doesn't crash
 
     def test_duplicate_sentences_deduped(self):
         """Repeated sentences are spoken only once."""
@@ -1557,7 +1557,7 @@ class TestStopAcquiresLock:
         holder.start()
         lock_acquired.wait(timeout=2)
 
-        # stop() in another thread �?should block on the lock
+        # stop() in another thread é¥?should block on the lock
         stop_done = threading.Event()
 
         def do_stop():
@@ -1571,7 +1571,7 @@ class TestStopAcquiresLock:
         assert not stop_done.wait(timeout=0.3), \
             "stop() should block while _lock is held by another thread"
 
-        # Release the lock �?stop should complete
+        # Release the lock é¥?stop should complete
         release_lock.set()
         assert stop_done.wait(timeout=2), \
             "stop() should complete after lock is released"
@@ -1683,7 +1683,7 @@ class TestSendVoiceReplyFilename:
         assert "uuid" in source, \
             "_send_voice_reply should use uuid for unique filenames"
         assert "int(time.time())" not in source, \
-            "_send_voice_reply should not use int(time.time()) �?collision risk"
+            "_send_voice_reply should not use int(time.time()) é¥?collision risk"
 
     def test_filenames_are_unique(self):
         """Two calls produce different filenames."""
@@ -1866,7 +1866,7 @@ class TestPlaybackTimeout:
 
         mock_vc = MagicMock()
         mock_vc.is_connected.return_value = True
-        # is_playing always returns True �?would loop forever without timeout
+        # is_playing always returns True é¥?would loop forever without timeout
         mock_vc.is_playing.return_value = True
         mock_vc.stop = MagicMock()
         mock_vc.play = MagicMock()
@@ -2171,7 +2171,7 @@ class TestVoiceReception:
     # -- Unknown SSRC + DAVE passthrough --
 
     def test_unknown_ssrc_no_automap_no_completed(self):
-        """Unknown SSRC, no members to infer �?buffer cleared, not returned."""
+        """Unknown SSRC, no members to infer é¥?buffer cleared, not returned."""
         receiver = self._make_receiver(dave=True, members=[])
         receiver.start()
         self._fill_buffer(receiver, 100)
@@ -2180,7 +2180,7 @@ class TestVoiceReception:
         assert len(receiver._buffers[100]) == 0
 
     def test_unknown_ssrc_late_speaking_event(self):
-        """Audio buffered before SPEAKING �?SPEAKING maps �?next check returns it."""
+        """Audio buffered before SPEAKING é«?SPEAKING maps é«?next check returns it."""
         receiver = self._make_receiver(dave=True)
         receiver.start()
         self._fill_buffer(receiver, 100, age_s=0.0)  # still receiving
@@ -2222,7 +2222,7 @@ class TestVoiceReception:
         assert len(completed) == 0
 
     def test_automap_no_allowlist_single_member(self):
-        """No allowed_user_ids �?sole non-bot member inferred."""
+        """No allowed_user_ids é«?sole non-bot member inferred."""
         members = [
             SimpleNamespace(id=9999, name="Bot"),
             SimpleNamespace(id=42, name="Alice"),
@@ -2235,7 +2235,7 @@ class TestVoiceReception:
         assert completed[0][0] == 42
 
     def test_automap_unallowed_user_rejected(self):
-        """User in channel but not in allowed list �?not mapped."""
+        """User in channel but not in allowed list é¥?not mapped."""
         members = [
             SimpleNamespace(id=9999, name="Bot"),
             SimpleNamespace(id=42, name="Alice"),
@@ -2247,7 +2247,7 @@ class TestVoiceReception:
         assert len(completed) == 0
 
     def test_automap_only_bot_in_channel(self):
-        """Only bot in channel �?no one to map to."""
+        """Only bot in channel é¥?no one to map to."""
         members = [SimpleNamespace(id=9999, name="Bot")]
         receiver = self._make_receiver(allowed_ids=None, members=members)
         receiver.start()
@@ -2266,7 +2266,7 @@ class TestVoiceReception:
         self._fill_buffer(receiver, 100)
         receiver.check_silence()
         assert receiver._ssrc_to_user[100] == 42
-        # Second utterance �?should use cached mapping
+        # Second utterance é¥?should use cached mapping
         self._fill_buffer(receiver, 100)
         completed = receiver.check_silence()
         assert len(completed) == 1
@@ -2344,7 +2344,7 @@ class TestVoiceReception:
         return mock_decoder
 
     def test_on_packet_dave_known_user_decrypt_ok(self):
-        """Known SSRC + DAVE decrypt success �?audio buffered."""
+        """Known SSRC + DAVE decrypt success é«?audio buffered."""
         dave = MagicMock()
         dave.decrypt.return_value = b"\xf8\xff\xfe"
         receiver = self._make_receiver_with_nacl(
@@ -2361,7 +2361,7 @@ class TestVoiceReception:
         dave.decrypt.assert_called_once()
 
     def test_on_packet_dave_unknown_ssrc_passthrough(self):
-        """Unknown SSRC + DAVE �?skip DAVE, attempt Opus decode (passthrough)."""
+        """Unknown SSRC + DAVE é«?skip DAVE, attempt Opus decode (passthrough)."""
         dave = MagicMock()
         receiver = self._make_receiver_with_nacl(dave_session=dave)
         self._inject_mock_decoder(receiver, 100)
@@ -2375,7 +2375,7 @@ class TestVoiceReception:
         assert len(receiver._buffers[100]) > 0
 
     def test_on_packet_dave_unencrypted_error_passthrough(self):
-        """DAVE decrypt 'Unencrypted' error �?use data as-is, don't drop."""
+        """DAVE decrypt 'Unencrypted' error é«?use data as-is, don't drop."""
         dave = MagicMock()
         dave.decrypt.side_effect = Exception(
             "Failed to decrypt: DecryptionFailed(UnencryptedWhenPassthroughDisabled)"
@@ -2393,7 +2393,7 @@ class TestVoiceReception:
         assert len(receiver._buffers[100]) > 0
 
     def test_on_packet_dave_other_error_drops(self):
-        """DAVE decrypt non-Unencrypted error �?packet dropped."""
+        """DAVE decrypt non-Unencrypted error é«?packet dropped."""
         dave = MagicMock()
         dave.decrypt.side_effect = Exception("KeyRotationFailed")
         receiver = self._make_receiver_with_nacl(
@@ -2407,7 +2407,7 @@ class TestVoiceReception:
         assert len(receiver._buffers.get(100, b"")) == 0
 
     def test_on_packet_no_dave_direct_decode(self):
-        """No DAVE session �?decode directly."""
+        """No DAVE session é«?decode directly."""
         receiver = self._make_receiver_with_nacl(dave_session=None)
         self._inject_mock_decoder(receiver, 100)
 
@@ -2419,14 +2419,14 @@ class TestVoiceReception:
         assert len(receiver._buffers[100]) > 0
 
     def test_on_packet_bot_own_ssrc_ignored(self):
-        """Bot's own SSRC �?dropped (echo prevention)."""
+        """Bot's own SSRC é«?dropped (echo prevention)."""
         receiver = self._make_receiver_with_nacl()
         with patch("nacl.secret.Aead"):
             receiver._on_packet(self._build_rtp_packet(ssrc=9999))
         assert len(receiver._buffers) == 0
 
     def test_on_packet_multiple_ssrcs_separate_buffers(self):
-        """Different SSRCs �?separate buffers."""
+        """Different SSRCs é«?separate buffers."""
         receiver = self._make_receiver_with_nacl(dave_session=None)
         self._inject_mock_decoder(receiver, 100)
         self._inject_mock_decoder(receiver, 200)
@@ -2500,7 +2500,7 @@ class TestVoiceTTSPlayback:
 
         from gateway.platforms.base import SendResult
         adapter.send_voice = AsyncMock(return_value=SendResult(success=True))
-        # Different chat_id �?shouldn't match VC
+        # Different chat_id é¥?shouldn't match VC
         result = await adapter.play_tts(chat_id="999", audio_path="/tmp/tts.ogg")
         adapter.send_voice.assert_called_once()
 
@@ -2531,7 +2531,7 @@ class TestVoiceTTSPlayback:
     # -- Streaming OFF (existing behavior, must not change) --
 
     def test_voice_input_runner_skips(self):
-        """Streaming OFF + voice input: runner skips �?base adapter handles."""
+        """Streaming OFF + voice input: runner skips é¥?base adapter handles."""
         from gateway.platforms.base import MessageType
         runner = self._make_runner()
         assert self._call_should_reply(runner, "all", MessageType.VOICE, already_sent=False) is False

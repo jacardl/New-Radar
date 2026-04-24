@@ -1,4 +1,4 @@
-"""Tests for toolsets.py �?toolset resolution, validation, and composition."""
+"""Tests for toolsets.py é¥?toolset resolution, validation, and composition."""
 
 from tools.registry import ToolRegistry
 from toolsets import (
@@ -53,7 +53,7 @@ class TestResolveToolset:
         TOOLSETS["_cycle_b"] = {"description": "test", "tools": ["t2"], "includes": ["_cycle_a"]}
         try:
             tools = resolve_toolset("_cycle_a")
-            # Should not infinite loop �?cycle is detected
+            # Should not infinite loop é¥?cycle is detected
             assert "t1" in tools
             assert "t2" in tools
         finally:

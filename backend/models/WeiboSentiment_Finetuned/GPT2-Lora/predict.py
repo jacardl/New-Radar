@@ -8,33 +8,33 @@ def preprocess_text(text):
     return text
 
 def main():
-    # 设置设备
+    # è®¾ç½®è®¾å¤
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"使用设备: {device}")
+    print(f"ä½¿ç¨è®¾å¤: {device}")
     
-    # 模型和权重路�?
+    # æ¨¡ååæéè·¯å¾?
     base_model_path = './models/gpt2-chinese'
     lora_model_path = './best_weibo_sentiment_lora'
     
-    print("加载模型和tokenizer...")
+    print("å è½½æ¨¡ååtokenizer...")
     
-    # 检查LoRA模型是否存在
+    # æ£æ¥LoRAæ¨¡åæ¯å¦å­å¨
     if not os.path.exists(lora_model_path):
-        print(f"错误: 找不到LoRA模型路径 {lora_model_path}")
-        print("请先运行 train.py 进行训练")
+        print(f"éè¯¯: æ¾ä¸å°LoRAæ¨¡åè·¯å¾ {lora_model_path}")
+        print("è¯·åè¿è¡ train.py è¿è¡è®­ç»")
         return
     
-    # 加载tokenizer
+    # å è½½tokenizer
     try:
         tokenizer = BertTokenizer.from_pretrained(base_model_path)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = '[PAD]'
     except Exception as e:
-        print(f"加载tokenizer失败: {e}")
-        print("请确保models/gpt2-chinese目录包含tokenizer文件")
+        print(f"å è½½tokenizerå¤±è´¥: {e}")
+        print("è¯·ç¡®ä¿models/gpt2-chineseç®å½åå«tokenizeræä»¶")
         return
     
-    # 加载基础模型
+    # å è½½åºç¡æ¨¡å
     try:
         base_model = GPT2ForSequenceClassification.from_pretrained(
             base_model_path, 
@@ -42,38 +42,38 @@ def main():
         )
         base_model.config.pad_token_id = tokenizer.pad_token_id
     except Exception as e:
-        print(f"加载基础模型失败: {e}")
-        print("请确保models/gpt2-chinese目录包含模型文件")
+        print(f"å è½½åºç¡æ¨¡åå¤±è´¥: {e}")
+        print("è¯·ç¡®ä¿models/gpt2-chineseç®å½åå«æ¨¡åæä»¶")
         return
     
-    # 加载LoRA权重
+    # å è½½LoRAæé
     try:
         model = PeftModel.from_pretrained(base_model, lora_model_path)
         model.to(device)
         model.eval()
-        print("LoRA模型加载成功!")
+        print("LoRAæ¨¡åå è½½æå!")
     except Exception as e:
-        print(f"加载LoRA权重失败: {e}")
-        print("请确保LoRA权重文件存在且格式正�?)
+        print(f"å è½½LoRAæéå¤±è´¥: {e}")
+        print("è¯·ç¡®ä¿LoRAæéæä»¶å­å¨ä¸æ ¼å¼æ­£ç¡?)
         return
     
-    print("\n============= 微博情感分析 (LoRA�? =============")
-    print("输入微博内容进行分析 (输入 'q' 退�?:")
+    print("\n============= å¾®åææåæ (LoRAç? =============")
+    print("è¾å¥å¾®ååå®¹è¿è¡åæ (è¾å¥ 'q' éå?:")
     
     while True:
-        text = input("\n请输入微博内�? ")
+        text = input("\nè¯·è¾å¥å¾®ååå®? ")
         if text.lower() == 'q':
             break
         
         if not text.strip():
-            print("输入不能为空，请重新输入")
+            print("è¾å¥ä¸è½ä¸ºç©ºï¼è¯·éæ°è¾å¥")
             continue
         
         try:
-            # 预处理文�?
+            # é¢å¤çææ?
             processed_text = preprocess_text(text)
             
-            # 对文本进行编�?
+            # å¯¹ææ¬è¿è¡ç¼ç ?
             encoding = tokenizer(
                 processed_text,
                 max_length=128,
@@ -82,25 +82,25 @@ def main():
                 return_tensors='pt'
             )
             
-            # 转移到设�?
+            # è½¬ç§»å°è®¾å¤?
             input_ids = encoding['input_ids'].to(device)
             attention_mask = encoding['attention_mask'].to(device)
             
-            # 预测
+            # é¢æµ
             with torch.no_grad():
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask)
                 logits = outputs.logits
                 probabilities = torch.softmax(logits, dim=1)
                 prediction = torch.argmax(probabilities, dim=1).item()
             
-            # 输出结果
+            # è¾åºç»æ
             confidence = probabilities[0][prediction].item()
-            label = "正面情感" if prediction == 1 else "负面情感"
+            label = "æ­£é¢ææ" if prediction == 1 else "è´é¢ææ"
             
-            print(f"预测结果: {label} (置信�? {confidence:.4f})")
+            print(f"é¢æµç»æ: {label} (ç½®ä¿¡åº? {confidence:.4f})")
             
         except Exception as e:
-            print(f"预测时发生错�? {e}")
+            print(f"é¢æµæ¶åçéè¯? {e}")
             continue
 
 if __name__ == "__main__":

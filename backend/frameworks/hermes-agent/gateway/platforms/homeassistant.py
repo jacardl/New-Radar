@@ -271,7 +271,7 @@ class HomeAssistantAdapter(BasePlatformAdapter):
         if entity_id in self._ignore_entities:
             return
 
-        # Apply domain/entity watch filters (closed by default �?require
+        # Apply domain/entity watch filters (closed by default é¥?require
         # explicit watch_domains, watch_entities, or watch_all to forward)
         domain = entity_id.split(".")[0] if "." in entity_id else ""
         if self._watch_domains or self._watch_entities:
@@ -280,7 +280,7 @@ class HomeAssistantAdapter(BasePlatformAdapter):
             if not domain_match and not entity_match:
                 return
         elif not self._watch_all:
-            # No filters configured and watch_all is off �?drop the event
+            # No filters configured and watch_all is off é¥?drop the event
             return
 
         # Apply cooldown

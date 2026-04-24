@@ -1,4 +1,4 @@
-"""Hindsight memory plugin â€?MemoryProvider interface.
+"""Hindsight memory plugin Ã©Â¥?MemoryProvider interface.
 
 Long-term memory with knowledge graph, entity resolution, and multi-strategy
 retrieval. Supports cloud (API key) and local modes.
@@ -6,11 +6,11 @@ retrieval. Supports cloud (API key) and local modes.
 Original PR #1811 by benfrank241, adapted to MemoryProvider ABC.
 
 Config via environment variables:
-  HINDSIGHT_API_KEY   â€?API key for Hindsight Cloud
-  HINDSIGHT_BANK_ID   â€?memory bank identifier (default: hermes)
-  HINDSIGHT_BUDGET    â€?recall budget: low/mid/high (default: mid)
-  HINDSIGHT_API_URL   â€?API endpoint
-  HINDSIGHT_MODE      â€?cloud or local (default: cloud)
+  HINDSIGHT_API_KEY   Ã©Â¥?API key for Hindsight Cloud
+  HINDSIGHT_BANK_ID   Ã©Â¥?memory bank identifier (default: hermes)
+  HINDSIGHT_BUDGET    Ã©Â¥?recall budget: low/mid/high (default: mid)
+  HINDSIGHT_API_URL   Ã©Â¥?API endpoint
+  HINDSIGHT_MODE      Ã©Â¥?cloud or local (default: cloud)
 
 Or via $HERMES_HOME/hindsight/config.json (profile-scoped), falling back to
 ~/.hindsight/config.json (legacy, shared) for backward compatibility.
@@ -259,7 +259,7 @@ class HindsightMemoryProvider(MemoryProvider):
         config_path.write_text(json.dumps(existing, indent=2))
 
     def post_setup(self, hermes_home: str, config: dict) -> None:
-        """Custom setup wizard â€?installs only the deps needed for the selected mode."""
+        """Custom setup wizard Ã©Â¥?installs only the deps needed for the selected mode."""
         import getpass
         import subprocess
         import shutil
@@ -298,7 +298,7 @@ class HindsightMemoryProvider(MemoryProvider):
         print(f"\n  Checking dependencies...")
         uv_path = shutil.which("uv")
         if not uv_path:
-            print("  âš?uv not found â€?install it: curl -LsSf https://astral.sh/uv/install.sh | sh")
+            print("  Ã©Â¿?uv not found Ã©Â¥?install it: curl -LsSf https://astral.sh/uv/install.sh | sh")
             print(f"  Then run manually: uv pip install --python {sys.executable} {' '.join(deps_to_install)}")
         else:
             try:
@@ -306,9 +306,9 @@ class HindsightMemoryProvider(MemoryProvider):
                     [uv_path, "pip", "install", "--python", sys.executable, "--quiet", "--upgrade"] + deps_to_install,
                     check=True, timeout=120, capture_output=True,
                 )
-                print(f"  âœ?Dependencies up to date")
+                print(f"  Ã©?Dependencies up to date")
             except Exception as e:
-                print(f"  âš?Install failed: {e}")
+                print(f"  Ã©Â¿?Install failed: {e}")
                 print(f"  Run manually: uv pip install --python {sys.executable} {' '.join(deps_to_install)}")
 
         # Step 3: Mode-specific config
@@ -398,7 +398,7 @@ class HindsightMemoryProvider(MemoryProvider):
                     new_lines.append(f"{k}={v}")
             env_path.write_text("\n".join(new_lines) + "\n")
 
-        print(f"\n  âœ?Hindsight memory configured ({mode} mode)")
+        print(f"\n  Ã©?Hindsight memory configured ({mode} mode)")
         if env_writes:
             print(f"  API keys saved to .env")
         print(f"\n  Start a new session to activate.\n")
@@ -493,7 +493,7 @@ class HindsightMemoryProvider(MemoryProvider):
                 else:
                     logger.warning("uv not found. Run: pip install 'hindsight-client>=%s'", _MIN_CLIENT_VERSION)
         except Exception:
-            pass  # packaging not available or other issue â€?proceed anyway
+            pass  # packaging not available or other issue Ã©Â¥?proceed anyway
 
         self._config = _load_config()
         self._mode = self._config.get("mode", "cloud")
@@ -583,7 +583,7 @@ class HindsightMemoryProvider(MemoryProvider):
                     current_provider = self._config.get("llm_provider", "")
                     current_model = self._config.get("llm_model", "")
                     current_base_url = self._config.get("llm_base_url") or os.environ.get("HINDSIGHT_API_LLM_BASE_URL", "")
-                    # Map openai_compatible/openrouter â†?openai for the daemon (OpenAI wire format)
+                    # Map openai_compatible/openrouter Ã©Â«?openai for the daemon (OpenAI wire format)
                     daemon_provider = "openai" if current_provider in ("openai_compatible", "openrouter") else current_provider
 
                     # Read saved profile config
@@ -859,7 +859,7 @@ class HindsightMemoryProvider(MemoryProvider):
                 if self._mode == "local_embedded":
                     # Use the public close() API. The RuntimeError from
                     # aiohttp's "attached to a different loop" is expected
-                    # and harmless â€?the daemon keeps running independently.
+                    # and harmless Ã©Â¥?the daemon keeps running independently.
                     try:
                         self._client.close()
                     except RuntimeError:

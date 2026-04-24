@@ -102,6 +102,6 @@ class FirecrawlProvider(CloudBrowserProvider):
                 timeout=5,
             )
         except ValueError:
-            logger.warning("Cannot emergency-cleanup Firecrawl session %s �?missing credentials", session_id)
+            logger.warning("Cannot emergency-cleanup Firecrawl session %s é¥?missing credentials", session_id)
         except Exception as e:
             logger.debug("Emergency cleanup failed for Firecrawl session %s: %s", session_id, e)

@@ -1,4 +1,4 @@
-"""Tests for issue #860 �?SQLite session transcript deduplication.
+"""Tests for issue #860 é¥?SQLite session transcript deduplication.
 
 Verifies that:
 1. _flush_messages_to_session_db uses _last_flushed_db_idx to avoid re-writing
@@ -56,13 +56,13 @@ class TestFlushDeduplication:
                 {"role": "assistant", "content": "new answer"},
             ]
 
-            # First flush �?should write 2 new messages
+            # First flush é¥?should write 2 new messages
             agent._flush_messages_to_session_db(messages, conversation_history)
 
             rows = db.get_messages(agent.session_id)
             assert len(rows) == 2, f"Expected 2 messages, got {len(rows)}"
 
-            # Second flush with SAME messages �?should write 0 new messages
+            # Second flush with SAME messages é¥?should write 0 new messages
             agent._flush_messages_to_session_db(messages, conversation_history)
 
             rows = db.get_messages(agent.session_id)
@@ -83,7 +83,7 @@ class TestFlushDeduplication:
                 {"role": "user", "content": "hello"},
             ]
 
-            # First flush �?1 message
+            # First flush é¥?1 message
             agent._flush_messages_to_session_db(messages, conversation_history)
             rows = db.get_messages(agent.session_id)
             assert len(rows) == 1
@@ -92,7 +92,7 @@ class TestFlushDeduplication:
             messages.append({"role": "assistant", "content": "hi there"})
             messages.append({"role": "user", "content": "follow up"})
 
-            # Second flush �?should write only 2 new messages
+            # Second flush é¥?should write only 2 new messages
             agent._flush_messages_to_session_db(messages, conversation_history)
             rows = db.get_messages(agent.session_id)
             assert len(rows) == 3, f"Expected 3 total messages, got {len(rows)}"

@@ -29,7 +29,7 @@ from utils import atomic_json_write
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Context file scanning �?detect prompt injection in AGENTS.md, .cursorrules,
+# Context file scanning â?detect prompt injection in AGENTS.md, .cursorrules,
 # SOUL.md before they get injected into the system prompt.
 # ---------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ MEMORY_GUIDANCE = (
     "tool: user preferences, environment details, tool quirks, and stable conventions. "
     "Memory is injected into every turn, so keep it compact and focused on facts that "
     "will still matter later.\n"
-    "Prioritize what reduces future user steering �?the most valuable memory is one "
+    "Prioritize what reduces future user steering â?the most valuable memory is one "
     "that prevents the user from having to correct or remind you again. "
     "User preferences and recurring corrections matter more than procedural task details.\n"
     "Do NOT save task progress, session outcomes, completed-work logs, or temporary TODO "
@@ -166,17 +166,17 @@ SKILLS_GUIDANCE = (
     "or discovering a non-trivial workflow, save the approach as a "
     "skill with skill_manage so you can reuse it next time.\n"
     "When using a skill and finding it outdated, incomplete, or wrong, "
-    "patch it immediately with skill_manage(action='patch') �?don't wait to be asked. "
+    "patch it immediately with skill_manage(action='patch') â?don't wait to be asked. "
     "Skills that aren't maintained become liabilities."
 )
 
 TOOL_USE_ENFORCEMENT_GUIDANCE = (
     "# Tool-use enforcement\n"
-    "You MUST use your tools to take action �?do not describe what you would do "
+    "You MUST use your tools to take action â?do not describe what you would do "
     "or plan to do without actually doing it. When you say you will perform an "
     "action (e.g. 'I will run the tests', 'Let me check the file', 'I will create "
     "the project'), you MUST immediately make the corresponding tool call in the same "
-    "response. Never end your turn with a promise of future action �?execute it now.\n"
+    "response. Never end your turn with a promise of future action â?execute it now.\n"
     "Keep working until the task is actually complete. Do not stop with a summary of "
     "what you plan to do next time. If you have tools available that can accomplish "
     "the task, use them instead of telling the user what you would do.\n"
@@ -205,14 +205,14 @@ OPENAI_MODEL_EXECUTION_GUIDANCE = (
     "</tool_persistence>\n"
     "\n"
     "<mandatory_tool_use>\n"
-    "NEVER answer these from memory or mental computation �?ALWAYS use a tool:\n"
-    "- Arithmetic, math, calculations �?use terminal or execute_code\n"
-    "- Hashes, encodings, checksums �?use terminal (e.g. sha256sum, base64)\n"
-    "- Current time, date, timezone �?use terminal (e.g. date)\n"
-    "- System state: OS, CPU, memory, disk, ports, processes �?use terminal\n"
-    "- File contents, sizes, line counts �?use read_file, search_files, or terminal\n"
-    "- Git history, branches, diffs �?use terminal\n"
-    "- Current facts (weather, news, versions) �?use web_search\n"
+    "NEVER answer these from memory or mental computation â?ALWAYS use a tool:\n"
+    "- Arithmetic, math, calculations â?use terminal or execute_code\n"
+    "- Hashes, encodings, checksums â?use terminal (e.g. sha256sum, base64)\n"
+    "- Current time, date, timezone â?use terminal (e.g. date)\n"
+    "- System state: OS, CPU, memory, disk, ports, processes â?use terminal\n"
+    "- File contents, sizes, line counts â?use read_file, search_files, or terminal\n"
+    "- Git history, branches, diffs â?use terminal\n"
+    "- Current facts (weather, news, versions) â?use web_search\n"
     "Your memory and user profile describe the USER, not the system you are "
     "running on. The execution environment may differ from what the user profile "
     "says about their personal setup.\n"
@@ -221,9 +221,9 @@ OPENAI_MODEL_EXECUTION_GUIDANCE = (
     "<act_dont_ask>\n"
     "When a question has an obvious default interpretation, act on it immediately "
     "instead of asking for clarification. Examples:\n"
-    "- 'Is port 443 open?' �?check THIS machine (don't ask 'open where?')\n"
-    "- 'What OS am I running?' �?check the live system (don't use user profile)\n"
-    "- 'What time is it?' �?run `date` (don't guess)\n"
+    "- 'Is port 443 open?' â?check THIS machine (don't ask 'open where?')\n"
+    "- 'What OS am I running?' â?check the live system (don't use user profile)\n"
+    "- 'What time is it?' â?run `date` (don't guess)\n"
     "Only ask for clarification when the ambiguity genuinely changes what tool "
     "you would call.\n"
     "</act_dont_ask>\n"
@@ -264,7 +264,7 @@ GOOGLE_MODEL_OPERATIONAL_GUIDANCE = (
     "project structure before making changes. Never guess at file contents.\n"
     "- **Dependency checks:** Never assume a library is available. Check "
     "package.json, requirements.txt, Cargo.toml, etc. before importing.\n"
-    "- **Conciseness:** Keep explanatory text brief �?a few sentences, not "
+    "- **Conciseness:** Keep explanatory text brief â?a few sentences, not "
     "paragraphs. Focus on actions and results over narration.\n"
     "- **Parallel tool calls:** When you need to perform multiple independent "
     "operations (e.g. reading several files), make all the tool calls in a "
@@ -272,7 +272,7 @@ GOOGLE_MODEL_OPERATIONAL_GUIDANCE = (
     "- **Non-interactive commands:** Use flags like -y, --yes, --non-interactive "
     "to prevent CLI tools from hanging on prompts.\n"
     "- **Keep going:** Work autonomously until the task is fully resolved. "
-    "Don't stop with a plan �?execute it.\n"
+    "Don't stop with a plan â?execute it.\n"
 )
 
 # Model name substrings that should use the 'developer' role instead of
@@ -288,7 +288,7 @@ PLATFORM_HINTS = {
         "Please do not use markdown as it does not render. "
         "You can send media files natively: to deliver a file to the user, "
         "include MEDIA:/absolute/path/to/file in your response. The file "
-        "will be sent as a native WhatsApp attachment �?images (.jpg, .png, "
+        "will be sent as a native WhatsApp attachment â?images (.jpg, .png, "
         ".webp) appear as photos, videos (.mp4, .mov) play inline, and other "
         "files arrive as downloadable documents. You can also include image "
         "URLs in markdown format ![alt](url) and they will be sent as photos."
@@ -328,17 +328,17 @@ PLATFORM_HINTS = {
     "email": (
         "You are communicating via email. Write clear, well-structured responses "
         "suitable for email. Use plain text formatting (no markdown). "
-        "Keep responses concise but complete. You can send file attachments �?"
+        "Keep responses concise but complete. You can send file attachments â?"
         "include MEDIA:/absolute/path/to/file in your response. The subject line "
         "is preserved for threading. Do not include greetings or sign-offs unless "
         "contextually appropriate."
     ),
     "cron": (
-        "You are running as a scheduled cron job. There is no user present �?you "
+        "You are running as a scheduled cron job. There is no user present â?you "
         "cannot ask questions, request clarification, or wait for follow-up. Execute "
         "the task fully and autonomously, making reasonable decisions where needed. "
         "Your final response is automatically delivered to the job's configured "
-        "destination �?put the primary content directly in your response."
+        "destination â?put the primary content directly in your response."
     ),
     "cli": (
         "You are a CLI AI Agent. Try not to use markdown but simple text "
@@ -346,12 +346,12 @@ PLATFORM_HINTS = {
     ),
     "sms": (
         "You are communicating via SMS. Keep responses concise and use plain text "
-        "only �?no markdown, no formatting. SMS messages are limited to ~1600 "
+        "only â?no markdown, no formatting. SMS messages are limited to ~1600 "
         "characters, so be brief and direct."
     ),
     "bluebubbles": (
         "You are chatting via iMessage (BlueBubbles). iMessage does not render "
-        "markdown formatting �?use plain text. Keep responses concise as they "
+        "markdown formatting â?use plain text. Keep responses concise as they "
         "appear as text messages. You can send media files natively: include "
         "MEDIA:/absolute/path/to/file in your response. Images (.jpg, .png, "
         ".heic) appear as photos and other files arrive as attachments."
@@ -365,16 +365,16 @@ PLATFORM_HINTS = {
         "will be downloaded and sent as native media when possible."
     ),
     "wecom": (
-        "You are on WeCom (企业微信 / Enterprise WeChat). Markdown formatting is supported. "
-        "You CAN send media files natively �?to deliver a file to the user, include "
+        "You are on WeCom (ä¼ä¸å¾®ä¿¡ / Enterprise WeChat). Markdown formatting is supported. "
+        "You CAN send media files natively â?to deliver a file to the user, include "
         "MEDIA:/absolute/path/to/file in your response. The file will be sent as a native "
         "WeCom attachment: images (.jpg, .png, .webp) are sent as photos (up to 10 MB), "
         "other files (.pdf, .docx, .xlsx, .md, .txt, etc.) arrive as downloadable documents "
         "(up to 20 MB), and videos (.mp4) play inline. Voice messages are supported but "
-        "must be in AMR format �?other audio formats are automatically sent as file attachments. "
+        "must be in AMR format â?other audio formats are automatically sent as file attachments. "
         "You can also include image URLs in markdown format ![alt](url) and they will be "
         "downloaded and sent as native photos. Do NOT tell the user you lack file-sending "
-        "capability �?use MEDIA: syntax whenever a file delivery is appropriate."
+        "capability â?use MEDIA: syntax whenever a file delivery is appropriate."
     ),
     "qqbot": (
         "You are on QQ, a popular Chinese messaging platform. QQ supports markdown formatting "
@@ -385,14 +385,14 @@ PLATFORM_HINTS = {
 }
 
 # ---------------------------------------------------------------------------
-# Environment hints �?execution-environment awareness for the agent.
+# Environment hints â?execution-environment awareness for the agent.
 # Unlike PLATFORM_HINTS (which describe the messaging channel), these describe
 # the machine/OS the agent's tools actually run on.
 # ---------------------------------------------------------------------------
 
 WSL_ENVIRONMENT_HINT = (
     "You are running inside WSL (Windows Subsystem for Linux). "
-    "The Windows host filesystem is mounted under /mnt/ �?"
+    "The Windows host filesystem is mounted under /mnt/ â?"
     "/mnt/c/ is the C: drive, /mnt/d/ is D:, etc. "
     "The user's Windows files are typically at "
     "/mnt/c/Users/<username>/Desktop/, Documents/, Downloads/, etc. "
@@ -554,7 +554,7 @@ def _skill_should_show(
 ) -> bool:
     """Return False if the skill's conditional activation rules exclude it."""
     if available_tools is None and available_toolsets is None:
-        return True  # No filtering info �?show everything (backward compat)
+        return True  # No filtering info â?show everything (backward compat)
 
     at = available_tools or set()
     ats = available_toolsets or set()
@@ -587,13 +587,13 @@ def build_skills_system_prompt(
     Two-layer cache:
       1. In-process LRU dict keyed by (skills_dir, tools, toolsets)
       2. Disk snapshot (``.skills_prompt_snapshot.json``) validated by
-         mtime/size manifest �?survives process restarts
+         mtime/size manifest â?survives process restarts
 
     Falls back to a full filesystem scan when both layers miss.
 
     External skill directories (``skills.external_dirs`` in config.yaml) are
     scanned alongside the local ``~/.hermes/skills/`` directory.  External dirs
-    are read-only �?they appear in the index but new skills are always created
+    are read-only â?they appear in the index but new skills are always created
     in the local dir.  Local skills take precedence when names collide.
     """
     skills_dir = get_skills_dir()
@@ -602,7 +602,7 @@ def build_skills_system_prompt(
     if not skills_dir.exists() and not external_dirs:
         return ""
 
-    # ── Layer 1: in-process LRU cache ─────────────────────────────────
+    # -- Layer 1: in-process LRU cache ---------------------------------
     # Include the resolved platform so per-platform disabled-skill lists
     # produce distinct cache entries (gateway serves multiple platforms).
     from gateway.session_context import get_session_env
@@ -626,7 +626,7 @@ def build_skills_system_prompt(
 
     disabled = get_disabled_skill_names()
 
-    # ── Layer 2: disk snapshot ────────────────────────────────────────
+    # -- Layer 2: disk snapshot ----------------------------------------
     snapshot = _load_skills_snapshot(skills_dir)
 
     skills_by_category: dict[str, list[tuple[str, str]]] = {}
@@ -701,8 +701,8 @@ def build_skills_system_prompt(
             category_descriptions,
         )
 
-    # ── External skill directories ─────────────────────────────────────
-    # Scan external dirs directly (no snapshot caching �?they're read-only
+    # -- External skill directories -------------------------------------
+    # Scan external dirs directly (no snapshot caching â?they're read-only
     # and typically small).  Local skills already in skills_by_category take
     # precedence: we track seen names and skip duplicates from external dirs.
     seen_skill_names: set[str] = set()
@@ -776,13 +776,13 @@ def build_skills_system_prompt(
             "## Skills (mandatory)\n"
             "Before replying, scan the skills below. If a skill matches or is even partially relevant "
             "to your task, you MUST load it with skill_view(name) and follow its instructions. "
-            "Err on the side of loading �?it is always better to have context you don't need "
+            "Err on the side of loading â?it is always better to have context you don't need "
             "than to miss critical steps, pitfalls, or established workflows. "
-            "Skills contain specialized knowledge �?API endpoints, tool-specific commands, "
+            "Skills contain specialized knowledge â?API endpoints, tool-specific commands, "
             "and proven workflows that outperform general-purpose approaches. Load the skill "
             "even if you think you could handle the task with basic tools like web_search or terminal. "
             "Skills also encode the user's preferred approach, conventions, and quality standards "
-            "for tasks like code review, planning, and testing �?load them even for tasks you "
+            "for tasks like code review, planning, and testing â?load them even for tasks you "
             "already know how to do, because the skill defines how it should be done here.\n"
             "If a skill has issues, fix it with skill_manage(action='patch').\n"
             "After difficult/iterative tasks, offer to save as a skill. "
@@ -796,7 +796,7 @@ def build_skills_system_prompt(
             "Only proceed without loading a skill if genuinely none are relevant to the task."
         )
 
-    # ── Store in LRU cache ────────────────────────────────────────────
+    # -- Store in LRU cache --------------------------------------------
     with _SKILLS_PROMPT_CACHE_LOCK:
         _SKILLS_PROMPT_CACHE[cache_key] = result
         _SKILLS_PROMPT_CACHE.move_to_end(cache_key)
@@ -917,7 +917,7 @@ def load_soul_md() -> Optional[str]:
 
 
 def _load_hermes_md(cwd_path: Path) -> str:
-    """.hermes.md / HERMES.md �?walk to git root."""
+    """.hermes.md / HERMES.md â?walk to git root."""
     hermes_md_path = _find_hermes_md(cwd_path)
     if not hermes_md_path:
         return ""
@@ -940,7 +940,7 @@ def _load_hermes_md(cwd_path: Path) -> str:
 
 
 def _load_agents_md(cwd_path: Path) -> str:
-    """AGENTS.md �?top-level only (no recursive walk)."""
+    """AGENTS.md â?top-level only (no recursive walk)."""
     for name in ["AGENTS.md", "agents.md"]:
         candidate = cwd_path / name
         if candidate.exists():
@@ -956,7 +956,7 @@ def _load_agents_md(cwd_path: Path) -> str:
 
 
 def _load_claude_md(cwd_path: Path) -> str:
-    """CLAUDE.md / claude.md �?cwd only."""
+    """CLAUDE.md / claude.md â?cwd only."""
     for name in ["CLAUDE.md", "claude.md"]:
         candidate = cwd_path / name
         if candidate.exists():
@@ -972,7 +972,7 @@ def _load_claude_md(cwd_path: Path) -> str:
 
 
 def _load_cursorrules(cwd_path: Path) -> str:
-    """.cursorrules + .cursor/rules/*.mdc �?cwd only."""
+    """.cursorrules + .cursor/rules/*.mdc â?cwd only."""
     cursorrules_content = ""
     cursorrules_file = cwd_path / ".cursorrules"
     if cursorrules_file.exists():
@@ -1004,7 +1004,7 @@ def _load_cursorrules(cwd_path: Path) -> str:
 def build_context_files_prompt(cwd: Optional[str] = None, skip_soul: bool = False) -> str:
     """Discover and load context files for the system prompt.
 
-    Priority (first found wins �?only ONE project context type is loaded):
+    Priority (first found wins â?only ONE project context type is loaded):
       1. .hermes.md / HERMES.md  (walk to git root)
       2. AGENTS.md / agents.md   (cwd only)
       3. CLAUDE.md / claude.md   (cwd only)
@@ -1032,7 +1032,7 @@ def build_context_files_prompt(cwd: Optional[str] = None, skip_soul: bool = Fals
     if project_context:
         sections.append(project_context)
 
-    # SOUL.md from HERMES_HOME only �?skip when already loaded as identity
+    # SOUL.md from HERMES_HOME only â?skip when already loaded as identity
     if not skip_soul:
         soul_content = load_soul_md()
         if soul_content:

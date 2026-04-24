@@ -188,7 +188,7 @@ class TestApplyUpdate:
 
 
 class TestAdditionOnlyHunks:
-    """Regression tests for #3081 �?addition-only hunks were silently dropped."""
+    """Regression tests for #3081 é¥?addition-only hunks were silently dropped."""
 
     def test_addition_only_hunk_with_context_hint(self):
         """A hunk with only + lines should insert at the context hint location."""
@@ -256,7 +256,7 @@ class TestAdditionOnlyHunks:
 
 
 class TestReadFileRaw:
-    """Bug 1 regression tests �?files > 2000 lines and lines > 2000 chars."""
+    """Bug 1 regression tests é¥?files > 2000 lines and lines > 2000 chars."""
 
     def test_apply_update_file_over_2000_lines(self):
         """A hunk targeting line 2200 must not truncate the file to 2000 lines."""
@@ -327,7 +327,7 @@ class TestReadFileRaw:
 
 
 class TestValidationPhase:
-    """Bug 2 regression tests �?validation prevents partial apply."""
+    """Bug 2 regression tests é¥?validation prevents partial apply."""
 
     def test_validation_failure_writes_nothing(self):
         """If one hunk is invalid, no files should be written."""
@@ -455,7 +455,7 @@ class TestApplyDelete:
 
         result = apply_v4a_operations(ops, FakeFileOps())
         assert result.success is True
-        # unified_diff produces nothing for two empty inputs �?fallback comment expected
+        # unified_diff produces nothing for two empty inputs é¥?fallback comment expected
         assert "Deleted" in result.diff or result.diff.strip() == ""
 
 
@@ -469,7 +469,7 @@ class TestCountOccurrences:
 
 
 class TestParseErrorSignalling:
-    """Bug 3 regression tests �?parse_v4a_patch must signal errors, not swallow them."""
+    """Bug 3 regression tests é¥?parse_v4a_patch must signal errors, not swallow them."""
 
     def test_update_with_no_hunks_returns_error(self):
         """An UPDATE with no hunk lines is a malformed patch and should error."""

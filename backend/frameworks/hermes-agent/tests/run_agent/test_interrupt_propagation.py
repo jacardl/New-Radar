@@ -149,7 +149,7 @@ class TestPerThreadInterruptIsolation(unittest.TestCase):
         barrier = threading.Barrier(2)
 
         def thread_a():
-            """Agent A's execution thread �?will be interrupted."""
+            """Agent A's execution thread é¥?will be interrupted."""
             tid = threading.current_thread().ident
             results["a_tid"] = tid
             barrier.wait(timeout=5)  # sync with thread B
@@ -157,7 +157,7 @@ class TestPerThreadInterruptIsolation(unittest.TestCase):
             results["a_interrupted"] = is_interrupted()
 
         def thread_b():
-            """Agent B's execution thread �?should NOT be affected."""
+            """Agent B's execution thread é¥?should NOT be affected."""
             tid = threading.current_thread().ident
             results["b_tid"] = tid
             barrier.wait(timeout=5)  # sync with thread A

@@ -1,4 +1,4 @@
-"""Tests for _reap_orphaned_browser_sessions() �?kills orphaned agent-browser
+"""Tests for _reap_orphaned_browser_sessions() é¥?kills orphaned agent-browser
 daemons whose Python parent exited without cleaning up."""
 
 import os
@@ -130,7 +130,7 @@ class TestReapOrphanedBrowserSessions:
         d = _make_socket_dir(fake_tmpdir, "cdp_abc1234567")
         assert d.exists()
         _reap_orphaned_browser_sessions()
-        # No PID file �?cleaned up
+        # No PID file é«?cleaned up
         assert not d.exists()
 
     def test_non_hermes_dirs_are_ignored(self, fake_tmpdir):

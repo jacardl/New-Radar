@@ -139,7 +139,7 @@ class TestValidateSignature:
         assert adapter._validate_signature(req, b"{}", "correct") is False
 
     def test_validate_no_signature_with_secret_rejects(self):
-        """Secret configured but no recognised signature header �?reject."""
+        """Secret configured but no recognised signature header é«?reject."""
         adapter = _make_adapter()
         req = _mock_request(headers={})  # no sig headers at all
         assert adapter._validate_signature(req, b"{}", "my-secret") is False
@@ -159,7 +159,7 @@ class TestValidateSignature:
         )
         # The route has no secret, global secret is empty
         route_secret = adapter._routes["test"].get("secret", adapter._global_secret)
-        assert not route_secret  # empty �?validation is skipped in handler
+        assert not route_secret  # empty é«?validation is skipped in handler
 
     def test_validate_generic_signature_valid(self):
         """Valid X-Webhook-Signature (generic HMAC-SHA256 hex) is accepted."""
@@ -203,7 +203,7 @@ class TestRenderPrompt:
         assert "{nonexistent}" in result
 
     def test_render_prompt_no_template_dumps_json(self):
-        """Empty template �?JSON dump fallback with event/route context."""
+        """Empty template é«?JSON dump fallback with event/route context."""
         adapter = _make_adapter()
         payload = {"key": "value"}
         result = adapter._render_prompt("", payload, "push", "my-route")
@@ -285,7 +285,7 @@ class TestEventFilter:
 
     @pytest.mark.asyncio
     async def test_event_filter_empty_allows_all(self):
-        """No events list �?accept any event type."""
+        """No events list é«?accept any event type."""
         routes = {
             "all": {
                 "secret": _INSECURE_NO_AUTH,
@@ -353,7 +353,7 @@ class TestHTTPHandling:
         """connect() starts the HTTP listener and marks adapter as connected."""
         routes = {"r1": {"secret": _INSECURE_NO_AUTH, "prompt": "x"}}
         adapter = _make_adapter(routes=routes, port=0)
-        # Use port 0 �?the OS picks a free port, but aiohttp requires a real bind.
+        # Use port 0 é¥?the OS picks a free port, but aiohttp requires a real bind.
         # We just test that the method completes and marks connected.
         # Need to mock TCPSite to avoid actual binding.
         with patch("gateway.platforms.webhook.web.AppRunner") as MockRunner, \
@@ -533,7 +533,7 @@ class TestInsecureNoAuth:
 
         app = _create_app(adapter)
         async with TestClient(TestServer(app)) as cli:
-            # No signature header at all �?should still be accepted
+            # No signature header at all é¥?should still be accepted
             resp = await cli.post("/webhooks/open", json={"test": True})
             assert resp.status == 202
 
@@ -626,11 +626,11 @@ class TestDeliveryCleanup:
         adapter._idempotency_ttl = 60  # short TTL for the test
         now = time.time()
 
-        # Stale entry �?older than TTL
+        # Stale entry é¥?older than TTL
         adapter._delivery_info["webhook:test:old"] = {"deliver": "log"}
         adapter._delivery_info_created["webhook:test:old"] = now - 120
 
-        # Fresh entry �?should survive
+        # Fresh entry é¥?should survive
         adapter._delivery_info["webhook:test:new"] = {"deliver": "log"}
         adapter._delivery_info_created["webhook:test:new"] = now - 5
 

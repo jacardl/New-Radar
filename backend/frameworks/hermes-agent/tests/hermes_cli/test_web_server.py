@@ -23,7 +23,7 @@ from hermes_cli.config import (
 
 
 class TestReloadEnv:
-    """Tests for reload_env() �?re-reads .env into os.environ."""
+    """Tests for reload_env() é¥?re-reads .env into os.environ."""
 
     def test_adds_new_vars(self, tmp_path):
         """reload_env() adds vars from .env that are not in os.environ."""
@@ -102,7 +102,7 @@ class TestWebServerEndpoints:
 
     @pytest.fixture(autouse=True)
     def _setup_test_client(self):
-        """Create a TestClient �?import is deferred to avoid requiring fastapi."""
+        """Create a TestClient é¥?import is deferred to avoid requiring fastapi."""
         try:
             from starlette.testclient import TestClient
         except ImportError:
@@ -341,7 +341,7 @@ class TestBuildSchemaFromConfig:
         from collections import Counter
         cats = Counter(e["category"] for e in CONFIG_SCHEMA.values())
         for cat, count in cats.items():
-            assert count >= 2, f"Category '{cat}' has only {count} field(s) �?should be merged"
+            assert count >= 2, f"Category '{cat}' has only {count} field(s) é¥?should be merged"
 
 
 # ---------------------------------------------------------------------------
@@ -350,7 +350,7 @@ class TestBuildSchemaFromConfig:
 
 
 class TestConfigRoundTrip:
-    """Verify config survives GET �?edit �?PUT without data loss."""
+    """Verify config survives GET é«?edit é«?PUT without data loss."""
 
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -391,7 +391,7 @@ class TestConfigRoundTrip:
         assert isinstance(before.get("model"), dict)
         original_keys = set(before["model"].keys())
 
-        # GET �?PUT unchanged
+        # GET é«?PUT unchanged
         web_config = self.client.get("/api/config").json()
         assert isinstance(web_config.get("model"), str), "GET should normalize model to string"
 
@@ -463,7 +463,7 @@ class TestConfigRoundTrip:
         for key, entry in schema.items():
             val = get_nested(config, key)
             if val is None:
-                continue  # not set in user config �?fine
+                continue  # not set in user config é¥?fine
             expected = entry["type"]
             if expected in ("string", "select") and not isinstance(val, str):
                 mismatches.append(f"{key}: expected str, got {type(val).__name__}")
@@ -579,9 +579,9 @@ class TestNewEndpoints:
             tools_config,
             "_get_effective_configurable_toolsets",
             lambda: [
-                ("web", "🔍 Web Search & Scraping", "web_search, web_extract"),
-                ("skills", "📚 Skills", "list, view, manage"),
-                ("memory", "💾 Memory", "persistent memory across sessions"),
+                ("web", "é¦æ³ Web Search & Scraping", "web_search, web_extract"),
+                ("skills", "é¦æ Skills", "list, view, manage"),
+                ("memory", "é¦æ Memory", "persistent memory across sessions"),
             ],
         )
         monkeypatch.setattr(
@@ -611,7 +611,7 @@ class TestNewEndpoints:
         assert resp.json() == [
             {
                 "name": "web",
-                "label": "🔍 Web Search & Scraping",
+                "label": "é¦æ³ Web Search & Scraping",
                 "description": "web_search, web_extract",
                 "enabled": True,
                 "available": True,
@@ -620,7 +620,7 @@ class TestNewEndpoints:
             },
             {
                 "name": "skills",
-                "label": "📚 Skills",
+                "label": "é¦æ Skills",
                 "description": "list, view, manage",
                 "enabled": True,
                 "available": True,
@@ -629,7 +629,7 @@ class TestNewEndpoints:
             },
             {
                 "name": "memory",
-                "label": "💾 Memory",
+                "label": "é¦æ Memory",
                 "description": "persistent memory across sessions",
                 "enabled": False,
                 "available": False,

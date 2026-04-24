@@ -1,4 +1,4 @@
-"""Tests for gateway/platforms/base.py �?MessageEvent, media extraction, message truncation."""
+"""Tests for gateway/platforms/base.py é¥?MessageEvent, media extraction, message truncation."""
 
 import os
 from unittest.mock import patch
@@ -47,7 +47,7 @@ class TestSafeUrlForLog:
 
 
 # ---------------------------------------------------------------------------
-# MessageEvent �?command parsing
+# MessageEvent é¥?command parsing
 # ---------------------------------------------------------------------------
 
 
@@ -455,7 +455,7 @@ class TestGetHumanDelay:
 # ---------------------------------------------------------------------------
 # utf16_len / _prefix_within_utf16_limit / truncate_message with len_fn
 # ---------------------------------------------------------------------------
-# Ported from nearai/ironclaw#2304 �?Telegram counts message length in UTF-16
+# Ported from nearai/ironclaw#2304 é¥?Telegram counts message length in UTF-16
 # code units, not Unicode code-points.  Astral-plane characters (emoji, CJK
 # Extension B) are surrogate pairs: 1 Python char but 2 UTF-16 units.
 
@@ -468,19 +468,19 @@ class TestUtf16Len:
 
     def test_bmp_cjk(self):
         # CJK ideographs in the BMP are 1 code unit each
-        assert utf16_len("你好") == 2
+        assert utf16_len("æµ£ç²ã½") == 2
 
     def test_emoji_surrogate_pair(self):
-        # 😀 (U+1F600) is outside BMP �?2 UTF-16 code units
-        assert utf16_len("😀") == 2
+        # é¦æ¦¾ (U+1F600) is outside BMP é«?2 UTF-16 code units
+        assert utf16_len("é¦æ¦¾") == 2
 
     def test_mixed(self):
-        # "hi😀" = 2 + 2 = 4 UTF-16 units
-        assert utf16_len("hi😀") == 4
+        # "hié¦æ¦¾" = 2 + 2 = 4 UTF-16 units
+        assert utf16_len("hié¦æ¦¾") == 4
 
     def test_musical_symbol(self):
-        # 𝄞 (U+1D11E) �?Musical Symbol G Clef, surrogate pair
-        assert utf16_len("𝄞") == 2
+        # é¥¾å (U+1D11E) é¥?Musical Symbol G Clef, surrogate pair
+        assert utf16_len("é¥¾å") == 2
 
     def test_empty(self):
         assert utf16_len("") == 0
@@ -498,20 +498,20 @@ class TestPrefixWithinUtf16Limit:
         assert utf16_len(result) <= 5
 
     def test_does_not_split_surrogate_pair(self):
-        # "a😀b" = 1 + 2 + 1 = 4 UTF-16 units; limit 2 should give "a"
-        result = _prefix_within_utf16_limit("a😀b", 2)
+        # "aé¦æ¦¾b" = 1 + 2 + 1 = 4 UTF-16 units; limit 2 should give "a"
+        result = _prefix_within_utf16_limit("aé¦æ¦¾b", 2)
         assert result == "a"
         assert utf16_len(result) <= 2
 
     def test_emoji_at_limit(self):
-        # "😀" = 2 UTF-16 units; limit 2 should include it
-        result = _prefix_within_utf16_limit("😀x", 2)
-        assert result == "😀"
+        # "é¦æ¦¾" = 2 UTF-16 units; limit 2 should include it
+        result = _prefix_within_utf16_limit("é¦æ¦¾x", 2)
+        assert result == "é¦æ¦¾"
 
     def test_all_emoji(self):
-        msg = "😀" * 10  # 20 UTF-16 units
+        msg = "é¦æ¦¾" * 10  # 20 UTF-16 units
         result = _prefix_within_utf16_limit(msg, 6)
-        assert result == "😀😀😀"
+        assert result == "é¦æ¦¾é¦æ¦¾é¦æ¦¾"
         assert utf16_len(result) == 6
 
     def test_empty(self):
@@ -523,15 +523,15 @@ class TestTruncateMessageUtf16:
 
     def test_short_emoji_message_no_split(self):
         """A short message under the UTF-16 limit should not be split."""
-        msg = "Hello 😀 world"
+        msg = "Hello é¦æ¦¾ world"
         chunks = BasePlatformAdapter.truncate_message(msg, 4096, len_fn=utf16_len)
         assert len(chunks) == 1
         assert chunks[0] == msg
 
     def test_emoji_near_limit_triggers_split(self):
         """A message at 4096 codepoints but >4096 UTF-16 units must split."""
-        # 2049 emoji = 2049 codepoints but 4098 UTF-16 units �?exceeds 4096
-        msg = "😀" * 2049
+        # 2049 emoji = 2049 codepoints but 4098 UTF-16 units é«?exceeds 4096
+        msg = "é¦æ¦¾" * 2049
         assert len(msg) == 2049  # Python len sees 2049 chars
         assert utf16_len(msg) == 4098  # but it's 4098 UTF-16 units
 
@@ -552,7 +552,7 @@ class TestTruncateMessageUtf16:
     def test_each_utf16_chunk_within_limit(self):
         """All chunks produced with utf16_len must fit the limit."""
         # Mix of BMP and astral-plane characters
-        msg = ("Hello 😀 world 🎵 test 𝄞 " * 200).strip()
+        msg = ("Hello é¦æ¦¾ world é¦å¹ test é¥¾å " * 200).strip()
         max_len = 200
         chunks = BasePlatformAdapter.truncate_message(msg, max_len, len_fn=utf16_len)
         for i, chunk in enumerate(chunks):
@@ -563,7 +563,7 @@ class TestTruncateMessageUtf16:
 
     def test_all_content_preserved(self):
         """Splitting with utf16_len must not lose content."""
-        words = ["emoji😀", "music🎵", "cjk你好", "plain"] * 100
+        words = ["emojié¦æ¦¾", "musicé¦å¹", "cjkæµ£ç²ã½", "plain"] * 100
         msg = " ".join(words)
         chunks = BasePlatformAdapter.truncate_message(msg, 200, len_fn=utf16_len)
         reassembled = " ".join(chunks)
@@ -572,7 +572,7 @@ class TestTruncateMessageUtf16:
 
     def test_code_blocks_preserved_with_utf16(self):
         """Code block fence handling should work with utf16_len too."""
-        msg = "Before\n```python\n" + "x = '😀'\n" * 200 + "```\nAfter"
+        msg = "Before\n```python\n" + "x = 'é¦æ¦¾'\n" * 200 + "```\nAfter"
         chunks = BasePlatformAdapter.truncate_message(msg, 300, len_fn=utf16_len)
         assert len(chunks) > 1
         # Each chunk should have balanced fences

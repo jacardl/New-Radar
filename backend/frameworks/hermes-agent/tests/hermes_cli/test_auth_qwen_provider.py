@@ -208,7 +208,7 @@ def test_refresh_qwen_cli_tokens_preserves_old_refresh_if_not_in_response(qwen_e
     resp.status_code = 200
     resp.json.return_value = {
         "access_token": "new-access",
-        # No refresh_token in response �?should keep old one
+        # No refresh_token in response é¥?should keep old one
         "expires_in": 3600,
     }
 

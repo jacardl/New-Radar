@@ -1,4 +1,4 @@
-"""Tests for plugins/memory/honcho/client.py �?Honcho client configuration."""
+"""Tests for plugins/memory/honcho/client.py é¥?Honcho client configuration."""
 
 import json
 import os
@@ -308,7 +308,7 @@ class TestResolveConfigPath:
     def test_falls_back_to_global_when_no_local(self, tmp_path):
         hermes_home = tmp_path / "hermes"
         hermes_home.mkdir()
-        # No honcho.json in HERMES_HOME �?also isolate ~/.hermes so
+        # No honcho.json in HERMES_HOME é¥?also isolate ~/.hermes so
         # the default-profile fallback doesn't hit the real filesystem.
         fake_home = tmp_path / "fakehome"
         fake_home.mkdir()
@@ -441,7 +441,7 @@ class TestObservationModeMigration:
     """Existing configs without explicit observationMode keep 'unified' default."""
 
     def test_existing_config_defaults_to_unified(self, tmp_path):
-        """Config with host block but no observationMode �?'unified' (old default)."""
+        """Config with host block but no observationMode é«?'unified' (old default)."""
         cfg_file = tmp_path / "config.json"
         cfg_file.write_text(json.dumps({
             "apiKey": "k",
@@ -451,14 +451,14 @@ class TestObservationModeMigration:
         assert cfg.observation_mode == "unified"
 
     def test_new_config_defaults_to_directional(self, tmp_path):
-        """Config with no host block and no credentials �?'directional' (new default)."""
+        """Config with no host block and no credentials é«?'directional' (new default)."""
         cfg_file = tmp_path / "config.json"
         cfg_file.write_text(json.dumps({}))
         cfg = HonchoClientConfig.from_global_config(config_path=cfg_file)
         assert cfg.observation_mode == "directional"
 
     def test_explicit_directional_respected(self, tmp_path):
-        """Existing config with explicit observationMode �?uses what's set."""
+        """Existing config with explicit observationMode é«?uses what's set."""
         cfg_file = tmp_path / "config.json"
         cfg_file.write_text(json.dumps({
             "apiKey": "k",
@@ -468,7 +468,7 @@ class TestObservationModeMigration:
         assert cfg.observation_mode == "directional"
 
     def test_explicit_unified_respected(self, tmp_path):
-        """Existing config with explicit observationMode unified �?stays unified."""
+        """Existing config with explicit observationMode unified é«?stays unified."""
         cfg_file = tmp_path / "config.json"
         cfg_file.write_text(json.dumps({
             "apiKey": "k",

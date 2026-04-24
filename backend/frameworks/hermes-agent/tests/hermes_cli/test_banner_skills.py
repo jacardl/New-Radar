@@ -1,4 +1,4 @@
-"""Tests for banner get_available_skills() �?disabled and platform filtering."""
+"""Tests for banner get_available_skills() é¥?disabled and platform filtering."""
 
 from unittest.mock import patch
 

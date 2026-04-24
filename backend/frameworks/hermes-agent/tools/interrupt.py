@@ -6,7 +6,7 @@ in the gateway where multiple agents run concurrently in the same process.
 
 The agent stores its execution thread ID at the start of run_conversation()
 and passes it to set_interrupt()/clear_interrupt().  Tools call
-is_interrupted() which checks the CURRENT thread �?no argument needed.
+is_interrupted() which checks the CURRENT thread é¥?no argument needed.
 
 Usage in tools:
     from tools.interrupt import is_interrupted
@@ -40,7 +40,7 @@ def set_interrupt(active: bool, thread_id: int | None = None) -> None:
 def is_interrupted() -> bool:
     """Check if an interrupt has been requested for the current thread.
 
-    Safe to call from any thread �?each thread only sees its own
+    Safe to call from any thread é¥?each thread only sees its own
     interrupt state.
     """
     tid = threading.current_thread().ident
@@ -69,7 +69,7 @@ class _ThreadAwareEventProxy:
         set_interrupt(False)
 
     def wait(self, timeout: float | None = None) -> bool:
-        """Not truly supported �?returns current state immediately."""
+        """Not truly supported é¥?returns current state immediately."""
         return self.is_set()
 
 

@@ -129,7 +129,7 @@ def parse_rate_limit_headers(
     )
 
 
-# ── Formatting ──────────────────────────────────────────────────────────
+# -- Formatting ----------------------------------------------------------
 
 
 def _fmt_count(n: int) -> str:
@@ -157,11 +157,11 @@ def _fmt_seconds(seconds: float) -> str:
 
 
 def _bar(pct: float, width: int = 20) -> str:
-    """ASCII progress bar: [████████░░░░░░░░░░░░] 40%."""
+    """ASCII progress bar: [ââââââââââââââââââââ] 40%."""
     filled = int(pct / 100.0 * width)
     filled = max(0, min(width, filled))
     empty = width - filled
-    return f"[{'�? * filled}{'�? * empty}]"
+    return f"[{'â? * filled}{'â? * empty}]"
 
 
 def _bucket_line(label: str, bucket: RateLimitBucket, label_width: int = 14) -> str:
@@ -182,7 +182,7 @@ def _bucket_line(label: str, bucket: RateLimitBucket, label_width: int = 14) -> 
 def format_rate_limit_display(state: RateLimitState) -> str:
     """Format rate limit state for terminal/chat display."""
     if not state.has_data:
-        return "No rate limit data yet �?make an API request first."
+        return "No rate limit data yet â?make an API request first."
 
     age = state.age_seconds
     if age < 5:
@@ -214,7 +214,7 @@ def format_rate_limit_display(state: RateLimitState) -> str:
     ]:
         if bucket.limit > 0 and bucket.usage_pct >= 80:
             reset = _fmt_seconds(bucket.remaining_seconds_now)
-            warnings.append(f"  �?{label} at {bucket.usage_pct:.0f}% �?resets in {reset}")
+            warnings.append(f"  â?{label} at {bucket.usage_pct:.0f}% â?resets in {reset}")
 
     if warnings:
         lines.append("")

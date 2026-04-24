@@ -1,11 +1,11 @@
-﻿"""
-专为 AI Agent 设计的本地舆情数据库查询工具�?(�?Bocha/Anspire 接口)
+ï»¿"""
+ä¸ä¸º AI Agent è®¾è®¡çæ¬å°èææ°æ®åºæ¥è¯¢å·¥å·ï¿½?(ï¿½?Bocha/Anspire æ¥å£)
 
-版本: 2.0
-最后更�? 2025-08-23
+çæ¬: 2.0
+æåæ´ï¿½? 2025-08-23
 
-此脚本已重构为直接查询本�?MySQL 数据库，不再依赖外部�?Bocha �?Anspire API�?以解�?API 调用成本高、请求频繁的问题�?同时保持了原有数据结�?(BochaResponse, WebpageResult �? 的兼容性，
-使得 MediaEngine/agent.py 无需修改即可无缝切换到本地数据库�?"""
+æ­¤èæ¬å·²éæä¸ºç´æ¥æ¥è¯¢æ¬ï¿½?MySQL æ°æ®åºï¼ä¸åä¾èµå¤é¨ï¿½?Bocha ï¿½?Anspire APIï¿½?ä»¥è§£ï¿½?API è°ç¨ææ¬é«ãè¯·æ±é¢ç¹çé®é¢ï¿½?åæ¶ä¿æäºåææ°æ®ç»ï¿½?(BochaResponse, WebpageResult ï¿½? çå¼å®¹æ§ï¼
+ä½¿å¾ MediaEngine/agent.py æ éä¿®æ¹å³å¯æ ç¼åæ¢å°æ¬å°æ°æ®åºï¿½?"""
 
 import os
 import json
@@ -19,18 +19,18 @@ from dataclasses import dataclass, field
 from loguru import logger
 from ..utils.config import settings
 
-# 添加utils目录到Python路径
+# æ·»å utilsç®å½å°Pythonè·¯å¾
 
-# 导入共享的数据库工具
+# å¯¼å¥å±äº«çæ°æ®åºå·¥å·
 try:
     from backend.db.connection import fetch_all
 except ImportError:
-    # 兼容直接运行测试
+    # å¼å®¹ç´æ¥è¿è¡æµè¯
     sys.path.append(root_dir)
     from backend.db.connection import fetch_all
 
 def _run_async(coro):
-    """安全的异步执行包装器"""
+    """å®å¨çå¼æ­¥æ§è¡åè£å¨"""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -42,11 +42,11 @@ def _run_async(coro):
     else:
         return asyncio.run(coro)
 
-# --- 1. 数据结构定义 (保持兼容) ---
+# --- 1. æ°æ®ç»æå®ä¹ (ä¿æå¼å®¹) ---
 
 @dataclass
 class WebpageResult:
-    """网页搜索结果"""
+    """ç½é¡µæç´¢ç»æ"""
     name: str
     url: str
     snippet: str
@@ -55,7 +55,7 @@ class WebpageResult:
 
 @dataclass
 class ImageResult:
-    """图片搜索结果"""
+    """å¾çæç´¢ç»æ"""
     name: str
     content_url: str
     host_page_url: Optional[str] = None
@@ -65,13 +65,13 @@ class ImageResult:
 
 @dataclass
 class ModalCardResult:
-    """模态卡结构化数据结�?""
+    """æ¨¡æå¡ç»æåæ°æ®ç»ï¿½?""
     card_type: str
     content: Dict[str, Any]
 
 @dataclass
 class BochaResponse:
-    """封装搜索结果，兼�?Bocha API 结构"""
+    """å°è£æç´¢ç»æï¼å¼ï¿½?Bocha API ç»æ"""
     query: str
     conversation_id: Optional[str] = None
     answer: Optional[str] = None
@@ -82,18 +82,18 @@ class BochaResponse:
 
 @dataclass
 class AnspireResponse:
-    """封装搜索结果，兼�?Anspire API 结构"""
+    """å°è£æç´¢ç»æï¼å¼ï¿½?Anspire API ç»æ"""
     query: str
     conversation_id: Optional[str] = None
     score: Optional[float] = None
     webpages: List[WebpageResult] = field(default_factory=list)
 
 
-# --- 2. 核心客户端与专用工具�?(本地数据库版) ---
+# --- 2. æ ¸å¿å®¢æ·ç«¯ä¸ä¸ç¨å·¥å·ï¿½?(æ¬å°æ°æ®åºç) ---
 
 class LocalDatabaseSearch:
     """
-    本地数据库搜索核心类�?    实现通用�?SQL 查询逻辑，供 BochaMultimodalSearch �?AnspireAISearch 调用�?    """
+    æ¬å°æ°æ®åºæç´¢æ ¸å¿ç±»ï¿½?    å®ç°éç¨ï¿½?SQL æ¥è¯¢é»è¾ï¼ä¾ BochaMultimodalSearch ï¿½?AnspireAISearch è°ç¨ï¿½?    """
     
     @staticmethod
     def _parse_timestamp(ts: Any) -> Optional[str]:
@@ -104,7 +104,7 @@ class LocalDatabaseSearch:
             if isinstance(ts, str) and ts.isdigit():
                 ts = int(ts)
             if isinstance(ts, int):
-                if ts > 1e11:  # 13位毫秒时间戳
+                if ts > 1e11:  # 13ä½æ¯«ç§æ¶é´æ³
                     return datetime.datetime.fromtimestamp(ts / 1000).strftime("%Y-%m-%d %H:%M:%S")
                 return datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
             if isinstance(ts, str):
@@ -115,7 +115,7 @@ class LocalDatabaseSearch:
 
     def _build_keyword_conditions(self, topic: str, columns: List[str]) -> Tuple[str, dict]:
         """
-        (不再使用�?LIKE 模糊匹配，保留此函数以防其他地方调用)
+        (ä¸åä½¿ç¨ï¿½?LIKE æ¨¡ç³å¹éï¼ä¿çæ­¤å½æ°ä»¥é²å¶ä»å°æ¹è°ç¨)
         """
         keywords = [k.strip() for k in topic.replace('+', ' ').split() if k.strip()][:5]
         if not keywords:
@@ -133,7 +133,7 @@ class LocalDatabaseSearch:
 
     def _build_vector_conditions(self, topic: str) -> Tuple[str, dict]:
         """
-        使用本地 Embedding 进行向量相似度匹配�?        返回: SQL 排序/计算片段 �?params (包含 query_vector 字符�?
+        ä½¿ç¨æ¬å° Embedding è¿è¡åéç¸ä¼¼åº¦å¹éï¿½?        è¿å: SQL æåº/è®¡ç®çæ®µ ï¿½?params (åå« query_vector å­ç¬¦ï¿½?
         """
         from utils.embedding import get_embedding
         try:
@@ -149,7 +149,7 @@ class LocalDatabaseSearch:
         try:
             return _run_async(fetch_all(sql, params))
         except Exception as e:
-            logger.debug(f"查询本地库出错或表不存在: {e}")
+            logger.debug(f"æ¥è¯¢æ¬å°åºåºéæè¡¨ä¸å­å¨: {e}")
             return []
 
     def _search_local_db(self, query: str, limit: int = 10, start_ts: int = 0, end_ts: int = 0):
@@ -157,7 +157,7 @@ class LocalDatabaseSearch:
 
     async def _search_local_db_async(self, query: str, limit: int = 10, start_ts: int = 0, end_ts: int = 0) -> List[WebpageResult]:
         """
-        执行跨表联合查询，返回标准化�?WebpageResult 列表
+        æ§è¡è·¨è¡¨èåæ¥è¯¢ï¼è¿åæ ååï¿½?WebpageResult åè¡¨
         """
         time_filter = ""
         time_params = {}
@@ -224,7 +224,7 @@ class LocalDatabaseSearch:
             all_rows = await asyncio.gather(*tasks, return_exceptions=True)
             for i, rows in enumerate(all_rows):
                 if isinstance(rows, Exception):
-                    logger.debug(f"查询本地库出错或表不存在: {rows}")
+                    logger.debug(f"æ¥è¯¢æ¬å°åºåºéæè¡¨ä¸å­å¨: {rows}")
                     continue
                 platform = platform_order[i]
                 for r in rows:
@@ -239,22 +239,22 @@ class LocalDatabaseSearch:
                         try:
                             import json
                             extra_data = json.loads(extra_info_str)
-                            # 提取图片并添加到 images_results �?                            if 'images' in extra_data and isinstance(extra_data['images'], list):
+                            # æåå¾çå¹¶æ·»å å° images_results ï¿½?                            if 'images' in extra_data and isinstance(extra_data['images'], list):
                                 for img_url in extra_data['images']:
                                     if img_url:
                                         images_results.append(ImageResult(
-                                            name=f"[{platform.upper()}] 图片",
+                                            name=f"[{platform.upper()}] å¾ç",
                                             content_url=img_url,
                                             host_page_url=url
                                         ))
-                            # 也尝试提取一些其他格式的媒体
+                            # ä¹å°è¯æåä¸äºå¶ä»æ ¼å¼çåªä½
                             if 'video_url' in extra_data and extra_data['video_url']:
-                                content += f" [视频链接: {extra_data['video_url']}]"
+                                content += f" [è§é¢é¾æ¥: {extra_data['video_url']}]"
                         except Exception:
                             pass
                     
                     results.append(WebpageResult(
-                        name=f"[{platform.upper()}] {title}" if title else f"[{platform.upper()}] 网友讨论",
+                        name=f"[{platform.upper()}] {title}" if title else f"[{platform.upper()}] ç½åè®¨è®º",
                         url=url or f"local://{platform}/{time_val}",
                         snippet=content,
                         date_last_crawled=self._parse_timestamp(time_val)
@@ -263,39 +263,39 @@ class LocalDatabaseSearch:
             from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
             db_utils._engine = None  # Clear global engine to prevent event loop issues
         
-        # 按照时间降序排序，并截取�?limit �?        results.sort(key=lambda x: x.date_last_crawled or "", reverse=True)
+        # æç§æ¶é´éåºæåºï¼å¹¶æªåï¿½?limit ï¿½?        results.sort(key=lambda x: x.date_last_crawled or "", reverse=True)
         return results[:limit], images_results
 
 
 class BochaMultimodalSearch(LocalDatabaseSearch):
     """
-    兼容�?Bocha API 的接口，底层切换为本地数据库查询�?    """
+    å¼å®¹ï¿½?Bocha API çæ¥å£ï¼åºå±åæ¢ä¸ºæ¬å°æ°æ®åºæ¥è¯¢ï¿½?    """
     def __init__(self, api_key: Optional[str] = None):
-        pass # 忽略 API Key，使用本地库
+        pass # å¿½ç¥ API Keyï¼ä½¿ç¨æ¬å°åº
 
     def comprehensive_search(self, query: str, max_results: int = 10) -> BochaResponse:
-        logger.info(f"--- TOOL: 全面综合搜索 (本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: å¨é¢ç»¼åæç´¢ (æ¬å°DB) (query: {query}) ---")
         results, images = self._search_local_db(query, limit=max_results)
-        return BochaResponse(query=query, webpages=results, images=images, answer="（本地数据库检索，不提供总结�?)
+        return BochaResponse(query=query, webpages=results, images=images, answer="ï¼æ¬å°æ°æ®åºæ£ç´¢ï¼ä¸æä¾æ»ç»ï¿½?)
 
     def web_search_only(self, query: str, max_results: int = 15) -> BochaResponse:
-        logger.info(f"--- TOOL: 纯网页搜�?(本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: çº¯ç½é¡µæï¿½?(æ¬å°DB) (query: {query}) ---")
         results, _ = self._search_local_db(query, limit=max_results)
         return BochaResponse(query=query, webpages=results)
 
     def search_for_structured_data(self, query: str) -> BochaResponse:
-        logger.info(f"--- TOOL: 结构化数据查�?(本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: ç»æåæ°æ®æ¥ï¿½?(æ¬å°DB) (query: {query}) ---")
         results, _ = self._search_local_db(query, limit=5)
         return BochaResponse(query=query, webpages=results)
 
     def search_last_24_hours(self, query: str) -> BochaResponse:
-        logger.info(f"--- TOOL: 搜索24小时内信�?(本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: æç´¢24å°æ¶åä¿¡ï¿½?(æ¬å°DB) (query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(days=1)).timestamp() * 1000)
         results, images = self._search_local_db(query, limit=15, start_ts=start_ts)
         return BochaResponse(query=query, webpages=results, images=images)
 
     def search_last_week(self, query: str) -> BochaResponse:
-        logger.info(f"--- TOOL: 搜索本周信息 (本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: æç´¢æ¬å¨ä¿¡æ¯ (æ¬å°DB) (query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(weeks=1)).timestamp() * 1000)
         results, images = self._search_local_db(query, limit=15, start_ts=start_ts)
         return BochaResponse(query=query, webpages=results, images=images)
@@ -303,35 +303,35 @@ class BochaMultimodalSearch(LocalDatabaseSearch):
 
 class AnspireAISearch(LocalDatabaseSearch):
     """
-    兼容�?Anspire API 的接口，底层切换为本地数据库查询�?    """
+    å¼å®¹ï¿½?Anspire API çæ¥å£ï¼åºå±åæ¢ä¸ºæ¬å°æ°æ®åºæ¥è¯¢ï¿½?    """
     def __init__(self, api_key: Optional[str] = None):
         pass
 
     def comprehensive_search(self, query: str, max_results: int = 10) -> AnspireResponse:
-        logger.info(f"--- TOOL: 综合搜索 (本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: ç»¼åæç´¢ (æ¬å°DB) (query: {query}) ---")
         results, _ = self._search_local_db(query, limit=max_results)
         return AnspireResponse(query=query, webpages=results)
 
     def search_last_24_hours(self, query: str, max_results: int = 10) -> AnspireResponse:
-        logger.info(f"--- TOOL: 搜索24小时内信�?(本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: æç´¢24å°æ¶åä¿¡ï¿½?(æ¬å°DB) (query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(days=1)).timestamp() * 1000)
         results, _ = self._search_local_db(query, limit=max_results, start_ts=start_ts)
         return AnspireResponse(query=query, webpages=results)
 
     def search_last_week(self, query: str, max_results: int = 10) -> AnspireResponse:
-        logger.info(f"--- TOOL: 搜索本周信息 (本地DB) (query: {query}) ---")
+        logger.info(f"--- TOOL: æç´¢æ¬å¨ä¿¡æ¯ (æ¬å°DB) (query: {query}) ---")
         start_ts = int((datetime.datetime.now() - datetime.timedelta(weeks=1)).timestamp() * 1000)
         results, _ = self._search_local_db(query, limit=max_results, start_ts=start_ts)
         return AnspireResponse(query=query, webpages=results)
 
-# --- 3. 测试与使用示�?---
+# --- 3. æµè¯ä¸ä½¿ç¨ç¤ºï¿½?---
 def print_response_summary(response):
     if not response or not response.query:
-        logger.error("未能获取有效响应�?)
+        logger.error("æªè½è·åææååºï¿½?)
         return
 
-    logger.info(f"\n查询: '{response.query}'")
-    logger.info(f"找到 {len(response.webpages)} 个结�?)
+    logger.info(f"\næ¥è¯¢: '{response.query}'")
+    logger.info(f"æ¾å° {len(response.webpages)} ä¸ªç»ï¿½?)
 
     if response.webpages:
         for idx, result in enumerate(response.webpages[:5], 1):
@@ -343,5 +343,5 @@ def print_response_summary(response):
 
 if __name__ == "__main__":
     search_client = BochaMultimodalSearch()
-    response1 = search_client.comprehensive_search(query="人工智能对未来教育的影响")
+    response1 = search_client.comprehensive_search(query="äººå·¥æºè½å¯¹æªæ¥æè²çå½±å")
     print_response_summary(response1)

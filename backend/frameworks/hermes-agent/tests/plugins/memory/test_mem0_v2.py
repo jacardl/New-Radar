@@ -1,4 +1,4 @@
-"""Tests for Mem0 API v2 compatibility �?filters param and dict response unwrapping.
+"""Tests for Mem0 API v2 compatibility é¥?filters param and dict response unwrapping.
 
 Salvaged from PRs #5301 (qaqcvc) and #5117 (vvvanguards).
 """
@@ -105,7 +105,7 @@ class TestMem0FiltersV2:
         assert call["infer"] is False
 
     def test_read_filters_no_agent_id(self):
-        """Read filters should use user_id only �?cross-session recall across agents."""
+        """Read filters should use user_id only é¥?cross-session recall across agents."""
         provider = Mem0MemoryProvider()
         provider._user_id = "u123"
         provider._agent_id = "hermes"
@@ -144,7 +144,7 @@ class TestMem0ResponseUnwrapping:
         assert "beta" in result["result"]
 
     def test_profile_list_response_backward_compat(self, monkeypatch):
-        """Old API returned bare lists �?still works."""
+        """Old API returned bare lists é¥?still works."""
         client = FakeClientV2(all_results=[{"memory": "gamma"}])
         provider = self._make_provider(monkeypatch, client)
 
@@ -166,7 +166,7 @@ class TestMem0ResponseUnwrapping:
         assert result["results"][0]["memory"] == "foo"
 
     def test_search_list_response_backward_compat(self, monkeypatch):
-        """Old API returned bare lists �?still works."""
+        """Old API returned bare lists é¥?still works."""
         client = FakeClientV2(search_results=[{"memory": "baz", "score": 0.8}])
         provider = self._make_provider(monkeypatch, client)
 

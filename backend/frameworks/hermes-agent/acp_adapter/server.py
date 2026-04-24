@@ -1,4 +1,4 @@
-"""ACP agent server �?exposes Hermes Agent via the Agent Client Protocol."""
+"""ACP agent server é¥?exposes Hermes Agent via the Agent Client Protocol."""
 
 from __future__ import annotations
 
@@ -371,7 +371,7 @@ class HermesACPAgent(acp.Agent):
         if not user_text:
             return PromptResponse(stop_reason="end_turn")
 
-        # Intercept slash commands �?handle locally without calling the LLM
+        # Intercept slash commands é¥?handle locally without calling the LLM
         if user_text.startswith("/"):
             response_text = self._handle_slash_command(user_text, state)
             if response_text is not None:
@@ -534,7 +534,7 @@ class HermesACPAgent(acp.Agent):
         }.get(cmd)
 
         if handler is None:
-            return None  # not a known command �?let the LLM handle it
+            return None  # not a known command é¥?let the LLM handle it
 
         try:
             return handler(args, state)
@@ -628,7 +628,7 @@ class HermesACPAgent(acp.Agent):
 
     def _cmd_compact(self, args: str, state: SessionState) -> str:
         if not state.history:
-            return "Nothing to compress �?conversation is empty."
+            return "Nothing to compress é¥?conversation is empty."
         try:
             agent = state.agent
             if not getattr(agent, "compression_enabled", True):

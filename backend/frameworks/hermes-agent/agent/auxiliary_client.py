@@ -39,7 +39,7 @@ import logging
 import os
 import threading
 import time
-from pathlib import Path  # noqa: F401 �?used by test mocks
+from pathlib import Path  # noqa: F401 â?used by test mocks
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -126,7 +126,7 @@ _OR_HEADERS = {
 # when the auxiliary client is backed by Nous Portal.
 NOUS_EXTRA_BODY = {"tags": ["product=hermes-agent"]}
 
-# Set at resolve time �?True if the auxiliary client points to Nous Portal
+# Set at resolve time â?True if the auxiliary client points to Nous Portal
 auxiliary_is_nous: bool = False
 
 # Default auxiliary models per provider
@@ -154,12 +154,12 @@ def _to_openai_base_url(base_url: str) -> str:
     the Anthropic Messages API and a separate ``/v1`` endpoint for OpenAI chat
     completions.  The auxiliary client uses the OpenAI SDK, so it must hit the
     ``/v1`` surface.  Passing the raw ``inference_base_url`` causes requests to
-    land on ``/anthropic/chat/completions`` �?a 404.
+    land on ``/anthropic/chat/completions`` â?a 404.
     """
     url = str(base_url or "").strip().rstrip("/")
     if url.endswith("/anthropic"):
         rewritten = url[: -len("/anthropic")] + "/v1"
-        logger.debug("Auxiliary client: rewrote base URL %s �?%s", url, rewritten)
+        logger.debug("Auxiliary client: rewrote base URL %s â?%s", url, rewritten)
         return rewritten
     return url
 
@@ -203,7 +203,7 @@ def _pool_runtime_base_url(entry: Any, fallback: str = "") -> str:
     return str(url or "").strip().rstrip("/")
 
 
-# ── Codex Responses �?chat.completions adapter ─────────────────────────────
+# -- Codex Responses â?chat.completions adapter -----------------------------
 # All auxiliary consumers call client.chat.completions.create(**kwargs) and
 # read response.choices[0].message.content. This adapter translates those
 # calls to the Codex Responses API so callers don't need any changes.
@@ -246,10 +246,10 @@ def _convert_content_for_responses(content: Any) -> Any:
                 entry["detail"] = detail
             converted.append(entry)
         elif ptype in ("input_text", "input_image"):
-            # Already in Responses format �?pass through
+            # Already in Responses format â?pass through
             converted.append(part)
         else:
-            # Unknown content type �?try to preserve as text
+            # Unknown content type â?try to preserve as text
             text = part.get("text", "")
             if text:
                 converted.append({"type": "input_text", "text": text})
@@ -293,7 +293,7 @@ class _CodexCompletionsAdapter:
         }
 
         # Note: the Codex endpoint (chatgpt.com/backend-api/codex) does NOT
-        # support max_output_tokens or temperature �?omit to avoid 400 errors.
+        # support max_output_tokens or temperature â?omit to avoid 400 errors.
 
         # Tools support for flush_memories and similar callers
         tools = kwargs.get("tools")
@@ -319,7 +319,7 @@ class _CodexCompletionsAdapter:
         usage = None
 
         try:
-            # Collect output items and text deltas during streaming �?
+            # Collect output items and text deltas during streaming â?
             # the Codex backend can return empty response.output from
             # get_final_response() even when items were streamed.
             collected_output_items: List[Any] = []
@@ -350,7 +350,7 @@ class _CodexCompletionsAdapter:
                         len(collected_output_items),
                     )
                 elif collected_text_deltas and not has_function_calls:
-                    # Only synthesize text when no tool calls were streamed �?
+                    # Only synthesize text when no tool calls were streamed â?
                     # a function_call response with incidental text should not
                     # be collapsed into a plain-text message.
                     assembled = "".join(collected_text_deltas)
@@ -657,7 +657,7 @@ def _read_codex_access_token() -> Optional[str]:
         if not isinstance(access_token, str) or not access_token.strip():
             return None
 
-        # Check JWT expiry �?expired tokens block the auto chain and
+        # Check JWT expiry â?expired tokens block the auto chain and
         # prevent fallback to working providers (e.g. Anthropic).
         try:
             import base64
@@ -669,7 +669,7 @@ def _read_codex_access_token() -> Optional[str]:
                 logger.debug("Codex access token expired (exp=%s), skipping", exp)
                 return None
         except Exception:
-            pass  # Non-JWT token or decode error �?use as-is
+            pass  # Non-JWT token or decode error â?use as-is
 
         return access_token.strip()
     except Exception as exc:
@@ -750,7 +750,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
     return None, None
 
 
-# ── Provider resolution helpers ─────────────────────────────────────────────
+# -- Provider resolution helpers ---------------------------------------------
 
 
 
@@ -784,13 +784,13 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
         model = "gemini-3-flash"
     else:
         model = _NOUS_MODEL
-    # Free-tier users can't use paid auxiliary models �?use the free
+    # Free-tier users can't use paid auxiliary models â?use the free
     # models instead: mimo-v2-omni for vision, mimo-v2-pro for text tasks.
     try:
         from hermes_cli.models import check_nous_free_tier
         if check_nous_free_tier():
             model = _NOUS_FREE_TIER_VISION_MODEL if vision else _NOUS_FREE_TIER_AUX_MODEL
-            logger.debug("Free-tier Nous account �?using %s for auxiliary/%s",
+            logger.debug("Free-tier Nous account â?using %s for auxiliary/%s",
                          model, "vision" if vision else "text")
     except Exception:
         pass
@@ -881,7 +881,7 @@ def _resolve_custom_runtime() -> Tuple[Optional[str], Optional[str], Optional[st
         return None, None, None
 
     # Local servers (Ollama, llama.cpp, vLLM, LM Studio) don't require auth.
-    # Use a placeholder key �?the OpenAI SDK requires a non-empty string but
+    # Use a placeholder key â?the OpenAI SDK requires a non-empty string but
     # local servers ignore the Authorization header.  Same fix as cli.py
     # _ensure_runtime_credentials() (PR #2556).
     if not isinstance(custom_key, str) or not custom_key.strip():
@@ -956,7 +956,7 @@ def _try_anthropic() -> Tuple[Optional[Any], Optional[str]]:
         return None, None
 
     # Allow base URL override from config.yaml model.base_url, but only
-    # when the configured provider is anthropic �?otherwise a non-Anthropic
+    # when the configured provider is anthropic â?otherwise a non-Anthropic
     # base_url (e.g. Codex endpoint) would leak into Anthropic requests.
     base_url = _pool_runtime_base_url(entry, _ANTHROPIC_DEFAULT_BASE_URL) if pool_present else _ANTHROPIC_DEFAULT_BASE_URL
     try:
@@ -980,7 +980,7 @@ def _try_anthropic() -> Tuple[Optional[Any], Optional[str]]:
         real_client = build_anthropic_client(token, base_url)
     except ImportError:
         # The anthropic_adapter module imports fine but the SDK itself is
-        # missing �?build_anthropic_client raises ImportError at call time
+        # missing â?build_anthropic_client raises ImportError at call time
         # when _anthropic_sdk is None.  Treat as unavailable.
         return None, None
     return AnthropicAuxiliaryClient(real_client, model, token, base_url, is_oauth=is_oauth), model
@@ -1091,7 +1091,7 @@ def _try_payment_fallback(
     # Normalise the failed provider label for matching.
     skip = failed_provider.lower().strip()
     # Also skip Step-1 main-provider path if it maps to the same backend.
-    # (e.g. main_provider="openrouter" �?skip "openrouter" in chain)
+    # (e.g. main_provider="openrouter" â?skip "openrouter" in chain)
     main_provider = _read_main_provider()
     skip_labels = {skip}
     if main_provider and main_provider.lower() in skip:
@@ -1109,7 +1109,7 @@ def _try_payment_fallback(
         client, model = try_fn()
         if client is not None:
             logger.info(
-                "Auxiliary %s: %s on %s �?falling back to %s (%s)",
+                "Auxiliary %s: %s on %s â?falling back to %s (%s)",
                 task or "call", reason, failed_provider, label, model or "default",
             )
             return client, model, label
@@ -1129,11 +1129,11 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
       1. If the user's main provider is NOT an aggregator (OpenRouter / Nous),
          use their main provider + main model directly.  This ensures users on
          Alibaba, DeepSeek, ZAI, etc. get auxiliary tasks handled by the same
-         provider they already have credentials for �?no OpenRouter key needed.
-      2. OpenRouter �?Nous �?custom �?Codex �?API-key providers (original chain).
+         provider they already have credentials for â?no OpenRouter key needed.
+      2. OpenRouter â?Nous â?custom â?Codex â?API-key providers (original chain).
     """
     global auxiliary_is_nous, _stale_base_url_warned
-    auxiliary_is_nous = False  # Reset �?_try_nous() will set True if it wins
+    auxiliary_is_nous = False  # Reset â?_try_nous() will set True if it wins
     runtime = _normalize_main_runtime(main_runtime)
     runtime_provider = runtime.get("provider", "")
     runtime_model = runtime.get("model", "")
@@ -1141,10 +1141,10 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
     runtime_api_key = runtime.get("api_key", "")
     runtime_api_mode = runtime.get("api_mode", "")
 
-    # ── Warn once if OPENAI_BASE_URL is set but config.yaml uses a named
+    # -- Warn once if OPENAI_BASE_URL is set but config.yaml uses a named
     #    provider (not 'custom').  This catches the common "env poisoning"
     #    scenario where a user switches providers via `hermes model` but the
-    #    old OPENAI_BASE_URL lingers in ~/.hermes/.env. ──
+    #    old OPENAI_BASE_URL lingers in ~/.hermes/.env. --
     if not _stale_base_url_warned:
         _env_base = os.getenv("OPENAI_BASE_URL", "").strip()
         _cfg_provider = runtime_provider or _read_main_provider()
@@ -1160,7 +1160,7 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
             )
             _stale_base_url_warned = True
 
-    # ── Step 1: non-aggregator main provider �?use main model directly ──
+    # -- Step 1: non-aggregator main provider â?use main model directly --
     main_provider = runtime_provider or _read_main_provider()
     main_model = runtime_model or _read_main_model()
     if (main_provider and main_model
@@ -1185,13 +1185,13 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
                         main_provider, resolved or main_model)
             return client, resolved or main_model
 
-    # ── Step 2: aggregator / fallback chain ──────────────────────────────
+    # -- Step 2: aggregator / fallback chain ------------------------------
     tried = []
     for label, try_fn in _get_provider_chain():
         client, model = try_fn()
         if client is not None:
             if tried:
-                logger.info("Auxiliary auto-detect: using %s (%s) �?skipped: %s",
+                logger.info("Auxiliary auto-detect: using %s (%s) â?skipped: %s",
                             label, model or "default", ", ".join(tried))
             else:
                 logger.info("Auxiliary auto-detect: using %s (%s)", label, model or "default")
@@ -1204,7 +1204,7 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
     return None, None
 
 
-# ── Centralized Provider Router ─────────────────────────────────────────────
+# -- Centralized Provider Router ---------------------------------------------
 #
 # resolve_provider_client() is the single entry point for creating a properly
 # configured client given a (provider, model) pair.  It handles auth lookup,
@@ -1212,7 +1212,7 @@ def _resolve_auto(main_runtime: Optional[Dict[str, Any]] = None) -> Tuple[Option
 # (Chat Completions vs Responses API for Codex).
 #
 # All auxiliary consumer code should go through this or the public helpers
-# below �?never look up auth env vars ad-hoc.
+# below â?never look up auth env vars ad-hoc.
 
 
 def _to_async_client(sync_client, model: str):
@@ -1271,7 +1271,7 @@ def resolve_provider_client(
     """Central router: given a provider name and optional model, return a
     configured client with the correct auth, base URL, and API format.
 
-    The returned client always exposes ``.chat.completions.create()`` �?for
+    The returned client always exposes ``.chat.completions.create()`` â?for
     Codex/Responses API providers, an adapter handles the translation
     transparently.
 
@@ -1335,7 +1335,7 @@ def resolve_provider_client(
             return CodexAuxiliaryClient(client_obj, final_model_str)
         return client_obj
 
-    # ── Auto: try all providers in priority order ────────────────────
+    # -- Auto: try all providers in priority order --------------------
     if provider == "auto":
         client, resolved = _resolve_auto(main_runtime=main_runtime)
         if client is None:
@@ -1353,7 +1353,7 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model) if async_mode
                 else (client, final_model))
 
-    # ── OpenRouter ───────────────────────────────────────────────────
+    # -- OpenRouter ---------------------------------------------------
     if provider == "openrouter":
         client, default = _try_openrouter()
         if client is None:
@@ -1364,7 +1364,7 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model) if async_mode
                 else (client, final_model))
 
-    # ── Nous Portal (OAuth) ──────────────────────────────────────────
+    # -- Nous Portal (OAuth) ------------------------------------------
     if provider == "nous":
         client, default = _try_nous()
         if client is None:
@@ -1375,7 +1375,7 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model) if async_mode
                 else (client, final_model))
 
-    # ── OpenAI Codex (OAuth �?Responses API) ─────────────────────────
+    # -- OpenAI Codex (OAuth â?Responses API) -------------------------
     if provider == "openai-codex":
         if raw_codex:
             # Return the raw OpenAI client for callers that need direct
@@ -1398,7 +1398,7 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model) if async_mode
                 else (client, final_model))
 
-    # ── Custom endpoint (OPENAI_BASE_URL + OPENAI_API_KEY) ───────────
+    # -- Custom endpoint (OPENAI_BASE_URL + OPENAI_API_KEY) -----------
     if provider == "custom":
         if explicit_base_url:
             custom_base = explicit_base_url.strip()
@@ -1441,7 +1441,7 @@ def resolve_provider_client(
                        "but no endpoint credentials found")
         return None, None
 
-    # ── Named custom providers (config.yaml custom_providers list) ───
+    # -- Named custom providers (config.yaml custom_providers list) ---
     try:
         from hermes_cli.runtime_provider import _get_named_custom_provider
         custom_entry = _get_named_custom_provider(provider)
@@ -1471,7 +1471,7 @@ def resolve_provider_client(
     except ImportError:
         pass
 
-    # ── API-key providers from PROVIDER_REGISTRY ─────────────────────
+    # -- API-key providers from PROVIDER_REGISTRY ---------------------
     try:
         from hermes_cli.auth import (
             PROVIDER_REGISTRY,
@@ -1527,7 +1527,7 @@ def resolve_provider_client(
                         **({"default_headers": headers} if headers else {}))
 
         # Copilot GPT-5+ models (except gpt-5-mini) require the Responses
-        # API �?they are not accessible via /chat/completions.  Wrap the
+        # API â?they are not accessible via /chat/completions.  Wrap the
         # plain client in CodexAuxiliaryClient so call_llm() transparently
         # routes through responses.stream().
         if provider == "copilot" and final_model and not raw_codex:
@@ -1536,7 +1536,7 @@ def resolve_provider_client(
                 if _should_use_copilot_responses_api(final_model):
                     logger.debug(
                         "resolve_provider_client: copilot model %s needs "
-                        "Responses API �?wrapping with CodexAuxiliaryClient",
+                        "Responses API â?wrapping with CodexAuxiliaryClient",
                         final_model)
                     client = CodexAuxiliaryClient(client, final_model)
             except ImportError:
@@ -1587,7 +1587,7 @@ def resolve_provider_client(
         return None, None
 
     elif pconfig.auth_type in ("oauth_device_code", "oauth_external"):
-        # OAuth providers �?route through their specific try functions
+        # OAuth providers â?route through their specific try functions
         if provider == "nous":
             return resolve_provider_client("nous", model, async_mode)
         if provider == "openai-codex":
@@ -1602,7 +1602,7 @@ def resolve_provider_client(
     return None, None
 
 
-# ── Public API ──────────────────────────────────────────────────────────────
+# -- Public API --------------------------------------------------------------
 
 def get_text_auxiliary_client(
     task: str = "",
@@ -1680,12 +1680,12 @@ def _strict_vision_backend_available(provider: str) -> bool:
 def get_available_vision_backends() -> List[str]:
     """Return the currently available vision backends in auto-selection order.
 
-    Order: active provider �?OpenRouter �?Nous �?stop.  This is the single
+    Order: active provider â?OpenRouter â?Nous â?stop.  This is the single
     source of truth for setup, tool gating, and runtime auto-routing of
     vision tasks.
     """
     available: List[str] = []
-    # 1. Active provider �?if the user configured a provider, try it first.
+    # 1. Active provider â?if the user configured a provider, try it first.
     main_provider = _read_main_provider()
     if main_provider and main_provider not in ("auto", ""):
         if main_provider in _VISION_AUTO_PROVIDER_ORDER:
@@ -1695,7 +1695,7 @@ def get_available_vision_backends() -> List[str]:
             client, _ = resolve_provider_client(main_provider, _read_main_model())
             if client is not None:
                 available.append(main_provider)
-    # 2. OpenRouter, 3. Nous �?skip if already covered by main provider.
+    # 2. OpenRouter, 3. Nous â?skip if already covered by main provider.
     for p in _VISION_AUTO_PROVIDER_ORDER:
         if p not in available and _strict_vision_backend_available(p):
             available.append(p)
@@ -1754,7 +1754,7 @@ def resolve_vision_provider_client(
         main_model = _read_main_model()
         if main_provider and main_provider not in ("auto", ""):
             if main_provider in _VISION_AUTO_PROVIDER_ORDER:
-                # Known strict backend �?use its defaults.
+                # Known strict backend â?use its defaults.
                 sync_client, default_model = _resolve_strict_vision_backend(main_provider)
                 if sync_client is not None:
                     return _finalize(main_provider, sync_client, default_model)
@@ -1822,7 +1822,7 @@ def auxiliary_max_tokens_param(value: int) -> dict:
     return {"max_tokens": value}
 
 
-# ── Centralized LLM Call API ────────────────────────────────────────────────
+# -- Centralized LLM Call API ------------------------------------------------
 #
 # call_llm() and async_call_llm() own the full request lifecycle:
 #   1. Resolve provider + model from task config (or explicit args)
@@ -1877,10 +1877,10 @@ def _force_close_async_httpx(client: Any) -> None:
 
     This prevents ``AsyncHttpxClientWrapper.__del__`` from scheduling
     ``aclose()`` on a (potentially closed) event loop, which causes
-    ``RuntimeError: Event loop is closed`` �?prompt_toolkit's
+    ``RuntimeError: Event loop is closed`` â?prompt_toolkit's
     "Press ENTER to continue..." handler.
 
-    We intentionally do NOT run the full async close path �?the
+    We intentionally do NOT run the full async close path â?the
     connections will be dropped by the OS when the process exits.
     """
     try:
@@ -1909,7 +1909,7 @@ def shutdown_cached_clients() -> None:
             # from scheduling aclose() on a dead event loop).
             _force_close_async_httpx(client)
             # Sync clients: close the httpx connection pool cleanly.
-            # Async clients: skip �?we already neutered __del__ above.
+            # Async clients: skip â?we already neutered __del__ above.
             try:
                 close_fn = getattr(client, "close", None)
                 if close_fn and not inspect.iscoroutinefunction(close_fn):
@@ -1924,7 +1924,7 @@ def cleanup_stale_async_clients() -> None:
 
     Call this after each agent turn to proactively clean up stale clients
     before GC can trigger ``AsyncHttpxClientWrapper.__del__`` on them.
-    This is defense-in-depth �?the primary fix is ``neuter_async_httpx_del``
+    This is defense-in-depth â?the primary fix is ``neuter_async_httpx_del``
     which disables ``__del__`` entirely.
     """
     with _client_cache_lock:
@@ -1976,7 +1976,7 @@ def _get_cached_client(
     """
     # Include loop identity for async clients to prevent cross-loop reuse.
     # httpx.AsyncClient (inside AsyncOpenAI) is bound to the loop where it
-    # was created �?reusing it on a different loop causes deadlocks (#2681).
+    # was created â?reusing it on a different loop causes deadlocks (#2681).
     loop_id = 0
     current_loop = None
     if async_mode:
@@ -2242,7 +2242,7 @@ def _validate_llm_response(response: Any, task: str = None) -> Any:
             f"Auxiliary {task or 'call'}: LLM returned None response"
         )
     # Allow SimpleNamespace responses from adapters (CodexAuxiliaryClient,
-    # AnthropicAuxiliaryClient) �?they have .choices[0].message.
+    # AnthropicAuxiliaryClient) â?they have .choices[0].message.
     try:
         choices = response.choices
         if not choices or not hasattr(choices[0], "message"):
@@ -2253,7 +2253,7 @@ def _validate_llm_response(response: Any, task: str = None) -> Any:
         raise RuntimeError(
             f"Auxiliary {task or 'call'}: LLM returned invalid response "
             f"(type={response_type}): {response_preview!r}. "
-            f"Expected object with .choices[0].message �?check provider "
+            f"Expected object with .choices[0].message â?check provider "
             f"adapter or custom endpoint compatibility."
         ) from exc
     return response
@@ -2347,7 +2347,7 @@ def call_llm(
                 )
             # For auto/custom with no credentials, try the full auto chain
             # rather than hardcoding OpenRouter (which may be depleted).
-            # Pass model=None so each provider uses its own default �?
+            # Pass model=None so each provider uses its own default â?
             # resolved_model may be an OpenRouter-format slug that doesn't
             # work on other providers.
             if not resolved_base_url:
@@ -2361,7 +2361,7 @@ def call_llm(
 
     effective_timeout = timeout if timeout is not None else _get_task_timeout(task)
 
-    # Log what we're about to do �?makes auxiliary operations visible
+    # Log what we're about to do â?makes auxiliary operations visible
     _base_info = str(getattr(client, "base_url", resolved_base_url) or "")
     if task:
         logger.info("Auxiliary %s: using %s (%s)%s",
@@ -2398,13 +2398,13 @@ def call_llm(
                     raise
                 first_err = retry_err
 
-        # ── Payment / credit exhaustion fallback ──────────────────────
+        # -- Payment / credit exhaustion fallback ----------------------
         # When the resolved provider returns 402 or a credit-related error,
         # try alternative providers instead of giving up.  This handles the
         # common case where a user runs out of OpenRouter credits but has
         # Codex OAuth or another provider available.
         #
-        # ── Connection error fallback ────────────────────────────────
+        # -- Connection error fallback --------------------------------
         # When a provider endpoint is unreachable (DNS failure, connection
         # refused, timeout), try alternative providers.  This handles stale
         # Codex/OAuth tokens that authenticate but whose endpoint is down,
@@ -2439,11 +2439,11 @@ def extract_content_or_reasoning(response) -> str:
     Qwen-QwQ, etc.) returns ``content=None`` with reasoning in structured fields.
 
     Resolution order:
-      1. ``message.content`` �?strip inline think/reasoning blocks, check for
+      1. ``message.content`` â?strip inline think/reasoning blocks, check for
          remaining non-whitespace text.
-      2. ``message.reasoning`` / ``message.reasoning_content`` �?direct
+      2. ``message.reasoning`` / ``message.reasoning_content`` â?direct
          structured reasoning fields (DeepSeek, Moonshot, Novita, etc.).
-      3. ``message.reasoning_details`` �?OpenRouter unified array format.
+      3. ``message.reasoning_details`` â?OpenRouter unified array format.
 
     Returns the best available text, or ``""`` if nothing found.
     """
@@ -2463,7 +2463,7 @@ def extract_content_or_reasoning(response) -> str:
         if cleaned:
             return cleaned
 
-    # Content is empty or reasoning-only �?try structured reasoning fields
+    # Content is empty or reasoning-only â?try structured reasoning fields
     reasoning_parts: list[str] = []
     for field in ("reasoning", "reasoning_content"):
         val = getattr(msg, field, None)
@@ -2590,7 +2590,7 @@ async def async_call_llm(
                     raise
                 first_err = retry_err
 
-        # ── Payment / connection fallback (mirrors sync call_llm) ─────
+        # -- Payment / connection fallback (mirrors sync call_llm) -----
         should_fallback = _is_payment_error(first_err) or _is_connection_error(first_err)
         is_auto = resolved_provider in ("auto", "", None)
         if should_fallback and is_auto:

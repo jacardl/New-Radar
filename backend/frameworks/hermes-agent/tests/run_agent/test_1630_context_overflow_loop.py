@@ -1,4 +1,4 @@
-"""Tests for #1630 �?gateway infinite 400 failure loop prevention.
+"""Tests for #1630 é¥?gateway infinite 400 failure loop prevention.
 
 Verifies that:
 1. Generic 400 errors with large sessions are treated as context-length errors
@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 
 
 # ---------------------------------------------------------------------------
-# Test 1: Agent heuristic �?generic 400 with large session �?compression
+# Test 1: Agent heuristic é¥?generic 400 with large session é«?compression
 # ---------------------------------------------------------------------------
 
 
@@ -65,7 +65,7 @@ class TestGeneric400Heuristic:
         ctx_len = 200000
         is_large_session = approx_tokens > ctx_len * 0.4 or len(api_messages) > 80
         is_generic_error = len(error_msg.strip()) < 30
-        assert not is_large_session  # Small session �?heuristic doesn't fire
+        assert not is_large_session  # Small session é«?heuristic doesn't fire
 
     def test_generic_400_with_large_token_count_triggers_heuristic(self):
         """A generic 400 with high token count should be treated as
@@ -86,7 +86,7 @@ class TestGeneric400Heuristic:
         is_generic_error = len(error_msg.strip()) < 30
         assert is_large_session
         assert is_generic_error
-        # Both conditions true �?should be treated as context overflow
+        # Both conditions true é«?should be treated as context overflow
 
     def test_generic_400_with_many_messages_triggers_heuristic(self):
         """A generic 400 with >80 messages should trigger the heuristic
@@ -111,7 +111,7 @@ class TestGeneric400Heuristic:
         approx_tokens = 100000
 
         is_generic_error = len(error_msg.strip()) < 30
-        assert not is_generic_error  # Long specific message �?heuristic doesn't fire
+        assert not is_generic_error  # Long specific message é«?heuristic doesn't fire
 
     def test_descriptive_context_error_caught_by_phrases(self):
         """Descriptive context-length errors should still be caught by

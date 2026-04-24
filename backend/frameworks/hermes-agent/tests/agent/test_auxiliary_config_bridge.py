@@ -1,4 +1,4 @@
-"""Tests for auxiliary model config bridging �?verifies that config.yaml values
+"""Tests for auxiliary model config bridging â?verifies that config.yaml values
 are properly mapped to environment variables by both CLI and gateway loaders.
 
 Also tests the vision_tools and browser_tool model override env vars.
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def _run_auxiliary_bridge(config_dict, monkeypatch):
-    """Simulate the auxiliary config �?env var bridging logic shared by CLI and gateway.
+    """Simulate the auxiliary config â?env var bridging logic shared by CLI and gateway.
 
     This mirrors the code in cli.py load_cli_config() and gateway/run.py.
     Both use the same pattern; we test it once here.
@@ -31,7 +31,7 @@ def _run_auxiliary_bridge(config_dict, monkeypatch):
     ):
         monkeypatch.delenv(key, raising=False)
 
-    # Compression config is read directly from config.yaml �?no env var bridging.
+    # Compression config is read directly from config.yaml â?no env var bridging.
 
     # Auxiliary bridge
     auxiliary_cfg = config_dict.get("auxiliary", {})
@@ -68,11 +68,11 @@ def _run_auxiliary_bridge(config_dict, monkeypatch):
                 os.environ[env_map["api_key"]] = api_key
 
 
-# ── Config bridging tests ────────────────────────────────────────────────────
+# -- Config bridging tests ----------------------------------------------------
 
 
 class TestAuxiliaryConfigBridge:
-    """Verify the config.yaml �?env var bridging logic used by CLI and gateway."""
+    """Verify the config.yaml â?env var bridging logic used by CLI and gateway."""
 
     def test_vision_provider_bridged(self, monkeypatch):
         config = {
@@ -191,7 +191,7 @@ class TestAuxiliaryConfigBridge:
         assert os.environ.get("AUXILIARY_WEB_EXTRACT_PROVIDER") is None
 
 
-# ── Gateway bridge parity test ───────────────────────────────────────────────
+# -- Gateway bridge parity test -----------------------------------------------
 
 
 class TestGatewayBridgeCodeParity:
@@ -219,7 +219,7 @@ class TestGatewayBridgeCodeParity:
         assert "CONTEXT_COMPRESSION_MODEL" not in content
 
 
-# ── Vision model override tests ──────────────────────────────────────────────
+# -- Vision model override tests ----------------------------------------------
 
 
 class TestVisionModelOverride:
@@ -247,7 +247,7 @@ class TestVisionModelOverride:
             assert call_args[0][2] is None
 
 
-# ── DEFAULT_CONFIG shape tests ───────────────────────────────────────────────
+# -- DEFAULT_CONFIG shape tests -----------------------------------------------
 
 
 class TestDefaultConfigShape:
@@ -274,7 +274,7 @@ class TestDefaultConfigShape:
         assert web["model"] == ""
 
 
-# ── CLI defaults parity ─────────────────────────────────────────────────────
+# -- CLI defaults parity -----------------------------------------------------
 
 
 class TestCLIDefaultsHaveAuxiliaryKeys:

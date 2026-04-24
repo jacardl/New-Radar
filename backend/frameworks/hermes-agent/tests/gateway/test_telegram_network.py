@@ -1,4 +1,4 @@
-"""Tests for gateway.platforms.telegram_network �?fallback transport layer.
+"""Tests for gateway.platforms.telegram_network é¥?fallback transport layer.
 
 Background
 ----------
@@ -26,7 +26,7 @@ from gateway.platforms import telegram_network as tnet
 # ---------------------------------------------------------------------------
 
 class FakeTransport(httpx.AsyncBaseTransport):
-    """Records calls and raises / returns based on a host→action mapping."""
+    """Records calls and raises / returns based on a hosté«æction mapping."""
 
     def __init__(self, calls, behavior):
         self.calls = calls
@@ -72,9 +72,9 @@ def _telegram_request(path="/botTOKEN/getMe"):
     return httpx.Request("GET", f"https://api.telegram.org{path}")
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # IP parsing & validation
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 class TestParseFallbackIpEnv:
     def test_filters_invalid_and_ipv6(self, caplog):
@@ -116,9 +116,9 @@ class TestNormalizeFallbackIps:
         assert tnet._normalize_fallback_ips(["", "  ", "149.154.167.220"]) == ["149.154.167.220"]
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # Request rewriting
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 class TestRewriteRequestForIp:
     def test_preserves_host_and_sni(self):
@@ -138,12 +138,12 @@ class TestRewriteRequestForIp:
         assert rewritten.url.path == "/botTOKEN/sendMessage"
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
-# Fallback transport �?core behavior
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+# Fallback transport é¥?core behavior
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 class TestFallbackTransport:
-    """Primary path fails �?try fallback IPs �?stick to whichever works."""
+    """Primary path fails é«?try fallback IPs é«?stick to whichever works."""
 
     @pytest.mark.asyncio
     async def test_falls_back_on_connect_timeout_and_becomes_sticky(self, monkeypatch):
@@ -182,7 +182,7 @@ class TestFallbackTransport:
 
     @pytest.mark.asyncio
     async def test_does_not_fallback_on_non_connect_error(self, monkeypatch):
-        """Errors like ReadTimeout are not connection issues �?don't retry."""
+        """Errors like ReadTimeout are not connection issues é¥?don't retry."""
         calls = []
         behavior = {"api.telegram.org": httpx.ReadTimeout("read timeout"), "149.154.167.220": "ok"}
         monkeypatch.setattr(tnet.httpx, "AsyncHTTPTransport", _fake_transport_factory(calls, behavior))
@@ -242,7 +242,7 @@ class TestFallbackTransport:
 
         transport = tnet.TelegramFallbackTransport(["149.154.167.220", "149.154.167.221"])
 
-        # First request: primary fails �?.220 works �?becomes sticky
+        # First request: primary fails é«?.220 works é«?becomes sticky
         await transport.handle_async_request(_telegram_request())
         assert transport._sticky_ip == "149.154.167.220"
 
@@ -348,9 +348,9 @@ class TestFallbackTransportClose:
         assert all(t.closed for t in factory.instances)
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
-# Config layer �?TELEGRAM_FALLBACK_IPS env �?config.extra
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+# Config layer é¥?TELEGRAM_FALLBACK_IPS env é«?config.extra
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 class TestConfigFallbackIps:
     def test_env_var_populates_config_extra(self, monkeypatch):
@@ -395,9 +395,9 @@ class TestConfigFallbackIps:
         assert "fallback_ips" not in config.platforms[Platform.TELEGRAM].extra
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
-# Adapter layer �?_fallback_ips() reads config correctly
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
+# Adapter layer é¥?_fallback_ips() reads config correctly
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 class TestAdapterFallbackIps:
     def _make_adapter(self, extra=None):
@@ -446,9 +446,9 @@ class TestAdapterFallbackIps:
         assert adapter._fallback_ips() == ["149.154.167.220"]
 
 
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 # DoH auto-discovery
-# ══════════════════════════════════════════════════════════════════════════�?
+# éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éºæ¨æ²éº?
 
 def _doh_answer(*ips: str) -> dict:
     """Build a minimal DoH JSON response with A records."""
@@ -459,7 +459,7 @@ class FakeDoHClient:
     """Mock httpx.AsyncClient for DoH queries."""
 
     def __init__(self, responses: dict):
-        # responses: URL prefix �?(status, json_body) | Exception
+        # responses: URL prefix é«?(status, json_body) | Exception
         self._responses = responses
         self.requests_made: list[dict] = []
 
@@ -487,7 +487,7 @@ class FakeDoHClient:
 
 
 class TestDiscoverFallbackIps:
-    """Tests for discover_fallback_ips() �?DoH-based auto-discovery."""
+    """Tests for discover_fallback_ips() é¥?DoH-based auto-discovery."""
 
     def _patch_doh(self, monkeypatch, responses, system_dns_ips=None):
         """Wire up fake DoH client and system DNS."""
@@ -516,7 +516,7 @@ class TestDiscoverFallbackIps:
 
     @pytest.mark.asyncio
     async def test_system_dns_ip_excluded(self, monkeypatch):
-        """The IP from system DNS is the one that doesn't work �?exclude it."""
+        """The IP from system DNS is the one that doesn't work é¥?exclude it."""
         self._patch_doh(monkeypatch, {
             "https://dns.google": (200, _doh_answer("149.154.166.110", "149.154.167.220")),
             "https://cloudflare-dns.com": (200, _doh_answer("149.154.166.110")),
@@ -577,7 +577,7 @@ class TestDiscoverFallbackIps:
 
     @pytest.mark.asyncio
     async def test_system_dns_failure_keeps_all_doh_ips(self, monkeypatch):
-        """If system DNS fails, nothing gets excluded �?all DoH IPs kept."""
+        """If system DNS fails, nothing gets excluded é¥?all DoH IPs kept."""
         self._patch_doh(monkeypatch, {
             "https://dns.google": (200, _doh_answer("149.154.166.110", "149.154.167.220")),
             "https://cloudflare-dns.com": (200, _doh_answer()),
@@ -589,7 +589,7 @@ class TestDiscoverFallbackIps:
 
     @pytest.mark.asyncio
     async def test_all_doh_ips_same_as_system_dns_uses_seed(self, monkeypatch):
-        """DoH returns only the same blocked IP �?seed list is the fallback."""
+        """DoH returns only the same blocked IP é¥?seed list is the fallback."""
         self._patch_doh(monkeypatch, {
             "https://dns.google": (200, _doh_answer("149.154.166.110")),
             "https://cloudflare-dns.com": (200, _doh_answer("149.154.166.110")),
@@ -618,7 +618,7 @@ class TestDiscoverFallbackIps:
             "Answer": [
                 {"type": 5, "data": "telegram.org"},  # CNAME
                 {"type": 28, "data": "2001:67c:4e8:f004::9"},  # AAAA
-                {"type": 1, "data": "149.154.167.220"},  # A �?
+                {"type": 1, "data": "149.154.167.220"},  # A é?
             ]
         }
         self._patch_doh(monkeypatch, {

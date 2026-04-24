@@ -2,7 +2,7 @@
 the allow_private_urls setting.
 
 Local backends (Camofox, headless Chromium without a cloud provider) skip
-SSRF checks entirely �?the agent already has full local-network access via
+SSRF checks entirely é¥?the agent already has full local-network access via
 the terminal tool.
 
 Cloud backends (Browserbase, BrowserUse) enforce SSRF by default.  Users
@@ -87,7 +87,7 @@ class TestPreNavigationSsrf:
     # -- Local mode: SSRF skipped ----------------------------------------------
 
     def test_local_allows_private_url(self, monkeypatch, _common_patches):
-        """Local backends skip SSRF �?private URLs are always allowed."""
+        """Local backends skip SSRF é¥?private URLs are always allowed."""
         monkeypatch.setattr(browser_tool, "_is_local_backend", lambda: True)
         monkeypatch.setattr(browser_tool, "_allow_private_urls", lambda: False)
         monkeypatch.setattr(browser_tool, "_is_safe_url", lambda url: False)
@@ -121,14 +121,14 @@ class TestIsLocalBackend:
         assert browser_tool._is_local_backend() is True
 
     def test_no_cloud_provider_is_local(self, monkeypatch):
-        """No cloud provider configured �?local backend."""
+        """No cloud provider configured é«?local backend."""
         monkeypatch.setattr(browser_tool, "_is_camofox_mode", lambda: False)
         monkeypatch.setattr(browser_tool, "_get_cloud_provider", lambda: None)
 
         assert browser_tool._is_local_backend() is True
 
     def test_cloud_provider_is_not_local(self, monkeypatch):
-        """Cloud provider configured and not Camofox �?NOT local."""
+        """Cloud provider configured and not Camofox é«?NOT local."""
         monkeypatch.setattr(browser_tool, "_is_camofox_mode", lambda: False)
         monkeypatch.setattr(browser_tool, "_get_cloud_provider", lambda: "bb")
 

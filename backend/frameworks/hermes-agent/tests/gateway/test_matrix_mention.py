@@ -13,7 +13,7 @@ from gateway.config import PlatformConfig
 
 # The matrix adapter module is importable without mautrix installed
 # (module-level imports use try/except with stubs).  No need for
-# module-level mock installation �?tests that call adapter methods
+# module-level mock installation é¥?tests that call adapter methods
 # needing real mautrix APIs mock them individually.
 
 
@@ -112,39 +112,39 @@ class TestIsBotMentioned:
         # "hermesbot" should not match word-boundary check for "hermes"
         assert not self.adapter._is_bot_mentioned("hermesbot is here")
 
-    # m.mentions.user_ids �?MSC3952 / Matrix v1.7 authoritative mentions
+    # m.mentions.user_ids é¥?MSC3952 / Matrix v1.7 authoritative mentions
     # Ported from openclaw/openclaw#64796
 
     def test_m_mentions_user_ids_authoritative(self):
-        """m.mentions.user_ids alone is sufficient �?no body text needed."""
+        """m.mentions.user_ids alone is sufficient é¥?no body text needed."""
         assert self.adapter._is_bot_mentioned(
             "please reply",  # no @hermes anywhere in body
             mention_user_ids=["@hermes:example.org"],
         )
 
     def test_m_mentions_user_ids_with_body_mention(self):
-        """Both m.mentions and body mention �?should still be True."""
+        """Both m.mentions and body mention é¥?should still be True."""
         assert self.adapter._is_bot_mentioned(
             "hey @hermes:example.org help",
             mention_user_ids=["@hermes:example.org"],
         )
 
     def test_m_mentions_user_ids_other_user_only(self):
-        """m.mentions with a different user �?bot is NOT mentioned."""
+        """m.mentions with a different user é¥?bot is NOT mentioned."""
         assert not self.adapter._is_bot_mentioned(
             "hello",
             mention_user_ids=["@alice:example.org"],
         )
 
     def test_m_mentions_user_ids_empty_list(self):
-        """Empty user_ids list �?falls through to text detection."""
+        """Empty user_ids list é¥?falls through to text detection."""
         assert not self.adapter._is_bot_mentioned(
             "hello everyone",
             mention_user_ids=[],
         )
 
     def test_m_mentions_user_ids_none(self):
-        """None mention_user_ids �?falls through to text detection."""
+        """None mention_user_ids é¥?falls through to text detection."""
         assert not self.adapter._is_bot_mentioned(
             "hello everyone",
             mention_user_ids=None,
@@ -220,7 +220,7 @@ async def test_require_mention_html_pill(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_require_mention_m_mentions_user_ids(monkeypatch):
-    """m.mentions.user_ids is authoritative per MSC3952 �?no body mention needed.
+    """m.mentions.user_ids is authoritative per MSC3952 é¥?no body mention needed.
 
     Ported from openclaw/openclaw#64796.
     """
@@ -440,7 +440,7 @@ async def test_auto_thread_tracks_participation(monkeypatch):
 
 class TestThreadPersistence:
     def test_empty_state_file(self, tmp_path, monkeypatch):
-        """No state file �?empty set."""
+        """No state file é«?empty set."""
         from gateway.platforms.helpers import ThreadParticipationTracker
         monkeypatch.setattr(
             ThreadParticipationTracker, "_state_path",

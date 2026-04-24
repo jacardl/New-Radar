@@ -226,7 +226,7 @@ async def _expand_reference(
             content = await _fetch_url_content(ref.target, url_fetcher=url_fetcher)
             if not content:
                 return f"{ref.raw}: no content extracted", None
-            return None, f"🌐 {ref.raw} ({estimate_tokens_rough(content)} tokens)\n{content}"
+            return None, f"ð {ref.raw} ({estimate_tokens_rough(content)} tokens)\n{content}"
     except Exception as exc:
         return f"{ref.raw}: {exc}", None
 
@@ -257,7 +257,7 @@ def _expand_file_reference(
 
     lang = _code_fence_language(path)
     label = ref.raw
-    return None, f"📄 {label} ({estimate_tokens_rough(text)} tokens)\n```{lang}\n{text}\n```"
+    return None, f"ð {label} ({estimate_tokens_rough(text)} tokens)\n```{lang}\n{text}\n```"
 
 
 def _expand_folder_reference(
@@ -274,7 +274,7 @@ def _expand_folder_reference(
         return f"{ref.raw}: path is not a folder", None
 
     listing = _build_folder_listing(path, cwd)
-    return None, f"📁 {ref.raw} ({estimate_tokens_rough(listing)} tokens)\n{listing}"
+    return None, f"ð {ref.raw} ({estimate_tokens_rough(listing)} tokens)\n{listing}"
 
 
 def _expand_git_reference(
@@ -299,7 +299,7 @@ def _expand_git_reference(
     content = result.stdout.strip()
     if not content:
         content = "(no output)"
-    return None, f"🧾 {label} ({estimate_tokens_rough(content)} tokens)\n```diff\n{content}\n```"
+    return None, f"ð§¾ {label} ({estimate_tokens_rough(content)} tokens)\n```diff\n{content}\n```"
 
 
 async def _fetch_url_content(

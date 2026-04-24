@@ -1,6 +1,6 @@
 """Tests for DM thread session isolation.
 
-DM thread sessions must start empty �?no parent transcript seeding.
+DM thread sessions must start empty é¥?no parent transcript seeding.
 Thread context is handled by platform adapters (e.g. Slack's
 _fetch_thread_context fetches actual thread replies via the API).
 Session-level seeding was removed because it copied the ENTIRE parent
@@ -54,12 +54,12 @@ def _group_source(platform=Platform.SLACK, chat_id="C456", thread_id=None, user_
 
 PARENT_HISTORY = [
     {"role": "user", "content": "What's the weather?"},
-    {"role": "assistant", "content": "It's sunny and 72°F."},
+    {"role": "assistant", "content": "It's sunny and 72æ³F."},
 ]
 
 
 class TestDMThreadIsolation:
-    """Thread sessions must start empty �?no parent transcript seeding."""
+    """Thread sessions must start empty é¥?no parent transcript seeding."""
 
     def test_thread_session_starts_empty(self, store):
         """New DM thread session should NOT inherit parent's transcript."""
@@ -142,7 +142,7 @@ class TestDMThreadIsolation:
 
 
 class TestDMThreadIsolationEdgeCases:
-    """Edge cases �?threads always start empty regardless of context."""
+    """Edge cases é¥?threads always start empty regardless of context."""
 
     def test_group_thread_starts_empty(self, store):
         """Group/channel threads should also start empty."""

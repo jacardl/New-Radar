@@ -1,7 +1,7 @@
 """
 Tests for Telegram polling network error recovery.
 
-Specifically tests the fix for #3173 �?when start_polling() fails after a
+Specifically tests the fix for #3173 é¥?when start_polling() fails after a
 network error, the adapter must self-reschedule the next reconnect attempt
 rather than silently leaving polling dead.
 """
@@ -52,7 +52,7 @@ def _make_adapter() -> TelegramAdapter:
 async def test_reconnect_self_schedules_on_start_polling_failure():
     """
     When start_polling() raises during a network error retry, the adapter must
-    schedule a new _handle_polling_network_error task �?otherwise polling stays
+    schedule a new _handle_polling_network_error task é¥?otherwise polling stays
     dead with no further error callbacks to trigger recovery.
 
     Regression test for #3173: gateway becomes unresponsive after Telegram 502.
@@ -79,7 +79,7 @@ async def test_reconnect_self_schedules_on_start_polling_failure():
         f"after start_polling failure, got {len(pending)}"
     )
 
-    # Clean up �?cancel the pending retry so it doesn't run after the test
+    # Clean up é¥?cancel the pending retry so it doesn't run after the test
     for t in pending:
         t.cancel()
         try:
@@ -92,7 +92,7 @@ async def test_reconnect_self_schedules_on_start_polling_failure():
 async def test_reconnect_does_not_self_schedule_when_fatal_error_set():
     """
     When a fatal error is already set, the failed reconnect should NOT create
-    another retry task �?the gateway is already shutting down this adapter.
+    another retry task é¥?the gateway is already shutting down this adapter.
     """
     adapter = _make_adapter()
     adapter._polling_network_error_count = 1

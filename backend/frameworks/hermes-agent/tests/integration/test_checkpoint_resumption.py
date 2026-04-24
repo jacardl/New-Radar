@@ -49,7 +49,7 @@ def create_test_dataset(num_prompts: int = 20) -> Path:
             }
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     
-    print(f"�?Created test dataset: {dataset_file} ({num_prompts} prompts)")
+    print(f"â?Created test dataset: {dataset_file} ({num_prompts} prompts)")
     return dataset_file
 
 
@@ -68,7 +68,7 @@ def monitor_checkpoint_during_run(checkpoint_file: Path, duration: int = 30) -> 
     start_time = time.time()
     last_mtime = None
     
-    print(f"\n🔍 Monitoring checkpoint file: {checkpoint_file}")
+    print(f"\nð Monitoring checkpoint file: {checkpoint_file}")
     print(f"   Duration: {duration}s")
     print("-" * 70)
     
@@ -123,7 +123,7 @@ def test_current_implementation():
     print("\n" + "=" * 70)
     print("TEST 1: Current Implementation - Checkpoint Timing")
     print("=" * 70)
-    print("\n📝 Testing whether checkpoints are saved incrementally during run...")
+    print("\nð Testing whether checkpoints are saved incrementally during run...")
     
     # Setup
     dataset_file = create_test_dataset(num_prompts=12)
@@ -141,7 +141,7 @@ def test_current_implementation():
     
     # Start monitoring in a separate process would be ideal, but for simplicity
     # we'll just check before and after
-    print(f"\n▶️  Starting batch run...")
+    print(f"\nâ¶ï¸  Starting batch run...")
     print(f"   Dataset: {dataset_file}")
     print(f"   Batch size: 3 (4 batches total)")
     print(f"   Workers: 2")
@@ -177,7 +177,7 @@ def test_current_implementation():
         monitor_thread.join(timeout=2)
         
     except Exception as e:
-        print(f"�?Error during run: {e}")
+        print(f"â?Error during run: {e}")
         traceback.print_exc()
         return False
     finally:
@@ -187,25 +187,25 @@ def test_current_implementation():
     
     # Analyze results
     print("\n" + "=" * 70)
-    print("📊 TEST RESULTS")
+    print("ð TEST RESULTS")
     print("=" * 70)
     print(f"Total run time: {elapsed:.2f}s")
     print(f"Checkpoint updates observed: {len(snapshots)}")
     
     if len(snapshots) == 0:
-        print("\n�?ISSUE: No checkpoint updates observed during run")
+        print("\nâ?ISSUE: No checkpoint updates observed during run")
         print("   This suggests checkpoints are only saved at the end")
         return False
     elif len(snapshots) == 1:
-        print("\n⚠️  WARNING: Only 1 checkpoint update (likely at the end)")
+        print("\nâ ï¸  WARNING: Only 1 checkpoint update (likely at the end)")
         print("   This confirms the bug - no incremental checkpointing")
         return False
     else:
-        print(f"\n�?GOOD: Multiple checkpoint updates ({len(snapshots)}) observed")
+        print(f"\nâ?GOOD: Multiple checkpoint updates ({len(snapshots)}) observed")
         print("   Checkpointing appears to be incremental")
         
         # Show timeline
-        print("\n📈 Checkpoint Timeline:")
+        print("\nð Checkpoint Timeline:")
         for i, snapshot in enumerate(snapshots, 1):
             print(f"   {i}. [{snapshot['elapsed_seconds']:6.2f}s] "
                   f"{snapshot['completed_count']} prompts completed")
@@ -218,7 +218,7 @@ def test_interruption_and_resume():
     print("\n" + "=" * 70)
     print("TEST 2: Interruption and Resume")
     print("=" * 70)
-    print("\n📝 Testing whether resume works after manual interruption...")
+    print("\nð Testing whether resume works after manual interruption...")
     
     # Setup
     dataset_file = create_test_dataset(num_prompts=15)
@@ -233,7 +233,7 @@ def test_interruption_and_resume():
     
     checkpoint_file = output_dir / "checkpoint.json"
     
-    print(f"\n▶️  Starting first run (will process 5 prompts, then simulate interruption)...")
+    print(f"\nâ¶ï¸  Starting first run (will process 5 prompts, then simulate interruption)...")
     
     temp_dataset = Path("tests/test_data/checkpoint_test_resume_partial.jsonl")
     try:
@@ -258,17 +258,17 @@ def test_interruption_and_resume():
         
         # Check checkpoint after first run
         if not checkpoint_file.exists():
-            print("�?ERROR: Checkpoint file not created after first run")
+            print("â?ERROR: Checkpoint file not created after first run")
             return False
         
         with open(checkpoint_file, 'r') as f:
             checkpoint_data = json.load(f)
         
         initial_completed = len(checkpoint_data.get("completed_prompts", []))
-        print(f"�?First run completed: {initial_completed} prompts saved to checkpoint")
+        print(f"â?First run completed: {initial_completed} prompts saved to checkpoint")
         
         # Now try to resume with full dataset
-        print(f"\n▶️  Starting resume run with full dataset (15 prompts)...")
+        print(f"\nâ¶ï¸  Starting resume run with full dataset (15 prompts)...")
         
         runner2 = BatchRunner(
             dataset_file=str(dataset_file),
@@ -290,21 +290,21 @@ def test_interruption_and_resume():
         final_completed = len(final_checkpoint.get("completed_prompts", []))
         
         print("\n" + "=" * 70)
-        print("📊 TEST RESULTS")
+        print("ð TEST RESULTS")
         print("=" * 70)
         print(f"Initial completed: {initial_completed}")
         print(f"Final completed: {final_completed}")
         print(f"Expected: 15")
         
         if final_completed == 15:
-            print("\n�?PASS: Resume successfully completed all prompts")
+            print("\nâ?PASS: Resume successfully completed all prompts")
             return True
         else:
-            print(f"\n�?FAIL: Expected 15 completed, got {final_completed}")
+            print(f"\nâ?FAIL: Expected 15 completed, got {final_completed}")
             return False
             
     except Exception as e:
-        print(f"�?Error during test: {e}")
+        print(f"â?Error during test: {e}")
         traceback.print_exc()
         return False
     finally:
@@ -316,7 +316,7 @@ def test_simulated_crash():
     print("\n" + "=" * 70)
     print("TEST 3: Simulated Crash During Execution")
     print("=" * 70)
-    print("\n📝 This test would require running in a subprocess and killing it...")
+    print("\nð This test would require running in a subprocess and killing it...")
     print("   Skipping for safety - manual testing recommended")
     return None
 
@@ -328,7 +328,7 @@ def print_test_plan():
     print("=" * 70)
     
     print("""
-📋 PROBLEM SUMMARY
+ð PROBLEM SUMMARY
 ------------------
 Current implementation uses pool.map() which blocks until ALL batches complete.
 Checkpoint is only saved after all batches finish (line 558-559).
@@ -337,7 +337,7 @@ If process crashes during batch processing:
 - All progress is lost
 - Resume does nothing (no incremental checkpoint was saved)
 
-📋 PROPOSED SOLUTION
+ð PROPOSED SOLUTION
 --------------------
 Replace pool.map() with pool.imap_unordered() to get results as they complete.
 Save checkpoint after EACH batch completes using a multiprocessing Lock.
@@ -348,7 +348,7 @@ Key changes:
 3. Update checkpoint after each batch result
 4. Maintain backward compatibility with existing checkpoints
 
-📋 IMPLEMENTATION STEPS
+ð IMPLEMENTATION STEPS
 -----------------------
 1. Add Manager and Lock initialization before Pool creation
 2. Pass shared checkpoint data and lock to workers (via Manager)
@@ -356,21 +356,21 @@ Key changes:
 4. In result loop: save checkpoint after each batch
 5. Add error handling for checkpoint write failures
 
-📋 RISKS & MITIGATIONS
+ð RISKS & MITIGATIONS
 ----------------------
 Risk: Checkpoint file corruption if two processes write simultaneously
-�?Mitigation: Use multiprocessing.Lock() for exclusive access
+â?Mitigation: Use multiprocessing.Lock() for exclusive access
 
 Risk: Performance impact from frequent checkpoint writes
-�?Mitigation: Checkpoint writes are fast (small JSON), negligible impact
+â?Mitigation: Checkpoint writes are fast (small JSON), negligible impact
 
 Risk: Breaking existing runs that are already checkpointed
-�?Mitigation: Maintain checkpoint format, only change timing
+â?Mitigation: Maintain checkpoint format, only change timing
 
 Risk: Bugs in multiprocessing lock/manager code
-�?Mitigation: Thorough testing with this test script
+â?Mitigation: Thorough testing with this test script
 
-📋 TESTING STRATEGY
+ð TESTING STRATEGY
 -------------------
 1. Run test_current_implementation() - Confirm bug exists
 2. Apply fix to batch_runner.py
@@ -378,7 +378,7 @@ Risk: Bugs in multiprocessing lock/manager code
 4. Run test_interruption_and_resume() - Verify resume works
 5. Manual test: Start run, kill process mid-batch, resume
 
-📋 ROLLBACK PLAN
+ð ROLLBACK PLAN
 ----------------
 If issues arise:
 1. Git revert the changes
@@ -426,11 +426,11 @@ def main(
         print("=" * 70)
         for test_name, result in results.items():
             if result is None:
-                status = "⏭️  SKIPPED"
+                status = "â­ï¸  SKIPPED"
             elif result:
-                status = "�?PASS"
+                status = "â?PASS"
             else:
-                status = "�?FAIL"
+                status = "â?FAIL"
             print(f"{status} - {test_name}")
 
 

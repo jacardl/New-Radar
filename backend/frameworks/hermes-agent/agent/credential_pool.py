@@ -80,7 +80,7 @@ EXHAUSTED_TTL_DEFAULT_SECONDS = 60 * 60      # 1 hour
 CUSTOM_POOL_PREFIX = "custom:"
 
 
-# Fields that are only round-tripped through JSON �?never used for logic as attributes.
+# Fields that are only round-tripped through JSON é¥?never used for logic as attributes.
 _EXTRA_KEYS = frozenset({
     "token_type", "scope", "client_id", "portal_base_url", "obtained_at",
     "expires_in", "agent_key_id", "agent_key_expires_in", "agent_key_reused",
@@ -496,7 +496,7 @@ class CredentialPool:
         After a pool-level refresh, the pool entry has fresh tokens but
         auth.json's ``providers.<id>`` still holds the pre-refresh state.
         On the next ``load_pool()``, ``_seed_from_singletons()`` reads that
-        stale state and can overwrite the fresh pool entry �?potentially
+        stale state and can overwrite the fresh pool entry é¥?potentially
         re-seeding a consumed single-use refresh token.
 
         Applies to any OAuth provider whose singleton lives in auth.json
@@ -674,7 +674,7 @@ class CredentialPool:
                     except Exception as retry_exc:
                         logger.debug("Retry refresh also failed: %s", retry_exc)
                 elif not self._entry_needs_refresh(synced):
-                    # Credentials file had a valid (non-expired) token �?use it directly
+                    # Credentials file had a valid (non-expired) token é¥?use it directly
                     logger.debug("Credentials file has valid token, using without refresh")
                     return synced
             # For openai-codex: the refresh_token may have been consumed by
@@ -1344,7 +1344,7 @@ def load_pool(provider: str) -> CredentialPool:
     entries = [PooledCredential.from_dict(provider, payload) for payload in raw_entries]
 
     if provider.startswith(CUSTOM_POOL_PREFIX):
-        # Custom endpoint pool �?seed from custom_providers config and model config
+        # Custom endpoint pool é¥?seed from custom_providers config and model config
         custom_changed, custom_sources = _seed_custom_pool(provider, entries)
         changed = custom_changed
         changed |= _prune_stale_seeded_entries(entries, custom_sources)

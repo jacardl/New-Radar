@@ -102,7 +102,7 @@ class TestYoloMode:
 
     def test_yolo_mode_not_set_by_default(self):
         """HERMES_YOLO_MODE should not be set by default."""
-        # Clean env check �?if it happens to be set in test env, that's fine,
+        # Clean env check é¥?if it happens to be set in test env, that's fine,
         # we just verify the mechanism exists
         assert os.getenv("HERMES_YOLO_MODE") is None or True  # no-op, documents intent
 
@@ -113,7 +113,7 @@ class TestYoloMode:
         monkeypatch.setenv("HERMES_SESSION_KEY", "test-session")
 
         # Empty string is falsy in Python, so getenv("HERMES_YOLO_MODE") returns ""
-        # which is falsy �?bypass should NOT activate
+        # which is falsy é¥?bypass should NOT activate
         result = check_dangerous_command("rm -rf /", "local",
                                          approval_callback=lambda *a: "deny")
         assert not result["approved"]

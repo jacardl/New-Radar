@@ -29,7 +29,7 @@ def create_test_dataset():
         for prompt in prompts:
             f.write(json.dumps(prompt, ensure_ascii=False) + "\n")
     
-    print(f"�?Created test dataset: {test_file}")
+    print(f"é?Created test dataset: {test_file}")
     return test_file
 
 
@@ -38,7 +38,7 @@ def cleanup_test_run(run_name):
     output_dir = Path("data") / run_name
     if output_dir.exists():
         shutil.rmtree(output_dir)
-        print(f"🗑�? Cleaned up test output: {output_dir}")
+        print(f"é¦æ£é? Cleaned up test output: {output_dir}")
 
 
 def verify_output(run_name):
@@ -47,28 +47,28 @@ def verify_output(run_name):
     
     # Check directory exists
     if not output_dir.exists():
-        print(f"�?Output directory not found: {output_dir}")
+        print(f"é?Output directory not found: {output_dir}")
         return False
     
     # Check for checkpoint
     checkpoint_file = output_dir / "checkpoint.json"
     if not checkpoint_file.exists():
-        print(f"�?Checkpoint file not found: {checkpoint_file}")
+        print(f"é?Checkpoint file not found: {checkpoint_file}")
         return False
     
     # Check for statistics
     stats_file = output_dir / "statistics.json"
     if not stats_file.exists():
-        print(f"�?Statistics file not found: {stats_file}")
+        print(f"é?Statistics file not found: {stats_file}")
         return False
     
     # Check for batch files
     batch_files = list(output_dir.glob("batch_*.jsonl"))
     if not batch_files:
-        print(f"�?No batch files found in: {output_dir}")
+        print(f"é?No batch files found in: {output_dir}")
         return False
     
-    print(f"�?Output verification passed:")
+    print(f"é?Output verification passed:")
     print(f"   - Checkpoint: {checkpoint_file}")
     print(f"   - Statistics: {stats_file}")
     print(f"   - Batch files: {len(batch_files)}")
@@ -77,7 +77,7 @@ def verify_output(run_name):
     with open(stats_file) as f:
         stats = json.load(f)
     
-    print(f"\n📊 Statistics Summary:")
+    print(f"\né¦æ³ Statistics Summary:")
     print(f"   - Total prompts: {stats['total_prompts']}")
     print(f"   - Total batches: {stats['total_batches']}")
     print(f"   - Duration: {stats['duration_seconds']}s")
@@ -85,14 +85,14 @@ def verify_output(run_name):
     if stats.get('tool_statistics'):
         print(f"   - Tool calls:")
         for tool, tool_stats in stats['tool_statistics'].items():
-            print(f"     �?{tool}: {tool_stats['count']} calls, {tool_stats['success_rate']:.1f}% success")
+            print(f"     é¥?{tool}: {tool_stats['count']} calls, {tool_stats['success_rate']:.1f}% success")
     
     return True
 
 
 def main():
     """Run the test."""
-    print("🧪 Batch Runner Test")
+    print("é¦� Batch Runner Test")
     print("=" * 60)
     
     run_name = "test_run"
@@ -103,7 +103,7 @@ def main():
     # Create test dataset
     test_file = create_test_dataset()
     
-    print(f"\n📝 To run the test manually:")
+    print(f"\né¦æ To run the test manually:")
     print(f"   python batch_runner.py \\")
     print(f"       --dataset_file={test_file} \\")
     print(f"       --batch_size=2 \\")
@@ -111,10 +111,10 @@ def main():
     print(f"       --distribution=minimal \\")
     print(f"       --num_workers=2")
     
-    print(f"\n💡 Or test with different distributions:")
+    print(f"\né¦æ Or test with different distributions:")
     print(f"   python batch_runner.py --list_distributions")
     
-    print(f"\n🔍 After running, you can verify output with:")
+    print(f"\né¦æ³ After running, you can verify output with:")
     print(f"   python tests/test_batch_runner.py --verify")
     
     # Note: We don't actually run the batch runner here to avoid API calls during testing

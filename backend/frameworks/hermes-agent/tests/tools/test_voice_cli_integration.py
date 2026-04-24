@@ -40,7 +40,7 @@ def _make_voice_cli(**overrides):
 
 
 # ============================================================================
-# Markdown stripping �?import real function from tts_tool
+# Markdown stripping é¥?import real function from tts_tool
 # ============================================================================
 
 from tools.tts_tool import _strip_markdown_for_tts
@@ -98,7 +98,7 @@ class TestMarkdownStripping:
         assert result == ""
 
     def test_long_text_not_truncated(self):
-        """_strip_markdown_for_tts does NOT truncate �?that's the caller's job."""
+        """_strip_markdown_for_tts does NOT truncate é¥?that's the caller's job."""
         text = "a" * 5000
         result = _strip_markdown_for_tts(text)
         assert len(result) == 5000
@@ -312,7 +312,7 @@ class TestVoiceMessagePrefix:
         agent_message = message
         if voice_mode and isinstance(message, str):
             agent_message = (
-                "[Voice input �?respond concisely and conversationally, "
+                "[Voice input é¥?respond concisely and conversationally, "
                 "2-3 sentences max. No code blocks or markdown.] "
                 + message
             )
@@ -328,7 +328,7 @@ class TestVoiceMessagePrefix:
         agent_message = message
         if voice_mode and isinstance(message, str):
             agent_message = (
-                "[Voice input �?respond concisely and conversationally, "
+                "[Voice input é¥?respond concisely and conversationally, "
                 "2-3 sentences max. No code blocks or markdown.] "
                 + message
             )
@@ -343,7 +343,7 @@ class TestVoiceMessagePrefix:
         agent_message = message
         if voice_mode and isinstance(message, str):
             agent_message = (
-                "[Voice input �?respond concisely and conversationally, "
+                "[Voice input é¥?respond concisely and conversationally, "
                 "2-3 sentences max. No code blocks or markdown.] "
                 + message
             )
@@ -362,7 +362,7 @@ class TestVoiceMessagePrefix:
         agent_message = message
         if voice_mode and isinstance(message, str):
             agent_message = (
-                "[Voice input �?respond concisely and conversationally, "
+                "[Voice input é¥?respond concisely and conversationally, "
                 "2-3 sentences max. No code blocks or markdown.] "
                 + message
             )
@@ -511,7 +511,7 @@ class TestEdgeTTSLazyImport:
                     if isinstance(n, _ast.Name) and n.id == "edge_tts"
                 ]
                 assert bare_refs == [], (
-                    f"_generate_edge_tts uses bare 'edge_tts' name �?"
+                    f"_generate_edge_tts uses bare 'edge_tts' name é¥?"
                     f"should use _import_edge_tts() lazy helper"
                 )
 
@@ -620,7 +620,7 @@ class TestVoiceStatusUsesConfigKey:
                 break
             elif in_method:
                 assert 'Record key: Ctrl+B"' not in line, (
-                    "_show_voice_status hardcodes 'Ctrl+B' �?"
+                    "_show_voice_status hardcodes 'Ctrl+B' é¥?"
                     "should read from config"
                 )
 
@@ -681,7 +681,7 @@ class TestChatTTSCleanupOnException:
 
 class TestBrowserToolSignalHandlerRemoved:
     """browser_tool.py must NOT register SIGINT/SIGTERM handlers that call
-    sys.exit() �?this conflicts with prompt_toolkit's event loop and causes
+    sys.exit() é¥?this conflicts with prompt_toolkit's event loop and causes
     the process to become unkillable during voice mode."""
 
     def test_no_signal_handler_registration(self):
@@ -697,11 +697,11 @@ class TestBrowserToolSignalHandlerRemoved:
             if stripped.startswith("#"):
                 continue
             assert "signal.signal(signal.SIGINT" not in stripped, (
-                f"browser_tool.py:{i} registers SIGINT handler �?"
+                f"browser_tool.py:{i} registers SIGINT handler é¥?"
                 f"use atexit instead to avoid prompt_toolkit conflicts"
             )
             assert "signal.signal(signal.SIGTERM" not in stripped, (
-                f"browser_tool.py:{i} registers SIGTERM handler �?"
+                f"browser_tool.py:{i} registers SIGTERM handler é¥?"
                 f"use atexit instead to avoid prompt_toolkit conflicts"
             )
 
@@ -716,7 +716,7 @@ class TestKeyHandlerNeverBlocks:
 
     def test_start_recording_not_called_directly_in_handler(self):
         """AST check: handle_voice_record must NOT call _voice_start_recording()
-        directly �?it must wrap it in a Thread to avoid blocking the UI."""
+        directly é¥?it must wrap it in a Thread to avoid blocking the UI."""
         import ast as _ast
 
         with open("cli.py") as f:
@@ -732,7 +732,7 @@ class TestKeyHandlerNeverBlocks:
                         call_src = _ast.dump(child.value)
                         assert "_voice_start_recording" not in call_src, (
                             "handle_voice_record calls _voice_start_recording directly "
-                            "�?must dispatch to a daemon thread"
+                            "é¥?must dispatch to a daemon thread"
                         )
                 break
 
@@ -797,7 +797,7 @@ class TestKeyHandlerNeverBlocks:
 
 
 # ============================================================================
-# Real behavior tests �?CLI voice methods via _make_voice_cli()
+# Real behavior tests é¥?CLI voice methods via _make_voice_cli()
 # ============================================================================
 
 class TestHandleVoiceCommandReal:

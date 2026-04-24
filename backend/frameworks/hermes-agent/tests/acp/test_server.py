@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.server �?HermesACPAgent ACP server."""
+"""Tests for acp_adapter.server é¥?HermesACPAgent ACP server."""
 
 import asyncio
 import os

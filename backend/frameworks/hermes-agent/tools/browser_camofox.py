@@ -1,4 +1,4 @@
-"""Camofox browser backend �?local anti-detection browser via REST API.
+"""Camofox browser backend é¥?local anti-detection browser via REST API.
 
 Camofox-browser is a self-hosted Node.js server wrapping Camoufox (Firefox
 fork with C++ fingerprint spoofing).  It exposes a REST API that maps 1:1
@@ -573,7 +573,7 @@ def camofox_vision(question: str, annotate: bool = False,
 
 
 def camofox_console(clear: bool = False, task_id: Optional[str] = None) -> str:
-    """Get console output �?limited support in Camofox.
+    """Get console output é¥?limited support in Camofox.
 
     Camofox does not expose browser console logs via its REST API.
     Returns an empty result with a note.

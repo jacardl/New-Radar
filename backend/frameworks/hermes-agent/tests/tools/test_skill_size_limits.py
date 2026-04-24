@@ -211,5 +211,5 @@ class TestHandPlacedSkillsNoLimit:
 
         result = json.loads(skill_view("manual-giant"))
         assert "content" in result
-        # The full content is returned �?no truncation at the storage layer
+        # The full content is returned é¥?no truncation at the storage layer
         assert len(result["content"]) > MAX_SKILL_CONTENT_CHARS

@@ -120,7 +120,7 @@ class SessionDB:
     single writer via WAL mode). Each method opens its own cursor.
     """
 
-    # â”€â”€ Write-contention tuning â”€â”€
+    # -- Write-contention tuning --
     # With multiple hermes processes (gateway + CLI sessions + worktree agents)
     # all sharing one state.db, WAL write-lock contention causes visible TUI
     # freezes.  SQLite's built-in busy handler uses a deterministic sleep
@@ -144,7 +144,7 @@ class SessionDB:
         self._conn = sqlite3.connect(
             str(self.db_path),
             check_same_thread=False,
-            # Short timeout â€?application-level retry with random jitter
+            # Short timeout Ã¢?application-level retry with random jitter
             # handles contention instead of sitting in SQLite's internal
             # busy handler for up to 30s.
             timeout=1.0,
@@ -159,19 +159,19 @@ class SessionDB:
 
         self._init_schema()
 
-    # â”€â”€ Core write helper â”€â”€
+    # -- Core write helper --
 
     def _execute_write(self, fn: Callable[[sqlite3.Connection], T]) -> T:
         """Execute a write transaction with BEGIN IMMEDIATE and jitter retry.
 
         *fn* receives the connection and should perform INSERT/UPDATE/DELETE
-        statements.  The caller must NOT call ``commit()`` â€?that's handled
+        statements.  The caller must NOT call ``commit()`` Ã¢?that's handled
         here after *fn* returns.
 
         BEGIN IMMEDIATE acquires the WAL write lock at transaction start
         (not at commit time), so lock contention surfaces immediately.
         On ``database is locked``, we release the Python lock, sleep a
-        random 20-150ms, and retry â€?breaking the convoy pattern that
+        random 20-150ms, and retry Ã¢?breaking the convoy pattern that
         SQLite's built-in deterministic backoff creates.
 
         Returns whatever *fn* returns.
@@ -190,7 +190,7 @@ class SessionDB:
                         except Exception:
                             pass
                         raise
-                # Success â€?periodic best-effort checkpoint.
+                # Success Ã¢?periodic best-effort checkpoint.
                 self._write_count += 1
                 if self._write_count % self._CHECKPOINT_EVERY_N_WRITES == 0:
                     self._try_wal_checkpoint()
@@ -206,7 +206,7 @@ class SessionDB:
                         )
                         time.sleep(jitter)
                         continue
-                # Non-lock error or retries exhausted â€?propagate.
+                # Non-lock error or retries exhausted Ã¢?propagate.
                 raise
         # Retries exhausted (shouldn't normally reach here).
         raise last_err or sqlite3.OperationalError(
@@ -232,7 +232,7 @@ class SessionDB:
                         result[2], result[1],
                     )
         except Exception:
-            pass  # Best effort â€?never fatal.
+            pass  # Best effort Ã¢?never fatal.
 
     def close(self):
         """Close the database connection.
@@ -311,7 +311,7 @@ class SessionDB:
                         pass
                 cursor.execute("UPDATE schema_version SET version = 5")
             if current_version < 6:
-                # v6: add reasoning columns to messages table â€?preserves assistant
+                # v6: add reasoning columns to messages table Ã¢?preserves assistant
                 # reasoning text and structured reasoning_details across gateway
                 # session turns.  Without these, reasoning chains are lost on
                 # session reload, breaking multi-turn reasoning continuity for
@@ -330,7 +330,7 @@ class SessionDB:
                         pass  # Column already exists
                 cursor.execute("UPDATE schema_version SET version = 6")
 
-        # Unique title index â€?always ensure it exists (safe to run after migrations
+        # Unique title index Ã¢?always ensure it exists (safe to run after migrations
         # since the title column is guaranteed to exist at this point)
         try:
             cursor.execute(
@@ -430,10 +430,10 @@ class SessionDB:
     ) -> None:
         """Update token counters and backfill model if not already set.
 
-        When *absolute* is False (default), values are **incremented** â€?use
+        When *absolute* is False (default), values are **incremented** Ã¢?use
         this for per-API-call deltas (CLI path).
 
-        When *absolute* is True, values are **set directly** â€?use this when
+        When *absolute* is True, values are **set directly** Ã¢?use this when
         the caller already holds cumulative totals (gateway path, where the
         cached agent accumulates across messages).
         """
@@ -680,7 +680,7 @@ class SessionDB:
         return None
 
     def get_next_title_in_lineage(self, base_title: str) -> str:
-        """Generate the next title in a lineage (e.g., "my session" â†?"my session #2").
+        """Generate the next title in a lineage (e.g., "my session" Ã¢?"my session #2").
 
         Strips any existing " #N" suffix to find the base name, then finds
         the highest existing number and increments.
@@ -1061,7 +1061,7 @@ class SessionDB:
             try:
                 cursor = self._conn.execute(sql, params)
             except sqlite3.OperationalError:
-                # FTS5 query syntax error despite sanitization â€?return empty
+                # FTS5 query syntax error despite sanitization Ã¢?return empty
                 return []
             matches = [dict(row) for row in cursor.fetchall()]
 

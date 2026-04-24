@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Qwen3-LoRA通用训练脚本
-支持0.6B�?B�?B三种规模的模�?
+Qwen3-LoRAéç¨è®­ç»èæ¬
+æ¯æ0.6BBBä¸ç§è§æ¨¡çæ¨¡å?
 """
 import argparse
 import os
@@ -26,11 +26,11 @@ warnings.filterwarnings("ignore")
 
 
 class Qwen3LoRAUniversal(BaseQwenModel):
-    """通用Qwen3-LoRA模型"""
+    """éç¨Qwen3-LoRAæ¨¡å"""
     
     def __init__(self, model_size: str = "0.6B"):
         if model_size not in QWEN3_MODELS:
-            raise ValueError(f"不支持的模型大小: {model_size}")
+            raise ValueError(f"ä¸æ¯æçæ¨¡åå¤§å°: {model_size}")
             
         super().__init__(f"Qwen3-{model_size}-LoRA")
         self.model_size = model_size
@@ -43,14 +43,14 @@ class Qwen3LoRAUniversal(BaseQwenModel):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
     def _load_base_model(self):
-        """加载Qwen3基础模型"""
-        print(f"加载{self.model_size}基础模型: {self.model_name_hf}")
+        """å è½½Qwen3åºç¡æ¨¡å"""
+        print(f"å è½½{self.model_size}åºç¡æ¨¡å: {self.model_name_hf}")
         
-        # 第一步：检查当前文件夹的models目录
+        # ç¬¬ä¸æ­¥ï¼æ£æ¥å½åæä»¶å¤¹çmodelsç®å½
         local_model_dir = f"./models/qwen3-{self.model_size.lower()}"
         if os.path.exists(local_model_dir) and os.path.exists(os.path.join(local_model_dir, "config.json")):
             try:
-                print(f"发现本地模型，从本地加载: {local_model_dir}")
+                print(f"åç°æ¬å°æ¨¡åï¼ä»æ¬å°å è½½: {local_model_dir}")
                 self.tokenizer = AutoTokenizer.from_pretrained(local_model_dir)
                 self.base_model = AutoModelForCausalLM.from_pretrained(
                     local_model_dir,
@@ -58,22 +58,22 @@ class Qwen3LoRAUniversal(BaseQwenModel):
                     device_map="auto" if torch.cuda.is_available() else None
                 )
                 
-                # 设置pad_token
+                # è®¾ç½®pad_token
                 if self.tokenizer.pad_token is None:
                     self.tokenizer.pad_token = self.tokenizer.eos_token
                     self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
                 
-                print(f"从本地模型加载{self.model_size}基础模型成功")
+                print(f"ä»æ¬å°æ¨¡åå è½½{self.model_size}åºç¡æ¨¡åæå")
                 return
                 
             except Exception as e:
-                print(f"本地模型加载失败: {e}")
+                print(f"æ¬å°æ¨¡åå è½½å¤±è´¥: {e}")
         
-        # 第二步：检查HuggingFace缓存
+        # ç¬¬äºæ­¥ï¼æ£æ¥HuggingFaceç¼å­
         try:
             from transformers.utils import default_cache_path
             cache_path = default_cache_path
-            print(f"检查HuggingFace缓存: {cache_path}")
+            print(f"æ£æ¥HuggingFaceç¼å­: {cache_path}")
             
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_hf)
             self.base_model = AutoModelForCausalLM.from_pretrained(
@@ -82,26 +82,26 @@ class Qwen3LoRAUniversal(BaseQwenModel):
                 device_map="auto" if torch.cuda.is_available() else None
             )
             
-            # 设置pad_token
+            # è®¾ç½®pad_token
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
                 self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
             
-            print(f"从HuggingFace缓存加载{self.model_size}基础模型成功")
+            print(f"ä»HuggingFaceç¼å­å è½½{self.model_size}åºç¡æ¨¡åæå")
             
-            # 保存到本地models目录
-            print(f"保存模型到本�? {local_model_dir}")
+            # ä¿å­å°æ¬å°modelsç®å½
+            print(f"ä¿å­æ¨¡åå°æ¬å? {local_model_dir}")
             os.makedirs(local_model_dir, exist_ok=True)
             self.tokenizer.save_pretrained(local_model_dir)
             self.base_model.save_pretrained(local_model_dir)
-            print(f"模型已保存到: {local_model_dir}")
+            print(f"æ¨¡åå·²ä¿å­å°: {local_model_dir}")
             
         except Exception as e:
-            print(f"从HuggingFace缓存加载失败: {e}")
+            print(f"ä»HuggingFaceç¼å­å è½½å¤±è´¥: {e}")
             
-            # 第三步：从HuggingFace下载
+            # ç¬¬ä¸æ­¥ï¼ä»HuggingFaceä¸è½½
             try:
-                print(f"正在从HuggingFace下载{self.model_size}模型...")
+                print(f"æ­£å¨ä»HuggingFaceä¸è½½{self.model_size}æ¨¡å...")
                 
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     self.model_name_hf,
@@ -118,29 +118,29 @@ class Qwen3LoRAUniversal(BaseQwenModel):
                     self.tokenizer.pad_token = self.tokenizer.eos_token
                     self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
                 
-                # 保存到本地models目录
+                # ä¿å­å°æ¬å°modelsç®å½
                 os.makedirs(local_model_dir, exist_ok=True)
                 self.tokenizer.save_pretrained(local_model_dir)
                 self.base_model.save_pretrained(local_model_dir)
-                print(f"{self.model_size}模型下载并保存到: {local_model_dir}")
+                print(f"{self.model_size}æ¨¡åä¸è½½å¹¶ä¿å­å°: {local_model_dir}")
                 
             except Exception as e2:
-                print(f"从HuggingFace下载也失�? {e2}")
-                raise RuntimeError(f"无法加载{self.model_size}模型，所有方法都失败�?)
+                print(f"ä»HuggingFaceä¸è½½ä¹å¤±è´? {e2}")
+                raise RuntimeError(f"æ æ³å è½½{self.model_size}æ¨¡åï¼æææ¹æ³é½å¤±è´¥äº?)
     
     def _create_instruction_data(self, data: List[Tuple[str, int]]) -> Dataset:
-        """创建指令格式的训练数�?""
+        """åå»ºæä»¤æ ¼å¼çè®­ç»æ°æ?""
         instructions = []
         
         for text, label in data:
-            sentiment = "正面" if label == 1 else "负面"
+            sentiment = "æ­£é¢" if label == 1 else "è´é¢"
             
-            # 构建指令格式
-            instruction = f"请分析以下微博文本的情感倾向，回�?正面'�?负面'。\n\n文本：{text}\n\n情感�?
+            # æå»ºæä»¤æ ¼å¼
+            instruction = f"è¯·åæä»¥ä¸å¾®åææ¬çææå¾åï¼åç­?æ­£é¢'æ?è´é¢'n\nææ¬ï¼{text}\n\nææï¼?
             response = sentiment
             
             
-            # 组合成完整的训练文本
+            # ç»åæå®æ´çè®­ç»ææ¬
             full_text = f"{instruction}{response}{self.tokenizer.eos_token}"
             
             instructions.append({
@@ -152,7 +152,7 @@ class Qwen3LoRAUniversal(BaseQwenModel):
         return Dataset.from_list(instructions)
     
     def _tokenize_function(self, examples):
-        """分词函数"""
+        """åè¯å½æ°"""
         tokenized = self.tokenizer(
             examples["text"],
             truncation=True,
@@ -165,7 +165,7 @@ class Qwen3LoRAUniversal(BaseQwenModel):
         return tokenized
     
     def _setup_lora(self, **kwargs):
-        """设置LoRA配置"""
+        """è®¾ç½®LoRAéç½®"""
         lora_r = kwargs.get('lora_r', self.config['lora_r'])
         lora_alpha = kwargs.get('lora_alpha', self.config['lora_alpha'])
         
@@ -179,47 +179,47 @@ class Qwen3LoRAUniversal(BaseQwenModel):
         
         self.lora_model = get_peft_model(self.base_model, lora_config)
         
-        # 统计参数
+        # ç»è®¡åæ°
         total_params = sum(p.numel() for p in self.lora_model.parameters())
         trainable_params = sum(p.numel() for p in self.lora_model.parameters() if p.requires_grad)
         
-        print(f"LoRA配置完成 (r={lora_r}, alpha={lora_alpha})")
-        print(f"总参�? {total_params:,}")
-        print(f"可训练参�? {trainable_params:,}")
-        print(f"可训练参数比�? {trainable_params / total_params * 100:.2f}%")
-        self.lora_model.print_trainable_parameters()  # PEFT库自带的参数统计
+        print(f"LoRAéç½®å®æ (r={lora_r}, alpha={lora_alpha})")
+        print(f"æ»åæ? {total_params:,}")
+        print(f"å¯è®­ç»åæ? {trainable_params:,}")
+        print(f"å¯è®­ç»åæ°æ¯ä¾? {trainable_params / total_params * 100:.2f}%")
+        self.lora_model.print_trainable_parameters()  # PEFTåºèªå¸¦çåæ°ç»è®¡
         
         return lora_config
     
     def train(self, train_data: List[Tuple[str, int]], **kwargs) -> None:
-        """训练模型"""
-        print(f"开始训�?Qwen3-{self.model_size}-LoRA 模型...")
+        """è®­ç»æ¨¡å"""
+        print(f"å¼å§è®­ç»?Qwen3-{self.model_size}-LoRA æ¨¡å...")
         
-        # 加载基础模型
+        # å è½½åºç¡æ¨¡å
         self._load_base_model()
         
-        # 设置LoRA
+        # è®¾ç½®LoRA
         self._setup_lora(**kwargs)
         
-        # 超参数（使用配置文件的推荐值或用户指定值）
+        # è¶åæ°ï¼ä½¿ç¨éç½®æä»¶çæ¨èå¼æç¨æ·æå®å¼ï¼
         num_epochs = kwargs.get('num_epochs', 3)
-        batch_size = kwargs.get('batch_size', self.config['recommended_batch_size'] // 2)  # LoRA需要更少批大小
-        learning_rate = kwargs.get('learning_rate', self.config['recommended_lr'] / 2)  # LoRA使用更小学习�?
+        batch_size = kwargs.get('batch_size', self.config['recommended_batch_size'] // 2)  # LoRAéè¦æ´å°æ¹å¤§å°
+        learning_rate = kwargs.get('learning_rate', self.config['recommended_lr'] / 2)  # LoRAä½¿ç¨æ´å°å­¦ä¹ ç?
         output_dir = kwargs.get('output_dir', f'./models/qwen3_lora_{self.model_size.lower()}_checkpoints')
         
-        print(f"超参�? epochs={num_epochs}, batch_size={batch_size}, lr={learning_rate}")
+        print(f"è¶åæ? epochs={num_epochs}, batch_size={batch_size}, lr={learning_rate}")
         
-        # 创建指令格式数据
+        # åå»ºæä»¤æ ¼å¼æ°æ®
         train_dataset = self._create_instruction_data(train_data)
         
-        # 分词
+        # åè¯
         tokenized_dataset = train_dataset.map(
             self._tokenize_function,
             batched=True,
             remove_columns=train_dataset.column_names
         )
         
-        # 训练参数
+        # è®­ç»åæ°
         training_args = TrainingArguments(
             output_dir=output_dir,
             num_train_epochs=num_epochs,
@@ -234,13 +234,13 @@ class Qwen3LoRAUniversal(BaseQwenModel):
             report_to=None,
         )
         
-        # 数据整理�?
+        # æ°æ®æ´çå?
         data_collator = DataCollatorForLanguageModeling(
             tokenizer=self.tokenizer,
             mlm=False,
         )
         
-        # 创建训练�?
+        # åå»ºè®­ç»å?
         trainer = Trainer(
             model=self.lora_model,
             args=training_args,
@@ -249,58 +249,58 @@ class Qwen3LoRAUniversal(BaseQwenModel):
             tokenizer=self.tokenizer,
         )
         
-        # 开始训�?
-        print(f"开始LoRA微调...")
+        # å¼å§è®­ç»?
+        print(f"å¼å§LoRAå¾®è°...")
         trainer.train()
         
-        # 保存模型
+        # ä¿å­æ¨¡å
         self.lora_model.save_pretrained(output_dir)
         self.tokenizer.save_pretrained(output_dir)
         
         self.model = self.lora_model
         self.is_trained = True
-        print(f"Qwen3-{self.model_size}-LoRA 模型训练完成�?)
+        print(f"Qwen3-{self.model_size}-LoRA æ¨¡åè®­ç»å®æï¼?)
     
     def _extract_sentiment(self, generated_text: str, instruction: str) -> int:
-        """从生成的文本中提取情感标�?""
+        """ä»çæçææ¬ä¸­æåæææ ç­?""
         response = generated_text[len(instruction):].strip()
         
-        if "正面" in response:
+        if "æ­£é¢" in response:
             return 1
-        elif "负面" in response:
+        elif "è´é¢" in response:
             return 0
         else:
             return 0
     
     def predict(self, texts: List[str]) -> List[int]:
-        """预测文本情感"""
+        """é¢æµææ¬ææ"""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»")
         
         predictions = []
         
         self.lora_model.eval()
         with torch.no_grad():
-            for text in tqdm(texts, desc=f"Qwen3-{self.model_size}预测�?):
+            for text in tqdm(texts, desc=f"Qwen3-{self.model_size}é¢æµä¸?):
                 pred, _ = self.predict_single(text)
                 predictions.append(pred)
         
         return predictions
     
     def predict_single(self, text: str) -> Tuple[int, float]:
-        """预测单条文本的情�?""
+        """é¢æµåæ¡ææ¬çææ?""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»")
         
-        # 构建指令
-        instruction = f"请分析以下微博文本的情感倾向，回�?正面'�?负面'。\n\n文本：{text}\n\n情感�?
+        # æå»ºæä»¤
+        instruction = f"è¯·åæä»¥ä¸å¾®åææ¬çææå¾åï¼åç­?æ­£é¢'æ?è´é¢'n\nææ¬ï¼{text}\n\nææï¼?
         
-        # 分词
+        # åè¯
         inputs = self.tokenizer(instruction, return_tensors="pt")
         if torch.cuda.is_available():
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
         
-        # 生成回答
+        # çæåç­
         self.lora_model.eval()
         with torch.no_grad():
             outputs = self.lora_model.generate(
@@ -312,78 +312,78 @@ class Qwen3LoRAUniversal(BaseQwenModel):
                 eos_token_id=self.tokenizer.eos_token_id,
             )
         
-        # 解码生成的文�?
+        # è§£ç çæçææ?
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # 提取情感标签
+        # æåæææ ç­¾
         prediction = self._extract_sentiment(generated_text, instruction)
-        confidence = 0.8  # 生成式模型的置信度计算较复杂，这里给个固定�?
+        confidence = 0.8  # çæå¼æ¨¡åçç½®ä¿¡åº¦è®¡ç®è¾å¤æï¼è¿éç»ä¸ªåºå®å?
         
         return prediction, confidence
     
     def save_model(self, model_path: str = None) -> None:
-        """保存模型"""
+        """ä¿å­æ¨¡å"""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»")
         
         if model_path is None:
             model_path = MODEL_PATHS["lora"][self.model_size]
         
         os.makedirs(model_path, exist_ok=True)
         
-        # 保存LoRA权重
+        # ä¿å­LoRAæé
         self.lora_model.save_pretrained(model_path)
         self.tokenizer.save_pretrained(model_path)
         
-        print(f"LoRA模型已保存到: {model_path}")
+        print(f"LoRAæ¨¡åå·²ä¿å­å°: {model_path}")
     
     def load_model(self, model_path: str) -> None:
-        """加载模型"""
+        """å è½½æ¨¡å"""
         if not os.path.exists(model_path):
-            raise FileNotFoundError(f"模型文件不存�? {model_path}")
+            raise FileNotFoundError(f"æ¨¡åæä»¶ä¸å­å? {model_path}")
         
-        # 加载基础模型
+        # å è½½åºç¡æ¨¡å
         self._load_base_model()
         
-        # 加载LoRA权重
+        # å è½½LoRAæé
         self.lora_model = PeftModel.from_pretrained(self.base_model, model_path)
         
         self.model = self.lora_model
         self.is_trained = True
-        print(f"已加载Qwen3-{self.model_size}-LoRA模型: {model_path}")
+        print(f"å·²å è½½Qwen3-{self.model_size}-LoRAæ¨¡å: {model_path}")
 
 
 def main():
-    """主函�?""
-    parser = argparse.ArgumentParser(description='Qwen3-LoRA通用训练脚本')
+    """ä¸»å½æ?""
+    parser = argparse.ArgumentParser(description='Qwen3-LoRAéç¨è®­ç»èæ¬')
     parser.add_argument('--model_size', type=str, choices=['0.6B', '4B', '8B'], 
-                        help='模型大小')
+                        help='æ¨¡åå¤§å°')
     parser.add_argument('--train_path', type=str, default='./dataset/train.txt',
-                        help='训练数据路径')
+                        help='è®­ç»æ°æ®è·¯å¾')
     parser.add_argument('--test_path', type=str, default='./dataset/test.txt',
-                        help='测试数据路径')
-    parser.add_argument('--model_path', type=str, help='模型保存路径（可选）')
-    parser.add_argument('--epochs', type=int, default=3, help='训练轮数')
-    parser.add_argument('--batch_size', type=int, help='批大小（可选，使用推荐值）')
-    parser.add_argument('--learning_rate', type=float, help='学习率（可选，使用推荐值）')
-    parser.add_argument('--lora_r', type=int, help='LoRA秩（可选，使用推荐值）')
-    parser.add_argument('--max_samples', type=int, default=0, help='最大训练样本数�?表示使用全部数据�?)
-    parser.add_argument('--eval_only', action='store_true', help='仅评估模�?)
+                        help='æµè¯æ°æ®è·¯å¾')
+    parser.add_argument('--model_path', type=str, help='æ¨¡åä¿å­è·¯å¾ï¼å¯éï¼')
+    parser.add_argument('--epochs', type=int, default=3, help='è®­ç»è½®æ°')
+    parser.add_argument('--batch_size', type=int, help='æ¹å¤§å°ï¼å¯éï¼ä½¿ç¨æ¨èå¼ï¼')
+    parser.add_argument('--learning_rate', type=float, help='å­¦ä¹ çï¼å¯éï¼ä½¿ç¨æ¨èå¼ï¼')
+    parser.add_argument('--lora_r', type=int, help='LoRAç§©ï¼å¯éï¼ä½¿ç¨æ¨èå¼ï¼')
+    parser.add_argument('--max_samples', type=int, default=0, help='æå¤§è®­ç»æ ·æ¬æ°ï¼?è¡¨ç¤ºä½¿ç¨å¨é¨æ°æ®ï¼?)
+    parser.add_argument('--eval_only', action='store_true', help='ä»è¯ä¼°æ¨¡å¼?)
     
     args = parser.parse_args()
     
-    # 如果没有指定模型大小，则询问用户
+    # å¦ææ²¡ææå®æ¨¡åå¤§å°ï¼åè¯¢é®ç¨æ·
     if not args.model_size:
-        print("Qwen3-LoRA模型训练")
+        print("Qwen3-LoRAæ¨¡åè®­ç»")
         print("="*40)
-        print("可用模型大小:")
-        print("  1. 0.6B - 轻量级，训练快速，显存需求约8GB")
-        print("  2. 4B  - 中等规模，性能均衡，显存需求约32GB") 
-        print("  3. 8B  - 大规模，性能最佳，显存需求约64GB")
-        print("\n注意: LoRA微调比Embedding方法需要更多显�?)
+        print("å¯ç¨æ¨¡åå¤§å°:")
+        print("  1. 0.6B - è½»éçº§ï¼è®­ç»å¿«éï¼æ¾å­éæ±çº¦8GB")
+        print("  2. 4B  - ä¸­ç­è§æ¨¡ï¼æ§è½åè¡¡ï¼æ¾å­éæ±çº¦32GB") 
+        print("  3. 8B  - å¤§è§æ¨¡ï¼æ§è½æä½³ï¼æ¾å­éæ±çº¦64GB")
+        print("\næ³¨æ: LoRAå¾®è°æ¯Embeddingæ¹æ³éè¦æ´å¤æ¾å­?)
         
         while True:
-            choice = input("\n请选择模型大小 (1/2/3): ").strip()
+            choice = input("\nè¯·éæ©æ¨¡åå¤§å° (1/2/3): ").strip()
             if choice == '1':
                 args.model_size = '0.6B'
                 break
@@ -394,42 +394,42 @@ def main():
                 args.model_size = '8B'
                 break
             else:
-                print("无效选择，请输入 1�? �?3")
+                print("æ æéæ©ï¼è¯·è¾å¥ 1 æ?3")
         
-        print(f"已选择: Qwen3-{args.model_size} + LoRA")
+        print(f"å·²éæ©: Qwen3-{args.model_size} + LoRA")
         print()
     
-    # 确保models目录存在
+    # ç¡®ä¿modelsç®å½å­å¨
     os.makedirs('./models', exist_ok=True)
     
-    # 创建模型
+    # åå»ºæ¨¡å
     model = Qwen3LoRAUniversal(args.model_size)
     
-    # 确定模型保存路径
+    # ç¡®å®æ¨¡åä¿å­è·¯å¾
     model_path = args.model_path or MODEL_PATHS["lora"][args.model_size]
     
     if args.eval_only:
-        # 仅评估模�?
-        print(f"评估模式：加载Qwen3-{args.model_size}-LoRA模型")
+        # ä»è¯ä¼°æ¨¡å¼?
+        print(f"è¯ä¼°æ¨¡å¼ï¼å è½½Qwen3-{args.model_size}-LoRAæ¨¡å")
         model.load_model(model_path)
         
         _, test_data = BaseQwenModel.load_data(args.train_path, args.test_path)
-        # LoRA评估使用少量数据
+        # LoRAè¯ä¼°ä½¿ç¨å°éæ°æ®
         test_subset = test_data[:50]
         model.evaluate(test_subset)
     else:
-        # 训练模式
+        # è®­ç»æ¨¡å¼
         train_data, test_data = BaseQwenModel.load_data(args.train_path, args.test_path)
         
-        # 训练数据处理
+        # è®­ç»æ°æ®å¤ç
         if args.max_samples > 0:
             train_subset = train_data[:args.max_samples]
-            print(f"使用 {len(train_subset)} 条数据进行LoRA训练")
+            print(f"ä½¿ç¨ {len(train_subset)} æ¡æ°æ®è¿è¡LoRAè®­ç»")
         else:
             train_subset = train_data
-            print(f"使用全部 {len(train_subset)} 条数据进行LoRA训练")
+            print(f"ä½¿ç¨å¨é¨ {len(train_subset)} æ¡æ°æ®è¿è¡LoRAè®­ç»")
         
-        # 准备训练参数
+        # åå¤è®­ç»åæ°
         train_kwargs = {'num_epochs': args.epochs}
         if args.batch_size:
             train_kwargs['batch_size'] = args.batch_size
@@ -438,29 +438,29 @@ def main():
         if args.lora_r:
             train_kwargs['lora_r'] = args.lora_r
         
-        # 训练模型
+        # è®­ç»æ¨¡å
         model.train(train_subset, **train_kwargs)
         
-        # 评估模型（使用少量测试数据）
+        # è¯ä¼°æ¨¡åï¼ä½¿ç¨å°éæµè¯æ°æ®ï¼
         test_subset = test_data[:50]
         model.evaluate(test_subset)
         
-        # 保存模型
+        # ä¿å­æ¨¡å
         model.save_model(model_path)
         
-        # 示例预测
-        print(f"\nQwen3-{args.model_size}-LoRA 示例预测:")
+        # ç¤ºä¾é¢æµ
+        print(f"\nQwen3-{args.model_size}-LoRA ç¤ºä¾é¢æµ:")
         test_texts = [
-            "今天天气真好，心情很�?,
-            "这部电影太无聊了，浪费时�?,
-            "哈哈哈，太有趣了"
+            "ä»å¤©å¤©æ°çå¥½ï¼å¿æå¾æ£?,
+            "è¿é¨çµå½±å¤ªæ èäºï¼æµªè´¹æ¶é?,
+            "åååï¼å¤ªæè¶£äº"
         ]
         
         for text in test_texts:
             pred, conf = model.predict_single(text)
-            sentiment = "正面" if pred == 1 else "负面"
-            print(f"文本: {text}")
-            print(f"预测: {sentiment} (置信�? {conf:.4f})")
+            sentiment = "æ­£é¢" if pred == 1 else "è´é¢"
+            print(f"ææ¬: {text}")
+            print(f"é¢æµ: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
             print()
 
 

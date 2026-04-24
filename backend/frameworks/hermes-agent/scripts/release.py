@@ -33,9 +33,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 VERSION_FILE = REPO_ROOT / "hermes_cli" / "__init__.py"
 PYPROJECT_FILE = REPO_ROOT / "pyproject.toml"
 
-# ──────────────────────────────────────────────────────────────────────
-# Git email �?GitHub username mapping
-# ──────────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------
+# Git email â?GitHub username mapping
+# ----------------------------------------------------------------------
 
 # Auto-extracted from noreply emails + manual overrides
 AUTHOR_MAP = {
@@ -113,8 +113,8 @@ AUTHOR_MAP = {
     "m@statecraft.systems": "mbierling",
     "balyan.sid@gmail.com": "balyansid",
     "oluwadareab12@gmail.com": "bennytimz",
-    # ── bulk addition: 75 emails resolved via API, PR salvage bodies, noreply
-    #    crossref, and GH contributor list matching (April 2026 audit) ──
+    # -- bulk addition: 75 emails resolved via API, PR salvage bodies, noreply
+    #    crossref, and GH contributor list matching (April 2026 audit) --
     "1115117931@qq.com": "aaronagent",
     "1506751656@qq.com": "hqhq1025",
     "364939526@qq.com": "luyao618",
@@ -310,7 +310,7 @@ def build_release_artifacts(semver: str) -> list[Path]:
         text=True,
     )
     if result.returncode != 0:
-        print("  �?Could not build Python release artifacts.")
+        print("  â?Could not build Python release artifacts.")
         stderr = result.stderr.strip()
         stdout = result.stdout.strip()
         if stderr:
@@ -323,7 +323,7 @@ def build_release_artifacts(semver: str) -> list[Path]:
     artifacts = sorted(p for p in dist_dir.iterdir() if p.is_file())
     matching = [p for p in artifacts if semver in p.name]
     if not matching:
-        print("  �?Built artifacts did not match the expected release version.")
+        print("  â?Built artifacts did not match the expected release version.")
         return []
     return matching
 
@@ -491,7 +491,7 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
     lines.append("")
 
     if first_release:
-        lines.append("> 🎉 **First official release!** This marks the beginning of regular weekly releases")
+        lines.append("> ð **First official release!** This marks the beginning of regular weekly releases")
         lines.append("> for Hermes Agent. See below for everything included in this initial release.")
         lines.append("")
 
@@ -511,14 +511,14 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
 
     # Category display order and emoji
     category_order = [
-        ("breaking", "⚠️ Breaking Changes"),
-        ("features", "�?Features"),
-        ("improvements", "🔧 Improvements"),
-        ("fixes", "🐛 Bug Fixes"),
-        ("docs", "📚 Documentation"),
-        ("tests", "🧪 Tests"),
-        ("chore", "🏗�?Infrastructure"),
-        ("other", "📦 Other Changes"),
+        ("breaking", "â ï¸ Breaking Changes"),
+        ("features", "â?Features"),
+        ("improvements", "ð§ Improvements"),
+        ("fixes", "ð Bug Fixes"),
+        ("docs", "ð Documentation"),
+        ("tests", "ð§ª Tests"),
+        ("chore", "ðï¸?Infrastructure"),
+        ("other", "ð¦ Other Changes"),
     ]
 
     for cat_key, cat_title in category_order:
@@ -542,7 +542,7 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
                 parts.append(f"([`{commit['short_sha']}`]({repo_url}/commit/{commit['sha']}))")
 
             if author not in teknium_aliases:
-                parts.append(f"�?{author}")
+                parts.append(f"â?{author}")
 
             lines.append(" ".join(parts))
 
@@ -562,7 +562,7 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
 
         sorted_authors = sorted(author_counts.items(), key=lambda x: -x[1])
 
-        lines.append("## 👥 Contributors")
+        lines.append("## ð¥ Contributors")
         lines.append("")
         lines.append("Thank you to everyone who contributed to this release!")
         lines.append("")
@@ -632,8 +632,8 @@ def main():
     print(f"  Hermes Agent Release Preview")
     print(f"{'='*60}")
     print(f"  CalVer tag:      {tag_name}")
-    print(f"  SemVer:          v{current_version} �?v{new_version}")
-    print(f"  Previous tag:    {prev_tag or '(none �?first release)'}")
+    print(f"  SemVer:          v{current_version} â?v{new_version}")
+    print(f"  Previous tag:    {prev_tag or '(none â?first release)'}")
     print(f"  Commits:         {len(commits)}")
     print(f"  Unique authors:  {len(set(c['github_author'] for c in commits))}")
     print(f"  Mode:            {'PUBLISH' if args.publish else 'DRY RUN'}")
@@ -661,21 +661,21 @@ def main():
         # Update version files
         if args.bump:
             update_version_files(new_version, calver_date)
-            print(f"  �?Updated version files to v{new_version} ({calver_date})")
+            print(f"  â?Updated version files to v{new_version} ({calver_date})")
 
             # Commit version bump
             add_result = git_result("add", str(VERSION_FILE), str(PYPROJECT_FILE))
             if add_result.returncode != 0:
-                print(f"  �?Failed to stage version files: {add_result.stderr.strip()}")
+                print(f"  â?Failed to stage version files: {add_result.stderr.strip()}")
                 return
 
             commit_result = git_result(
                 "commit", "-m", f"chore: bump version to v{new_version} ({calver_date})"
             )
             if commit_result.returncode != 0:
-                print(f"  �?Failed to commit version bump: {commit_result.stderr.strip()}")
+                print(f"  â?Failed to commit version bump: {commit_result.stderr.strip()}")
                 return
-            print(f"  �?Committed version bump")
+            print(f"  â?Committed version bump")
 
         # Create annotated tag
         tag_result = git_result(
@@ -683,16 +683,16 @@ def main():
             f"Hermes Agent v{new_version} ({calver_date})\n\nWeekly release"
         )
         if tag_result.returncode != 0:
-            print(f"  �?Failed to create tag {tag_name}: {tag_result.stderr.strip()}")
+            print(f"  â?Failed to create tag {tag_name}: {tag_result.stderr.strip()}")
             return
-        print(f"  �?Created tag {tag_name}")
+        print(f"  â?Created tag {tag_name}")
 
         # Push
         push_result = git_result("push", "origin", "HEAD", "--tags")
         if push_result.returncode == 0:
-            print(f"  �?Pushed to origin")
+            print(f"  â?Pushed to origin")
         else:
-            print(f"  �?Failed to push to origin: {push_result.stderr.strip()}")
+            print(f"  â?Failed to push to origin: {push_result.stderr.strip()}")
             print("    Continue manually after fixing access:")
             print("    git push origin HEAD --tags")
 
@@ -700,7 +700,7 @@ def main():
         # (e.g. Homebrew) can target them without relying on CalVer tag names.
         artifacts = build_release_artifacts(new_version)
         if artifacts:
-            print("  �?Built release artifacts:")
+            print("  â?Built release artifacts:")
             for artifact in artifacts:
                 print(f"    - {artifact.relative_to(REPO_ROOT)}")
 
@@ -727,20 +727,20 @@ def main():
 
         if result and result.returncode == 0:
             changelog_file.unlink(missing_ok=True)
-            print(f"  �?GitHub release created: {result.stdout.strip()}")
-            print(f"\n  🎉 Release v{new_version} ({tag_name}) published!")
+            print(f"  â?GitHub release created: {result.stdout.strip()}")
+            print(f"\n  ð Release v{new_version} ({tag_name}) published!")
         else:
             if result is None:
-                print("  �?GitHub release skipped: `gh` CLI not found.")
+                print("  â?GitHub release skipped: `gh` CLI not found.")
             else:
-                print(f"  �?GitHub release failed: {result.stderr.strip()}")
+                print(f"  â?GitHub release failed: {result.stderr.strip()}")
             print(f"    Release notes kept at: {changelog_file}")
             print(f"    Tag was created locally. Create the release manually:")
             print(
                 f"    gh release create {tag_name} --title 'Hermes Agent v{new_version} ({calver_date})' "
                 f"--notes-file .release_notes.md {' '.join(str(path) for path in artifacts)}"
             )
-            print(f"\n  �?Release artifacts prepared for manual publish: v{new_version} ({tag_name})")
+            print(f"\n  â?Release artifacts prepared for manual publish: v{new_version} ({tag_name})")
     else:
         print(f"\n{'='*60}")
         print(f"  Dry run complete. To publish, add --publish")

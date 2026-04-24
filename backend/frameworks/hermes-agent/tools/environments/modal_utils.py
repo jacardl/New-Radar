@@ -61,7 +61,7 @@ class BaseModalExecutionEnvironment(BaseEnvironment):
     This deliberately overrides :meth:`BaseEnvironment.execute` because the
     tool-gateway handles command preparation, CWD tracking, and env-snapshot
     management on the server side.  The base class's ``_wrap_command`` /
-    ``_wait_for_process`` / snapshot machinery does not apply here �?the
+    ``_wait_for_process`` / snapshot machinery does not apply here é¥?the
     gateway owns that responsibility.  See ``ManagedModalEnvironment`` for the
     concrete subclass.
     """

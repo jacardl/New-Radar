@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Hub CLI �?Unified interface for the Hermes Skills Hub.
+Skills Hub CLI é¥?Unified interface for the Hermes Skills Hub.
 
 Powers both:
   - `hermes skills <subcommand>` (CLI argparse entry point)
@@ -65,11 +65,11 @@ def _resolve_short_name(name: str, sources, console: Console) -> str:
         c.print("[bold]Use the full identifier to install a specific one.[/]\n")
         return ""
 
-    # No exact match �?check if there are partial matches to suggest
+    # No exact match é¥?check if there are partial matches to suggest
     if results:
         c.print(f"[yellow]No exact match for '{name}'. Did you mean one of these?[/]")
         for r in results[:5]:
-            c.print(f"  [cyan]{r.name}[/] �?{r.identifier}")
+            c.print(f"  [cyan]{r.name}[/] é¥?{r.identifier}")
         c.print()
         return ""
 
@@ -158,7 +158,7 @@ def do_search(query: str, source: str = "all", limit: int = 10,
         c.print("[dim]No skills found matching your query.[/]\n")
         return
 
-    table = Table(title=f"Skills Hub �?{len(results)} result(s)")
+    table = Table(title=f"Skills Hub é¥?{len(results)} result(s)")
     table.add_column("Name", style="bold cyan")
     table.add_column("Description", max_width=60)
     table.add_column("Source", style="dim")
@@ -200,7 +200,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     sources = create_source_router(auth)
 
     # Collect results from all (or filtered) sources in parallel.
-    # Per-source limits are generous �?parallelism + 30s timeout cap prevents hangs.
+    # Per-source limits are generous é¥?parallelism + 30s timeout cap prevents hangs.
     _TRUST_RANK = {"builtin": 3, "trusted": 2, "community": 1}
     _PER_SOURCE_LIMIT = {
         "official": 200, "skills-sh": 200, "well-known": 50,
@@ -248,14 +248,14 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     official_count = sum(1 for r in deduped if r.source == "official")
 
     # Build header
-    source_label = f"�?{source}" if source != "all" else "�?all sources"
+    source_label = f"é¥?{source}" if source != "all" else "é¥?all sources"
     loaded_label = f"{total} skills loaded"
     if timed_out:
         loaded_label += f", {len(timed_out)} source(s) still loading"
-    c.print(f"\n[bold]Skills Hub �?Browse {source_label}[/]"
+    c.print(f"\n[bold]Skills Hub é¥?Browse {source_label}[/]"
             f"  [dim]({loaded_label}, page {page}/{total_pages})[/]")
     if official_count > 0 and page == 1:
-        c.print(f"[bright_cyan]�?{official_count} official optional skill(s) from Nous Research[/]")
+        c.print(f"[bright_cyan]é½?{official_count} official optional skill(s) from Nous Research[/]")
     c.print()
 
     # Build table
@@ -269,7 +269,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     for i, r in enumerate(page_items, start=start + 1):
         trust_style = {"builtin": "bright_cyan", "trusted": "green",
                        "community": "yellow"}.get(r.trust_level, "dim")
-        trust_label = "�?official" if r.source == "official" else r.trust_level
+        trust_label = "é½?official" if r.source == "official" else r.trust_level
 
         desc = r.description[:50]
         if len(r.description) > 50:
@@ -288,9 +288,9 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     # Navigation hints
     nav_parts = []
     if page > 1:
-        nav_parts.append(f"[cyan]--page {page - 1}[/] �?prev")
+        nav_parts.append(f"[cyan]--page {page - 1}[/] é«?prev")
     if page < total_pages:
-        nav_parts.append(f"[cyan]--page {page + 1}[/] �?next")
+        nav_parts.append(f"[cyan]--page {page + 1}[/] é«?next")
 
     if nav_parts:
         c.print(f"  {' | '.join(nav_parts)}")
@@ -301,8 +301,8 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
         c.print(f"  [dim]Sources: {', '.join(parts)}[/]")
 
     if timed_out:
-        c.print(f"  [yellow]�?Slow sources skipped: {', '.join(timed_out)} "
-                f"�?run again for cached results[/]")
+        c.print(f"  [yellow]é¿?Slow sources skipped: {', '.join(timed_out)} "
+                f"é¥?run again for cached results[/]")
 
     c.print("[dim]Tip: 'hermes skills search <query>' searches deeper across all registries[/]\n")
 
@@ -406,7 +406,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         if metadata_lines:
             c.print(Panel("\n".join(metadata_lines), title="Upstream Metadata", border_style="blue"))
 
-    # Confirm with user �?show appropriate warning based on source
+    # Confirm with user é¥?show appropriate warning based on source
     # skip_confirm bypasses the prompt (needed in TUI mode where input() hangs)
     if not force and not skip_confirm:
         c.print()
@@ -641,7 +641,7 @@ def do_audit(name: Optional[str] = None, console: Optional[Console] = None) -> N
     for entry in targets:
         skill_path = SKILLS_DIR / entry["install_path"]
         if not skill_path.exists():
-            c.print(f"[yellow]Warning:[/] {entry['name']} �?path missing: {entry['install_path']}")
+            c.print(f"[yellow]Warning:[/] {entry['name']} é¥?path missing: {entry['install_path']}")
             continue
 
         result = scan_skill(skill_path, source=entry.get("identifier", entry["source"]))
@@ -985,7 +985,7 @@ def do_snapshot_import(input_path: str, force: bool = False,
 # ---------------------------------------------------------------------------
 
 def skills_command(args) -> None:
-    """Router for `hermes skills <subcommand>` �?called from hermes_cli/main.py."""
+    """Router for `hermes skills <subcommand>` é¥?called from hermes_cli/main.py."""
     action = getattr(args, "skills_action", None)
 
     if action == "browse":
@@ -1126,7 +1126,7 @@ def handle_skills_slash(cmd: str, console: Optional[Console] = None) -> None:
         identifier = args[0]
         category = ""
         # Slash commands run inside prompt_toolkit where input() hangs.
-        # Always skip confirmation �?the user typing the command is implicit consent.
+        # Always skip confirmation é¥?the user typing the command is implicit consent.
         skip_confirm = True
         force = "--force" in args
         # --now invalidates prompt cache immediately (costs more money).

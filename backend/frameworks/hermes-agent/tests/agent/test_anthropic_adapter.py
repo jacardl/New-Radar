@@ -1,4 +1,4 @@
-"""Tests for agent/anthropic_adapter.py �?Anthropic Messages API adapter."""
+"""Tests for agent/anthropic_adapter.py é¥?Anthropic Messages API adapter."""
 
 import json
 import time
@@ -675,7 +675,7 @@ class TestConvertMessages:
             {"role": "user", "content": "Thanks"},
         ]
         _, result = convert_messages_to_anthropic(messages)
-        # tc_gone has no matching tool_use �?its tool_result should be stripped
+        # tc_gone has no matching tool_use é¥?its tool_result should be stripped
         for m in result:
             if m["role"] == "user" and isinstance(m["content"], list):
                 assert all(
@@ -857,7 +857,7 @@ class TestConvertMessages:
         """Empty user message strings should get '(empty message)' placeholder.
 
         Anthropic rejects requests with empty user message content.
-        Regression test for #3143 �?Discord @mention-only messages.
+        Regression test for #3143 é¥?Discord @mention-only messages.
         """
         messages = [
             {"role": "user", "content": ""},
@@ -1397,7 +1397,7 @@ class TestThinkingBlockSignatureManagement:
         assert redacted[0]["data"] == "opaque_signature_data"
 
     def test_redacted_thinking_without_data_dropped(self):
-        """Redacted thinking without 'data' is dropped �?can't be validated."""
+        """Redacted thinking without 'data' is dropped é¥?can't be validated."""
         messages = [
             {
                 "role": "assistant",
@@ -1476,7 +1476,7 @@ class TestThinkingBlockSignatureManagement:
                 "content": "",
                 "reasoning_details": [
                     {"type": "thinking", "thinking": "Only thinking, no text."},
-                    # Unsigned �?will be downgraded, but content was empty string
+                    # Unsigned é¥?will be downgraded, but content was empty string
                 ],
             },
             {"role": "user", "content": "Next message."},
@@ -1484,7 +1484,7 @@ class TestThinkingBlockSignatureManagement:
         ]
         _, result = convert_messages_to_anthropic(messages)
         # First assistant is non-last, so thinking is stripped completely.
-        # The original content was empty and thinking was unsigned �?placeholder
+        # The original content was empty and thinking was unsigned é«?placeholder
         first_assistant = result[0]
         assert first_assistant["role"] == "assistant"
         assert len(first_assistant["content"]) >= 1

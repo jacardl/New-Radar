@@ -115,7 +115,7 @@ def _inject_skill_config(loaded_skill: dict[str, Any], parts: list[str]) -> None
         lines.append("]")
         parts.extend(lines)
     except Exception:
-        pass  # Non-critical �?skill still loads without config injection
+        pass  # Non-critical â?skill still loads without config injection
 
 
 def _build_skill_message(
@@ -132,7 +132,7 @@ def _build_skill_message(
 
     parts = [activation_note, "", content.strip()]
 
-    # ── Inject resolved skill config values ──
+    # -- Inject resolved skill config values --
     _inject_skill_config(loaded_skill, parts)
 
     if loaded_skill.get("setup_skipped"):
@@ -176,7 +176,7 @@ def _build_skill_message(
         try:
             skill_view_target = str(skill_dir.relative_to(SKILLS_DIR))
         except ValueError:
-            # Skill is from an external dir �?use the skill name instead
+            # Skill is from an external dir â?use the skill name instead
             skill_view_target = skill_dir.name
         parts.append("")
         parts.append("[This skill has supporting files you can load with the skill_view tool:]")
@@ -272,7 +272,7 @@ def get_skill_commands() -> Dict[str, Dict[str, Any]]:
 def resolve_skill_command_key(command: str) -> Optional[str]:
     """Resolve a user-typed /command to its canonical skill_cmds key.
 
-    Skills are always stored with hyphens �?``scan_skill_commands`` normalizes
+    Skills are always stored with hyphens â?``scan_skill_commands`` normalizes
     spaces and underscores to hyphens when building the key. Hyphens and
     underscores are treated interchangeably in user input: this matches
     ``_check_unavailable_skill`` and accommodates Telegram bot-command names

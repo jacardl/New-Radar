@@ -1,4 +1,4 @@
-"""Tests for hermes_cli.model_normalize �?provider-aware model name normalization.
+"""Tests for hermes_cli.model_normalize â?provider-aware model name normalization.
 
 Covers issue #5211: opencode-go model names with dots (e.g. minimax-m2.7)
 must NOT be mangled to hyphens (minimax-m2-7).
@@ -13,7 +13,7 @@ from hermes_cli.model_normalize import (
 )
 
 
-# ── Regression: issue #5211 ────────────────────────────────────────────
+# -- Regression: issue #5211 --------------------------------------------
 
 class TestIssue5211OpenCodeGoDotPreservation:
     """OpenCode Go model names with dots must pass through unchanged."""
@@ -34,10 +34,10 @@ class TestIssue5211OpenCodeGoDotPreservation:
         assert "opencode-go" not in _DOT_TO_HYPHEN_PROVIDERS
 
 
-# ── Anthropic dot-to-hyphen conversion (regression) ────────────────────
+# -- Anthropic dot-to-hyphen conversion (regression) --------------------
 
 class TestAnthropicDotToHyphen:
-    """Anthropic API still needs dots→hyphens."""
+    """Anthropic API still needs dots->hyphens."""
 
     @pytest.mark.parametrize("model,expected", [
         ("claude-sonnet-4.6", "claude-sonnet-4-6"),
@@ -52,7 +52,7 @@ class TestAnthropicDotToHyphen:
         assert result == "claude-sonnet-4-6"
 
 
-# ── OpenCode Zen regression ────────────────────────────────────────────
+# -- OpenCode Zen regression --------------------------------------------
 
 class TestOpenCodeZenModelNormalization:
     """OpenCode Zen preserves dots for most models, but Claude stays hyphenated."""
@@ -79,7 +79,7 @@ class TestOpenCodeZenModelNormalization:
         assert result == "glm-5.1"
 
 
-# ── Copilot dot preservation (regression) ──────────────────────────────
+# -- Copilot dot preservation (regression) ------------------------------
 
 class TestCopilotDotPreservation:
     """Copilot preserves dots in model names."""
@@ -93,7 +93,7 @@ class TestCopilotDotPreservation:
         assert result == expected
 
 
-# ── Aggregator providers (regression) ──────────────────────────────────
+# -- Aggregator providers (regression) ----------------------------------
 
 class TestAggregatorProviders:
     """Aggregators need vendor/model slugs."""
@@ -126,7 +126,7 @@ class TestIssue6211NativeProviderPrefixNormalization:
         assert normalize_model_for_provider(model, target_provider) == expected
 
 
-# ── detect_vendor ──────────────────────────────────────────────────────
+# -- detect_vendor ------------------------------------------------------
 
 class TestDetectVendor:
     @pytest.mark.parametrize("model,expected", [

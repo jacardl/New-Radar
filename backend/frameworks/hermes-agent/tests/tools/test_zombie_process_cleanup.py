@@ -1,4 +1,4 @@
-"""Tests for zombie process cleanup �?verifies processes spawned by tools
+"""Tests for zombie process cleanup é¥?verifies processes spawned by tools
 are properly reaped when agent sessions end.
 
 Reproduction for issue #7131: zombie process accumulation on long-running
@@ -36,7 +36,7 @@ class TestZombieReproduction:
 
     def test_orphaned_processes_survive_without_cleanup(self):
         """REPRODUCTION: processes spawned directly survive if no one kills
-        them �?this models the gap that causes zombie accumulation when
+        them é¥?this models the gap that causes zombie accumulation when
         the gateway drops agent references without calling close()."""
         pids = []
 
@@ -54,7 +54,7 @@ class TestZombieReproduction:
             # BUG: processes are still alive after reference is dropped
             for pid in pids:
                 assert _pid_alive(pid), (
-                    f"PID {pid} died after ref drop �?"
+                    f"PID {pid} died after ref drop é¥?"
                     f"expected it to survive (demonstrating the bug)"
                 )
         finally:
@@ -244,7 +244,7 @@ class TestGatewayCleanupWiring:
         mock_agent_2.close.assert_called()
 
     def test_evict_does_not_call_close(self):
-        """_evict_cached_agent() should NOT call close() �?it's also used
+        """_evict_cached_agent() should NOT call close() é¥?it's also used
         for non-destructive refreshes (model switch, branch, fallback)."""
         import threading
         from unittest.mock import MagicMock

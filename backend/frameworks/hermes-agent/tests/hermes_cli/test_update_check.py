@@ -117,7 +117,7 @@ def test_get_update_result_timeout():
     """get_update_result() returns None when check hasn't completed within timeout."""
     import hermes_cli.banner as banner
 
-    # Reset module state �?don't set the event
+    # Reset module state é¥?don't set the event
     banner._update_result = None
     banner._update_check_done = threading.Event()
 

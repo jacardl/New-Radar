@@ -301,7 +301,7 @@ class ModalEnvironment(BaseEnvironment):
     # path allows 16 MB, but we must stay under the smaller 2 MB cap for
     # compatibility.  Chunks are written below this threshold and flushed
     # individually via drain().
-    _STDIN_CHUNK_SIZE = 1 * 1024 * 1024  # 1 MB �?safe for both transport paths
+    _STDIN_CHUNK_SIZE = 1 * 1024 * 1024  # 1 MB é¥?safe for both transport paths
 
     def _modal_bulk_upload(self, files: list[tuple[str, str]]) -> None:
         """Upload many files via tar archive piped through stdin.

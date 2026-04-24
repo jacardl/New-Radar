@@ -31,18 +31,18 @@ class TestFormatContextPressure:
 
     def test_80_percent_uses_warning_icon(self):
         line = format_context_pressure(0.80, 100_000, 0.50)
-        assert "�? in line
+        assert "é¿? in line
         assert "80% to compaction" in line
 
     def test_90_percent_uses_warning_icon(self):
         line = format_context_pressure(0.90, 100_000, 0.50)
-        assert "�? in line
+        assert "é¿? in line
         assert "90% to compaction" in line
 
     def test_bar_length_scales_with_progress(self):
         line_80 = format_context_pressure(0.80, 100_000, 0.50)
         line_95 = format_context_pressure(0.95, 100_000, 0.50)
-        assert line_95.count("�?) > line_80.count("�?)
+        assert line_95.count("é»?) > line_80.count("é»?)
 
     def test_shows_threshold_tokens(self):
         line = format_context_pressure(0.80, 100_000, 0.50)
@@ -71,8 +71,8 @@ class TestFormatContextPressure:
     def test_over_100_percent_capped(self):
         """Progress > 1.0 should cap both bar and percentage text at 100%."""
         line = format_context_pressure(1.05, 100_000, 0.50)
-        assert "�? in line
-        assert line.count("�?) == 20
+        assert "é»? in line
+        assert line.count("é»?) == 20
         assert "100%" in line
         assert "105%" not in line
 
@@ -100,14 +100,14 @@ class TestFormatContextPressureGateway:
 
     def test_has_progress_bar(self):
         msg = format_context_pressure_gateway(0.80, 0.50)
-        assert "�? in msg
+        assert "é»? in msg
 
     def test_over_100_percent_capped(self):
         """Progress > 1.0 should cap percentage text at 100%."""
         msg = format_context_pressure_gateway(1.09, 0.50)
         assert "100% to compaction" in msg
         assert "109%" not in msg
-        assert msg.count("�?) == 20
+        assert msg.count("é»?) == 20
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +170,7 @@ class TestContextPressureFlags:
         assert "85% to compaction" in args[1]
 
     def test_emit_no_callback_no_crash(self, agent):
-        """No status_callback set �?should not crash."""
+        """No status_callback set é¥?should not crash."""
         agent.status_callback = None
 
         compressor = MagicMock()
@@ -192,7 +192,7 @@ class TestContextPressureFlags:
 
         agent._emit_context_pressure(0.85, compressor)
         captured = capsys.readouterr()
-        assert "�? in captured.out
+        assert "é»? in captured.out
         assert "to compaction" in captured.out
 
     def test_emit_skips_print_for_gateway_platform(self, agent, capsys):
@@ -206,7 +206,7 @@ class TestContextPressureFlags:
 
         agent._emit_context_pressure(0.85, compressor)
         captured = capsys.readouterr()
-        assert "�? not in captured.out
+        assert "é»? not in captured.out
 
     def test_flag_reset_on_compression(self, agent):
         """After _compress_context, context pressure flag should reset."""
@@ -292,7 +292,7 @@ class TestContextPressureFlags:
         ]
         agent._compress_context(messages, "system prompt")
 
-        # Post-compression is ~90% of threshold �?flag should NOT reset
+        # Post-compression is ~90% of threshold é¥?flag should NOT reset
         assert agent._context_pressure_warned_at == 0.85
 
 
@@ -304,7 +304,7 @@ class TestContextPressureGatewayDedup:
         AIAgent._context_pressure_last_warned.clear()
 
     def test_second_instance_within_cooldown_suppressed(self):
-        """Same session, same tier, within cooldown �?should be suppressed."""
+        """Same session, same tier, within cooldown é¥?should be suppressed."""
         import time
         sid = "test_session_dedup"
         # Simulate first warning
@@ -315,17 +315,17 @@ class TestContextPressureGatewayDedup:
         assert not _should_warn
 
     def test_higher_tier_fires_despite_cooldown(self):
-        """Same session, higher tier �?should fire even within cooldown."""
+        """Same session, higher tier é¥?should fire even within cooldown."""
         import time
         sid = "test_session_tier"
         AIAgent._context_pressure_last_warned[sid] = (0.85, time.time())
         _last = AIAgent._context_pressure_last_warned.get(sid)
-        # 0.95 > 0.85 stored tier �?should warn
+        # 0.95 > 0.85 stored tier é«?should warn
         _should_warn = _last is None or _last[0] < 0.95 or (time.time() - _last[1]) >= AIAgent._CONTEXT_PRESSURE_COOLDOWN
         assert _should_warn
 
     def test_warning_fires_after_cooldown_expires(self):
-        """Same session, same tier, after cooldown �?should fire again."""
+        """Same session, same tier, after cooldown é¥?should fire again."""
         import time
         sid = "test_session_expired"
         # Set a timestamp far in the past

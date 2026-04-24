@@ -8,9 +8,9 @@ so skill-declared vars (and user-configured overrides) pass through.
 
 Two sources feed the allowlist:
 
-1. **Skill declarations** �?when a skill is loaded via ``skill_view``, its
+1. **Skill declarations** é¥?when a skill is loaded via ``skill_view``, its
    ``required_environment_variables`` are registered here automatically.
-2. **User config** �?``terminal.env_passthrough`` in config.yaml lets users
+2. **User config** é¥?``terminal.env_passthrough`` in config.yaml lets users
    explicitly allowlist vars for non-skill use cases.
 
 Both ``code_execution_tool.py`` and ``tools/environments/local.py`` consult

@@ -1,4 +1,4 @@
-"""Tests for tools/memory_tool.py �?MemoryStore, security scanning, and tool dispatcher."""
+"""Tests for tools/memory_tool.py é¥?MemoryStore, security scanning, and tool dispatcher."""
 
 import json
 import pytest
@@ -201,7 +201,7 @@ class TestMemoryStorePersistence:
         monkeypatch.setattr("tools.memory_tool.get_memory_dir", lambda: tmp_path)
         # Write file with duplicates
         mem_file = tmp_path / "MEMORY.md"
-        mem_file.write_text("duplicate entry\n§\nduplicate entry\n§\nunique entry")
+        mem_file.write_text("duplicate entry\næ\nduplicate entry\næ\nunique entry")
 
         store = MemoryStore()
         store.load_from_disk()

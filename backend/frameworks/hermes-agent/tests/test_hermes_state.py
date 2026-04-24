@@ -1,4 +1,4 @@
-"""Tests for hermes_state.py �?SessionDB SQLite CRUD, FTS5 search, export."""
+"""Tests for hermes_state.py é¥?SessionDB SQLite CRUD, FTS5 search, export."""
 
 import time
 import pytest
@@ -351,7 +351,7 @@ class TestFTS5Search:
             'a AND OR b',       # adjacent operators
         ]
         for query in dangerous_queries:
-            # Must not raise �?should return list (possibly empty)
+            # Must not raise é¥?should return list (possibly empty)
             results = db.search_messages(query)
             assert isinstance(results, list), f"Query {query!r} did not return a list"
 
@@ -452,7 +452,7 @@ class TestFTS5Search:
         result = s('chat-send OR deploy-prod')
         assert '"chat-send"' in result
         assert '"deploy-prod"' in result
-        # Already-quoted hyphenated term �?no double quoting
+        # Already-quoted hyphenated term é¥?no double quoting
         assert s('"chat-send"') == '"chat-send"'
         # Hyphenated inside a quoted phrase stays as-is
         assert s('"my chat-send thing"') == '"my chat-send thing"'
@@ -466,7 +466,7 @@ class TestFTS5Search:
         assert s('simulate.p2') == '"simulate.p2"'
         assert s('simulate.p2.test.ts') == '"simulate.p2.test.ts"'
 
-        # Already quoted �?no double quoting
+        # Already quoted é¥?no double quoting
         assert s('"P2.2"') == '"P2.2"'
 
         # Works with boolean syntax
@@ -474,7 +474,7 @@ class TestFTS5Search:
         assert '"P2.2"' in result
         assert '"simulate.p2"' in result
 
-        # Mixed dots and hyphens �?single pass avoids double-quoting
+        # Mixed dots and hyphens é¥?single pass avoids double-quoting
         assert s('my-app.config') == '"my-app.config"'
         assert s('my-app.config.ts') == '"my-app.config.ts"'
 
@@ -699,7 +699,7 @@ class TestPruneSessions:
         assert d["parent_session_id"] == "C"
 
     def test_prune_entire_old_chain(self, db):
-        """All sessions in a chain are old �?entire chain is pruned."""
+        """All sessions in a chain are old é¥?entire chain is pruned."""
         old_ts = time.time() - 200 * 86400
 
         db.create_session(session_id="X", source="cli")
@@ -794,7 +794,7 @@ class TestSessionTitle:
 
     def test_title_with_special_characters(self, db):
         db.create_session(session_id="s1", source="cli")
-        title = "PR #438 �?fixing the 'auth' middleware"
+        title = "PR #438 é¥?fixing the 'auth' middleware"
         db.set_session_title("s1", title)
 
         session = db.get_session("s1")
@@ -868,7 +868,7 @@ class TestSanitizeTitle:
         assert SessionDB.sanitize_title("hello\u200dworld") == "helloworld"
 
     def test_rtl_override_stripped(self):
-        # Right-to-left override (U+202E) �?used in filename spoofing attacks
+        # Right-to-left override (U+202E) é¥?used in filename spoofing attacks
         assert SessionDB.sanitize_title("hello\u202eworld") == "helloworld"
 
     def test_bom_stripped(self):
@@ -888,16 +888,16 @@ class TestSanitizeTitle:
             SessionDB.sanitize_title(title)
 
     def test_unicode_emoji_allowed(self):
-        assert SessionDB.sanitize_title("🚀 My Project 🎉") == "🚀 My Project 🎉"
+        assert SessionDB.sanitize_title("é¦æ® My Project é¦å¸") == "é¦æ® My Project é¦å¸"
 
     def test_cjk_characters_allowed(self):
-        assert SessionDB.sanitize_title("我的项目") == "我的项目"
+        assert SessionDB.sanitize_title("é´æ æ®æ¤¤å­æ´°") == "é´æ æ®æ¤¤å­æ´°"
 
     def test_accented_characters_allowed(self):
-        assert SessionDB.sanitize_title("Résumé éditing") == "Résumé éditing"
+        assert SessionDB.sanitize_title("Rèsumè èditing") == "Rèsumè èditing"
 
     def test_special_punctuation_allowed(self):
-        title = "PR #438 �?fixing the 'auth' middleware"
+        title = "PR #438 é¥?fixing the 'auth' middleware"
         assert SessionDB.sanitize_title(title) == title
 
     def test_sanitize_applied_in_set_session_title(self, db):
@@ -991,7 +991,7 @@ class TestSchemaInit:
         conn.commit()
         conn.close()
 
-        # Open with SessionDB �?should migrate to v6
+        # Open with SessionDB é¥?should migrate to v6
         migrated_db = SessionDB(db_path=db_path)
 
         # Verify migration
@@ -1026,14 +1026,14 @@ class TestTitleUniqueness:
         """A session can re-set its own title without error."""
         db.create_session("s1", "cli")
         db.set_session_title("s1", "my project")
-        # Should not raise �?it's the same session
+        # Should not raise é¥?it's the same session
         assert db.set_session_title("s1", "my project") is True
 
     def test_null_titles_not_unique(self, db):
         """Multiple sessions can have NULL titles (no constraint violation)."""
         db.create_session("s1", "cli")
         db.create_session("s2", "cli")
-        # Both have NULL titles �?no error
+        # Both have NULL titles é¥?no error
         assert db.get_session("s1")["title"] is None
         assert db.get_session("s2")["title"] is None
 
@@ -1290,7 +1290,7 @@ class TestExcludeSources:
         db.append_message("s2", "user", "Golang test")
         db.create_session("s3", "tool")
         db.append_message("s3", "user", "Golang test")
-        # Include cli+tool, but exclude tool �?should only return cli
+        # Include cli+tool, but exclude tool é«?should only return cli
         results = db.search_messages(
             "Golang", source_filter=["cli", "tool"], exclude_sources=["tool"]
         )
@@ -1322,7 +1322,7 @@ class TestConcurrentWriteSafety:
     def test_create_session_insert_or_ignore_is_idempotent(self, db):
         """create_session with the same ID twice must not raise (INSERT OR IGNORE)."""
         db.create_session(session_id="dup-1", source="cli", model="m")
-        # Second call should be silent �?no IntegrityError
+        # Second call should be silent é¥?no IntegrityError
         db.create_session(session_id="dup-1", source="gateway", model="m2")
         session = db.get_session("dup-1")
         # Row should exist (first write wins with OR IGNORE)
@@ -1343,7 +1343,7 @@ class TestConcurrentWriteSafety:
         db.create_session(session_id="existing", source="cli", model="original-model")
         db.ensure_session("existing", source="gateway", model="overwrite-model")
         row = db.get_session("existing")
-        # First write wins �?ensure_session must not overwrite
+        # First write wins é¥?ensure_session must not overwrite
         assert row["source"] == "cli"
         assert row["model"] == "original-model"
 
@@ -1353,7 +1353,7 @@ class TestConcurrentWriteSafety:
         Simulates the #3139 scenario: create_session raises (lock), then
         ensure_session is called during flush, then append_message succeeds.
         """
-        # Simulate failed create_session �?row absent
+        # Simulate failed create_session é¥?row absent
         db.ensure_session("late-session", source="gateway", model="gpt-4")
         db.append_message(
             session_id="late-session",

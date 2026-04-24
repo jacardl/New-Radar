@@ -1,4 +1,4 @@
-"""Tests for tools/skills_sync.py �?manifest-based skill seeding and updating."""
+"""Tests for tools/skills_sync.py é¥?manifest-based skill seeding and updating."""
 
 from pathlib import Path
 from unittest.mock import patch
@@ -294,7 +294,7 @@ class TestSyncSkills:
         with self._patches(bundled, skills_dir, manifest_file):
             result = sync_skills(quiet=True)
 
-        # Should NOT update �?user modified it
+        # Should NOT update é¥?user modified it
         assert "old-skill" in result["user_modified"]
         assert "old-skill" not in result.get("updated", [])
         assert (user_skill / "SKILL.md").read_text() == "# My custom version"
@@ -358,17 +358,17 @@ class TestSyncSkills:
         manifest_file.write_text("old-skill\n")
 
         with self._patches(bundled, skills_dir, manifest_file):
-            # First sync: migration �?sets baseline
+            # First sync: migration é¥?sets baseline
             sync_skills(quiet=True)
 
             # Now change bundled content
-            (bundled / "old-skill" / "SKILL.md").write_text("# Old v2 �?improved")
+            (bundled / "old-skill" / "SKILL.md").write_text("# Old v2 é¥?improved")
 
-            # Second sync: should detect bundled changed + user unmodified �?update
+            # Second sync: should detect bundled changed + user unmodified é«?update
             result = sync_skills(quiet=True)
 
         assert "old-skill" in result["updated"]
-        assert (user_skill / "SKILL.md").read_text() == "# Old v2 �?improved"
+        assert (user_skill / "SKILL.md").read_text() == "# Old v2 é¥?improved"
 
     def test_stale_manifest_entries_cleaned(self, tmp_path):
         """Skills in manifest that no longer exist in bundled dir get cleaned."""
@@ -436,11 +436,11 @@ class TestSyncSkills:
             # Critical: new-skill must NOT be in the manifest
             manifest = _read_manifest()
             assert "new-skill" not in manifest, (
-                "Failed copy was recorded in manifest �?next sync will "
+                "Failed copy was recorded in manifest é¥?next sync will "
                 "treat it as 'user deleted' and never retry"
             )
 
-            # Now run sync again (copytree works this time) �?it should retry
+            # Now run sync again (copytree works this time) é¥?it should retry
             result2 = sync_skills(quiet=True)
             assert "new-skill" in result2["copied"]
             assert (skills_dir / "category" / "new-skill" / "SKILL.md").exists()
@@ -474,7 +474,7 @@ class TestSyncSkills:
             assert "old-skill" not in result.get("updated", [])
 
             # The skill directory should still exist (rmtree destroyed it
-            # but copytree failed to replace it �?this is data loss)
+            # but copytree failed to replace it é¥?this is data loss)
             assert user_skill.exists(), (
                 "Update failure destroyed user's skill copy without replacing it"
             )

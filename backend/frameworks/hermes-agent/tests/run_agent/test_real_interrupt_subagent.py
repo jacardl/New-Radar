@@ -1,7 +1,7 @@
 """Test real interrupt propagation through delegate_task with actual AIAgent.
 
 This uses a real AIAgent with mocked HTTP responses to test the complete
-interrupt flow through _run_single_child �?child.run_conversation().
+interrupt flow through _run_single_child é«?child.run_conversation().
 """
 
 import json
@@ -90,7 +90,7 @@ class TestRealSubagentInterrupt(unittest.TestCase):
                 # Patch the OpenAI client creation inside AIAgent.__init__
                 with patch('run_agent.OpenAI') as MockOpenAI:
                     mock_client = MagicMock()
-                    # API call takes 5 seconds �?should be interrupted before that
+                    # API call takes 5 seconds é¥?should be interrupted before that
                     mock_client.chat.completions.create = _make_slow_api_response(delay=5.0)
                     mock_client.close = MagicMock()
                     MockOpenAI.return_value = mock_client
@@ -178,7 +178,7 @@ class TestRealSubagentInterrupt(unittest.TestCase):
 
         # The child should have been interrupted, not completed the full 5s API call
         self.assertLess(elapsed, 3.0,
-                       f"Took {elapsed:.2f}s �?interrupt was not detected quickly enough")
+                       f"Took {elapsed:.2f}s é¥?interrupt was not detected quickly enough")
         self.assertEqual(result["status"], "interrupted",
                         f"Expected 'interrupted', got '{result['status']}'")
 

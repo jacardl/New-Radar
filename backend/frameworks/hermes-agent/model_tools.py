@@ -63,7 +63,7 @@ def _get_worker_loop():
     gets its own long-lived loop stored in thread-local storage.  This
     prevents the "Event loop is closed" errors that occurred when
     asyncio.run() was used per-call: asyncio.run() creates a loop, runs
-    the coroutine, then *closes* the loop �?but cached httpx/AsyncOpenAI
+    the coroutine, then *closes* the loop é¥?but cached httpx/AsyncOpenAI
     clients remain bound to that now-dead loop and raise RuntimeError
     during garbage collection or subsequent use.
 
@@ -106,7 +106,7 @@ def _run_async(coro):
         loop = None
 
     if loop and loop.is_running():
-        # Inside an async context (gateway, RL env) �?run in a fresh thread.
+        # Inside an async context (gateway, RL env) é¥?run in a fresh thread.
         import concurrent.futures
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             future = pool.submit(asyncio.run, coro)
@@ -116,7 +116,7 @@ def _run_async(coro):
     # delegate_task), use a per-thread persistent loop.  This avoids
     # contention with the main thread's shared loop while keeping cached
     # httpx/AsyncOpenAI clients bound to a live loop for the thread's
-    # lifetime �?preventing "Event loop is closed" on GC cleanup.
+    # lifetime é¥?preventing "Event loop is closed" on GC cleanup.
     if threading.current_thread() is not threading.main_thread():
         worker_loop = _get_worker_loop()
         return worker_loop.run_until_complete(coro)
@@ -156,7 +156,7 @@ def _discover_tools():
         "tools.delegate_tool",
         "tools.process_registry",
         "tools.send_message_tool",
-        # "tools.honcho_tools",  # Removed �?Honcho is now a memory provider plugin
+        # "tools.honcho_tools",  # Removed é¥?Honcho is now a memory provider plugin
         "tools.homeassistant_tool",
     ]
     import importlib
@@ -258,15 +258,15 @@ def get_tool_definitions(
                 resolved = resolve_toolset(toolset_name)
                 tools_to_include.update(resolved)
                 if not quiet_mode:
-                    print(f"�?Enabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
+                    print(f"é?Enabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
             elif toolset_name in _LEGACY_TOOLSET_MAP:
                 legacy_tools = _LEGACY_TOOLSET_MAP[toolset_name]
                 tools_to_include.update(legacy_tools)
                 if not quiet_mode:
-                    print(f"�?Enabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
+                    print(f"é?Enabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
             else:
                 if not quiet_mode:
-                    print(f"⚠️  Unknown toolset: {toolset_name}")
+                    print(f"é¿çç¬  Unknown toolset: {toolset_name}")
 
     elif disabled_toolsets:
         from toolsets import get_all_toolsets
@@ -278,22 +278,22 @@ def get_tool_definitions(
                 resolved = resolve_toolset(toolset_name)
                 tools_to_include.difference_update(resolved)
                 if not quiet_mode:
-                    print(f"🚫 Disabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
+                    print(f"é¦æ¯ Disabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
             elif toolset_name in _LEGACY_TOOLSET_MAP:
                 legacy_tools = _LEGACY_TOOLSET_MAP[toolset_name]
                 tools_to_include.difference_update(legacy_tools)
                 if not quiet_mode:
-                    print(f"🚫 Disabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
+                    print(f"é¦æ¯ Disabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
             else:
                 if not quiet_mode:
-                    print(f"⚠️  Unknown toolset: {toolset_name}")
+                    print(f"é¿çç¬  Unknown toolset: {toolset_name}")
     else:
         from toolsets import get_all_toolsets
         for ts_name in get_all_toolsets():
             tools_to_include.update(resolve_toolset(ts_name))
 
     # Plugin-registered tools are now resolved through the normal toolset
-    # path �?validate_toolset() / resolve_toolset() / get_all_toolsets()
+    # path é¥?validate_toolset() / resolve_toolset() / get_all_toolsets()
     # all check the tool registry for plugin-provided toolsets.  No bypass
     # needed; plugins respect enabled_toolsets / disabled_toolsets like any
     # other toolset.
@@ -303,7 +303,7 @@ def get_tool_definitions(
 
     # The set of tool names that actually passed check_fn filtering.
     # Use this (not tools_to_include) for any downstream schema that references
-    # other tools by name �?otherwise the model sees tools mentioned in
+    # other tools by name é¥?otherwise the model sees tools mentioned in
     # descriptions that don't actually exist, and hallucinates calls to them.
     available_tool_names = {t["function"]["name"] for t in filtered_tools}
 
@@ -343,9 +343,9 @@ def get_tool_definitions(
     if not quiet_mode:
         if filtered_tools:
             tool_names = [t["function"]["name"] for t in filtered_tools]
-            print(f"🛠�? Final tool selection ({len(filtered_tools)} tools): {', '.join(tool_names)}")
+            print(f"é¦æ´é? Final tool selection ({len(filtered_tools)} tools): {', '.join(tool_names)}")
         else:
-            print("🛠�? No tools selected (all filtered out or unavailable)")
+            print("é¦æ´é? No tools selected (all filtered out or unavailable)")
 
     global _last_resolved_tool_names
     _last_resolved_tool_names = [t["function"]["name"] for t in filtered_tools]
@@ -414,7 +414,7 @@ def _coerce_value(value: str, expected_type):
     Returns the original string when coercion is not applicable or fails.
     """
     if isinstance(expected_type, list):
-        # Union type �?try each in order, return first successful coercion
+        # Union type é¥?try each in order, return first successful coercion
         for t in expected_type:
             result = _coerce_value(value, t)
             if result is not value:
@@ -441,7 +441,7 @@ def _coerce_number(value: str, integer_only: bool = False):
     if f == int(f):
         return int(f)
     if integer_only:
-        # Schema wants an integer but value has decimals �?keep as string
+        # Schema wants an integer but value has decimals é¥?keep as string
         return value
     return f
 
@@ -482,7 +482,7 @@ def handle_function_call(
     Returns:
         Function result as a JSON string.
     """
-    # Coerce string arguments to their schema-declared types (e.g. "42"�?2)
+    # Coerce string arguments to their schema-declared types (e.g. "42"é«?2)
     function_args = coerce_tool_args(function_name, function_args)
 
     try:
@@ -490,7 +490,7 @@ def handle_function_call(
             return json.dumps({"error": f"{function_name} must be handled by the agent loop"})
 
         # Check plugin hooks for a block directive (unless caller already
-        # checked �?e.g. run_agent._invoke_tool passes skip=True to
+        # checked é¥?e.g. run_agent._invoke_tool passes skip=True to
         # avoid double-firing the hook).
         if not skip_pre_tool_call_hook:
             block_message: Optional[str] = None
@@ -509,7 +509,7 @@ def handle_function_call(
             if block_message is not None:
                 return json.dumps({"error": block_message}, ensure_ascii=False)
         else:
-            # Still fire the hook for observers �?just don't check for blocking
+            # Still fire the hook for observers é¥?just don't check for blocking
             # (the caller already did that).
             try:
                 from hermes_cli.plugins import invoke_hook

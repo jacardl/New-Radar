@@ -1,4 +1,4 @@
-"""Tests for session_meta filtering �?issue #4715.
+"""Tests for session_meta filtering é¥?issue #4715.
 
 Ensures that transcript-only session_meta messages never reach the
 chat-completions API, via both the API-boundary guard in
@@ -13,7 +13,7 @@ from run_agent import AIAgent
 
 
 # ---------------------------------------------------------------------------
-# Layer 1 �?_sanitize_api_messages role-allowlist guard
+# Layer 1 é¥?_sanitize_api_messages role-allowlist guard
 # ---------------------------------------------------------------------------
 
 class TestSanitizeApiMessagesRoleFilter:
@@ -66,7 +66,7 @@ class TestSanitizeApiMessagesRoleFilter:
 
 
 # ---------------------------------------------------------------------------
-# Layer 2 �?CLI session-restore filters session_meta before loading
+# Layer 2 é¥?CLI session-restore filters session_meta before loading
 # ---------------------------------------------------------------------------
 
 class TestCLISessionRestoreFiltering:

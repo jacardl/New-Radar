@@ -6,36 +6,36 @@ logger = logging.getLogger(__name__)
 
 class FactCheckerNode:
     """
-    交叉验证与置信度评分节点（Cross-Validation Node & Confidence Scoring）�?    在IR装配完毕、渲染HTML之前执行�?    功能�?    1. 遍历报告的所有章节，检查是否有外部来源引用标记�?    2. 计算小节的引用密度，赋予 置信�?(High/Medium/Low Confidence) 标签�?    3. 如果某段落没有任何引用且输入数据较少，强制加上“缺乏事实支撑”的颜色或标记�?    """
+    äº¤åéªè¯ä¸ç½®ä¿¡åº¦è¯åèç¹ï¼Cross-Validation Node & Confidence Scoringï¼    å¨IRè£éå®æ¯ãæ¸²æHTMLä¹åæ§è¡    åè½ï¼?    1. éåæ¥åçææç« èï¼æ£æ¥æ¯å¦æå¤é¨æ¥æºå¼ç¨æ è®°    2. è®¡ç®å°èçå¼ç¨å¯åº¦ï¼èµäº ç½®ä¿¡åº?(High/Medium/Low Confidence) æ ç­¾    3. å¦æææ®µè½æ²¡æä»»ä½å¼ç¨ä¸è¾å¥æ°æ®è¾å°ï¼å¼ºå¶å ä¸"ç¼ºä¹äºå®æ¯æ"çé¢è²ææ è®°    """
 
     def __init__(self, llm_client=None):
         self.llm_client = llm_client
 
     def run(self, document_ir: Dict[str, Any], raw_reports: Dict[str, Any]) -> Dict[str, Any]:
         """
-        对已生成的Document IR执行置信度注入和简单的事实验证�?        此版本通过计算章节引用角标数量，直接注入置信度Callout�?        并在没有引用的段落上追加高亮或提醒�?        """
+        å¯¹å·²çæçDocument IRæ§è¡ç½®ä¿¡åº¦æ³¨å¥åç®åçäºå®éªè¯        æ­¤çæ¬éè¿è®¡ç®ç« èå¼ç¨è§æ æ°éï¼ç´æ¥æ³¨å¥ç½®ä¿¡åº¦Calloutï¼?        å¹¶å¨æ²¡æå¼ç¨çæ®µè½ä¸è¿½å é«äº®ææé        """
         try:
-            logger.info("开始执�?FactCheckerNode 交叉验证与置信度评分...")
+            logger.info("å¼å§æ§è¡?FactCheckerNode äº¤åéªè¯ä¸ç½®ä¿¡åº¦è¯å...")
             chapters = document_ir.get("chapters", [])
             for chapter in chapters:
                 self._check_and_score_chapter(chapter)
-            logger.info("FactCheckerNode 处理完成")
+            logger.info("FactCheckerNode å¤çå®æ")
             return document_ir
         except Exception as e:
-            logger.exception(f"FactCheckerNode 失败: {e}")
+            logger.exception(f"FactCheckerNode å¤±è´¥: {e}")
             return document_ir
 
     def _check_and_score_chapter(self, chapter: Dict[str, Any]):
         blocks = chapter.get("blocks", [])
         
-        # 为了给每�?Heading 计算置信度，我们需要把 Blocks �?Heading 划分
+        # ä¸ºäºç»æ¯ä¸?Heading è®¡ç®ç½®ä¿¡åº¦ï¼æä»¬éè¦æ Blocks æ?Heading åå
         current_heading_index = -1
         heading_citation_counts = {}
         
-        # 1. 第一遍扫描，统计每个 heading 下的引用数量
+        # 1. ç¬¬ä¸éæ«æï¼ç»è®¡æ¯ä¸ª heading ä¸çå¼ç¨æ°é
         for i, block in enumerate(blocks):
             if block.get("type") == "heading":
-                # 仅对二级及以上的标题进行事实核查评分，一级标题通常为大章节容器，无需评分
+                # ä»å¯¹äºçº§åä»¥ä¸çæ é¢è¿è¡äºå®æ ¸æ¥è¯åï¼ä¸çº§æ é¢éå¸¸ä¸ºå¤§ç« èå®¹å¨ï¼æ éè¯å
                 level = block.get("level", 2)
                 if level > 1:
                     current_heading_index = i
@@ -43,7 +43,7 @@ class FactCheckerNode:
                 else:
                     current_heading_index = -1
             elif current_heading_index != -1:
-                # 检查段落中�?superscript link 数量
+                # æ£æ¥æ®µè½ä¸­ç?superscript link æ°é
                 if block.get("type") == "paragraph":
                     inlines = block.get("inlines", [])
                     for inline in inlines:
@@ -51,14 +51,14 @@ class FactCheckerNode:
                         if any(isinstance(m, dict) and m.get("type") == "superscript" for m in marks):
                             heading_citation_counts[current_heading_index] += 1
                 elif block.get("type") in ["table", "list", "widget", "pestTable", "swotTable"]:
-                    # 粗略估计，如果有复杂块，通常也包含数据或结构
+                    # ç²ç¥ä¼°è®¡ï¼å¦ææå¤æåï¼éå¸¸ä¹åå«æ°æ®æç»æ
                     heading_citation_counts[current_heading_index] += 1
                     
-        # 2. 第二遍扫描，插入置信�?Callout 并阻断低置信度章�?        new_blocks = []
+        # 2. ç¬¬äºéæ«æï¼æå¥ç½®ä¿¡åº?Callout å¹¶é»æ­ä½ç½®ä¿¡åº¦ç« è?        new_blocks = []
 
         for i, block in enumerate(blocks):
             if block.get("type") == "heading":
-                # 如果这个 heading 不在 heading_citation_counts 中，说明它是一级标�?                if i in heading_citation_counts:
+                # å¦æè¿ä¸ª heading ä¸å¨ heading_citation_counts ä¸­ï¼è¯´æå®æ¯ä¸çº§æ é¢?                if i in heading_citation_counts:
                     citations = heading_citation_counts[i]
                     if citations == 0:
                         new_blocks.append(block)
@@ -66,13 +66,13 @@ class FactCheckerNode:
                         callout_block = {
                             "type": "callout",
                             "tone": "danger",
-                            "title": "事实核查评分：低置信�?,
+                            "title": "äºå®æ ¸æ¥è¯åï¼ä½ç½®ä¿¡åº?,
                             "blocks": [
                                 {
                                     "type": "paragraph",
                                     "inlines": [
                                         {
-                                            "text": "⚠️ 本节内容未能通过多方信息源的交叉验证（缺乏足够的不同数据源支撑，或各方表述不一致）。这些内容仍有一定概率是真实的，请结合文末的参考资�?URL 自行核对与判断�?
+                                            "text": "â ï¸ æ¬èåå®¹æªè½éè¿å¤æ¹ä¿¡æ¯æºçäº¤åéªè¯ï¼ç¼ºä¹è¶³å¤çä¸åæ°æ®æºæ¯æï¼æåæ¹è¡¨è¿°ä¸ä¸è´ï¼ãè¿äºåå®¹ä»æä¸å®æ¦çæ¯çå®çï¼è¯·ç»åææ«çåèèµæ?URL èªè¡æ ¸å¯¹ä¸å¤æ­
                                         }
                                     ]
                                 }
@@ -82,19 +82,19 @@ class FactCheckerNode:
                     else:
                         new_blocks.append(block)
                         if citations <= 3:
-                            confidence = "中等置信�?
+                            confidence = "ä¸­ç­ç½®ä¿¡åº?
                             tone = "warning"
-                            text = "本节内容有少量信息源支撑，建议结合引用清单交叉验证�?
+                            text = "æ¬èåå®¹æå°éä¿¡æ¯æºæ¯æï¼å»ºè®®ç»åå¼ç¨æ¸åäº¤åéªè¯
                         else:
-                            confidence = "高置信度"
+                            confidence = "é«ç½®ä¿¡åº¦"
                             tone = "success"
-                            text = "本节内容有充足的外部信息源（多处引用）支撑�?
+                            text = "æ¬èåå®¹æåè¶³çå¤é¨ä¿¡æ¯æºï¼å¤å¤å¼ç¨ï¼æ¯æ
                         
-                        # �?heading 下方插入一�?callout block
+                        # å?heading ä¸æ¹æå¥ä¸ä¸?callout block
                         callout_block = {
                             "type": "callout",
                             "tone": tone,
-                            "title": f"事实核查评分：{confidence}",
+                            "title": f"äºå®æ ¸æ¥è¯åï¼{confidence}",
                             "blocks": [
                                 {
                                     "type": "paragraph",

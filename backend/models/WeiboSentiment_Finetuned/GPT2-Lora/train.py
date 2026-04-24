@@ -17,10 +17,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
 
-# 导入PEFT库中的LoRA相关组件
+# å¯¼å¥PEFTåºä¸­çLoRAç¸å³ç»ä»¶
 from peft import LoraConfig, TaskType, get_peft_model
 
-# 设置随机种子
+# è®¾ç½®éæºç§å­
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -30,7 +30,7 @@ def set_seed(seed):
 
 set_seed(42)
 
-# 定义微博情感分析数据�?
+# å®ä¹å¾®åææåææ°æ®é?
 class WeiboSentimentDataset(Dataset):
     def __init__(self, reviews, labels, tokenizer, max_length=128):
         self.reviews = reviews
@@ -59,7 +59,7 @@ class WeiboSentimentDataset(Dataset):
             'labels': torch.tensor(label, dtype=torch.long)
         }
 
-# 训练函数
+# è®­ç»å½æ°
 def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, device, epochs=3):
     best_f1 = 0.0
     
@@ -68,16 +68,16 @@ def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, d
         model.train()
         total_loss = 0
         
-        # 训练循环
+        # è®­ç»å¾ªç¯
         progress_bar = tqdm(train_dataloader, desc="Training", position=0, leave=True)
         for batch in progress_bar:
-            # 将数据移到GPU
+            # å°æ°æ®ç§»å°GPU
             batch = {k: v.to(device) for k, v in batch.items()}
             
-            # 清零梯度
+            # æ¸é¶æ¢¯åº¦
             optimizer.zero_grad()
             
-            # 前向传播
+            # ååä¼ æ­
             outputs = model(
                 input_ids=batch['input_ids'],
                 attention_mask=batch['attention_mask'],
@@ -87,37 +87,37 @@ def train_model(model, train_dataloader, val_dataloader, optimizer, scheduler, d
             loss = outputs.loss
             total_loss += loss.item()
             
-            # 反向传播
+            # ååä¼ æ­
             loss.backward()
             
-            # 梯度裁剪，防止梯度爆�?
+            # æ¢¯åº¦è£åªï¼é²æ­¢æ¢¯åº¦çç?
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             
-            # 参数更新
+            # åæ°æ´æ°
             optimizer.step()
             scheduler.step()
             
-            # 更新进度�?
+            # æ´æ°è¿åº¦æ?
             progress_bar.set_postfix({"loss": loss.item()})
         
-        # 计算平均训练损失
+        # è®¡ç®å¹³åè®­ç»æå¤±
         avg_train_loss = total_loss / len(train_dataloader)
         print(f"Average training loss: {avg_train_loss:.4f}")
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         val_metrics = evaluate_model(model, val_dataloader, device)
         print(f"Validation Loss: {val_metrics['loss']:.4f}")
         print(f"Validation Accuracy: {val_metrics['accuracy']:.4f}")
         print(f"Validation F1 Score: {val_metrics['f1']:.4f}")
         
-        # 保存最佳模�?
+        # ä¿å­æä½³æ¨¡å?
         if val_metrics['f1'] > best_f1:
             best_f1 = val_metrics['f1']
-            # 保存LoRA权重
+            # ä¿å­LoRAæé
             model.save_pretrained("./best_weibo_sentiment_lora")
             print("Saved best LoRA model!")
 
-# 评估函数
+# è¯ä¼°å½æ°
 def evaluate_model(model, dataloader, device):
     model.eval()
     total_loss = 0
@@ -137,7 +137,7 @@ def evaluate_model(model, dataloader, device):
             loss = outputs.loss
             total_loss += loss.item()
             
-            # 获取预测结果
+            # è·åé¢æµç»æ
             logits = outputs.logits
             preds = torch.argmax(logits, dim=1).cpu().numpy()
             labels = batch['labels'].cpu().numpy()
@@ -145,7 +145,7 @@ def evaluate_model(model, dataloader, device):
             all_preds.extend(preds)
             all_labels.extend(labels)
     
-    # 计算评估指标
+    # è®¡ç®è¯ä¼°ææ 
     accuracy = accuracy_score(all_labels, all_preds)
     f1 = f1_score(all_labels, all_preds, average='macro')
     avg_loss = total_loss / len(dataloader)
@@ -157,42 +157,42 @@ def evaluate_model(model, dataloader, device):
     }
 
 def main():
-    # 设置模型本地保存路径
+    # è®¾ç½®æ¨¡åæ¬å°ä¿å­è·¯å¾
     model_name = 'uer/gpt2-chinese-cluecorpussmall'
     local_model_path = './models/gpt2-chinese'
     
-    # 确保目录存在
+    # ç¡®ä¿ç®å½å­å¨
     os.makedirs(local_model_path, exist_ok=True)
     os.makedirs('./best_weibo_sentiment_lora', exist_ok=True)
     
-    # 加载数据�?
-    print("加载微博情感数据�?..")
+    # å è½½æ°æ®é?
+    print("å è½½å¾®åæææ°æ®é?..")
     df = pd.read_csv('dataset/weibo_senti_100k.csv')
     
-    # 分割数据�?
+    # åå²æ°æ®é?
     train_df, val_df = train_test_split(df, test_size=0.1, random_state=42, stratify=df['label'])
     
-    # 加载tokenizer
-    print("加载预训练模型和tokenizer...")
+    # å è½½tokenizer
+    print("å è½½é¢è®­ç»æ¨¡ååtokenizer...")
     
-    # 检查本地是否已有模�?
+    # æ£æ¥æ¬å°æ¯å¦å·²ææ¨¡å?
     if os.path.exists(os.path.join(local_model_path, 'config.json')):
-        print(f"从本地路径加载tokenizer: {local_model_path}")
+        print(f"ä»æ¬å°è·¯å¾å è½½tokenizer: {local_model_path}")
         tokenizer = BertTokenizer.from_pretrained(local_model_path)
     else:
-        print(f"从Hugging Face下载tokenizer�? {local_model_path}")
+        print(f"ä»Hugging Faceä¸è½½tokenizerå? {local_model_path}")
         tokenizer = BertTokenizer.from_pretrained(model_name, cache_dir=local_model_path)
-        # 保存tokenizer到本�?
+        # ä¿å­tokenizerå°æ¬å?
         tokenizer.save_pretrained(local_model_path)
     
-    # 设置padding token
+    # è®¾ç½®padding token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = '[PAD]'
     
-    # 记录pad_token的ID
+    # è®°å½pad_tokençID
     pad_token_id = tokenizer.pad_token_id
     
-    # 创建数据�?
+    # åå»ºæ°æ®é?
     train_dataset = WeiboSentimentDataset(
         train_df['review'].values,
         train_df['label'].values,
@@ -205,58 +205,58 @@ def main():
         tokenizer
     )
     
-    # 创建数据加载�?
+    # åå»ºæ°æ®å è½½å?
     train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=16)
     
-    # 设置设备
+    # è®¾ç½®è®¾å¤
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"使用设备: {device}")
+    print(f"ä½¿ç¨è®¾å¤: {device}")
     
-    # 加载预训练的GPT2模型
-    print("加载GPT2模型...")
+    # å è½½é¢è®­ç»çGPT2æ¨¡å
+    print("å è½½GPT2æ¨¡å...")
     if (os.path.exists(os.path.join(local_model_path, 'pytorch_model.bin')) or 
         os.path.exists(os.path.join(local_model_path, 'model.safetensors'))):
-        print(f"从本地路径加载模型权�? {local_model_path}")
+        print(f"ä»æ¬å°è·¯å¾å è½½æ¨¡åæé? {local_model_path}")
         model = GPT2ForSequenceClassification.from_pretrained(local_model_path, num_labels=2)
     else:
-        print(f"从Hugging Face下载模型权重�? {local_model_path}")
-        # 直接从Hugging Face下载并保存完整模�?
+        print(f"ä»Hugging Faceä¸è½½æ¨¡åæéå? {local_model_path}")
+        # ç´æ¥ä»Hugging Faceä¸è½½å¹¶ä¿å­å®æ´æ¨¡å?
         model = GPT2ForSequenceClassification.from_pretrained(model_name, num_labels=2)
         model.save_pretrained(local_model_path)
     
-    # 确保模型使用与tokenizer相同的pad_token_id
+    # ç¡®ä¿æ¨¡åä½¿ç¨ä¸tokenizerç¸åçpad_token_id
     model.config.pad_token_id = pad_token_id
     
-    # 配置LoRA参数
-    print("配置LoRA参数...")
+    # éç½®LoRAåæ°
+    print("éç½®LoRAåæ°...")
     lora_config = LoraConfig(
-        task_type=TaskType.SEQ_CLS,  # 序列分类任务
-        target_modules=["c_attn", "c_proj"],  # GPT2的注意力投影�?
-        inference_mode=False,  # 训练模式
-        r=8,  # LoRA秩，控制可训练参数数�?
-        lora_alpha=32,  # LoRA alpha参数，缩放因�?
+        task_type=TaskType.SEQ_CLS,  # åºååç±»ä»»å¡
+        target_modules=["c_attn", "c_proj"],  # GPT2çæ³¨æåæå½±å±?
+        inference_mode=False,  # è®­ç»æ¨¡å¼
+        r=8,  # LoRAç§©ï¼æ§å¶å¯è®­ç»åæ°æ°é?
+        lora_alpha=32,  # LoRA alphaåæ°ï¼ç¼©æ¾å å­?
         lora_dropout=0.1,  # LoRA Dropout
     )
     
-    # 将模型转换为PEFT格式的LoRA模型
-    print("创建LoRA模型...")
+    # å°æ¨¡åè½¬æ¢ä¸ºPEFTæ ¼å¼çLoRAæ¨¡å
+    print("åå»ºLoRAæ¨¡å...")
     model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters()  # 打印可训练参数数量和占比
+    model.print_trainable_parameters()  # æå°å¯è®­ç»åæ°æ°éåå æ¯
     
     model.to(device)
     
-    # 设置优化器和学习率调度器
-    print("设置优化�?..")
+    # è®¾ç½®ä¼åå¨åå­¦ä¹ çè°åº¦å¨
+    print("è®¾ç½®ä¼åå?..")
     optimizer = AdamW(
-        model.parameters(),  # PEFT会自动处理参数筛�?
-        lr=5e-4,  # LoRA通常使用较高的学习率
+        model.parameters(),  # PEFTä¼èªå¨å¤çåæ°ç­é?
+        lr=5e-4,  # LoRAéå¸¸ä½¿ç¨è¾é«çå­¦ä¹ ç
         eps=1e-8
     )
     
-    # 设置总训练步数和warmup步数
-    total_steps = len(train_dataloader) * 3  # 3个epoch
-    warmup_steps = int(total_steps * 0.1)  # 10%的warmup
+    # è®¾ç½®æ»è®­ç»æ­¥æ°åwarmupæ­¥æ°
+    total_steps = len(train_dataloader) * 3  # 3ä¸ªepoch
+    warmup_steps = int(total_steps * 0.1)  # 10%çwarmup
     
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
@@ -264,8 +264,8 @@ def main():
         num_training_steps=total_steps
     )
     
-    # 训练模型
-    print("开始训�?..")
+    # è®­ç»æ¨¡å
+    print("å¼å§è®­ç»?..")
     train_model(
         model=model,
         train_dataloader=train_dataloader,
@@ -276,8 +276,8 @@ def main():
         epochs=3
     )
     
-    print("训练完成!")
-    print("LoRA权重已保存到: ./best_weibo_sentiment_lora/")
+    print("è®­ç»å®æ!")
+    print("LoRAæéå·²ä¿å­å°: ./best_weibo_sentiment_lora/")
 
 if __name__ == "__main__":
     main()

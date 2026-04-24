@@ -194,7 +194,7 @@ class TestWaitForGatewayExit:
         gateway._wait_for_gateway_exit(timeout=1.0, force_after=0.5)
 
     def test_returns_when_process_exits_gracefully(self, monkeypatch):
-        """Process exits after a couple of polls �?no SIGKILL needed."""
+        """Process exits after a couple of polls é¥?no SIGKILL needed."""
         poll_count = 0
 
         def mock_get_running_pid():
@@ -254,7 +254,7 @@ class TestWaitForGatewayExit:
         monkeypatch.setattr("gateway.status.get_running_pid", lambda: 99)
         monkeypatch.setattr(gateway, "terminate_pid", mock_terminate)
 
-        # Should not raise �?ProcessLookupError means it's already gone.
+        # Should not raise é¥?ProcessLookupError means it's already gone.
         gateway._wait_for_gateway_exit(timeout=10.0, force_after=2.0)
 
     def test_kill_gateway_processes_force_uses_helper(self, monkeypatch):

@@ -126,7 +126,7 @@ def _is_interactive() -> bool:
 
 def _can_open_browser() -> bool:
     """Return True if opening a browser is likely to work."""
-    # Explicit SSH session �?no local display
+    # Explicit SSH session é«?no local display
     if os.environ.get("SSH_CLIENT") or os.environ.get("SSH_TTY"):
         return False
     # macOS and Windows usually have a display
@@ -302,11 +302,11 @@ async def _redirect_handler(authorization_url: str) -> None:
             if opened:
                 print("  (Browser opened automatically.)\n", file=sys.stderr)
             else:
-                print("  (Could not open browser �?please open the URL manually.)\n", file=sys.stderr)
+                print("  (Could not open browser é¥?please open the URL manually.)\n", file=sys.stderr)
         except Exception:
-            print("  (Could not open browser �?please open the URL manually.)\n", file=sys.stderr)
+            print("  (Could not open browser é¥?please open the URL manually.)\n", file=sys.stderr)
     else:
-        print("  (Headless environment detected �?open the URL manually.)\n", file=sys.stderr)
+        print("  (Headless environment detected é¥?open the URL manually.)\n", file=sys.stderr)
 
 
 async def _wait_for_callback() -> tuple[str, str | None]:
@@ -330,10 +330,10 @@ async def _wait_for_callback() -> tuple[str, str | None]:
     try:
         server = HTTPServer(("127.0.0.1", _oauth_port), handler_cls)
     except OSError:
-        # Port already in use �?the server from build_oauth_auth is running.
+        # Port already in use é¥?the server from build_oauth_auth is running.
         # Fall back to polling the server started by build_oauth_auth.
         raise OAuthNonInteractiveError(
-            "OAuth callback timed out �?could not bind callback port. "
+            "OAuth callback timed out é¥?could not bind callback port. "
             "Complete the authorization in a browser first, then retry."
         )
 
@@ -356,7 +356,7 @@ async def _wait_for_callback() -> tuple[str, str | None]:
         raise RuntimeError(f"OAuth authorization failed: {result['error']}")
     if result["auth_code"] is None:
         raise OAuthNonInteractiveError(
-            "OAuth callback timed out �?no authorization code received. "
+            "OAuth callback timed out é¥?no authorization code received. "
             "Ensure you completed the browser authorization flow."
         )
 

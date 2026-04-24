@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-统一的情感分析预测程�?
-支持加载所有模型进行情感预�?
+ç»ä¸çææåæé¢æµç¨åº?
+æ¯æå è½½æææ¨¡åè¿è¡ææé¢æµ?
 """
 import argparse
 import os
@@ -10,7 +10,7 @@ from typing import Dict, Tuple, List
 import warnings
 warnings.filterwarnings("ignore")
 
-# 导入所有模型类
+# å¯¼å¥æææ¨¡åç±»
 from bayes_train import BayesModel
 from svm_train import SVMModel
 from xgboost_train import XGBoostModel
@@ -20,7 +20,7 @@ from utils import processing
 
 
 class SentimentPredictor:
-    """情感分析预测�?""
+    """ææåæé¢æµå?""
     
     def __init__(self):
         self.models = {}
@@ -33,25 +33,25 @@ class SentimentPredictor:
         }
         
     def load_model(self, model_type: str, model_path: str, **kwargs) -> None:
-        """加载指定类型的模�?
+        """å è½½æå®ç±»åçæ¨¡å?
         
         Args:
-            model_type: 模型类型 ('bayes', 'svm', 'xgboost', 'lstm', 'bert')
-            model_path: 模型文件路径
-            **kwargs: 其他参数（如BERT的预训练模型路径�?
+            model_type: æ¨¡åç±»å ('bayes', 'svm', 'xgboost', 'lstm', 'bert')
+            model_path: æ¨¡åæä»¶è·¯å¾
+            **kwargs: å¶ä»åæ°ï¼å¦BERTçé¢è®­ç»æ¨¡åè·¯å¾ï¼?
         """
         if model_type not in self.available_models:
-            raise ValueError(f"不支持的模型类型: {model_type}")
+            raise ValueError(f"ä¸æ¯æçæ¨¡åç±»å: {model_type}")
         
         if not os.path.exists(model_path):
-            print(f"警告: 模型文件不存�? {model_path}")
+            print(f"è­¦å: æ¨¡åæä»¶ä¸å­å? {model_path}")
             return
         
-        print(f"加载 {model_type.upper()} 模型...")
+        print(f"å è½½ {model_type.upper()} æ¨¡å...")
         
         try:
             if model_type == 'bert':
-                # BERT需要额外的预训练模型路�?
+                # BERTéè¦é¢å¤çé¢è®­ç»æ¨¡åè·¯å¾?
                 bert_path = kwargs.get('bert_path', './model/chinese_wwm_pytorch')
                 model = BertModel_Custom(bert_path)
             else:
@@ -59,17 +59,17 @@ class SentimentPredictor:
             
             model.load_model(model_path)
             self.models[model_type] = model
-            print(f"{model_type.upper()} 模型加载成功")
+            print(f"{model_type.upper()} æ¨¡åå è½½æå")
             
         except Exception as e:
-            print(f"加载 {model_type.upper()} 模型失败: {e}")
+            print(f"å è½½ {model_type.upper()} æ¨¡åå¤±è´¥: {e}")
     
     def load_all_models(self, model_dir: str = './model', bert_path: str = './model/chinese_wwm_pytorch') -> None:
-        """加载所有可用的模型
+        """å è½½ææå¯ç¨çæ¨¡å
         
         Args:
-            model_dir: 模型文件目录
-            bert_path: BERT预训练模型路�?
+            model_dir: æ¨¡åæä»¶ç®å½
+            bert_path: BERTé¢è®­ç»æ¨¡åè·¯å¾?
         """
         model_files = {
             'bayes': os.path.join(model_dir, 'bayes_model.pkl'),
@@ -79,95 +79,95 @@ class SentimentPredictor:
             'bert': os.path.join(model_dir, 'bert_model.pth')
         }
         
-        print("开始加载所有可用模�?..")
+        print("å¼å§å è½½ææå¯ç¨æ¨¡å?..")
         for model_type, model_path in model_files.items():
             self.load_model(model_type, model_path, bert_path=bert_path)
         
-        print(f"\n已加�?{len(self.models)} 个模�? {list(self.models.keys())}")
+        print(f"\nå·²å è½?{len(self.models)} ä¸ªæ¨¡å? {list(self.models.keys())}")
     
     def predict_single(self, text: str, model_type: str = None) -> Dict[str, Tuple[int, float]]:
-        """预测单条文本的情�?
+        """é¢æµåæ¡ææ¬çææ?
         
         Args:
-            text: 待预测文�?
-            model_type: 指定模型类型，如果为None则使用所有已加载的模�?
+            text: å¾é¢æµææ?
+            model_type: æå®æ¨¡åç±»åï¼å¦æä¸ºNoneåä½¿ç¨ææå·²å è½½çæ¨¡å?
             
         Returns:
             Dict[model_type, (prediction, confidence)]
         """
-        # 文本预处�?
+        # ææ¬é¢å¤ç?
         processed_text = processing(text)
         
         if model_type:
             if model_type not in self.models:
-                raise ValueError(f"模型 {model_type} 未加�?)
+                raise ValueError(f"æ¨¡å {model_type} æªå è½?)
             
             prediction, confidence = self.models[model_type].predict_single(processed_text)
             return {model_type: (prediction, confidence)}
         
-        # 使用所有模型预�?
+        # ä½¿ç¨æææ¨¡åé¢æµ?
         results = {}
         for name, model in self.models.items():
             try:
                 prediction, confidence = model.predict_single(processed_text)
                 results[name] = (prediction, confidence)
             except Exception as e:
-                print(f"模型 {name} 预测失败: {e}")
+                print(f"æ¨¡å {name} é¢æµå¤±è´¥: {e}")
                 results[name] = (0, 0.0)
         
         return results
     
     def predict_batch(self, texts: List[str], model_type: str = None) -> Dict[str, List[int]]:
-        """批量预测文本情感
+        """æ¹éé¢æµææ¬ææ
         
         Args:
-            texts: 待预测文本列�?
-            model_type: 指定模型类型，如果为None则使用所有已加载的模�?
+            texts: å¾é¢æµææ¬åè¡?
+            model_type: æå®æ¨¡åç±»åï¼å¦æä¸ºNoneåä½¿ç¨ææå·²å è½½çæ¨¡å?
             
         Returns:
             Dict[model_type, predictions]
         """
-        # 文本预处�?
+        # ææ¬é¢å¤ç?
         processed_texts = [processing(text) for text in texts]
         
         if model_type:
             if model_type not in self.models:
-                raise ValueError(f"模型 {model_type} 未加�?)
+                raise ValueError(f"æ¨¡å {model_type} æªå è½?)
             
             predictions = self.models[model_type].predict(processed_texts)
             return {model_type: predictions}
         
-        # 使用所有模型预�?
+        # ä½¿ç¨æææ¨¡åé¢æµ?
         results = {}
         for name, model in self.models.items():
             try:
                 predictions = model.predict(processed_texts)
                 results[name] = predictions
             except Exception as e:
-                print(f"模型 {name} 预测失败: {e}")
+                print(f"æ¨¡å {name} é¢æµå¤±è´¥: {e}")
                 results[name] = [0] * len(texts)
         
         return results
     
     def ensemble_predict(self, text: str, weights: Dict[str, float] = None) -> Tuple[int, float]:
-        """集成预测（多个模型投票）
+        """éæé¢æµï¼å¤ä¸ªæ¨¡åæç¥¨ï¼
         
         Args:
-            text: 待预测文�?
-            weights: 模型权重，如果为None则平均权�?
+            text: å¾é¢æµææ?
+            weights: æ¨¡åæéï¼å¦æä¸ºNoneåå¹³åæé?
             
         Returns:
             (prediction, confidence)
         """
         if len(self.models) == 0:
-            raise ValueError("没有加载任何模型")
+            raise ValueError("æ²¡æå è½½ä»»ä½æ¨¡å")
         
         results = self.predict_single(text)
         
         if weights is None:
             weights = {name: 1.0 for name in results.keys()}
         
-        # 加权平均
+        # å æå¹³å
         total_weight = 0
         weighted_prob = 0
         
@@ -188,93 +188,93 @@ class SentimentPredictor:
         return final_pred, final_conf
     
     def interactive_predict(self):
-        """交互式预测模�?""
+        """äº¤äºå¼é¢æµæ¨¡å¼?""
         if len(self.models) == 0:
-            print("错误: 没有加载任何模型，请先加载模�?)
+            print("éè¯¯: æ²¡æå è½½ä»»ä½æ¨¡åï¼è¯·åå è½½æ¨¡å?)
             return
         
         print("\n" + "="*50)
         print("="*50)
-        print(f"已加载模�? {', '.join(self.models.keys())}")
-        print("输入 'q' 退出程�?)
-        print("输入 'models' 查看模型列表")
-        print("输入 'ensemble' 使用集成预测")
+        print(f"å·²å è½½æ¨¡å? {', '.join(self.models.keys())}")
+        print("è¾å¥ 'q' éåºç¨åº?)
+        print("è¾å¥ 'models' æ¥çæ¨¡ååè¡¨")
+        print("è¾å¥ 'ensemble' ä½¿ç¨éæé¢æµ")
         print("-"*50)
         
         while True:
             try:
-                text = input("\n请输入要分析的微博内�? ").strip()
+                text = input("\nè¯·è¾å¥è¦åæçå¾®ååå®? ").strip()
                 
                 if text.lower() == 'q':
-                    print("👋 再见�?)
+                    print("ð åè§ï¼?)
                     break
                 
                 if text.lower() == 'models':
-                    print(f"已加载模�? {list(self.models.keys())}")
+                    print(f"å·²å è½½æ¨¡å? {list(self.models.keys())}")
                     continue
                 
                 if text.lower() == 'ensemble':
                     if len(self.models) > 1:
                         pred, conf = self.ensemble_predict(text)
-                        sentiment = "😊 正面" if pred == 1 else "😞 负面"
-                        print(f"\n🤖 集成预测结果:")
-                        print(f"   情感倾向: {sentiment}")
-                        print(f"   置信�? {conf:.4f}")
+                        sentiment = "ð æ­£é¢" if pred == 1 else "ð è´é¢"
+                        print(f"\nð¤ éæé¢æµç»æ:")
+                        print(f"   ææå¾å: {sentiment}")
+                        print(f"   ç½®ä¿¡åº? {conf:.4f}")
                     else:
-                        print("�?集成预测需要至�?个模�?)
+                        print("â?éæé¢æµéè¦è³å°?ä¸ªæ¨¡å?)
                     continue
                 
                 if not text:
-                    print("�?请输入有效内�?)
+                    print("â?è¯·è¾å¥ææåå®?)
                     continue
                 
-                # 预测
+                # é¢æµ
                 results = self.predict_single(text)
                 
-                print(f"\n📝 原文: {text}")
-                print("🔍 预测结果:")
+                print(f"\nð åæ: {text}")
+                print("ð é¢æµç»æ:")
                 
                 for model_name, (pred, conf) in results.items():
-                    sentiment = "😊 正面" if pred == 1 else "😞 负面"
-                    print(f"   {model_name.upper():8}: {sentiment} (置信�? {conf:.4f})")
+                    sentiment = "ð æ­£é¢" if pred == 1 else "ð è´é¢"
+                    print(f"   {model_name.upper():8}: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
                 
-                # 如果有多个模型，显示集成结果
+                # å¦ææå¤ä¸ªæ¨¡åï¼æ¾ç¤ºéæç»æ
                 if len(results) > 1:
                     ensemble_pred, ensemble_conf = self.ensemble_predict(text)
-                    ensemble_sentiment = "😊 正面" if ensemble_pred == 1 else "😞 负面"
-                    print(f"   {'集成':8}: {ensemble_sentiment} (置信�? {ensemble_conf:.4f})")
+                    ensemble_sentiment = "ð æ­£é¢" if ensemble_pred == 1 else "ð è´é¢"
+                    print(f"   {'éæ':8}: {ensemble_sentiment} (ç½®ä¿¡åº? {ensemble_conf:.4f})")
                 
             except KeyboardInterrupt:
-                print("\n\n👋 程序被中断，再见�?)
+                print("\n\nð ç¨åºè¢«ä¸­æ­ï¼åè§ï¼?)
                 break
             except Exception as e:
-                print(f"�?预测过程中出现错�? {e}")
+                print(f"â?é¢æµè¿ç¨ä¸­åºç°éè¯? {e}")
 
 
 def main():
-    """主函�?""
-    parser = argparse.ArgumentParser(description='微博情感分析统一预测程序')
+    """ä¸»å½æ?""
+    parser = argparse.ArgumentParser(description='å¾®åææåæç»ä¸é¢æµç¨åº')
     parser.add_argument('--model_dir', type=str, default='./model',
-                        help='模型文件目录')
+                        help='æ¨¡åæä»¶ç®å½')
     parser.add_argument('--bert_path', type=str, default='./model/chinese_wwm_pytorch',
-                        help='BERT预训练模型路�?)
+                        help='BERTé¢è®­ç»æ¨¡åè·¯å¾?)
     parser.add_argument('--model_type', type=str, choices=['bayes', 'svm', 'xgboost', 'lstm', 'bert'],
-                        help='指定单个模型类型进行预测')
+                        help='æå®åä¸ªæ¨¡åç±»åè¿è¡é¢æµ')
     parser.add_argument('--text', type=str,
-                        help='直接预测指定文本')
+                        help='ç´æ¥é¢æµæå®ææ¬')
     parser.add_argument('--interactive', action='store_true', default=True,
-                        help='交互式预测模式（默认�?)
+                        help='äº¤äºå¼é¢æµæ¨¡å¼ï¼é»è®¤ï¼?)
     parser.add_argument('--ensemble', action='store_true',
-                        help='使用集成预测')
+                        help='ä½¿ç¨éæé¢æµ')
     
     args = parser.parse_args()
     
-    # 创建预测�?
+    # åå»ºé¢æµå?
     predictor = SentimentPredictor()
     
-    # 加载模型
+    # å è½½æ¨¡å
     if args.model_type:
-        # 加载指定模型
+        # å è½½æå®æ¨¡å
         model_files = {
             'bayes': 'bayes_model.pkl',
             'svm': 'svm_model.pkl',
@@ -285,24 +285,24 @@ def main():
         model_path = os.path.join(args.model_dir, model_files[args.model_type])
         predictor.load_model(args.model_type, model_path, bert_path=args.bert_path)
     else:
-        # 加载所有模�?
+        # å è½½æææ¨¡å?
         predictor.load_all_models(args.model_dir, args.bert_path)
     
-    # 如果指定了文本，直接预测
+    # å¦ææå®äºææ¬ï¼ç´æ¥é¢æµ
     if args.text:
         if args.ensemble and len(predictor.models) > 1:
             pred, conf = predictor.ensemble_predict(args.text)
-            sentiment = "正面" if pred == 1 else "负面"
-            print(f"文本: {args.text}")
-            print(f"集成预测: {sentiment} (置信�? {conf:.4f})")
+            sentiment = "æ­£é¢" if pred == 1 else "è´é¢"
+            print(f"ææ¬: {args.text}")
+            print(f"éæé¢æµ: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
         else:
             results = predictor.predict_single(args.text, args.model_type)
-            print(f"文本: {args.text}")
+            print(f"ææ¬: {args.text}")
             for model_name, (pred, conf) in results.items():
-                sentiment = "正面" if pred == 1 else "负面"
-                print(f"{model_name.upper()}: {sentiment} (置信�? {conf:.4f})")
+                sentiment = "æ­£é¢" if pred == 1 else "è´é¢"
+                print(f"{model_name.upper()}: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
     elif args.interactive:
-        # 交互式模�?
+        # äº¤äºå¼æ¨¡å¼?
         predictor.interactive_predict()
 
 

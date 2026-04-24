@@ -1775,7 +1775,7 @@ class TestRunConversation:
         assert result["api_calls"] == 2
 
     def test_reasoning_only_local_resumed_no_compression_triggered(self, agent):
-        """Reasoning-only responses no longer trigger compression �?prefill then accepted."""
+        """Reasoning-only responses no longer trigger compression é¥?prefill then accepted."""
         self._setup_agent(agent)
         agent.base_url = "http://127.0.0.1:1234/v1"
         agent.compression_enabled = True
@@ -1846,7 +1846,7 @@ class TestRunConversation:
         assert result["completed"] is True
         assert result["final_response"] == "Here is the actual answer."
         assert result["api_calls"] == 2  # 1 original + 1 prefill continuation
-        # Prefill message should be cleaned up �?no consecutive assistant messages
+        # Prefill message should be cleaned up é¥?no consecutive assistant messages
         roles = [m.get("role") for m in result["messages"]]
         for i in range(len(roles) - 1):
             if roles[i] == "assistant" and roles[i + 1] == "assistant":
@@ -2218,7 +2218,7 @@ class TestRunConversation:
         ):
             result = agent.run_conversation("hello")
 
-        # Should return immediately �?no continuation, only 1 API call
+        # Should return immediately é¥?no continuation, only 1 API call
         assert result["completed"] is False
         assert result["api_calls"] == 1
         assert "reasoning" in result["error"].lower()
@@ -2297,7 +2297,7 @@ class TestRunConversation:
             patch.object(agent, "_save_trajectory"),
             patch.object(agent, "_cleanup_task_resources"),
         ):
-            # First call: truncated �?retry. Second: valid �?execute tool.
+            # First call: truncated é«?retry. Second: valid é«?execute tool.
             # Third: final text response.
             final_resp = _mock_response(content="Done!", finish_reason="stop")
             agent.client.chat.completions.create.side_effect = [
@@ -2804,7 +2804,7 @@ class TestSystemPromptStability:
             {"role": "assistant", "content": "hi"},
         ]
 
-        # First call �?_cached_system_prompt is None, history is non-empty
+        # First call é¥?_cached_system_prompt is None, history is non-empty
         agent._cached_system_prompt = None
 
         # Patch run_conversation internals to just test the system prompt logic.
@@ -2957,7 +2957,7 @@ class TestSafeWriter:
             sys.stdout = original_stdout
             sys.stderr = original_stderr
 
-    # test_installed_before_init_time_honcho_error_prints removed �?
+    # test_installed_before_init_time_honcho_error_prints removed é¥?
     # Honcho integration extracted to plugin (PR #4154).
 
     def test_double_wrap_prevented(self):
@@ -3401,7 +3401,7 @@ def _make_tc_delta(index=0, tc_id=None, name=None, arguments=None):
 
 
 class TestStreamingApiCall:
-    """Tests for _streaming_api_call �?voice TTS streaming pipeline."""
+    """Tests for _streaming_api_call é¥?voice TTS streaming pipeline."""
 
     def test_content_assembly(self, agent):
         chunks = [
@@ -3609,7 +3609,7 @@ class TestInterruptVprintForceTrue:
     """All interrupt _vprint calls must use force=True so they are always visible."""
 
     def test_all_interrupt_vprint_have_force_true(self):
-        """Scan source for _vprint calls containing 'Interrupt' �?each must have force=True."""
+        """Scan source for _vprint calls containing 'Interrupt' é¥?each must have force=True."""
         import inspect
         source = inspect.getsource(AIAgent)
         lines = source.split("\n")
@@ -3761,7 +3761,7 @@ class TestPersistUserMessageOverride:
             {
                 "role": "user",
                 "content": (
-                    "[Voice input �?respond concisely and conversationally, "
+                    "[Voice input é¥?respond concisely and conversationally, "
                     "2-3 sentences max. No code blocks or markdown.] Hello there"
                 ),
             },

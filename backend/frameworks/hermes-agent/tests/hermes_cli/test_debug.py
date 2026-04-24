@@ -277,7 +277,7 @@ class TestCollectDebugReport:
 
 
 # ---------------------------------------------------------------------------
-# CLI entry point �?run_debug_share
+# CLI entry point é¥?run_debug_share
 # ---------------------------------------------------------------------------
 
 class TestRunDebugShare:

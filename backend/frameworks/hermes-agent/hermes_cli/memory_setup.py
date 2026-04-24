@@ -1,4 +1,4 @@
-"""hermes memory setup|status â€?configure memory provider plugins.
+"""hermes memory setup|status Ã¢?configure memory provider plugins.
 
 Auto-detects installed memory providers via the plugin system.
 Interactive curses-based UI for provider selection, then walks through
@@ -76,7 +76,7 @@ def _install_dependencies(provider_name: str) -> None:
     if not pip_deps:
         return
 
-    # pip name â†?import name mapping for packages where they differ
+    # pip name Ã¢?import name mapping for packages where they differ
     _IMPORT_NAMES = {
         "honcho-ai": "honcho",
         "mem0ai": "mem0",
@@ -101,7 +101,7 @@ def _install_dependencies(provider_name: str) -> None:
     import shutil
     uv_path = shutil.which("uv")
     if not uv_path:
-        print(f"  âš?uv not found â€?cannot install dependencies")
+        print(f"  Ã¢?uv not found Ã¢?cannot install dependencies")
         print(f"  Install uv: curl -LsSf https://astral.sh/uv/install.sh | sh")
         print(f"  Then re-run: hermes memory setup")
         return
@@ -112,15 +112,15 @@ def _install_dependencies(provider_name: str) -> None:
             check=True, timeout=120,
             capture_output=True,
         )
-        print(f"  âœ?Installed {', '.join(missing)}")
+        print(f"  Ã¢?Installed {', '.join(missing)}")
     except subprocess.CalledProcessError as e:
-        print(f"  âš?Failed to install {', '.join(missing)}")
+        print(f"  Ã¢?Failed to install {', '.join(missing)}")
         stderr = (e.stderr or b"").decode()[:200]
         if stderr:
             print(f"    {stderr}")
         print(f"  Run manually: uv pip install --python {sys.executable} {' '.join(missing)}")
     except Exception as e:
-        print(f"  âš?Install failed: {e}")
+        print(f"  Ã¢?Install failed: {e}")
         print(f"  Run manually: uv pip install --python {sys.executable} {' '.join(missing)}")
 
     # Also show external dependencies (non-pip) if any
@@ -136,7 +136,7 @@ def _install_dependencies(provider_name: str) -> None:
                 )
             except Exception:
                 if install_cmd:
-                    print(f"\n  âš?'{dep_name}' not found. Install with:")
+                    print(f"\n  Ã¢?'{dep_name}' not found. Install with:")
                     print(f"    {install_cmd}")
 
 
@@ -230,8 +230,8 @@ def cmd_setup(args) -> None:
     # Build picker items
     items = []
     for name, desc, _ in providers:
-        items.append((name, f"â€?{desc}"))
-    items.append(("Built-in only", "â€?MEMORY.md / USER.md (default)"))
+        items.append((name, f"Ã¢?{desc}"))
+    items.append(("Built-in only", "Ã¢?MEMORY.md / USER.md (default)"))
 
     builtin_idx = len(items) - 1
     selected = _curses_select("Memory provider setup", items, default=builtin_idx)
@@ -244,7 +244,7 @@ def cmd_setup(args) -> None:
     if selected >= len(providers) or selected < 0:
         config["memory"]["provider"] = ""
         save_config(config)
-        print("\n  âœ?Memory provider: built-in only")
+        print("\n  Ã¢?Memory provider: built-in only")
         print("  Saved to config.yaml\n")
         return
 
@@ -387,9 +387,9 @@ def cmd_status(args) -> None:
     mem_config = config.get("memory", {})
     provider_name = mem_config.get("provider", "")
 
-    print(f"\nMemory status\n" + "â”€" * 40)
+    print(f"\nMemory status\n" + "-" * 40)
     print(f"  Built-in:  always active")
-    print(f"  Provider:  {provider_name or '(none â€?built-in only)'}")
+    print(f"  Provider:  {provider_name or '(none Ã¢?built-in only)'}")
 
     if provider_name:
         provider_config = mem_config.get(provider_name, {})
@@ -401,13 +401,13 @@ def cmd_status(args) -> None:
         providers = _get_available_providers()
         found = any(name == provider_name for name, _, _ in providers)
         if found:
-            print(f"\n  Plugin:    installed âœ?)
+            print(f"\n  Plugin:    installed Ã¢?)
             for pname, _, p in providers:
                 if pname == provider_name:
                     if p.is_available():
-                        print(f"  Status:    available âœ?)
+                        print(f"  Status:    available Ã¢?)
                     else:
-                        print(f"  Status:    not available âœ?)
+                        print(f"  Status:    not available Ã¢?)
                         schema = p.get_config_schema() if hasattr(p, "get_config_schema") else []
                         secrets = [f for f in schema if f.get("secret")]
                         if secrets:
@@ -416,22 +416,22 @@ def cmd_status(args) -> None:
                                 env_var = s.get("env_var", "")
                                 url = s.get("url", "")
                                 is_set = bool(os.environ.get(env_var))
-                                mark = "âœ? if is_set else "âœ?
+                                mark = "Ã¢? if is_set else "Ã¢?
                                 line = f"    {mark} {env_var}"
                                 if url and not is_set:
-                                    line += f"  â†?{url}"
+                                    line += f"  Ã¢?{url}"
                                 print(line)
                     break
         else:
-            print(f"\n  Plugin:    NOT installed âœ?)
+            print(f"\n  Plugin:    NOT installed Ã¢?)
             print(f"  Install the '{provider_name}' memory plugin to ~/.hermes/plugins/")
 
     providers = _get_available_providers()
     if providers:
         print(f"\n  Installed plugins:")
         for pname, desc, _ in providers:
-            active = " â†?active" if pname == provider_name else ""
-            print(f"    â€?{pname}  ({desc}){active}")
+            active = " Ã¢?active" if pname == provider_name else ""
+            print(f"    Ã¢?{pname}  ({desc}){active}")
 
     print()
 

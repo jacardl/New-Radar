@@ -11,7 +11,7 @@ from hermes_constants import get_default_hermes_root, is_container
 
 
 class TestGetDefaultHermesRoot:
-    """Tests for get_default_hermes_root() �?Docker/custom deployment awareness."""
+    """Tests for get_default_hermes_root() é¥?Docker/custom deployment awareness."""
 
     def test_no_hermes_home_returns_native(self, tmp_path, monkeypatch):
         """When HERMES_HOME is not set, returns ~/.hermes."""
@@ -64,7 +64,7 @@ class TestGetDefaultHermesRoot:
 
 
 class TestIsContainer:
-    """Tests for is_container() �?Docker/Podman detection."""
+    """Tests for is_container() é¥?Docker/Podman detection."""
 
     def _reset_cache(self, monkeypatch):
         """Reset the cached detection result before each test."""

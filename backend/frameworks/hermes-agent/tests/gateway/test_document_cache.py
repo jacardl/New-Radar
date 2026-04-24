@@ -72,7 +72,7 @@ class TestCacheDocumentFromBytes:
         assert p1 != p2
 
     def test_path_traversal_blocked(self):
-        """Malicious directory components are stripped �?only the leaf name survives."""
+        """Malicious directory components are stripped é¥?only the leaf name survives."""
         path = cache_document_from_bytes(b"data", "../../etc/passwd")
         basename = os.path.basename(path)
         assert "passwd" in basename

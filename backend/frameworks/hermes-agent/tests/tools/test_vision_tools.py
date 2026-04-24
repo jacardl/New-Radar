@@ -1,4 +1,4 @@
-"""Tests for tools/vision_tools.py �?URL validation, type hints, error logging."""
+"""Tests for tools/vision_tools.py é¥?URL validation, type hints, error logging."""
 
 import asyncio
 import json
@@ -25,7 +25,7 @@ from tools.vision_tools import (
 
 
 # ---------------------------------------------------------------------------
-# _validate_image_url �?urlparse-based validation
+# _validate_image_url é¥?urlparse-based validation
 # ---------------------------------------------------------------------------
 
 
@@ -95,7 +95,7 @@ class TestValidateImageUrl:
         assert _validate_image_url("javascript:alert(1)") is False
 
     def test_rejects_http_without_netloc(self):
-        """http:// alone has no network location �?urlparse catches this."""
+        """http:// alone has no network location é¥?urlparse catches this."""
         assert _validate_image_url("http://") is False
 
     def test_rejects_https_without_netloc(self):
@@ -166,7 +166,7 @@ class TestImageToBase64DataUrl:
 
 
 # ---------------------------------------------------------------------------
-# _handle_vision_analyze �?type signature & behavior
+# _handle_vision_analyze é¥?type signature & behavior
 # ---------------------------------------------------------------------------
 
 
@@ -259,7 +259,7 @@ class TestHandleVisionAnalyze:
 
 
 # ---------------------------------------------------------------------------
-# Error logging with exc_info �?verify tracebacks are logged
+# Error logging with exc_info é¥?verify tracebacks are logged
 # ---------------------------------------------------------------------------
 
 
@@ -684,7 +684,7 @@ class TestVisionRegistration:
 
 
 # ---------------------------------------------------------------------------
-# _resize_image_for_vision �?auto-resize oversized images
+# _resize_image_for_vision é¥?auto-resize oversized images
 # ---------------------------------------------------------------------------
 
 
@@ -831,7 +831,7 @@ class TestResizeImageForVision:
 
 
 # ---------------------------------------------------------------------------
-# _is_image_size_error �?detect size-related API errors
+# _is_image_size_error é¥?detect size-related API errors
 # ---------------------------------------------------------------------------
 
 

@@ -1,7 +1,7 @@
 """
-Report Engine 默认的OpenAI兼容LLM客户端封装�?
+Report Engine é»è®¤çOpenAIå¼å®¹LLMå®¢æ·ç«¯å°è£
 
-提供统一的非流式/流式调用、可选重试、字节安全拼接与模型元信息查询�?
+æä¾ç»ä¸çéæµå¼/æµå¼è°ç¨ãå¯ééè¯ãå­èå®å¨æ¼æ¥ä¸æ¨¡ååä¿¡æ¯æ¥è¯¢
 """
 
 import os
@@ -21,9 +21,9 @@ try:
     from retry_helper import with_retry, LLM_RETRY_CONFIG
 except ImportError:
     def with_retry(config=None):
-        """简化版with_retry占位，实现与真实装饰器一致的调用签名"""
+        """ç®åçwith_retryå ä½ï¼å®ç°ä¸çå®è£é¥°å¨ä¸è´çè°ç¨ç­¾å"""
         def decorator(func):
-            """直接返回原函数，确保无retry依赖时代码仍可运�?""
+            """ç´æ¥è¿ååå½æ°ï¼ç¡®ä¿æ retryä¾èµæ¶ä»£ç ä»å¯è¿è¡?""
             return func
         return decorator
 
@@ -31,16 +31,16 @@ except ImportError:
 
 
 class LLMClient:
-    """针对OpenAI Chat Completion API的轻量封装，统一Report Engine调用入口�?""
+    """éå¯¹OpenAI Chat Completion APIçè½»éå°è£ï¼ç»ä¸Report Engineè°ç¨å¥å£""
 
     def __init__(self, api_key: str, model_name: str, base_url: Optional[str] = None):
         """
-        初始化LLM客户端并保存基础连接信息�?
+        åå§åLLMå®¢æ·ç«¯å¹¶ä¿å­åºç¡è¿æ¥ä¿¡æ¯
 
         Args:
-            api_key: 用于鉴权的API Token
-            model_name: 具体模型ID，用于定位供应商能力
-            base_url: 自定义兼容接口地址，默认为OpenAI官方
+            api_key: ç¨äºé´æçAPI Token
+            model_name: å·ä½æ¨¡åIDï¼ç¨äºå®ä½ä¾åºåè½å
+            base_url: èªå®ä¹å¼å®¹æ¥å£å°åï¼é»è®¤ä¸ºOpenAIå®æ¹
         """
         if not api_key:
             raise ValueError("Report Engine LLM API key is required.")
@@ -66,8 +66,8 @@ class LLMClient:
             client_kwargs["base_url"] = base_url
             
         import httpx
-        # 创建自定义的 httpx Client 以绕过底层的 Header 规范化机�?
-        # HTTP/1.1 允许保留 Header 的原始大小写
+        # åå»ºèªå®ä¹ç httpx Client ä»¥ç»è¿åºå±ç Header è§èåæºå?
+        # HTTP/1.1 åè®¸ä¿ç Header çåå§å¤§å°å
         headers = {}
         if base_url and "omnisaas.cn" in base_url:
             headers["apikey"] = api_key
@@ -83,15 +83,15 @@ class LLMClient:
     @with_retry(LLM_RETRY_CONFIG)
     def invoke(self, system_prompt: str, user_prompt: str, **kwargs) -> str:
         """
-        以非流式方式调用LLM，并返回一次性完成的完整响应�?
+        ä»¥éæµå¼æ¹å¼è°ç¨LLMï¼å¹¶è¿åä¸æ¬¡æ§å®æçå®æ´ååº
 
         Args:
-            system_prompt: 系统角色提示
-            user_prompt: 用户高优先级指令
-            **kwargs: 允许透传temperature/top_p等采样参�?
+            system_prompt: ç³»ç»è§è²æç¤º
+            user_prompt: ç¨æ·é«ä¼åçº§æä»¤
+            **kwargs: åè®¸éä¼ temperature/top_pç­éæ ·åæ?
 
         Returns:
-            去除首尾空白后的LLM响应文本
+            å»é¤é¦å°¾ç©ºç½åçLLMååºææ¬
         """
         messages = [
             {"role": "system", "content": system_prompt},
@@ -116,32 +116,32 @@ class LLMClient:
 
     def stream_invoke(self, system_prompt: str, user_prompt: str, **kwargs) -> Generator[str, None, None]:
         """
-        流式调用LLM，逐步返回响应内容�?
-        带有防御性的自动截断逻辑，以防大模型抛出 "request was too large" 且导致无限重试�?
+        æµå¼è°ç¨LLMï¼éæ­¥è¿åååºåå®¹
+        å¸¦æé²å¾¡æ§çèªå¨æªæ­é»è¾ï¼ä»¥é²å¤§æ¨¡åæåº "request was too large" ä¸å¯¼è´æ ééè¯
         
-        参数:
-            system_prompt: 系统提示词�?
-            user_prompt: 用户提示词�?
-            **kwargs: 采样参数（temperature、top_p等）�?
+        åæ°:
+            system_prompt: ç³»ç»æç¤ºè¯
+            user_prompt: ç¨æ·æç¤ºè¯
+            **kwargs: éæ ·åæ°ï¼temperatureop_pç­ï¼
             
-        产出:
-            str: 每次yield一段delta文本，方便上层实时渲染�?
+        äº§åº:
+            str: æ¯æ¬¡yieldä¸æ®µdeltaææ¬ï¼æ¹ä¾¿ä¸å±å®æ¶æ¸²æ
         """
         allowed_keys = {"temperature", "top_p", "presence_penalty", "frequency_penalty", "max_tokens"}
         extra_params = {key: value for key, value in kwargs.items() if key in allowed_keys and value is not None}
         if "max_tokens" not in extra_params:
             extra_params["max_tokens"] = 8192
-        # 强制使用流式
+        # å¼ºå¶ä½¿ç¨æµå¼
         extra_params["stream"] = True
 
         # =======================
-        # 新增防御机制：动态截断以防御 "request was too large"
+        # æ°å¢é²å¾¡æºå¶ï¼å¨ææªæ­ä»¥é²å¾¡ "request was too large"
         # =======================
-        MAX_CHARS = 100000  # 初始边界：约3万Token
+        MAX_CHARS = 100000  # åå§è¾¹çï¼çº¦3ä¸Token
         if len(user_prompt) > MAX_CHARS:
-            logger.warning(f"用户提示词过�?({len(user_prompt)} 字符)，触发初始截断以防止 'request was too large'�?)
+            logger.warning(f"ç¨æ·æç¤ºè¯è¿é?({len(user_prompt)} å­ç¬¦)ï¼è§¦ååå§æªæ­ä»¥é²æ­¢ 'request was too large')
             half = MAX_CHARS // 2
-            user_prompt = user_prompt[:half] + "\n\n...[由于长度限制，中间部分已被系统自动截断]...\n\n" + user_prompt[-half:]
+            user_prompt = user_prompt[:half] + "\n\n...[ç±äºé¿åº¦éå¶ï¼ä¸­é´é¨åå·²è¢«ç³»ç»èªå¨æªæ­]...\n\n" + user_prompt[-half:]
 
         while True:
             messages = [
@@ -164,65 +164,65 @@ class LLMClient:
                         delta = chunk.choices[0].delta
                         if delta and delta.content:
                             yield delta.content
-                break  # 成功后退出循�?
+                break  # æååéåºå¾ªç?
                 
             except Exception as e:
                 error_msg = str(e)
                 
-                # 处理超大请求报错（动态递减截断�?
+                # å¤çè¶å¤§è¯·æ±æ¥éï¼å¨æéåæªæ­ï¼?
                 if "request was too large" in error_msg.lower() or "context length exceeded" in error_msg.lower():
-                    # 计算新的更小的长度限�?
+                    # è®¡ç®æ°çæ´å°çé¿åº¦éå?
                     current_len = len(user_prompt)
-                    new_len = int(current_len * 0.7)  # 每次缩减 30%
+                    new_len = int(current_len * 0.7)  # æ¯æ¬¡ç¼©å 30%
                     
                     if new_len < 1000:
-                        # 缩减到极限仍失败，说明是其他问题，抛出异�?
-                        logger.error(f"用户提示词已缩减至极�?({current_len} 字符)，仍然提示请求过大。停止重试�?)
+                        # ç¼©åå°æéä»å¤±è´¥ï¼è¯´ææ¯å¶ä»é®é¢ï¼æåºå¼å¸?
+                        logger.error(f"ç¨æ·æç¤ºè¯å·²ç¼©åè³æé?({current_len} å­ç¬¦)ï¼ä»ç¶æç¤ºè¯·æ±è¿å¤§ãåæ­¢éè¯)
                         raise e
                         
-                    logger.warning(f"大模型返�?'request was too large'。当前字符数: {current_len}。系统正在自动缩�?30% �?{new_len} 字符并立即重�?..")
+                    logger.warning(f"å¤§æ¨¡åè¿å?'request was too large'ãå½åå­ç¬¦æ°: {current_len}ãç³»ç»æ­£å¨èªå¨ç¼©å?30% è?{new_len} å­ç¬¦å¹¶ç«å³éè¯?..")
                     half = new_len // 2
-                    user_prompt = user_prompt[:half] + "\n\n...[因模型上下文溢出，中间部分被系统自动截断]...\n\n" + user_prompt[-half:]
-                    continue  # 继续循环进行下一次尝�?
+                    user_prompt = user_prompt[:half] + "\n\n...[å æ¨¡åä¸ä¸ææº¢åºï¼ä¸­é´é¨åè¢«ç³»ç»èªå¨æªæ­]...\n\n" + user_prompt[-half:]
+                    continue  # ç»§ç»­å¾ªç¯è¿è¡ä¸ä¸æ¬¡å°è¯?
 
-                logger.error(f"流式请求失败: {error_msg}")
-                # 如果�?502/504 等网关错误导致的 HTML 响应，包装成更明确的异常，以便上层重试机制能够捕�?
+                logger.error(f"æµå¼è¯·æ±å¤±è´¥: {error_msg}")
+                # å¦ææ?502/504 ç­ç½å³éè¯¯å¯¼è´ç HTML ååºï¼åè£ææ´æç¡®çå¼å¸¸ï¼ä»¥ä¾¿ä¸å±éè¯æºå¶è½å¤æè?
                 if "<html>" in error_msg.lower() or "502 bad gateway" in error_msg.lower() or "504 gateway time-out" in error_msg.lower():
-                    raise Exception(f"API 网关超时或返回了无效�?HTML 响应: {error_msg[:200]}...") from e
+                    raise Exception(f"API ç½å³è¶æ¶æè¿åäºæ æç?HTML ååº: {error_msg[:200]}...") from e
                 raise e
     
     @with_retry(LLM_RETRY_CONFIG)
     def stream_invoke_to_string(self, system_prompt: str, user_prompt: str, **kwargs) -> str:
         """
-        流式调用LLM并安全地拼接为完整字符串（避免UTF-8多字节字符截断）�?
+        æµå¼è°ç¨LLMå¹¶å®å¨å°æ¼æ¥ä¸ºå®æ´å­ç¬¦ä¸²ï¼é¿åUTF-8å¤å­èå­ç¬¦æªæ­ï¼
         
-        参数:
-            system_prompt: 系统提示词�?
-            user_prompt: 用户提示词�?
-            **kwargs: 采样或超时配置�?
+        åæ°:
+            system_prompt: ç³»ç»æç¤ºè¯
+            user_prompt: ç¨æ·æç¤ºè¯
+            **kwargs: éæ ·æè¶æ¶éç½®
             
-        返回:
-            str: 将所有delta拼接后的完整响应�?
+        è¿å:
+            str: å°æædeltaæ¼æ¥åçå®æ´ååº
         """
-        # 以字节形式收集所有块
+        # ä»¥å­èå½¢å¼æ¶éææå
         byte_chunks = []
         for chunk in self.stream_invoke(system_prompt, user_prompt, **kwargs):
             byte_chunks.append(chunk.encode('utf-8'))
         
-        # 拼接所有字节，然后一次性解�?
+        # æ¼æ¥ææå­èï¼ç¶åä¸æ¬¡æ§è§£ç ?
         if byte_chunks:
             return b''.join(byte_chunks).decode('utf-8', errors='replace')
         return ""
 
     @staticmethod
     def validate_response(response: Optional[str]) -> str:
-        """兜底处理None/空白字符串，防止上层逻辑崩溃"""
+        """ååºå¤çNone/ç©ºç½å­ç¬¦ä¸²ï¼é²æ­¢ä¸å±é»è¾å´©æº"""
         if response is None:
             return ""
         return response.strip()
 
     def get_model_info(self) -> Dict[str, Any]:
-        """以字典形式返回当前客户端的模�?提供�?基础URL信息"""
+        """ä»¥å­å¸å½¢å¼è¿åå½åå®¢æ·ç«¯çæ¨¡å?æä¾æ?åºç¡URLä¿¡æ¯"""
         return {
             "provider": self.provider,
             "model": self.model_name,

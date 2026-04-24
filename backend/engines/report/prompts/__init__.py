@@ -1,7 +1,7 @@
 """
-Report Engine提示词模块�?
+Report Engineæç¤ºè¯æ¨¡å
 
-集中导出各阶段系统提示词与辅助函数，其他模块可直接from prompts import�?
+éä¸­å¯¼åºåé¶æ®µç³»ç»æç¤ºè¯ä¸è¾å©å½æ°ï¼å¶ä»æ¨¡åå¯ç´æ¥from prompts import
 """
 
 from .prompts import (

@@ -1,13 +1,13 @@
 """Per-platform display/verbosity configuration resolver.
 
-Provides ``resolve_display_setting()`` �?the single entry-point for reading
+Provides ``resolve_display_setting()`` é¥?the single entry-point for reading
 display settings with platform-specific overrides and sensible defaults.
 
 Resolution order (first non-None wins):
-    1. ``display.platforms.<platform>.<key>``  �?explicit per-platform user override
-    2. ``display.<key>``                       �?global user setting
-    3. ``_PLATFORM_DEFAULTS[<platform>][<key>]``  �?built-in sensible default
-    4. ``_GLOBAL_DEFAULTS[<key>]``              �?built-in global default
+    1. ``display.platforms.<platform>.<key>``  é¥?explicit per-platform user override
+    2. ``display.<key>``                       é¥?global user setting
+    3. ``_PLATFORM_DEFAULTS[<platform>][<key>]``  é¥?built-in sensible default
+    4. ``_GLOBAL_DEFAULTS[<key>]``              é¥?built-in global default
 
 Backward compatibility: ``display.tool_progress_overrides`` is still read as a
 fallback for ``tool_progress`` when no ``display.platforms`` entry exists.  A
@@ -34,11 +34,11 @@ _GLOBAL_DEFAULTS: dict[str, Any] = {
 }
 
 # ---------------------------------------------------------------------------
-# Sensible per-platform defaults �?tiered by platform capability
+# Sensible per-platform defaults é¥?tiered by platform capability
 # ---------------------------------------------------------------------------
 # Tier 1 (high): Supports message editing, typically personal/team use
 # Tier 2 (medium): Supports editing but often workspace/customer-facing
-# Tier 3 (low): No edit support �?each progress msg is permanent
+# Tier 3 (low): No edit support é¥?each progress msg is permanent
 # Tier 4 (minimal): Batch/non-interactive delivery
 
 _TIER_HIGH = {
@@ -70,17 +70,17 @@ _TIER_MINIMAL = {
 }
 
 _PLATFORM_DEFAULTS: dict[str, dict[str, Any]] = {
-    # Tier 1 �?full edit support, personal/team use
+    # Tier 1 é¥?full edit support, personal/team use
     "telegram":    _TIER_HIGH,
     "discord":     _TIER_HIGH,
 
-    # Tier 2 �?edit support, often customer/workspace channels
+    # Tier 2 é¥?edit support, often customer/workspace channels
     "slack":           _TIER_MEDIUM,
     "mattermost":      _TIER_MEDIUM,
     "matrix":          _TIER_MEDIUM,
     "feishu":          _TIER_MEDIUM,
 
-    # Tier 3 �?no edit support, progress messages are permanent
+    # Tier 3 é¥?no edit support, progress messages are permanent
     "signal":          _TIER_LOW,
     "whatsapp":        _TIER_MEDIUM,  # Baileys bridge supports /edit
     "bluebubbles":     _TIER_LOW,
@@ -89,7 +89,7 @@ _PLATFORM_DEFAULTS: dict[str, dict[str, Any]] = {
     "wecom_callback":  _TIER_LOW,
     "dingtalk":        _TIER_LOW,
 
-    # Tier 4 �?batch or non-interactive delivery
+    # Tier 4 é¥?batch or non-interactive delivery
     "email":           _TIER_MINIMAL,
     "sms":             _TIER_MINIMAL,
     "webhook":         _TIER_MINIMAL,
@@ -168,7 +168,7 @@ def resolve_display_setting(
 # ---------------------------------------------------------------------------
 
 def _normalise(setting: str, value: Any) -> Any:
-    """Normalise YAML quirks (bare ``off`` �?False in YAML 1.1)."""
+    """Normalise YAML quirks (bare ``off`` é«?False in YAML 1.1)."""
     if setting == "tool_progress":
         if value is False:
             return "off"

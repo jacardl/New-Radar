@@ -142,7 +142,7 @@ def _truncate_around_matches(
                 match_positions.append(m.start())
 
     if not match_positions:
-        # Nothing at all ‚Ä?take from the start
+        # Nothing at all √¢?take from the start
         truncated = full_text[:max_chars]
         suffix = "\n\n...[later conversation truncated]..." if max_chars < len(full_text) else ""
         return truncated + suffix
@@ -214,7 +214,7 @@ async def _summarize_session(
             content = extract_content_or_reasoning(response)
             if content:
                 return content
-            # Reasoning-only / empty ‚Ä?let the retry loop handle it
+            # Reasoning-only / empty √¢?let the retry loop handle it
             logging.warning("Session search LLM returned empty content (attempt %d/%d)", attempt + 1, max_retries)
             if attempt < max_retries - 1:
                 await asyncio.sleep(1 * (attempt + 1))
@@ -313,7 +313,7 @@ def session_search(
     limit = min(limit, 5)  # Cap at 5 sessions to avoid excessive LLM calls
 
     # Recent sessions mode: when query is empty, return metadata for recent sessions.
-    # No LLM calls ‚Ä?just DB queries for titles, previews, timestamps.
+    # No LLM calls √¢?just DB queries for titles, previews, timestamps.
     if not query or not query.strip():
         return _list_recent_sessions(db, limit, current_session_id)
 
@@ -343,7 +343,7 @@ def session_search(
                 "message": "No matching sessions found.",
             }, ensure_ascii=False)
 
-        # Resolve child sessions to their parent ‚Ä?delegation stores detailed
+        # Resolve child sessions to their parent √¢?delegation stores detailed
         # content in child sessions, but the user's conversation is the parent.
         def _resolve_to_parent(session_id: str) -> str:
             """Walk delegation chain to find the root parent session ID."""
@@ -381,7 +381,7 @@ def session_search(
         for result in raw_results:
             raw_sid = result["session_id"]
             resolved_sid = _resolve_to_parent(raw_sid)
-            # Skip the current session lineage ‚Ä?the agent already has that
+            # Skip the current session lineage √¢?the agent already has that
             # context, even if older turns live in parent fragments.
             if current_lineage_root and resolved_sid == current_lineage_root:
                 continue
@@ -462,8 +462,8 @@ def session_search(
             else:
                 # Fallback: raw preview so matched sessions aren't silently
                 # dropped when the summarizer is unavailable (fixes #3409).
-                preview = (conversation_text[:500] + "\n‚Ä¶[truncated]") if conversation_text else "No preview available."
-                entry["summary"] = f"[Raw preview ‚Ä?summarization unavailable]\n{preview}"
+                preview = (conversation_text[:500] + "\n√¢¬¶[truncated]") if conversation_text else "No preview available."
+                entry["summary"] = f"[Raw preview √¢?summarization unavailable]\n{preview}"
 
             summaries.append(entry)
 
@@ -510,7 +510,7 @@ SESSION_SEARCH_SCHEMA = {
         "Better to search and confirm than to guess or ask the user to repeat themselves.\n\n"
         "Search syntax: keywords joined with OR for broad recall (elevenlabs OR baseten OR funding), "
         "phrases for exact match (\"docker networking\"), boolean (python NOT java), prefix (deploy*). "
-        "IMPORTANT: Use OR between keywords for best results ‚Ä?FTS5 defaults to AND which misses "
+        "IMPORTANT: Use OR between keywords for best results √¢?FTS5 defaults to AND which misses "
         "sessions that only mention some terms. If a broad OR query returns nothing, try individual "
         "keyword searches in parallel. Returns summaries of the top matching sessions."
     ),
@@ -519,7 +519,7 @@ SESSION_SEARCH_SCHEMA = {
         "properties": {
             "query": {
                 "type": "string",
-                "description": "Search query ‚Ä?keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost).",
+                "description": "Search query √¢?keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost).",
             },
             "role_filter": {
                 "type": "string",
@@ -550,5 +550,5 @@ registry.register(
         db=kw.get("db"),
         current_session_id=kw.get("current_session_id")),
     check_fn=check_session_search_requirements,
-    emoji="üîç",
+    emoji="√∞",
 )

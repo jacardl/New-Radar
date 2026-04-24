@@ -1,7 +1,7 @@
-﻿"""
-图表验证器和修复器的测试用例�?
+ï»¿"""
+å¾è¡¨éªè¯å¨åä¿®å¤å¨çæµè¯ç¨ä¾ï¿½?
 
-运行测试�?
+è¿è¡æµè¯ï¿½?
     python -m pytest ReportEngine/utils/test_chart_validator.py -v
 """
 
@@ -17,27 +17,27 @@ from backend.engines.report.utils.chart_validator import (
 
 
 class TestChartValidator:
-    """测试ChartValidator�?""
+    """æµè¯ChartValidatorï¿½?""
 
     def setup_method(self):
-        """每个测试前初始化"""
+        """æ¯ä¸ªæµè¯ååå§å"""
         self.validator = create_chart_validator()
 
     def test_valid_bar_chart(self):
-        """测试有效的柱状图"""
+        """æµè¯ææçæ±ç¶å¾"""
         widget_block = {
             "type": "widget",
             "widgetType": "chart.js/bar",
             "widgetId": "chart-001",
             "props": {
                 "type": "bar",
-                "title": "销售数�?
+                "title": "éå®æ°ï¿½?
             },
             "data": {
-                "labels": ["一�?, "二月", "三月"],
+                "labels": ["ä¸ï¿½?, "äºæ", "ä¸æ"],
                 "datasets": [
                     {
-                        "label": "销售额",
+                        "label": "éå®é¢",
                         "data": [100, 200, 150]
                     }
                 ]
@@ -49,7 +49,7 @@ class TestChartValidator:
         assert len(result.errors) == 0
 
     def test_valid_line_chart(self):
-        """测试有效的折线图"""
+        """æµè¯ææçæçº¿å¾"""
         widget_block = {
             "type": "widget",
             "widgetType": "chart.js/line",
@@ -58,10 +58,10 @@ class TestChartValidator:
                 "type": "line"
             },
             "data": {
-                "labels": ["周一", "周二", "周三"],
+                "labels": ["å¨ä¸", "å¨äº", "å¨ä¸"],
                 "datasets": [
                     {
-                        "label": "访问�?,
+                        "label": "è®¿é®ï¿½?,
                         "data": [50, 75, 60]
                     }
                 ]
@@ -72,7 +72,7 @@ class TestChartValidator:
         assert result.is_valid
 
     def test_valid_pie_chart(self):
-        """测试有效的饼�?""
+        """æµè¯ææçé¥¼ï¿½?""
         widget_block = {
             "widgetType": "chart.js/pie",
             "props": {"type": "pie"},
@@ -90,7 +90,7 @@ class TestChartValidator:
         assert result.is_valid
 
     def test_missing_widgetType(self):
-        """测试缺少widgetType"""
+        """æµè¯ç¼ºå°widgetType"""
         widget_block = {
             "props": {},
             "data": {}
@@ -101,7 +101,7 @@ class TestChartValidator:
         assert "widgetType" in result.errors[0]
 
     def test_missing_data_field(self):
-        """测试缺少data字段"""
+        """æµè¯ç¼ºå°dataå­æ®µ"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"}
@@ -112,7 +112,7 @@ class TestChartValidator:
         assert "data" in result.errors[0]
 
     def test_missing_datasets(self):
-        """测试缺少datasets"""
+        """æµè¯ç¼ºå°datasets"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -126,7 +126,7 @@ class TestChartValidator:
         assert "datasets" in result.errors[0]
 
     def test_empty_datasets(self):
-        """测试空datasets"""
+        """æµè¯ç©ºdatasets"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -138,17 +138,17 @@ class TestChartValidator:
 
         result = self.validator.validate(widget_block)
         assert not result.is_valid
-        assert "�? in result.errors[0]
+        assert "ï¿½? in result.errors[0]
 
     def test_missing_labels_for_bar_chart(self):
-        """测试柱状图缺少labels"""
+        """æµè¯æ±ç¶å¾ç¼ºå°labels"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
             "data": {
                 "datasets": [
                     {
-                        "label": "系列1",
+                        "label": "ç³»å1",
                         "data": [10, 20, 30]
                     }
                 ]
@@ -160,7 +160,7 @@ class TestChartValidator:
         assert "labels" in result.errors[0]
 
     def test_invalid_data_type(self):
-        """测试数据类型错误"""
+        """æµè¯æ°æ®ç±»åéè¯¯"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -168,8 +168,8 @@ class TestChartValidator:
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        "label": "系列1",
-                        "data": ["abc", "def"]  # 应该是数�?
+                        "label": "ç³»å1",
+                        "data": ["abc", "def"]  # åºè¯¥æ¯æ°ï¿½?
                     }
                 ]
             }
@@ -177,10 +177,10 @@ class TestChartValidator:
 
         result = self.validator.validate(widget_block)
         assert not result.is_valid
-        assert "数值类�? in result.errors[0]
+        assert "æ°å¼ç±»ï¿½? in result.errors[0]
 
     def test_data_length_mismatch_warning(self):
-        """测试数据长度不匹配（警告�?""
+        """æµè¯æ°æ®é¿åº¦ä¸å¹éï¼è­¦åï¿½?""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -188,27 +188,27 @@ class TestChartValidator:
                 "labels": ["A", "B", "C"],
                 "datasets": [
                     {
-                        "label": "系列1",
-                        "data": [10, 20]  # 长度不匹�?
+                        "label": "ç³»å1",
+                        "data": [10, 20]  # é¿åº¦ä¸å¹ï¿½?
                     }
                 ]
             }
         }
 
         result = self.validator.validate(widget_block)
-        # 长度不匹配是警告，不是错�?
+        # é¿åº¦ä¸å¹éæ¯è­¦åï¼ä¸æ¯éï¿½?
         assert len(result.warnings) > 0
-        assert "不匹�? in result.warnings[0]
+        assert "ä¸å¹ï¿½? in result.warnings[0]
 
     def test_scatter_chart(self):
-        """测试散点图（特殊数据格式�?""
+        """æµè¯æ£ç¹å¾ï¼ç¹æ®æ°æ®æ ¼å¼ï¿½?""
         widget_block = {
             "widgetType": "chart.js/scatter",
             "props": {"type": "scatter"},
             "data": {
                 "datasets": [
                     {
-                        "label": "数据�?,
+                        "label": "æ°æ®ï¿½?,
                         "data": [
                             {"x": 10, "y": 20},
                             {"x": 15, "y": 25}
@@ -222,7 +222,7 @@ class TestChartValidator:
         assert result.is_valid
 
     def test_non_chart_widget(self):
-        """测试非图表类型的widget（应该跳过验证）"""
+        """æµè¯éå¾è¡¨ç±»åçwidgetï¼åºè¯¥è·³è¿éªè¯ï¼"""
         widget_block = {
             "widgetType": "custom/widget",
             "props": {},
@@ -230,27 +230,27 @@ class TestChartValidator:
         }
 
         result = self.validator.validate(widget_block)
-        # 非chart.js类型，跳过验证，返回valid
+        # échart.jsç±»åï¼è·³è¿éªè¯ï¼è¿åvalid
         assert result.is_valid
 
 
 class TestChartRepairer:
-    """测试ChartRepairer�?""
+    """æµè¯ChartRepairerï¿½?""
 
     def setup_method(self):
-        """每个测试前初始化"""
+        """æ¯ä¸ªæµè¯ååå§å"""
         self.validator = create_chart_validator()
         self.repairer = create_chart_repairer(validator=self.validator)
 
     def test_repair_missing_props(self):
-        """测试修复缺少props字段"""
+        """æµè¯ä¿®å¤ç¼ºå°propså­æ®µ"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "data": {
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        "label": "系列1",
+                        "label": "ç³»å1",
                         "data": [10, 20]
                     }
                 ]
@@ -263,7 +263,7 @@ class TestChartRepairer:
         assert result.method == "local"
 
     def test_repair_missing_chart_type(self):
-        """测试修复缺少图表类型"""
+        """æµè¯ä¿®å¤ç¼ºå°å¾è¡¨ç±»å"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {},
@@ -271,7 +271,7 @@ class TestChartRepairer:
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        "label": "系列1",
+                        "label": "ç³»å1",
                         "data": [10, 20]
                     }
                 ]
@@ -281,10 +281,10 @@ class TestChartRepairer:
         result = self.repairer.repair(widget_block)
         assert result.success
         assert result.repaired_block["props"]["type"] == "bar"
-        assert "图表类型" in str(result.changes)
+        assert "å¾è¡¨ç±»å" in str(result.changes)
 
     def test_repair_missing_datasets(self):
-        """测试修复缺少datasets"""
+        """æµè¯ä¿®å¤ç¼ºå°datasets"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -299,14 +299,14 @@ class TestChartRepairer:
         assert isinstance(result.repaired_block["data"]["datasets"], list)
 
     def test_repair_missing_labels(self):
-        """测试修复缺少labels"""
+        """æµè¯ä¿®å¤ç¼ºå°labels"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
             "data": {
                 "datasets": [
                     {
-                        "label": "系列1",
+                        "label": "ç³»å1",
                         "data": [10, 20, 30]
                     }
                 ]
@@ -319,7 +319,7 @@ class TestChartRepairer:
         assert len(result.repaired_block["data"]["labels"]) == 3
 
     def test_repair_data_length_mismatch(self):
-        """测试修复数据长度不匹�?""
+        """æµè¯ä¿®å¤æ°æ®é¿åº¦ä¸å¹ï¿½?""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -327,8 +327,8 @@ class TestChartRepairer:
                 "labels": ["A", "B", "C", "D"],
                 "datasets": [
                     {
-                        "label": "系列1",
-                        "data": [10, 20]  # 长度不足
+                        "label": "ç³»å1",
+                        "data": [10, 20]  # é¿åº¦ä¸è¶³
                     }
                 ]
             }
@@ -336,11 +336,11 @@ class TestChartRepairer:
 
         result = self.repairer.repair(widget_block)
         assert result.success
-        # 应该补充�?个元�?
+        # åºè¯¥è¡¥åï¿½?ä¸ªåï¿½?
         assert len(result.repaired_block["data"]["datasets"][0]["data"]) == 4
 
     def test_repair_string_to_number(self):
-        """测试修复字符串类型的数�?""
+        """æµè¯ä¿®å¤å­ç¬¦ä¸²ç±»åçæ°ï¿½?""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -348,8 +348,8 @@ class TestChartRepairer:
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        "label": "系列1",
-                        "data": ["10", "20"]  # 字符串数�?
+                        "label": "ç³»å1",
+                        "data": ["10", "20"]  # å­ç¬¦ä¸²æ°ï¿½?
                     }
                 ]
             }
@@ -357,17 +357,17 @@ class TestChartRepairer:
 
         result = self.repairer.repair(widget_block)
         assert result.success
-        # 应该转换为数�?
+        # åºè¯¥è½¬æ¢ä¸ºæ°ï¿½?
         assert isinstance(result.repaired_block["data"]["datasets"][0]["data"][0], float)
 
     def test_repair_construct_datasets_from_values(self):
-        """测试从values字段构造datasets"""
+        """æµè¯ä»valueså­æ®µæé datasets"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
             "data": {
                 "labels": ["A", "B"],
-                "values": [10, 20]  # 使用values而不是datasets
+                "values": [10, 20]  # ä½¿ç¨valuesèä¸æ¯datasets
             }
         }
 
@@ -377,7 +377,7 @@ class TestChartRepairer:
         assert len(result.repaired_block["data"]["datasets"]) > 0
 
     def test_no_repair_needed(self):
-        """测试不需要修复的情况"""
+        """æµè¯ä¸éè¦ä¿®å¤çæåµ"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -385,7 +385,7 @@ class TestChartRepairer:
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        "label": "系列1",
+                        "label": "ç³»å1",
                         "data": [10, 20]
                     }
                 ]
@@ -398,7 +398,7 @@ class TestChartRepairer:
         assert len(result.changes) == 0
 
     def test_repair_adds_default_label(self):
-        """测试修复添加默认label"""
+        """æµè¯ä¿®å¤æ·»å é»è®¤label"""
         widget_block = {
             "widgetType": "chart.js/bar",
             "props": {"type": "bar"},
@@ -406,7 +406,7 @@ class TestChartRepairer:
                 "labels": ["A", "B"],
                 "datasets": [
                     {
-                        # 缺少label
+                        # ç¼ºå°label
                         "data": [10, 20]
                     }
                 ]
@@ -419,38 +419,38 @@ class TestChartRepairer:
 
 
 class TestValidatorIntegration:
-    """集成测试"""
+    """éææµè¯"""
 
     def test_full_validation_and_repair_workflow(self):
-        """测试完整的验证和修复流程"""
+        """æµè¯å®æ´çéªè¯åä¿®å¤æµç¨"""
         validator = create_chart_validator()
         repairer = create_chart_repairer(validator=validator)
 
-        # 一个有多个问题的图�?
+        # ä¸ä¸ªæå¤ä¸ªé®é¢çå¾ï¿½?
         widget_block = {
             "widgetType": "chart.js/bar",
             "data": {
                 "datasets": [
                     {
-                        "data": ["10", "20", "30"]  # 字符串数�?
+                        "data": ["10", "20", "30"]  # å­ç¬¦ä¸²æ°ï¿½?
                     }
                 ]
             }
         }
 
-        # 1. 验证（应该失败）
+        # 1. éªè¯ï¼åºè¯¥å¤±è´¥ï¼
         validation = validator.validate(widget_block)
         assert not validation.is_valid
 
-        # 2. 修复
+        # 2. ä¿®å¤
         repair_result = repairer.repair(widget_block, validation)
         assert repair_result.success
 
-        # 3. 再次验证（应该通过�?
+        # 3. åæ¬¡éªè¯ï¼åºè¯¥éè¿ï¿½?
         final_validation = validator.validate(repair_result.repaired_block)
         assert final_validation.is_valid
 
 
 if __name__ == "__main__":
-    # 运行测试
+    # è¿è¡æµè¯
     pytest.main([__file__, "-v", "--tb=short"])

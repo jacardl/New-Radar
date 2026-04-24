@@ -3,15 +3,15 @@ Single source of truth for provider identity in Hermes Agent.
 
 Two data sources, merged at runtime:
 
-1. **models.dev catalog** �?109+ providers with base URLs, env vars, display
+1. **models.dev catalog** é¥?109+ providers with base URLs, env vars, display
    names, and full model metadata (context, cost, capabilities).  This is
    the primary database.
 
-2. **Hermes overlays** �?transport type, auth patterns, aggregator flags,
+2. **Hermes overlays** é¥?transport type, auth patterns, aggregator flags,
    and additional env vars that models.dev doesn't track.  Small dict,
    maintained here.
 
-3. **User config** (``providers:`` section in config.yaml) �?user-defined
+3. **User config** (``providers:`` section in config.yaml) é¥?user-defined
    endpoints and overrides.  Merged on top of everything else.
 
 Other modules import from this file.  No parallel registries.
@@ -149,7 +149,7 @@ HERMES_OVERLAYS: Dict[str, HermesOverlay] = {
 
 @dataclass
 class ProviderDef:
-    """Complete provider definition �?merged from all sources."""
+    """Complete provider definition é¥?merged from all sources."""
 
     id: str
     name: str
@@ -169,7 +169,7 @@ class ProviderDef:
 
 ALIASES: Dict[str, str] = {
     # openrouter
-    "openai": "openrouter",     # bare "openai" �?route through aggregator
+    "openai": "openrouter",     # bare "openai" é«?route through aggregator
 
     # zai
     "glm": "zai",
@@ -240,7 +240,7 @@ ALIASES: Dict[str, str] = {
     "arcee-ai": "arcee",
     "arceeai": "arcee",
 
-    # Local server aliases �?virtual "local" concept (resolved via user config)
+    # Local server aliases é«?virtual "local" concept (resolved via user config)
     "lmstudio": "lmstudio",
     "lm-studio": "lmstudio",
     "lm_studio": "lmstudio",
@@ -265,7 +265,7 @@ _LABEL_OVERRIDES: Dict[str, str] = {
 }
 
 
-# -- Transport �?API mode mapping ---------------------------------------------
+# -- Transport é«?API mode mapping ---------------------------------------------
 
 TRANSPORT_TO_API_MODE: Dict[str, str] = {
     "openai_chat": "chat_completions",
@@ -380,7 +380,7 @@ def determine_api_mode(provider: str, base_url: str = "") -> str:
     """Determine the API mode (wire protocol) for a provider/endpoint.
 
     Resolution order:
-      1. Known provider �?transport �?TRANSPORT_TO_API_MODE.
+      1. Known provider é«?transport é«?TRANSPORT_TO_API_MODE.
       2. URL heuristics for unknown / custom providers.
       3. Default: 'chat_completions'.
     """
@@ -499,7 +499,7 @@ def resolve_provider_full(
     user_providers: Optional[Dict[str, Any]] = None,
     custom_providers: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[ProviderDef]:
-    """Full resolution chain: built-in �?models.dev �?user config.
+    """Full resolution chain: built-in é«?models.dev é«?user config.
 
     This is the main entry point for --provider flag resolution.
 

@@ -1,6 +1,6 @@
 """Tests for credential exclusion during profile export.
 
-Profile exports should NEVER include auth.json or .env �?these contain
+Profile exports should NEVER include auth.json or .env é¥?these contain
 API keys, OAuth tokens, and credential pool data. Users share exported
 profiles; leaking credentials in the archive is a security issue.
 """

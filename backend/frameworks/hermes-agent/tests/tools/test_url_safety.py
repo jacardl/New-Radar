@@ -62,7 +62,7 @@ class TestIsSafeUrl:
             assert is_safe_url("http://[::1]:8080/") is False
 
     def test_dns_failure_blocked(self):
-        """DNS failures now fail closed â€?block the request."""
+        """DNS failures now fail closed Ã¢?block the request."""
         with patch("socket.getaddrinfo", side_effect=socket.gaierror("Name resolution failed")):
             assert is_safe_url("https://nonexistent.example.com") is False
 
@@ -78,11 +78,11 @@ class TestIsSafeUrl:
         ]):
             assert is_safe_url("https://example.com") is True
 
-    # â”€â”€ New tests for hardened SSRF protection â”€â”€
+    # -- New tests for hardened SSRF protection --
 
     def test_cgnat_100_64_blocked(self):
         """100.64.0.0/10 (CGNAT/Shared Address Space) is NOT covered by
-        ipaddress.is_private â€?must be blocked explicitly."""
+        ipaddress.is_private Ã¢?must be blocked explicitly."""
         with patch("socket.getaddrinfo", return_value=[
             (2, 1, 6, "", ("100.64.0.1", 0)),
         ]):
@@ -109,21 +109,21 @@ class TestIsSafeUrl:
             assert is_safe_url("http://[ff02::1]/") is False
 
     def test_ipv4_mapped_ipv6_loopback_blocked(self):
-        """::ffff:127.0.0.1 â€?IPv4-mapped IPv6 loopback."""
+        """::ffff:127.0.0.1 Ã¢?IPv4-mapped IPv6 loopback."""
         with patch("socket.getaddrinfo", return_value=[
             (10, 1, 6, "", ("::ffff:127.0.0.1", 0, 0, 0)),
         ]):
             assert is_safe_url("http://[::ffff:127.0.0.1]/") is False
 
     def test_ipv4_mapped_ipv6_metadata_blocked(self):
-        """::ffff:169.254.169.254 â€?IPv4-mapped IPv6 cloud metadata."""
+        """::ffff:169.254.169.254 Ã¢?IPv4-mapped IPv6 cloud metadata."""
         with patch("socket.getaddrinfo", return_value=[
             (10, 1, 6, "", ("::ffff:169.254.169.254", 0, 0, 0)),
         ]):
             assert is_safe_url("http://[::ffff:169.254.169.254]/") is False
 
     def test_unspecified_address_blocked(self):
-        """0.0.0.0 â€?unspecified address, can bind to all interfaces."""
+        """0.0.0.0 Ã¢?unspecified address, can bind to all interfaces."""
         with patch("socket.getaddrinfo", return_value=[
             (2, 1, 6, "", ("0.0.0.0", 0)),
         ]):
@@ -138,7 +138,7 @@ class TestIsSafeUrl:
         assert is_safe_url("http://metadata.goog/computeMetadata/v1/") is False
 
     def test_ipv6_unique_local_blocked(self):
-        """fc00::/7 â€?IPv6 unique local addresses."""
+        """fc00::/7 Ã¢?IPv6 unique local addresses."""
         with patch("socket.getaddrinfo", return_value=[
             (10, 1, 6, "", ("fd12::1", 0, 0, 0)),
         ]):

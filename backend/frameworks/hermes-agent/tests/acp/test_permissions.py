@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.permissions �?ACP approval bridging."""
+"""Tests for acp_adapter.permissions é¥?ACP approval bridging."""
 
 import asyncio
 from concurrent.futures import Future

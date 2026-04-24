@@ -26,8 +26,8 @@ def _run_setup_feishu(
     """
     existing_env = existing_env or {}
     prompt_yes_no_responses = list(prompt_yes_no_responses or [True])
-    # QR path: method(0), dm(0), group(0) �?3 choices (no connection mode)
-    # Manual path: method(1), domain(0), connection(0), dm(0), group(0) �?5 choices
+    # QR path: method(0), dm(0), group(0) é¥?3 choices (no connection mode)
+    # Manual path: method(1), domain(0), connection(0), dm(0), group(0) é¥?5 choices
     prompt_choice_responses = list(prompt_choice_responses or [0, 0, 0])
     prompt_responses = list(prompt_responses or [""])
 
@@ -83,7 +83,7 @@ class TestSetupFeishuQrPath:
         assert env["FEISHU_DOMAIN"] == "feishu"
 
     def test_qr_success_does_not_persist_bot_identity(self):
-        """Bot identity is discovered at runtime by _hydrate_bot_identity �?not persisted
+        """Bot identity is discovered at runtime by _hydrate_bot_identity é¥?not persisted
         in env, so it stays fresh if the user renames the bot later."""
         env = _run_setup_feishu(
             qr_result={
@@ -215,7 +215,7 @@ class TestSetupFeishuGroupPolicy:
 
 
 # ---------------------------------------------------------------------------
-# Adapter integration: env vars �?FeishuAdapterSettings
+# Adapter integration: env vars é«?FeishuAdapterSettings
 # ---------------------------------------------------------------------------
 
 class TestSetupFeishuAdapterIntegration:
@@ -243,7 +243,7 @@ class TestSetupFeishuAdapterIntegration:
 
     @patch.dict(os.environ, {}, clear=True)
     def test_qr_env_produces_valid_adapter_settings(self):
-        """QR setup �?adapter initializes with websocket mode."""
+        """QR setup é«?adapter initializes with websocket mode."""
         env = self._make_env_from_setup()
 
         with patch.dict(os.environ, env, clear=True):
@@ -257,7 +257,7 @@ class TestSetupFeishuAdapterIntegration:
 
     @patch.dict(os.environ, {}, clear=True)
     def test_open_dm_env_sets_correct_adapter_state(self):
-        """Setup with 'allow all DMs' �?adapter sees allow-all flag."""
+        """Setup with 'allow all DMs' é«?adapter sees allow-all flag."""
         env = self._make_env_from_setup(dm_idx=1)
 
         with patch.dict(os.environ, env, clear=True):
@@ -269,7 +269,7 @@ class TestSetupFeishuAdapterIntegration:
 
     @patch.dict(os.environ, {}, clear=True)
     def test_group_open_env_sets_adapter_group_policy(self):
-        """Setup with 'open groups' �?adapter group_policy is 'open'."""
+        """Setup with 'open groups' é«?adapter group_policy is 'open'."""
         env = self._make_env_from_setup(group_idx=0)
 
         with patch.dict(os.environ, env, clear=True):

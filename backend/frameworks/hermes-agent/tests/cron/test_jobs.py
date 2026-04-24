@@ -1,4 +1,4 @@
-"""Tests for cron/jobs.py �?schedule parsing, job CRUD, and due-job detection."""
+"""Tests for cron/jobs.py é¥?schedule parsing, job CRUD, and due-job detection."""
 
 import json
 import pytest
@@ -340,7 +340,7 @@ class TestMarkJobRun:
         assert updated["last_error"] == "timeout"
 
     def test_delivery_error_tracked_separately(self, tmp_cron_dir):
-        """Agent succeeds but delivery fails �?both tracked independently."""
+        """Agent succeeds but delivery fails é¥?both tracked independently."""
         job = create_job(prompt="Report", schedule="every 1h")
         mark_job_run(job["id"], success=True, delivery_error="platform 'telegram' not configured")
         updated = get_job(job["id"])
@@ -360,7 +360,7 @@ class TestMarkJobRun:
         assert updated["last_delivery_error"] is None
 
     def test_both_agent_and_delivery_error(self, tmp_cron_dir):
-        """Agent fails AND delivery fails �?both errors recorded."""
+        """Agent fails AND delivery fails é¥?both errors recorded."""
         job = create_job(prompt="Report", schedule="every 1h")
         mark_job_run(job["id"], success=False, error="model timeout",
                      delivery_error="platform 'discord' not enabled")
@@ -371,7 +371,7 @@ class TestMarkJobRun:
 
 
 class TestAdvanceNextRun:
-    """Tests for advance_next_run() �?crash-safety for recurring jobs."""
+    """Tests for advance_next_run() é¥?crash-safety for recurring jobs."""
 
     def test_advances_interval_job(self, tmp_cron_dir):
         """Interval jobs should have next_run_at bumped to the next future occurrence."""
@@ -409,7 +409,7 @@ class TestAdvanceNextRun:
         assert new_next_dt > _hermes_now(), "next_run_at should be in the future after advance"
 
     def test_skips_oneshot_job(self, tmp_cron_dir):
-        """One-shot jobs should NOT be advanced �?they need to retry on restart."""
+        """One-shot jobs should NOT be advanced é¥?they need to retry on restart."""
         job = create_job(prompt="Run once", schedule="30m")
         original_next = get_job(job["id"])["next_run_at"]
 

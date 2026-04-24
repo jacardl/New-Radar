@@ -19,45 +19,45 @@ from typing import Any, Dict, Optional
 logger = logging.getLogger(__name__)
 
 
-# ── Error taxonomy ──────────────────────────────────────────────────────
+# -- Error taxonomy ------------------------------------------------------
 
 class FailoverReason(enum.Enum):
-    """Why an API call failed �?determines recovery strategy."""
+    """Why an API call failed â?determines recovery strategy."""
 
     # Authentication / authorization
-    auth = "auth"                        # Transient auth (401/403) �?refresh/rotate
-    auth_permanent = "auth_permanent"    # Auth failed after refresh �?abort
+    auth = "auth"                        # Transient auth (401/403) â?refresh/rotate
+    auth_permanent = "auth_permanent"    # Auth failed after refresh â?abort
 
     # Billing / quota
-    billing = "billing"                  # 402 or confirmed credit exhaustion �?rotate immediately
-    rate_limit = "rate_limit"            # 429 or quota-based throttling �?backoff then rotate
+    billing = "billing"                  # 402 or confirmed credit exhaustion â?rotate immediately
+    rate_limit = "rate_limit"            # 429 or quota-based throttling â?backoff then rotate
 
     # Server-side
-    overloaded = "overloaded"            # 503/529 �?provider overloaded, backoff
-    server_error = "server_error"        # 500/502 �?internal server error, retry
+    overloaded = "overloaded"            # 503/529 â?provider overloaded, backoff
+    server_error = "server_error"        # 500/502 â?internal server error, retry
 
     # Transport
-    timeout = "timeout"                  # Connection/read timeout �?rebuild client + retry
+    timeout = "timeout"                  # Connection/read timeout â?rebuild client + retry
 
     # Context / payload
-    context_overflow = "context_overflow"  # Context too large �?compress, not failover
-    payload_too_large = "payload_too_large"  # 413 �?compress payload
+    context_overflow = "context_overflow"  # Context too large â?compress, not failover
+    payload_too_large = "payload_too_large"  # 413 â?compress payload
 
     # Model
-    model_not_found = "model_not_found"  # 404 or invalid model �?fallback to different model
+    model_not_found = "model_not_found"  # 404 or invalid model â?fallback to different model
 
     # Request format
-    format_error = "format_error"        # 400 bad request �?abort or strip + retry
+    format_error = "format_error"        # 400 bad request â?abort or strip + retry
 
     # Provider-specific
     thinking_signature = "thinking_signature"  # Anthropic thinking block sig invalid
     long_context_tier = "long_context_tier"    # Anthropic "extra usage" tier gate
 
     # Catch-all
-    unknown = "unknown"                  # Unclassifiable �?retry with backoff
+    unknown = "unknown"                  # Unclassifiable â?retry with backoff
 
 
-# ── Classification result ───────────────────────────────────────────────
+# -- Classification result -----------------------------------------------
 
 @dataclass
 class ClassifiedError:
@@ -70,7 +70,7 @@ class ClassifiedError:
     message: str = ""
     error_context: Dict[str, Any] = field(default_factory=dict)
 
-    # Recovery action hints �?the retry loop checks these instead of
+    # Recovery action hints â?the retry loop checks these instead of
     # re-classifying the error itself.
     retryable: bool = True
     should_compress: bool = False
@@ -83,7 +83,7 @@ class ClassifiedError:
 
 
 
-# ── Provider-specific patterns ──────────────────────────────────────────
+# -- Provider-specific patterns ------------------------------------------
 
 # Patterns that indicate billing exhaustion (not transient rate limit)
 _BILLING_PATTERNS = [
@@ -169,8 +169,8 @@ _CONTEXT_OVERFLOW_PATTERNS = [
     "slot context",              # "slot context: N tokens, prompt N tokens"
     "n_ctx_slot",
     # Chinese error messages (some providers return these)
-    "超过最大长�?,
-    "上下文长�?,
+    "è¶è¿æå¤§é¿åº?,
+    "ä¸ä¸æé¿åº?,
 ]
 
 # Model not found patterns
@@ -228,7 +228,7 @@ _SERVER_DISCONNECT_PATTERNS = [
 ]
 
 
-# ── Classification pipeline ─────────────────────────────────────────────
+# -- Classification pipeline ---------------------------------------------
 
 def classify_api_error(
     error: Exception,
@@ -247,7 +247,7 @@ def classify_api_error(
       3. Error code classification (from body)
       4. Message pattern matching (billing vs rate_limit vs context vs auth)
       5. Transport error heuristics
-      6. Server disconnect + large session �?context overflow
+      6. Server disconnect + large session â?context overflow
       7. Fallback: unknown (retryable with backoff)
 
     Args:
@@ -271,7 +271,7 @@ def classify_api_error(
     # the body message so patterns like "try again" in 402 disambiguation
     # are detected even when only present in the structured body.
     #
-    # Also extract metadata.raw �?OpenRouter wraps upstream provider errors
+    # Also extract metadata.raw â?OpenRouter wraps upstream provider errors
     # inside {"error": {"message": "Provider returned error", "metadata":
     # {"raw": "<actual error JSON>"}}} and the real error message (e.g.
     # "context length exceeded") is only in the inner JSON.
@@ -319,10 +319,10 @@ def classify_api_error(
         defaults.update(overrides)
         return ClassifiedError(**defaults)
 
-    # ── 1. Provider-specific patterns (highest priority) ────────────
+    # -- 1. Provider-specific patterns (highest priority) ------------
 
     # Anthropic thinking block signature invalid (400).
-    # Don't gate on provider �?OpenRouter proxies Anthropic errors, so the
+    # Don't gate on provider â?OpenRouter proxies Anthropic errors, so the
     # provider may be "openrouter" even though the error is Anthropic-specific.
     # The message pattern ("signature" + "thinking") is unique enough.
     if (
@@ -348,7 +348,7 @@ def classify_api_error(
             should_compress=True,
         )
 
-    # ── 2. HTTP status code classification ──────────────────────────
+    # -- 2. HTTP status code classification --------------------------
 
     if status_code is not None:
         classified = _classify_by_status(
@@ -361,14 +361,14 @@ def classify_api_error(
         if classified is not None:
             return classified
 
-    # ── 3. Error code classification ────────────────────────────────
+    # -- 3. Error code classification --------------------------------
 
     if error_code:
         classified = _classify_by_error_code(error_code, error_msg, _result)
         if classified is not None:
             return classified
 
-    # ── 4. Message pattern matching (no status code) ────────────────
+    # -- 4. Message pattern matching (no status code) ----------------
 
     classified = _classify_by_message(
         error_msg, error_type,
@@ -379,8 +379,8 @@ def classify_api_error(
     if classified is not None:
         return classified
 
-    # ── 5. Server disconnect + large session �?context overflow ─────
-    # Must come BEFORE generic transport error catch �?a disconnect on
+    # -- 5. Server disconnect + large session â?context overflow -----
+    # Must come BEFORE generic transport error catch â?a disconnect on
     # a large session is more likely context overflow than a transient
     # transport hiccup.  Without this ordering, RemoteProtocolError
     # always maps to timeout regardless of session size.
@@ -396,17 +396,17 @@ def classify_api_error(
             )
         return _result(FailoverReason.timeout, retryable=True)
 
-    # ── 6. Transport / timeout heuristics ───────────────────────────
+    # -- 6. Transport / timeout heuristics ---------------------------
 
     if error_type in _TRANSPORT_ERROR_TYPES or isinstance(error, (TimeoutError, ConnectionError, OSError)):
         return _result(FailoverReason.timeout, retryable=True)
 
-    # ── 7. Fallback: unknown ────────────────────────────────────────
+    # -- 7. Fallback: unknown ----------------------------------------
 
     return _result(FailoverReason.unknown, retryable=True)
 
 
-# ── Status code classification ──────────────────────────────────────────
+# -- Status code classification ------------------------------------------
 
 def _classify_by_status(
     status_code: int,
@@ -424,7 +424,7 @@ def _classify_by_status(
     """Classify based on HTTP status code with message-aware refinement."""
 
     if status_code == 401:
-        # Not retryable on its own �?credential pool rotation and
+        # Not retryable on its own â?credential pool rotation and
         # provider-specific refresh (Codex, Anthropic, Nous) run before
         # the retryability check in run_agent.py.  If those succeed, the
         # loop `continue`s.  If they fail, retryable=False ensures we
@@ -461,7 +461,7 @@ def _classify_by_status(
                 retryable=False,
                 should_fallback=True,
             )
-        # Generic 404 �?could be model or endpoint
+        # Generic 404 â?could be model or endpoint
         return result_fn(
             FailoverReason.model_not_found,
             retryable=False,
@@ -500,7 +500,7 @@ def _classify_by_status(
     if status_code in (503, 529):
         return result_fn(FailoverReason.overloaded, retryable=True)
 
-    # Other 4xx �?non-retryable
+    # Other 4xx â?non-retryable
     if 400 <= status_code < 500:
         return result_fn(
             FailoverReason.format_error,
@@ -508,7 +508,7 @@ def _classify_by_status(
             should_fallback=True,
         )
 
-    # Other 5xx �?retryable
+    # Other 5xx â?retryable
     if 500 <= status_code < 600:
         return result_fn(FailoverReason.server_error, retryable=True)
 
@@ -520,14 +520,14 @@ def _classify_402(error_msg: str, result_fn) -> ClassifiedError:
 
     The key insight from OpenClaw: some 402s are transient rate limits
     disguised as payment errors.  "Usage limit, try again in 5 minutes"
-    is NOT a billing problem �?it's a periodic quota that resets.
+    is NOT a billing problem â?it's a periodic quota that resets.
     """
     # Check for transient usage-limit signals first
     has_usage_limit = any(p in error_msg for p in _USAGE_LIMIT_PATTERNS)
     has_transient_signal = any(p in error_msg for p in _USAGE_LIMIT_TRANSIENT_SIGNALS)
 
     if has_usage_limit and has_transient_signal:
-        # Transient quota �?treat as rate limit, not billing
+        # Transient quota â?treat as rate limit, not billing
         return result_fn(
             FailoverReason.rate_limit,
             retryable=True,
@@ -556,7 +556,7 @@ def _classify_400(
     num_messages: int = 0,
     result_fn,
 ) -> ClassifiedError:
-    """Classify 400 Bad Request �?context overflow, format error, or generic."""
+    """Classify 400 Bad Request â?context overflow, format error, or generic."""
 
     # Context overflow from 400
     if any(p in error_msg for p in _CONTEXT_OVERFLOW_PATTERNS):
@@ -591,7 +591,7 @@ def _classify_400(
             should_fallback=True,
         )
 
-    # Generic 400 + large session �?probable context overflow
+    # Generic 400 + large session â?probable context overflow
     # Anthropic sometimes returns a bare "Error" message when context is too large
     err_body_msg = ""
     if isinstance(body, dict):
@@ -619,7 +619,7 @@ def _classify_400(
     )
 
 
-# ── Error code classification ───────────────────────────────────────────
+# -- Error code classification -------------------------------------------
 
 def _classify_by_error_code(
     error_code: str, error_msg: str, result_fn,
@@ -659,7 +659,7 @@ def _classify_by_error_code(
     return None
 
 
-# ── Message pattern classification ──────────────────────────────────────
+# -- Message pattern classification --------------------------------------
 
 def _classify_by_message(
     error_msg: str,
@@ -681,7 +681,7 @@ def _classify_by_message(
 
     # Usage-limit patterns need the same disambiguation as 402: some providers
     # surface "usage limit" errors without an HTTP status code.  A transient
-    # signal ("try again", "resets at", �? means it's a periodic quota, not
+    # signal ("try again", "resets at", â? means it's a periodic quota, not
     # billing exhaustion.
     has_usage_limit = any(p in error_msg for p in _USAGE_LIMIT_PATTERNS)
     if has_usage_limit:
@@ -727,7 +727,7 @@ def _classify_by_message(
         )
 
     # Auth patterns
-    # Auth errors should NOT be retried directly �?the credential is invalid and
+    # Auth errors should NOT be retried directly â?the credential is invalid and
     # retrying with the same key will always fail.  Set retryable=False so the
     # caller triggers credential rotation (should_rotate_credential=True) or
     # provider fallback rather than an immediate retry loop.
@@ -750,7 +750,7 @@ def _classify_by_message(
     return None
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------
 
 def _extract_status_code(error: Exception) -> Optional[int]:
     """Walk the error and its cause chain to find an HTTP status code."""

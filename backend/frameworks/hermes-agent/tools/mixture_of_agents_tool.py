@@ -146,7 +146,7 @@ async def _run_reference_model_safe(
             
             content = extract_content_or_reasoning(response)
             if not content:
-                # Reasoning-only response �?let the retry loop handle it
+                # Reasoning-only response â?let the retry loop handle it
                 logger.warning("%s returned empty content (attempt %s/%s), retrying", model, attempt + 1, max_retries)
                 if attempt < max_retries - 1:
                     await asyncio.sleep(min(2 ** (attempt + 1), 60))
@@ -439,38 +439,38 @@ if __name__ == "__main__":
     """
     Simple test/demo when run directly
     """
-    print("🤖 Mixture-of-Agents Tool Module")
+    print("ð¤ Mixture-of-Agents Tool Module")
     print("=" * 50)
     
     # Check if API key is available
     api_available = check_openrouter_api_key()
     
     if not api_available:
-        print("�?OPENROUTER_API_KEY environment variable not set")
+        print("â?OPENROUTER_API_KEY environment variable not set")
         print("Please set your API key: export OPENROUTER_API_KEY='your-key-here'")
         print("Get API key at: https://openrouter.ai/")
         exit(1)
     else:
-        print("�?OpenRouter API key found")
+        print("â?OpenRouter API key found")
     
-    print("🛠�? MoA tools ready for use!")
+    print("ð ï¸? MoA tools ready for use!")
     
     # Show current configuration
     config = get_moa_configuration()
-    print("\n⚙️  Current Configuration:")
-    print(f"  🤖 Reference models ({len(config['reference_models'])}): {', '.join(config['reference_models'])}")
-    print(f"  🧠 Aggregator model: {config['aggregator_model']}")
-    print(f"  🌡�? Reference temperature: {config['reference_temperature']}")
-    print(f"  🌡�? Aggregator temperature: {config['aggregator_temperature']}")
-    print(f"  🛡�? Failure tolerance: {config['failure_tolerance']}")
-    print(f"  📊 Minimum successful models: {config['min_successful_references']}")
+    print("\nâï¸  Current Configuration:")
+    print(f"  ð¤ Reference models ({len(config['reference_models'])}): {', '.join(config['reference_models'])}")
+    print(f"  ð§  Aggregator model: {config['aggregator_model']}")
+    print(f"  ð¡ï¸? Reference temperature: {config['reference_temperature']}")
+    print(f"  ð¡ï¸? Aggregator temperature: {config['aggregator_temperature']}")
+    print(f"  ð¡ï¸? Failure tolerance: {config['failure_tolerance']}")
+    print(f"  ð Minimum successful models: {config['min_successful_references']}")
     
     # Show debug mode status
     if _debug.active:
-        print(f"\n🐛 Debug mode ENABLED - Session ID: {_debug.session_id}")
+        print(f"\nð Debug mode ENABLED - Session ID: {_debug.session_id}")
         print(f"   Debug logs will be saved to: ./logs/moa_tools_debug_{_debug.session_id}.json")
     else:
-        print("\n🐛 Debug mode disabled (set MOA_TOOLS_DEBUG=true to enable)")
+        print("\nð Debug mode disabled (set MOA_TOOLS_DEBUG=true to enable)")
     
     print("\nBasic usage:")
     print("  from mixture_of_agents_tool import mixture_of_agents_tool")
@@ -514,7 +514,7 @@ from tools.registry import registry
 
 MOA_SCHEMA = {
     "name": "mixture_of_agents",
-    "description": "Route a hard problem through multiple frontier LLMs collaboratively. Makes 5 API calls (4 reference models + 1 aggregator) with maximum reasoning effort �?use sparingly for genuinely difficult problems. Best for: complex math, advanced algorithms, multi-step analytical reasoning, problems benefiting from diverse perspectives.",
+    "description": "Route a hard problem through multiple frontier LLMs collaboratively. Makes 5 API calls (4 reference models + 1 aggregator) with maximum reasoning effort â?use sparingly for genuinely difficult problems. Best for: complex math, advanced algorithms, multi-step analytical reasoning, problems benefiting from diverse perspectives.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -535,5 +535,5 @@ registry.register(
     check_fn=check_moa_requirements,
     requires_env=["OPENROUTER_API_KEY"],
     is_async=True,
-    emoji="🧠",
+    emoji="ð§ ",
 )

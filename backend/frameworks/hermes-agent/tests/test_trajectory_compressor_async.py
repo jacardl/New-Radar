@@ -1,8 +1,8 @@
 """Tests for trajectory_compressor AsyncOpenAI event loop binding.
 
 The AsyncOpenAI client was created once at __init__ time and stored as an
-instance attribute. When process_directory() calls asyncio.run() �?which
-creates and closes a fresh event loop �?the client's internal httpx
+instance attribute. When process_directory() calls asyncio.run() é¥?which
+creates and closes a fresh event loop é¥?the client's internal httpx
 transport remains bound to the now-closed loop. A second call to
 process_directory() would fail with "Event loop is closed".
 
@@ -17,7 +17,7 @@ import pytest
 
 
 class TestAsyncClientLazyCreation:
-    """trajectory_compressor.py �?_get_async_client()"""
+    """trajectory_compressor.py é¥?_get_async_client()"""
 
     def test_async_client_none_after_init(self):
         """async_client should be None after __init__ (not eagerly created)."""
@@ -97,7 +97,7 @@ class TestSourceLineVerification:
         """__init__ should NOT create AsyncOpenAI eagerly."""
         src = self._read_file()
         # The old pattern: self.async_client = AsyncOpenAI(...) in _init_summarizer
-        # should not exist �?only self.async_client = None
+        # should not exist é¥?only self.async_client = None
         lines = src.split("\n")
         for i, line in enumerate(lines, 1):
             if "self.async_client = AsyncOpenAI(" in line and "_get_async_client" not in lines[max(0,i-3):i+1]:

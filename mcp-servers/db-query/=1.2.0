@@ -1,0 +1,20 @@
+  WARNING: Failed to remove contents in a temporary directory 'D:\C盘瘦身搬家目录(勿删改)\软件\Python\安装目录\649\Python312\Lib\site-packages\~.dantic_core'.
+  You can safely remove it manually.
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+camel-ai 0.2.78 requires pillow<11.0.0,>=10.1.0, but you have pillow 9.5.0 which is incompatible.
+camel-oasis 0.2.5 requires pandas==2.2.2, but you have pandas 2.2.3 which is incompatible.
+camel-oasis 0.2.5 requires pillow==10.3.0, but you have pillow 9.5.0 which is incompatible.
+chromadb 1.1.1 requires tenacity>=8.2.3, but you have tenacity 8.2.2 which is incompatible.
+crewai 1.9.3 requires json-repair~=0.25.2, but you have json-repair 0.53.0 which is incompatible.
+crewai 1.9.3 requires openai~=1.83.0, but you have openai 1.109.1 which is incompatible.
+crewai 1.9.3 requires pydantic~=2.11.9, but you have pydantic 2.13.3 which is incompatible.
+crewai 1.9.3 requires pydantic-settings~=2.10.1, but you have pydantic-settings 2.14.0 which is incompatible.
+crewai 1.9.3 requires python-dotenv~=1.1.1, but you have python-dotenv 1.0.1 which is incompatible.
+crewai 1.9.3 requires tokenizers~=0.20.3, but you have tokenizers 0.22.2 which is incompatible.
+fastapi 0.110.2 requires starlette<0.38.0,>=0.37.2, but you have starlette 1.0.0 which is incompatible.
+instructor 1.12.0 requires pre-commit>=4.3.0, but you have pre-commit 3.7.1 which is incompatible.
+instructor 1.12.0 requires tenacity<10.0.0,>=8.2.3, but you have tenacity 8.2.2 which is incompatible.
+langchain-chroma 0.1.4 requires chromadb!=0.5.4,!=0.5.5,<0.6.0,>=0.4.0, but you have chromadb 1.1.1 which is incompatible.
+langchain-classic 1.0.1 requires langchain-core<2.0.0,>=1.2.5, but you have langchain-core 0.2.43 which is incompatible.
+langchain-classic 1.0.1 requires langchain-text-splitters<2.0.0,>=1.1.0, but you have langchain-text-splitters 0.2.4 which is incompatible.
+unstructured-client 0.42.10 requires aiofiles>=24.1.0, but you have aiofiles 23.2.1 which is incompatible.

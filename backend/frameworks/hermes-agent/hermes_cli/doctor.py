@@ -114,16 +114,16 @@ def _apply_doctor_tool_availability_overrides(available: list[str], unavailable:
 
 
 def check_ok(text: str, detail: str = ""):
-    print(f"  {color('�?, Colors.GREEN)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
+    print(f"  {color('â?, Colors.GREEN)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
 
 def check_warn(text: str, detail: str = ""):
-    print(f"  {color('�?, Colors.YELLOW)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
+    print(f"  {color('â?, Colors.YELLOW)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
 
 def check_fail(text: str, detail: str = ""):
-    print(f"  {color('�?, Colors.RED)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
+    print(f"  {color('â?, Colors.RED)} {text}" + (f" {color(detail, Colors.DIM)}" if detail else ""))
 
 def check_info(text: str):
-    print(f"    {color('�?, Colors.CYAN)} {text}")
+    print(f"    {color('â?, Colors.CYAN)} {text}")
 
 
 def _check_gateway_service_linger(issues: list[str]) -> None:
@@ -146,7 +146,7 @@ def _check_gateway_service_linger(issues: list[str]) -> None:
         return
 
     print()
-    print(color("�?Gateway Service", Colors.CYAN, Colors.BOLD))
+    print(color("â?Gateway Service", Colors.CYAN, Colors.BOLD))
 
     linger_enabled, linger_detail = get_systemd_linger_status()
     if linger_enabled is True:
@@ -172,15 +172,15 @@ def run_doctor(args):
     fixed_count = 0
     
     print()
-    print(color("┌─────────────────────────────────────────────────────────�?, Colors.CYAN))
-    print(color("�?                🩺 Hermes Doctor                        �?, Colors.CYAN))
-    print(color("└─────────────────────────────────────────────────────────�?, Colors.CYAN))
+    print(color("+---------------------------------------------------------â?, Colors.CYAN))
+    print(color("â?                ð©º Hermes Doctor                        â?, Colors.CYAN))
+    print(color("â---------------------------------------------------------â?, Colors.CYAN))
     
     # =========================================================================
     # Check: Python version
     # =========================================================================
     print()
-    print(color("�?Python Environment", Colors.CYAN, Colors.BOLD))
+    print(color("â?Python Environment", Colors.CYAN, Colors.BOLD))
     
     py_version = sys.version_info
     if py_version >= (3, 11):
@@ -205,7 +205,7 @@ def run_doctor(args):
     # Check: Required packages
     # =========================================================================
     print()
-    print(color("�?Required Packages", Colors.CYAN, Colors.BOLD))
+    print(color("â?Required Packages", Colors.CYAN, Colors.BOLD))
     
     required_packages = [
         ("openai", "OpenAI SDK"),
@@ -240,7 +240,7 @@ def run_doctor(args):
     # Check: Configuration files
     # =========================================================================
     print()
-    print(color("�?Configuration Files", Colors.CYAN, Colors.BOLD))
+    print(color("â?Configuration Files", Colors.CYAN, Colors.BOLD))
     
     # Check ~/.hermes/.env (primary location for user config)
     env_path = HERMES_HOME / '.env'
@@ -300,7 +300,7 @@ def run_doctor(args):
             current_ver, latest_ver = check_config_version()
             if current_ver < latest_ver:
                 check_warn(
-                    f"Config version outdated (v{current_ver} �?v{latest_ver})",
+                    f"Config version outdated (v{current_ver} â?v{latest_ver})",
                     "(new settings available)"
                 )
                 if should_fix:
@@ -318,7 +318,7 @@ def run_doctor(args):
         except Exception:
             pass
 
-        # Detect stale root-level model keys (known bug source �?PR #4329)
+        # Detect stale root-level model keys (known bug source â?PR #4329)
         try:
             import yaml
             with open(config_path) as f:
@@ -341,7 +341,7 @@ def run_doctor(args):
                     check_ok("Migrated stale root-level keys into model section")
                     fixed_count += 1
                 else:
-                    issues.append("Stale root-level provider/base_url in config.yaml �?run 'hermes doctor --fix'")
+                    issues.append("Stale root-level provider/base_url in config.yaml â?run 'hermes doctor --fix'")
         except Exception:
             pass
 
@@ -351,7 +351,7 @@ def run_doctor(args):
             config_issues = validate_config_structure()
             if config_issues:
                 print()
-                print(color("�?Config Structure", Colors.CYAN, Colors.BOLD))
+                print(color("â?Config Structure", Colors.CYAN, Colors.BOLD))
                 for ci in config_issues:
                     if ci.severity == "error":
                         check_fail(ci.message)
@@ -368,7 +368,7 @@ def run_doctor(args):
     # Check: Auth providers
     # =========================================================================
     print()
-    print(color("�?Auth Providers", Colors.CYAN, Colors.BOLD))
+    print(color("â?Auth Providers", Colors.CYAN, Colors.BOLD))
 
     try:
         from hermes_cli.auth import get_nous_auth_status, get_codex_auth_status
@@ -398,7 +398,7 @@ def run_doctor(args):
     # Check: Directory structure
     # =========================================================================
     print()
-    print(color("�?Directory Structure", Colors.CYAN, Colors.BOLD))
+    print(color("â?Directory Structure", Colors.CYAN, Colors.BOLD))
     
     hermes_home = HERMES_HOME
     if hermes_home.exists():
@@ -434,7 +434,7 @@ def run_doctor(args):
         if lines:
             check_ok(f"{_DHH}/SOUL.md exists (persona configured)")
         else:
-            check_info(f"{_DHH}/SOUL.md exists but is empty �?edit it to customize personality")
+            check_info(f"{_DHH}/SOUL.md exists but is empty â?edit it to customize personality")
     else:
         check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Hermes a custom personality)")
         if should_fix:
@@ -502,10 +502,10 @@ def run_doctor(args):
                     conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
                     conn.close()
                     new_size = wal_path.stat().st_size if wal_path.exists() else 0
-                    check_ok(f"WAL checkpoint performed ({wal_size // 1024}K �?{new_size // 1024}K)")
+                    check_ok(f"WAL checkpoint performed ({wal_size // 1024}K â?{new_size // 1024}K)")
                     fixed_count += 1
                 else:
-                    issues.append("Large WAL file �?run 'hermes doctor --fix' to checkpoint")
+                    issues.append("Large WAL file â?run 'hermes doctor --fix' to checkpoint")
             elif wal_size > 10 * 1024 * 1024:  # 10 MB
                 check_info(f"WAL file is {wal_size // (1024*1024)} MB (normal for active sessions)")
         except Exception:
@@ -517,7 +517,7 @@ def run_doctor(args):
     # Check: External tools
     # =========================================================================
     print()
-    print(color("�?External Tools", Colors.CYAN, Colors.BOLD))
+    print(color("â?External Tools", Colors.CYAN, Colors.BOLD))
     
     # Git
     if shutil.which("git"):
@@ -590,7 +590,7 @@ def run_doctor(args):
             check_fail("DAYTONA_API_KEY not set", "(required for TERMINAL_ENV=daytona)")
             issues.append("Set DAYTONA_API_KEY environment variable")
         try:
-            from daytona import Daytona  # noqa: F401 �?SDK presence check
+            from daytona import Daytona  # noqa: F401 â?SDK presence check
             check_ok("daytona SDK", "(installed)")
         except ImportError:
             check_fail("daytona SDK not installed", "(pip install daytona)")
@@ -649,7 +649,7 @@ def run_doctor(args):
                 elif critical > 0 or high > 0:
                     check_warn(
                         f"{label} deps",
-                        f"({critical} critical, {high} high, {moderate} moderate �?run: cd {npm_dir} && npm audit fix)"
+                        f"({critical} critical, {high} high, {moderate} moderate â?run: cd {npm_dir} && npm audit fix)"
                     )
                     issues.append(f"{label} has {total} npm vulnerability(ies)")
                 else:
@@ -661,7 +661,7 @@ def run_doctor(args):
     # Check: API connectivity
     # =========================================================================
     print()
-    print(color("�?API Connectivity", Colors.CYAN, Colors.BOLD))
+    print(color("â?API Connectivity", Colors.CYAN, Colors.BOLD))
     
     openrouter_key = os.getenv("OPENROUTER_API_KEY")
     if openrouter_key:
@@ -674,14 +674,14 @@ def run_doctor(args):
                 timeout=10
             )
             if response.status_code == 200:
-                print(f"\r  {color('�?, Colors.GREEN)} OpenRouter API                          ")
+                print(f"\r  {color('â?, Colors.GREEN)} OpenRouter API                          ")
             elif response.status_code == 401:
-                print(f"\r  {color('�?, Colors.RED)} OpenRouter API {color('(invalid API key)', Colors.DIM)}                ")
+                print(f"\r  {color('â?, Colors.RED)} OpenRouter API {color('(invalid API key)', Colors.DIM)}                ")
                 issues.append("Check OPENROUTER_API_KEY in .env")
             else:
-                print(f"\r  {color('�?, Colors.RED)} OpenRouter API {color(f'(HTTP {response.status_code})', Colors.DIM)}                ")
+                print(f"\r  {color('â?, Colors.RED)} OpenRouter API {color(f'(HTTP {response.status_code})', Colors.DIM)}                ")
         except Exception as e:
-            print(f"\r  {color('�?, Colors.RED)} OpenRouter API {color(f'({e})', Colors.DIM)}                ")
+            print(f"\r  {color('â?, Colors.RED)} OpenRouter API {color(f'({e})', Colors.DIM)}                ")
             issues.append("Check network connectivity")
     else:
         check_warn("OpenRouter API", "(not configured)")
@@ -706,14 +706,14 @@ def run_doctor(args):
                 timeout=10
             )
             if response.status_code == 200:
-                print(f"\r  {color('�?, Colors.GREEN)} Anthropic API                           ")
+                print(f"\r  {color('â?, Colors.GREEN)} Anthropic API                           ")
             elif response.status_code == 401:
-                print(f"\r  {color('�?, Colors.RED)} Anthropic API {color('(invalid API key)', Colors.DIM)}                 ")
+                print(f"\r  {color('â?, Colors.RED)} Anthropic API {color('(invalid API key)', Colors.DIM)}                 ")
             else:
                 msg = "(couldn't verify)"
-                print(f"\r  {color('�?, Colors.YELLOW)} Anthropic API {color(msg, Colors.DIM)}                 ")
+                print(f"\r  {color('â?, Colors.YELLOW)} Anthropic API {color(msg, Colors.DIM)}                 ")
         except Exception as e:
-            print(f"\r  {color('�?, Colors.YELLOW)} Anthropic API {color(f'({e})', Colors.DIM)}                 ")
+            print(f"\r  {color('â?, Colors.YELLOW)} Anthropic API {color(f'({e})', Colors.DIM)}                 ")
 
     # -- API-key providers --
     # Tuple: (name, env_vars, default_url, base_env, supports_models_endpoint)
@@ -744,13 +744,13 @@ def run_doctor(args):
             _label = _pname.ljust(20)
             # Some providers (like MiniMax) don't support /models endpoint
             if not _supports_health_check:
-                print(f"  {color('�?, Colors.GREEN)} {_label} {color('(key configured)', Colors.DIM)}")
+                print(f"  {color('â?, Colors.GREEN)} {_label} {color('(key configured)', Colors.DIM)}")
                 continue
             print(f"  Checking {_pname} API...", end="", flush=True)
             try:
                 import httpx
                 _base = os.getenv(_base_env, "")
-                # Auto-detect Kimi Code keys (sk-kimi-) �?api.kimi.com
+                # Auto-detect Kimi Code keys (sk-kimi-) â?api.kimi.com
                 if not _base and _key.startswith("sk-kimi-"):
                     _base = "https://api.kimi.com/coding/v1"
                 # Anthropic-compat endpoints (/anthropic) don't support /models.
@@ -768,20 +768,20 @@ def run_doctor(args):
                     timeout=10,
                 )
                 if _resp.status_code == 200:
-                    print(f"\r  {color('�?, Colors.GREEN)} {_label}                          ")
+                    print(f"\r  {color('â?, Colors.GREEN)} {_label}                          ")
                 elif _resp.status_code == 401:
-                    print(f"\r  {color('�?, Colors.RED)} {_label} {color('(invalid API key)', Colors.DIM)}           ")
+                    print(f"\r  {color('â?, Colors.RED)} {_label} {color('(invalid API key)', Colors.DIM)}           ")
                     issues.append(f"Check {_env_vars[0]} in .env")
                 else:
-                    print(f"\r  {color('�?, Colors.YELLOW)} {_label} {color(f'(HTTP {_resp.status_code})', Colors.DIM)}           ")
+                    print(f"\r  {color('â?, Colors.YELLOW)} {_label} {color(f'(HTTP {_resp.status_code})', Colors.DIM)}           ")
             except Exception as _e:
-                print(f"\r  {color('�?, Colors.YELLOW)} {_label} {color(f'({_e})', Colors.DIM)}           ")
+                print(f"\r  {color('â?, Colors.YELLOW)} {_label} {color(f'({_e})', Colors.DIM)}           ")
 
     # =========================================================================
     # Check: Submodules
     # =========================================================================
     print()
-    print(color("�?Submodules", Colors.CYAN, Colors.BOLD))
+    print(color("â?Submodules", Colors.CYAN, Colors.BOLD))
     
     # tinker-atropos (RL training backend)
     tinker_dir = PROJECT_ROOT / "tinker-atropos"
@@ -803,7 +803,7 @@ def run_doctor(args):
     # Check: Tool Availability
     # =========================================================================
     print()
-    print(color("�?Tool Availability", Colors.CYAN, Colors.BOLD))
+    print(color("â?Tool Availability", Colors.CYAN, Colors.BOLD))
     
     try:
         # Add project root to path for imports
@@ -836,7 +836,7 @@ def run_doctor(args):
     # Check: Skills Hub
     # =========================================================================
     print()
-    print(color("�?Skills Hub", Colors.CYAN, Colors.BOLD))
+    print(color("â?Skills Hub", Colors.CYAN, Colors.BOLD))
 
     hub_dir = HERMES_HOME / "skills" / ".hub"
     if hub_dir.exists():
@@ -862,13 +862,13 @@ def run_doctor(args):
     if github_token:
         check_ok("GitHub token configured (authenticated API access)")
     else:
-        check_warn("No GITHUB_TOKEN", f"(60 req/hr rate limit �?set in {_DHH}/.env for better rates)")
+        check_warn("No GITHUB_TOKEN", f"(60 req/hr rate limit â?set in {_DHH}/.env for better rates)")
 
     # =========================================================================
     # Memory Provider (only check the active provider, if any)
     # =========================================================================
     print()
-    print(color("�?Memory Provider", Colors.CYAN, Colors.BOLD))
+    print(color("â?Memory Provider", Colors.CYAN, Colors.BOLD))
 
     _active_memory_provider = ""
     try:
@@ -882,7 +882,7 @@ def run_doctor(args):
         pass
 
     if not _active_memory_provider:
-        check_ok("Built-in memory active", "(no external provider configured �?this is fine)")
+        check_ok("Built-in memory active", "(no external provider configured â?this is fine)")
     elif _active_memory_provider == "honcho":
         try:
             from plugins.memory.honcho.client import HonchoClientConfig, resolve_config_path
@@ -895,7 +895,7 @@ def run_doctor(args):
                 check_info(f"Honcho disabled (set enabled: true in {_honcho_cfg_path} to activate)")
             elif not (hcfg.api_key or hcfg.base_url):
                 check_fail("Honcho API key or base URL not set", "run: hermes memory setup")
-                issues.append("No Honcho API key �?run 'hermes memory setup'")
+                issues.append("No Honcho API key â?run 'hermes memory setup'")
             else:
                 from plugins.memory.honcho.client import get_honcho_client, reset_honcho_client
                 reset_honcho_client()
@@ -953,7 +953,7 @@ def run_doctor(args):
         named_profiles = [p for p in list_profiles() if not p.is_default]
         if named_profiles:
             print()
-            print(color("�?Profiles", Colors.CYAN, Colors.BOLD))
+            print(color("â?Profiles", Colors.CYAN, Colors.BOLD))
             check_ok(f"{len(named_profiles)} profile(s) found")
             wrapper_dir = _get_wrapper_dir()
             for p in named_profiles:
@@ -963,7 +963,7 @@ def run_doctor(args):
                 if p.model:
                     parts.append(p.model[:30])
                 if not (p.path / "config.yaml").exists():
-                    parts.append("�?missing config")
+                    parts.append("â?missing config")
                 if not (p.path / ".env").exists():
                     parts.append("no .env")
                 wrapper = wrapper_dir / p.name
@@ -982,7 +982,7 @@ def run_doctor(args):
                         if "hermes -p" in content:
                             _m = _re.search(r"hermes -p (\S+)", content)
                             if _m and not profile_exists(_m.group(1)):
-                                check_warn(f"Orphan alias: {wrapper.name} �?profile '{_m.group(1)}' no longer exists")
+                                check_warn(f"Orphan alias: {wrapper.name} â?profile '{_m.group(1)}' no longer exists")
                     except Exception:
                         pass
     except ImportError:
@@ -996,7 +996,7 @@ def run_doctor(args):
     print()
     remaining_issues = issues + manual_issues
     if should_fix and fixed_count > 0:
-        print(color("─" * 60, Colors.GREEN))
+        print(color("-" * 60, Colors.GREEN))
         print(color(f"  Fixed {fixed_count} issue(s).", Colors.GREEN, Colors.BOLD), end="")
         if remaining_issues:
             print(color(f" {len(remaining_issues)} issue(s) require manual intervention.", Colors.YELLOW, Colors.BOLD))
@@ -1008,7 +1008,7 @@ def run_doctor(args):
                 print(f"  {i}. {issue}")
             print()
     elif remaining_issues:
-        print(color("─" * 60, Colors.YELLOW))
+        print(color("-" * 60, Colors.YELLOW))
         print(color(f"  Found {len(remaining_issues)} issue(s) to address:", Colors.YELLOW, Colors.BOLD))
         print()
         for i, issue in enumerate(remaining_issues, 1):
@@ -1017,7 +1017,7 @@ def run_doctor(args):
         if not should_fix:
             print(color("  Tip: run 'hermes doctor --fix' to auto-fix what's possible.", Colors.DIM))
     else:
-        print(color("─" * 60, Colors.GREEN))
-        print(color("  All checks passed! 🎉", Colors.GREEN, Colors.BOLD))
+        print(color("-" * 60, Colors.GREEN))
+        print(color("  All checks passed! ð", Colors.GREEN, Colors.BOLD))
     
     print()

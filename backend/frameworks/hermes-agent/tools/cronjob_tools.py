@@ -32,7 +32,7 @@ from cron.jobs import (
 
 
 # ---------------------------------------------------------------------------
-# Cron prompt scanning �?critical-severity patterns only, since cron prompts
+# Cron prompt scanning é¥?critical-severity patterns only, since cron prompts
 # run in fresh sessions with full tool access.
 # ---------------------------------------------------------------------------
 
@@ -397,7 +397,7 @@ On update, passing skills=[] clears attached skills.
 
 NOTE: The agent's final response is auto-delivered to the target. Put the primary
 user-facing content in the final response. Cron jobs run autonomously with no user
-present �?they cannot ask questions or request clarification.
+present é¥?they cannot ask questions or request clarification.
 
 Important safety rule: cron-run sessions should not recursively schedule more cron jobs.""",
     "parameters": {
@@ -502,5 +502,5 @@ registry.register(
         task_id=kw.get("task_id"),
     ))(),
     check_fn=check_cronjob_requirements,
-    emoji="�?,
+    emoji="é´?,
 )

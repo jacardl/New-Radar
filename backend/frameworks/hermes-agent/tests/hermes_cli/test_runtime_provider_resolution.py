@@ -218,7 +218,7 @@ def test_qwen_oauth_auto_fallthrough_on_auth_failure(monkeypatch):
     monkeypatch.setattr(rp, "_get_model_config", lambda: {})
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-or-key")
 
-    # Should NOT raise �?falls through to OpenRouter
+    # Should NOT raise â?falls through to OpenRouter
     resolved = rp.resolve_runtime_provider(requested="auto")
     # The fallthrough means it won't be qwen-oauth
     assert resolved["provider"] != "qwen-oauth"
@@ -573,7 +573,7 @@ def test_named_custom_provider_uses_saved_credentials(monkeypatch):
 
 
 def test_named_custom_provider_uses_providers_dict_when_list_missing(monkeypatch):
-    """After v11→v12 migration deletes custom_providers, resolution should
+    """After v11->v12 migration deletes custom_providers, resolution should
     still find entries in the providers dict via get_compatible_custom_providers."""
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
@@ -780,7 +780,7 @@ def test_resolve_requested_provider_precedence(monkeypatch):
     assert rp.resolve_requested_provider() == "auto"
 
 
-# ── api_mode config override tests ──────────────────────────────────────
+# -- api_mode config override tests --------------------------------------
 
 
 def test_model_config_api_mode(monkeypatch):
@@ -1070,7 +1070,7 @@ def test_opencode_zen_claude_defaults_to_messages(monkeypatch):
 
     assert resolved["provider"] == "opencode-zen"
     assert resolved["api_mode"] == "anthropic_messages"
-    # Trailing /v1 stripped for anthropic_messages mode �?the Anthropic SDK
+    # Trailing /v1 stripped for anthropic_messages mode â?the Anthropic SDK
     # appends its own /v1/messages to the base_url.
     assert resolved["base_url"] == "https://opencode.ai/zen"
 
@@ -1085,7 +1085,7 @@ def test_opencode_go_minimax_defaults_to_messages(monkeypatch):
 
     assert resolved["provider"] == "opencode-go"
     assert resolved["api_mode"] == "anthropic_messages"
-    # Trailing /v1 stripped �?Anthropic SDK appends /v1/messages itself.
+    # Trailing /v1 stripped â?Anthropic SDK appends /v1/messages itself.
     assert resolved["base_url"] == "https://opencode.ai/zen/go"
 
 
@@ -1142,7 +1142,7 @@ def test_named_custom_provider_anthropic_api_mode(monkeypatch):
 
 
 # ------------------------------------------------------------------
-# fix #2562 �?resolve_provider("custom") must not remap to "openrouter"
+# fix #2562 â?resolve_provider("custom") must not remap to "openrouter"
 # ------------------------------------------------------------------
 
 
@@ -1285,7 +1285,7 @@ def test_explicit_nous_auth_failure_still_raises(monkeypatch):
         ),
     )
 
-    # With explicit "nous", should raise �?don't silently switch providers
+    # With explicit "nous", should raise â?don't silently switch providers
     with pytest.raises(AuthError, match="Refresh session has been revoked"):
         rp.resolve_runtime_provider(requested="nous")
 
@@ -1303,7 +1303,7 @@ def test_openrouter_provider_not_affected_by_custom_fix(monkeypatch):
 
 
 # ------------------------------------------------------------------
-# fix #7828 �?custom_providers model field must propagate to runtime
+# fix #7828 â?custom_providers model field must propagate to runtime
 # ------------------------------------------------------------------
 
 

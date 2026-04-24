@@ -431,7 +431,7 @@ def normalize_usage(
     - OpenAI Chat Completions: prompt_tokens includes cache tokens; prompt_tokens_details.cached_tokens separates them
 
     In both Codex and OpenAI modes, input_tokens is derived by subtracting cache
-    tokens from the total �?the API contract is that input/prompt totals include
+    tokens from the total é¥?the API contract is that input/prompt totals include
     cached tokens and the details object breaks them out.
     """
     if not response_usage:
@@ -566,7 +566,7 @@ def has_known_pricing(
     """Check whether we have pricing data for this model+route.
 
     Uses direct lookup instead of routing through the full estimation
-    pipeline �?avoids creating dummy usage objects just to check status.
+    pipeline é¥?avoids creating dummy usage objects just to check status.
     """
     route = resolve_billing_route(model_name, provider=provider, base_url=base_url)
     if route.billing_mode == "subscription_included":

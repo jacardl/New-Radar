@@ -13,7 +13,7 @@ Mid-session writes update files on disk immediately (durable) but do NOT change
 the system prompt -- this preserves the prefix cache for the entire session.
 The snapshot refreshes on the next session start.
 
-Entry delimiter: Â§ (section sign). Entries can be multiline.
+Entry delimiter: ÃÃÂ§ (section sign). Entries can be multiline.
 Character limits (not tokens) because char counts are model-independent.
 
 Design:
@@ -36,7 +36,7 @@ from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Where memory files live â€?resolved dynamically so profile overrides
+# Where memory files live ÃÂ¢?resolved dynamically so profile overrides
 # (HERMES_HOME env var changes) are always respected.  The old module-level
 # constant was cached at import time and could go stale if a profile switch
 # happened after the first import.
@@ -44,11 +44,11 @@ def get_memory_dir() -> Path:
     """Return the profile-scoped memories directory."""
     return get_hermes_home() / "memories"
 
-ENTRY_DELIMITER = "\nÂ§\n"
+ENTRY_DELIMITER = "\nÃÃÂ§\n"
 
 
 # ---------------------------------------------------------------------------
-# Memory content scanning â€?lightweight check for injection/exfiltration
+# Memory content scanning ÃÂ¢?lightweight check for injection/exfiltration
 # in content that gets injected into the system prompt.
 # ---------------------------------------------------------------------------
 
@@ -352,7 +352,7 @@ class MemoryStore:
             "success": True,
             "target": target,
             "entries": entries,
-            "usage": f"{pct}% â€?{current:,}/{limit:,} chars",
+            "usage": f"{pct}% ÃÂ¢?{current:,}/{limit:,} chars",
             "entry_count": len(entries),
         }
         if message:
@@ -370,11 +370,11 @@ class MemoryStore:
         pct = min(100, int((current / limit) * 100)) if limit > 0 else 0
 
         if target == "user":
-            header = f"USER PROFILE (who the user is) [{pct}% â€?{current:,}/{limit:,} chars]"
+            header = f"USER PROFILE (who the user is) [{pct}% ÃÂ¢?{current:,}/{limit:,} chars]"
         else:
-            header = f"MEMORY (your personal notes) [{pct}% â€?{current:,}/{limit:,} chars]"
+            header = f"MEMORY (your personal notes) [{pct}% ÃÂ¢?{current:,}/{limit:,} chars]"
 
-        separator = "â•? * 46
+        separator = "ÃÂ¢? * 46
         return f"{separator}\n{header}\n{separator}\n{content}"
 
     @staticmethod
@@ -394,8 +394,8 @@ class MemoryStore:
         if not raw.strip():
             return []
 
-        # Use ENTRY_DELIMITER for consistency with _write_file. Splitting by "Â§"
-        # alone would incorrectly split entries that contain "Â§" in their content.
+        # Use ENTRY_DELIMITER for consistency with _write_file. Splitting by "ÃÃÂ§"
+        # alone would incorrectly split entries that contain "ÃÃÂ§" in their content.
         entries = [e.strip() for e in raw.split(ENTRY_DELIMITER)]
         return [e for e in entries if e]
 
@@ -547,7 +547,7 @@ registry.register(
         old_text=args.get("old_text"),
         store=kw.get("store")),
     check_fn=check_memory_requirements,
-    emoji="ðŸ§ ",
+    emoji="ÃÂ°ÃÂ§ÃÂ ",
 )
 
 

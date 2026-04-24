@@ -1,4 +1,4 @@
-"""Tests for Discord Opus codec loading �?must use ctypes.util.find_library."""
+"""Tests for Discord Opus codec loading é¥?must use ctypes.util.find_library."""
 
 import inspect
 

@@ -56,7 +56,7 @@ def clarify_callback(cli, question, choices):
     cli._clarify_deadline = 0
     if hasattr(cli, "_app") and cli._app:
         cli._app.invalidate()
-    cprint(f"\n{_DIM}(clarify timed out after {timeout}s â€?agent will decide){_RST}")
+    cprint(f"\n{_DIM}(clarify timed out after {timeout}s Ã©Â¥?agent will decide){_RST}")
     return (
         "The user did not provide a response within the time limit. "
         "Use your best judgement to make the choice and proceed."
@@ -80,7 +80,7 @@ def prompt_for_secret(cli, var_name: str, prompt: str, metadata=None) -> dict:
             value = ""
 
         if not value:
-            cprint(f"\n{_DIM}  â?Secret entry cancelled{_RST}")
+            cprint(f"\n{_DIM}  Ã©Â´?Secret entry cancelled{_RST}")
             return {
                 "success": True,
                 "reason": "cancelled",
@@ -92,7 +92,7 @@ def prompt_for_secret(cli, var_name: str, prompt: str, metadata=None) -> dict:
 
         stored = save_env_value_secure(var_name, value)
         _dhh = display_hermes_home()
-        cprint(f"\n{_DIM}  âœ?Stored secret in {_dhh}/.env as {var_name}{_RST}")
+        cprint(f"\n{_DIM}  Ã©?Stored secret in {_dhh}/.env as {var_name}{_RST}")
         return {
             **stored,
             "skipped": False,
@@ -133,7 +133,7 @@ def prompt_for_secret(cli, var_name: str, prompt: str, metadata=None) -> dict:
                 cli._app.invalidate()
 
             if not value:
-                cprint(f"\n{_DIM}  â?Secret entry cancelled{_RST}")
+                cprint(f"\n{_DIM}  Ã©Â´?Secret entry cancelled{_RST}")
                 return {
                     "success": True,
                     "reason": "cancelled",
@@ -145,7 +145,7 @@ def prompt_for_secret(cli, var_name: str, prompt: str, metadata=None) -> dict:
 
             stored = save_env_value_secure(var_name, value)
             _dhh = display_hermes_home()
-            cprint(f"\n{_DIM}  âœ?Stored secret in {_dhh}/.env as {var_name}{_RST}")
+            cprint(f"\n{_DIM}  Ã©?Stored secret in {_dhh}/.env as {var_name}{_RST}")
             return {
                 **stored,
                 "skipped": False,
@@ -172,7 +172,7 @@ def prompt_for_secret(cli, var_name: str, prompt: str, metadata=None) -> dict:
             pass
     if hasattr(cli, "_app") and cli._app:
         cli._app.invalidate()
-    cprint(f"\n{_DIM}  â?Timeout â€?secret capture cancelled{_RST}")
+    cprint(f"\n{_DIM}  Ã©Â´?Timeout Ã©Â¥?secret capture cancelled{_RST}")
     return {
         "success": True,
         "reason": "timeout",
@@ -238,5 +238,5 @@ def approval_callback(cli, command: str, description: str) -> str:
         cli._approval_deadline = 0
         if hasattr(cli, "_app") and cli._app:
             cli._app.invalidate()
-        cprint(f"\n{_DIM}  â?Timeout â€?denying command{_RST}")
+        cprint(f"\n{_DIM}  Ã©Â´?Timeout Ã©Â¥?denying command{_RST}")
         return "deny"

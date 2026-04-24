@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Discord Voice Doctor �?diagnostic tool for voice channel support.
+"""Discord Voice Doctor é¥?diagnostic tool for voice channel support.
 
 Checks all dependencies, configuration, and bot permissions needed
 for Discord voice mode to work correctly.
@@ -81,7 +81,7 @@ def check_packages():
             nacl.secret.Aead(bytes(32))
             check("PyNaCl", True, f"v{ver}")
         except (AttributeError, Exception):
-            check("PyNaCl (Aead)", False, f"v{ver} �?need >=1.5.0")
+            check("PyNaCl (Aead)", False, f"v{ver} é¥?need >=1.5.0")
             ok = False
     except ImportError:
         check("PyNaCl", False, "pip install PyNaCl>=1.5.0")
@@ -100,20 +100,20 @@ def check_packages():
         import faster_whisper
         check("faster-whisper (local STT)", True)
     except ImportError:
-        warn("faster-whisper (local STT)", "not installed �?local STT unavailable")
+        warn("faster-whisper (local STT)", "not installed é¥?local STT unavailable")
 
     # Optional: TTS providers
     try:
         import edge_tts
         check("edge-tts", True)
     except ImportError:
-        warn("edge-tts", "not installed �?edge TTS unavailable")
+        warn("edge-tts", "not installed é¥?edge TTS unavailable")
 
     try:
         import elevenlabs
         check("elevenlabs SDK", True)
     except ImportError:
-        warn("elevenlabs SDK", "not installed �?premium TTS unavailable")
+        warn("elevenlabs SDK", "not installed é¥?premium TTS unavailable")
 
     return ok
 
@@ -157,7 +157,7 @@ def check_system_tools():
             check("Opus codec", False, str(e))
             ok = False
     else:
-        warn("Opus codec", "skipped �?discord.py not installed")
+        warn("Opus codec", "skipped é¥?discord.py not installed")
 
     # ffmpeg
     ffmpeg_path = shutil.which("ffmpeg")
@@ -191,7 +191,7 @@ def check_env_vars():
         check("DISCORD_BOT_TOKEN", False, "not set")
         ok = False
 
-    # Allowed users �?resolve usernames if possible
+    # Allowed users é¥?resolve usernames if possible
     allowed = os.getenv("DISCORD_ALLOWED_USERS", "")
     if allowed:
         users = [u.strip() for u in allowed.split(",") if u.strip()]
@@ -213,7 +213,7 @@ def check_env_vars():
             user_labels.append(label)
         check("DISCORD_ALLOWED_USERS", True, f"{len(users)} user(s): {', '.join(user_labels)}")
     else:
-        warn("DISCORD_ALLOWED_USERS", "not set �?all users can use voice")
+        warn("DISCORD_ALLOWED_USERS", "not set é¥?all users can use voice")
 
     groq_key = os.getenv("GROQ_API_KEY", "")
     eleven_key = os.getenv("ELEVENLABS_API_KEY", "")
@@ -221,12 +221,12 @@ def check_env_vars():
     if groq_key:
         check("GROQ_API_KEY (STT)", True, mask(groq_key))
     else:
-        warn("GROQ_API_KEY", "not set �?Groq STT unavailable")
+        warn("GROQ_API_KEY", "not set é¥?Groq STT unavailable")
 
     if eleven_key:
         check("ELEVENLABS_API_KEY (TTS)", True, mask(eleven_key))
     else:
-        warn("ELEVENLABS_API_KEY", "not set �?ElevenLabs TTS unavailable")
+        warn("ELEVENLABS_API_KEY", "not set é¥?ElevenLabs TTS unavailable")
 
     return ok, token, groq_key, eleven_key
 
@@ -258,7 +258,7 @@ def check_config(groq_key, eleven_key):
         except Exception as e:
             warn("config.yaml", f"parse error: {e}")
     else:
-        warn("config.yaml", "not found �?using defaults")
+        warn("config.yaml", "not found é¥?using defaults")
 
     # Voice mode state
     voice_mode_path = HERMES_HOME / "gateway_voice_mode.json"
@@ -280,13 +280,13 @@ def check_bot_permissions(token):
     section("Bot Permissions")
 
     if not token:
-        warn("Bot permissions", "no token �?skipping")
+        warn("Bot permissions", "no token é¥?skipping")
         return True
 
     try:
         import requests
     except ImportError:
-        warn("Bot permissions", "requests not installed �?skipping")
+        warn("Bot permissions", "requests not installed é¥?skipping")
         return True
 
     VOICE_PERMS = {
@@ -383,9 +383,9 @@ def main():
     print()
     print("\033[1m" + "-" * 50 + "\033[0m")
     if all_ok:
-        print(f"  {OK} \033[92mAll checks passed �?voice mode ready!\033[0m")
+        print(f"  {OK} \033[92mAll checks passed é¥?voice mode ready!\033[0m")
     else:
-        print(f"  {FAIL} \033[91mSome checks failed �?fix issues above.\033[0m")
+        print(f"  {FAIL} \033[91mSome checks failed é¥?fix issues above.\033[0m")
     print()
 
 

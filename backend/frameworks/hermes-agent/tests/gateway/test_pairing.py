@@ -1,4 +1,4 @@
-"""Tests for gateway/pairing.py �?DM pairing security system."""
+"""Tests for gateway/pairing.py é¥?DM pairing security system."""
 
 import json
 import os
@@ -226,7 +226,7 @@ class TestLockout:
             for _ in range(MAX_FAILED_ATTEMPTS):
                 store.approve_code("telegram", "WRONGCODE")
 
-            # Platform should now be locked out �?can't generate new codes
+            # Platform should now be locked out é¥?can't generate new codes
             assert store._is_locked_out("telegram") is True
 
     def test_lockout_blocks_code_generation(self, tmp_path):

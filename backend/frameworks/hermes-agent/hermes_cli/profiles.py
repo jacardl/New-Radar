@@ -5,7 +5,7 @@ Each profile is a fully independent HERMES_HOME directory with its own
 config.yaml, .env, memory, sessions, skills, gateway, cron, and logs.
 Profiles live under ``~/.hermes/profiles/<name>/`` by default.
 
-The "default" profile is ``~/.hermes`` itself â€?backward compatible,
+The "default" profile is ``~/.hermes`` itself Ã©Â¥?backward compatible,
 zero migration needed.
 
 Usage::
@@ -43,7 +43,7 @@ _PROFILE_DIRS = [
     "workspace",
     "cron",
     # Per-profile HOME for subprocesses: isolates system tool configs (git,
-    # ssh, gh, npm â€? so credentials don't bleed between profiles.  In Docker
+    # ssh, gh, npm Ã©Â¥? so credentials don't bleed between profiles.  In Docker
     # this also ensures tool configs land inside the persistent volume.
     # See hermes_constants.get_subprocess_home() and issue #4426.
     "home",
@@ -57,7 +57,7 @@ _CLONE_CONFIG_FILES = [
 ]
 
 # Subdirectory files copied during --clone (path relative to profile root).
-# Memory files are part of the agent's curated identity â€?just as important
+# Memory files are part of the agent's curated identity Ã©Â¥?just as important
 # as SOUL.md for continuity when cloning a profile.
 _CLONE_SUBDIR_FILES = [
     "memories/MEMORY.md",
@@ -79,7 +79,7 @@ _DEFAULT_EXPORT_EXCLUDE_ROOT = frozenset({
     # Infrastructure
     "hermes-agent",         # repo checkout (multi-GB)
     ".worktrees",           # git worktrees
-    "profiles",             # other profiles â€?never recursive-export
+    "profiles",             # other profiles Ã©Â¥?never recursive-export
     "bin",                  # installed binaries (tirith, etc.)
     "node_modules",         # npm packages
     # Databases & runtime state
@@ -233,7 +233,7 @@ def create_wrapper_script(name: str) -> Optional[Path]:
     try:
         wrapper_dir.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        print(f"âš?Could not create {wrapper_dir}: {e}")
+        print(f"Ã©Â¿?Could not create {wrapper_dir}: {e}")
         return None
 
     wrapper_path = wrapper_dir / name
@@ -242,7 +242,7 @@ def create_wrapper_script(name: str) -> Optional[Path]:
         wrapper_path.chmod(wrapper_path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
         return wrapper_path
     except OSError as e:
-        print(f"âš?Could not create wrapper at {wrapper_path}: {e}")
+        print(f"Ã©Â¿?Could not create wrapper at {wrapper_path}: {e}")
         return None
 
 
@@ -410,7 +410,7 @@ def create_profile(
 
     if name == "default":
         raise ValueError(
-            "Cannot create a profile named 'default' â€?it is the built-in profile (~/.hermes)."
+            "Cannot create a profile named 'default' Ã©Â¥?it is the built-in profile (~/.hermes)."
         )
 
     profile_dir = get_profile_dir(name)
@@ -467,7 +467,7 @@ def create_profile(
             from hermes_cli.default_soul import DEFAULT_SOUL_MD
             soul_path.write_text(DEFAULT_SOUL_MD, encoding="utf-8")
         except Exception:
-            pass  # best-effort â€?don't fail profile creation over this
+            pass  # best-effort Ã©Â¥?don't fail profile creation over this
 
     return profile_dir
 
@@ -491,17 +491,17 @@ def seed_profile_skills(profile_dir: Path, quiet: bool = False) -> Optional[dict
         if result.returncode == 0 and result.stdout.strip():
             return json.loads(result.stdout.strip())
         if not quiet:
-            print(f"âš?Skill seeding returned exit code {result.returncode}")
+            print(f"Ã©Â¿?Skill seeding returned exit code {result.returncode}")
             if result.stderr.strip():
                 print(f"  {result.stderr.strip()[:200]}")
         return None
     except subprocess.TimeoutExpired:
         if not quiet:
-            print("âš?Skill seeding timed out (60s)")
+            print("Ã©Â¿?Skill seeding timed out (60s)")
         return None
     except Exception as e:
         if not quiet:
-            print(f"âš?Skill seeding failed: {e}")
+            print(f"Ã©Â¿?Skill seeding failed: {e}")
         return None
 
 
@@ -549,9 +549,9 @@ def delete_profile(name: str, yes: bool = False) -> Path:
 
     print(f"\nThis will permanently delete:")
     for item in items:
-        print(f"  â€?{item}")
+        print(f"  Ã©Â¥?{item}")
     if gw_running:
-        print(f"  âš?Gateway is running â€?it will be stopped.")
+        print(f"  Ã©Â¿?Gateway is running Ã©Â¥?it will be stopped.")
 
     # Confirmation
     if not yes:
@@ -575,21 +575,21 @@ def delete_profile(name: str, yes: bool = False) -> Path:
     # 3. Remove wrapper script
     if has_wrapper:
         if remove_wrapper_script(name):
-            print(f"âœ?Removed {wrapper_path}")
+            print(f"Ã©?Removed {wrapper_path}")
 
     # 4. Remove profile directory
     try:
         shutil.rmtree(profile_dir)
-        print(f"âœ?Removed {profile_dir}")
+        print(f"Ã©?Removed {profile_dir}")
     except Exception as e:
-        print(f"âš?Could not remove {profile_dir}: {e}")
+        print(f"Ã©Â¿?Could not remove {profile_dir}: {e}")
 
     # 5. Clear active_profile if it pointed to this profile
     try:
         active = get_active_profile()
         if active == name:
             set_active_profile("default")
-            print("âœ?Active profile reset to default")
+            print("Ã©?Active profile reset to default")
     except Exception:
         pass
 
@@ -625,7 +625,7 @@ def _cleanup_gateway_service(name: str, profile_dir: Path) -> None:
                     ["systemctl", "--user", "daemon-reload"],
                     capture_output=True, check=False, timeout=10,
                 )
-                print(f"âœ?Service {svc_name} removed")
+                print(f"Ã©?Service {svc_name} removed")
 
         elif _platform.system() == "Darwin":
             plist_path = get_launchd_plist_path()
@@ -635,9 +635,9 @@ def _cleanup_gateway_service(name: str, profile_dir: Path) -> None:
                     capture_output=True, check=False, timeout=10,
                 )
                 plist_path.unlink(missing_ok=True)
-                print(f"âœ?Launchd service removed")
+                print(f"Ã©?Launchd service removed")
     except Exception as e:
-        print(f"âš?Service cleanup: {e}")
+        print(f"Ã©Â¿?Service cleanup: {e}")
     finally:
         if old_home is not None:
             os.environ["HERMES_HOME"] = old_home
@@ -665,18 +665,18 @@ def _stop_gateway_process(profile_dir: Path) -> None:
             try:
                 os.kill(pid, 0)
             except ProcessLookupError:
-                print(f"âœ?Gateway stopped (PID {pid})")
+                print(f"Ã©?Gateway stopped (PID {pid})")
                 return
         # Force kill
         try:
             os.kill(pid, _signal.SIGKILL)
         except ProcessLookupError:
             pass
-        print(f"âœ?Gateway force-stopped (PID {pid})")
+        print(f"Ã©?Gateway force-stopped (PID {pid})")
     except (ProcessLookupError, PermissionError):
-        print("âœ?Gateway already stopped")
+        print("Ã©?Gateway already stopped")
     except Exception as e:
-        print(f"âš?Could not stop gateway: {e}")
+        print(f"Ã©Â¿?Could not stop gateway: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -794,7 +794,7 @@ def export_profile(name: str, output_path: str) -> Path:
     base = str(output).removesuffix(".tar.gz").removesuffix(".tgz")
 
     if name == "default":
-        # The default profile IS ~/.hermes itself â€?its parent is ~/ and its
+        # The default profile IS ~/.hermes itself Ã©Â¥?its parent is ~/ and its
         # directory name is ".hermes", not "default".  We stage a clean copy
         # under a temp dir so the archive contains ``default/...``.
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -807,7 +807,7 @@ def export_profile(name: str, output_path: str) -> Path:
             result = shutil.make_archive(base, "gztar", tmpdir, "default")
             return Path(result)
 
-    # Named profiles â€?stage a filtered copy to exclude credentials
+    # Named profiles Ã©Â¥?stage a filtered copy to exclude credentials
     with tempfile.TemporaryDirectory() as tmpdir:
         staged = Path(tmpdir) / name
         _CREDENTIAL_FILES = {"auth.json", ".env"}
@@ -907,11 +907,11 @@ def import_profile(archive_path: str, name: Optional[str] = None) -> Path:
         )
 
     # Archives exported from the default profile have "default/" as top-level
-    # dir.  Importing as "default" would target ~/.hermes itself â€?disallow
+    # dir.  Importing as "default" would target ~/.hermes itself Ã©Â¥?disallow
     # that and guide the user toward a named profile.
     if inferred_name == "default":
         raise ValueError(
-            "Cannot import as 'default' â€?that is the built-in root profile (~/.hermes). "
+            "Cannot import as 'default' Ã©Â¥?that is the built-in root profile (~/.hermes). "
             "Specify a different name: hermes profile import <archive> --name <name>"
         )
 
@@ -948,7 +948,7 @@ def rename_profile(old_name: str, new_name: str) -> Path:
     if old_name == "default":
         raise ValueError("Cannot rename the default profile.")
     if new_name == "default":
-        raise ValueError("Cannot rename to 'default' â€?it is reserved.")
+        raise ValueError("Cannot rename to 'default' Ã©Â¥?it is reserved.")
 
     old_dir = get_profile_dir(old_name)
     new_dir = get_profile_dir(new_name)
@@ -965,22 +965,22 @@ def rename_profile(old_name: str, new_name: str) -> Path:
 
     # 2. Rename directory
     old_dir.rename(new_dir)
-    print(f"âœ?Renamed {old_dir.name} â†?{new_dir.name}")
+    print(f"Ã©?Renamed {old_dir.name} Ã©Â«?{new_dir.name}")
 
     # 3. Update wrapper script
     remove_wrapper_script(old_name)
     collision = check_alias_collision(new_name)
     if not collision:
         create_wrapper_script(new_name)
-        print(f"âœ?Alias updated: {new_name}")
+        print(f"Ã©?Alias updated: {new_name}")
     else:
-        print(f"âš?Cannot create alias '{new_name}' â€?{collision}")
+        print(f"Ã©Â¿?Cannot create alias '{new_name}' Ã©Â¥?{collision}")
 
     # 4. Update active_profile if it pointed to old name
     try:
         if get_active_profile() == old_name:
             set_active_profile(new_name)
-            print(f"âœ?Active profile updated: {new_name}")
+            print(f"Ã©?Active profile updated: {new_name}")
     except Exception:
         pass
 

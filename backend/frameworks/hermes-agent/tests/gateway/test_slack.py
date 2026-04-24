@@ -549,7 +549,7 @@ class TestMessageRouting:
 
 
 # ---------------------------------------------------------------------------
-# TestSendTyping �?assistant.threads.setStatus
+# TestSendTyping é¥?assistant.threads.setStatus
 # ---------------------------------------------------------------------------
 
 
@@ -592,7 +592,7 @@ class TestSendTyping:
 
 
 # ---------------------------------------------------------------------------
-# TestFormatMessage �?Markdown �?mrkdwn conversion
+# TestFormatMessage é¥?Markdown é«?mrkdwn conversion
 # ---------------------------------------------------------------------------
 
 
@@ -782,7 +782,7 @@ class TestFormatMessage:
     # --- Additional edge cases ---
 
     def test_message_only_code_block(self, adapter):
-        """Entire message is a fenced code block �?no conversion."""
+        """Entire message is a fenced code block é¥?no conversion."""
         code = "```python\nx = 1\n```"
         assert adapter.format_message(code) == code
 
@@ -804,7 +804,7 @@ class TestFormatMessage:
         assert "item two" in result
 
     def test_nested_bold_in_link(self, adapter):
-        """Bold inside link label �?label is stashed before bold pass."""
+        """Bold inside link label é¥?label is stashed before bold pass."""
         result = adapter.format_message("[**bold**](https://example.com)")
         assert "https://example.com" in result
         assert "bold" in result
@@ -878,13 +878,13 @@ class TestEditMessageStreamingPipeline:
         """Simulates streaming: multiple edits, each should be formatted."""
         adapter._app.client.chat_update = AsyncMock(return_value={"ok": True})
 
-        # First streaming update �?bold
+        # First streaming update é¥?bold
         result1 = await adapter.edit_message("C123", "ts1", "**Processing**...")
         assert result1.success is True
         kwargs1 = adapter._app.client.chat_update.call_args.kwargs
         assert kwargs1["text"] == "*Processing*..."
 
-        # Second streaming update �?bold + link
+        # Second streaming update é¥?bold + link
         result2 = await adapter.edit_message(
             "C123", "ts1", "**Done!** See [results](https://example.com)"
         )
@@ -894,7 +894,7 @@ class TestEditMessageStreamingPipeline:
 
     @pytest.mark.asyncio
     async def test_edit_message_formats_code_and_bold(self, adapter):
-        """Streaming update with code block and bold �?code must be preserved."""
+        """Streaming update with code block and bold é¥?code must be preserved."""
         adapter._app.client.chat_update = AsyncMock(return_value={"ok": True})
 
         content = "**Result:**\n```python\nprint('hello')\n```"
@@ -906,7 +906,7 @@ class TestEditMessageStreamingPipeline:
 
     @pytest.mark.asyncio
     async def test_edit_message_formats_blockquote_in_stream(self, adapter):
-        """Streaming update with blockquote �?'>' marker must survive."""
+        """Streaming update with blockquote é¥?'>' marker must survive."""
         adapter._app.client.chat_update = AsyncMock(return_value={"ok": True})
 
         content = "> **Important:** do this\nnormal line"
@@ -1022,7 +1022,7 @@ class TestReactions:
         }
         await adapter._handle_slack_message(event)
 
-        # Should have added 👀, then removed 👀, then added �?
+        # Should have added é¦æ, then removed é¦æ, then added é?
         add_calls = adapter._app.client.reactions_add.call_args_list
         remove_calls = adapter._app.client.reactions_remove.call_args_list
         assert len(add_calls) == 2
@@ -1345,7 +1345,7 @@ class TestUserNameResolution:
 
 
 # ---------------------------------------------------------------------------
-# TestSlashCommands �?expanded command set
+# TestSlashCommands é¥?expanded command set
 # ---------------------------------------------------------------------------
 
 
@@ -1418,7 +1418,7 @@ class TestMessageSplitting:
 
     @pytest.mark.asyncio
     async def test_send_preserves_blockquote_formatting(self, adapter):
-        """Blockquote '>' markers must survive format �?chunk �?send pipeline."""
+        """Blockquote '>' markers must survive format é«?chunk é«?send pipeline."""
         adapter._app.client.chat_postMessage = AsyncMock(return_value={"ts": "ts1"})
         await adapter.send("C123", "> quoted text\nnormal text")
         kwargs = adapter._app.client.chat_postMessage.call_args.kwargs
@@ -1664,7 +1664,7 @@ class TestProgressMessageThread:
             "user": "U_USER",
             "text": "Hello bot",
             "ts": "1234567890.000001",
-            # No thread_ts �?this is a top-level DM
+            # No thread_ts é¥?this is a top-level DM
         }
 
         captured_events = []
@@ -1685,7 +1685,7 @@ class TestProgressMessageThread:
             "so they share one continuous session"
         )
 
-        # The message_id should be the event's ts �?this is what the gateway
+        # The message_id should be the event's ts é¥?this is what the gateway
         # passes as event_message_id so progress messages can thread correctly
         assert msg_event.message_id == "1234567890.000001", (
             "message_id must equal the event ts so _run_agent can use it as "
@@ -1697,7 +1697,7 @@ class TestProgressMessageThread:
         adapter._app.client.chat_postMessage = AsyncMock(return_value={"ts": "reply_ts"})
         result = await adapter.send(
             chat_id="D_DM",
-            content="⚙️ working...",
+            content="é¿æ¬ç¬ working...",
             metadata={"thread_id": msg_event.message_id},
         )
         assert result.success
@@ -1717,7 +1717,7 @@ class TestProgressMessageThread:
             "user": "U_USER",
             "text": f"<@U_BOT> help me",
             "ts": "2000000000.000001",
-            # No thread_ts �?top-level channel message
+            # No thread_ts é¥?top-level channel message
         }
 
         captured_events = []

@@ -66,7 +66,7 @@ def cache_sticker_description(
     Args:
         file_unique_id: Telegram's stable sticker identifier.
         description:    Vision-generated description text.
-        emoji:          Associated emoji (e.g. "😀").
+        emoji:          Associated emoji (e.g. "ð").
         set_name:       Sticker set name if available.
     """
     cache = _load_cache()
@@ -88,7 +88,7 @@ def build_sticker_injection(
     Build the warm-style injection text for a sticker description.
 
     Returns a string like:
-      [The user sent a sticker 😀 from "MyPack"~ It shows: "A cat waving" (=^.w.^=)]
+      [The user sent a sticker ð from "MyPack"~ It shows: "A cat waving" (=^.w.^=)]
     """
     context = ""
     if set_name and emoji:

@@ -170,7 +170,7 @@ def _resolve_runtime_from_pool_entry(
     else:
         configured_provider = str(model_cfg.get("provider") or "").strip().lower()
         # Honour model.base_url from config.yaml when the configured provider
-        # matches this provider �?same pattern as the Anthropic branch above.
+        # matches this provider é¥?same pattern as the Anthropic branch above.
         # Only override when the pool entry has no explicit base_url (i.e. it
         # fell back to the hardcoded default).  Env var overrides win (#6039).
         pconfig = PROVIDER_REGISTRY.get(provider)
@@ -385,7 +385,7 @@ def _resolve_named_custom_runtime(
     # Check if a credential pool exists for this custom endpoint
     pool_result = _try_resolve_from_custom_pool(base_url, "custom", custom_provider.get("api_mode"))
     if pool_result:
-        # Propagate the model name even when using pooled credentials �?
+        # Propagate the model name even when using pooled credentials é¥?
         # the pool doesn't know about the custom_providers model field.
         model_name = custom_provider.get("model")
         if model_name:
@@ -438,7 +438,7 @@ def _resolve_openrouter_runtime(
     env_openrouter_base_url = os.getenv("OPENROUTER_BASE_URL", "").strip()
 
     # Use config base_url when available and the provider context matches.
-    # OPENAI_BASE_URL env var is no longer consulted �?config.yaml is
+    # OPENAI_BASE_URL env var is no longer consulted é¥?config.yaml is
     # the single source of truth for endpoint URLs.
     use_config_base_url = False
     if cfg_base_url.strip() and not explicit_base_url:
@@ -469,7 +469,7 @@ def _resolve_openrouter_runtime(
         ]
     else:
         # Custom endpoint: use api_key from config when using config base_url (#1760).
-        # When the endpoint is Ollama Cloud, check OLLAMA_API_KEY �?it's
+        # When the endpoint is Ollama Cloud, check OLLAMA_API_KEY é¥?it's
         # the canonical env var for ollama.com authentication.
         _is_ollama_url = "ollama.com" in base_url.lower()
         api_key_candidates = [
@@ -489,7 +489,7 @@ def _resolve_openrouter_runtime(
     # When "custom" was explicitly requested, preserve that as the provider
     # name instead of silently relabeling to "openrouter" (#2562).
     # Also provide a placeholder API key for local servers that don't require
-    # authentication �?the OpenAI SDK requires a non-empty api_key string.
+    # authentication é¥?the OpenAI SDK requires a non-empty api_key string.
     effective_provider = "custom" if requested_norm == "custom" else "openrouter"
 
     # For custom endpoints, check if a credential pool exists
@@ -578,7 +578,7 @@ def _resolve_explicit_runtime(
             explicit_base_url
             or str(state.get("inference_base_url") or auth_mod.DEFAULT_NOUS_INFERENCE_URL).strip().rstrip("/")
         )
-        # Only use agent_key for inference �?access_token is an OAuth token for the
+        # Only use agent_key for inference é¥?access_token is an OAuth token for the
         # portal API (minting keys, refreshing tokens), not for the inference API.
         # Falling back to access_token sends an OAuth bearer token to the inference
         # endpoint, which returns 404 because it is not a valid inference credential.
@@ -712,7 +712,7 @@ def resolve_runtime_provider(
                 getattr(entry, "runtime_api_key", None)
                 or getattr(entry, "access_token", "")
             )
-        # For Nous, the pool entry's runtime_api_key is the agent_key �?a
+        # For Nous, the pool entry's runtime_api_key is the agent_key é¥?a
         # short-lived inference credential (~30 min TTL).  The pool doesn't
         # refresh it during selection (that would trigger network calls in
         # non-runtime contexts like `hermes auth list`).  If the key is
@@ -754,7 +754,7 @@ def resolve_runtime_provider(
         except AuthError:
             if requested_provider != "auto":
                 raise
-            # Auto-detected Nous but credentials are stale/revoked �?
+            # Auto-detected Nous but credentials are stale/revoked é¥?
             # fall through to env-var providers (e.g. OpenRouter).
             logger.info("Auto-detected Nous provider but credentials failed; "
                         "falling through to next provider.")
@@ -774,7 +774,7 @@ def resolve_runtime_provider(
         except AuthError:
             if requested_provider != "auto":
                 raise
-            # Auto-detected Codex but credentials are stale/revoked �?
+            # Auto-detected Codex but credentials are stale/revoked é¥?
             # fall through to env-var providers (e.g. OpenRouter).
             logger.info("Auto-detected Codex provider but credentials failed; "
                         "falling through to next provider.")
@@ -820,7 +820,7 @@ def resolve_runtime_provider(
                 "run 'claude setup-token', or authenticate with 'claude /login'."
             )
         # Allow base URL override from config.yaml model.base_url, but only
-        # when the configured provider is anthropic �?otherwise a non-Anthropic
+        # when the configured provider is anthropic é¥?otherwise a non-Anthropic
         # base_url (e.g. Codex endpoint) would leak into Anthropic requests.
         cfg_provider = str(model_cfg.get("provider") or "").strip().lower()
         cfg_base_url = ""
@@ -841,7 +841,7 @@ def resolve_runtime_provider(
     if pconfig and pconfig.auth_type == "api_key":
         creds = resolve_api_key_provider_credentials(provider)
         # Honour model.base_url from config.yaml when the configured provider
-        # matches this provider �?mirrors the Anthropic path above.  Without
+        # matches this provider é¥?mirrors the Anthropic path above.  Without
         # this, users who set model.base_url to e.g. api.minimaxi.com/anthropic
         # (China endpoint) still get the hardcoded api.minimax.io default (#6039).
         cfg_provider = str(model_cfg.get("provider") or "").strip().lower()

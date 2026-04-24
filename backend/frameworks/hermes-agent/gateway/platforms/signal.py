@@ -149,7 +149,7 @@ class SignalAdapter(BasePlatformAdapter):
         self.account = extra.get("account", "")
         self.ignore_stories = extra.get("ignore_stories", True)
 
-        # Parse allowlists �?group policy is derived from presence of group allowlist
+        # Parse allowlists é¥?group policy is derived from presence of group allowlist
         group_allowed_str = os.getenv("SIGNAL_GROUP_ALLOWED_USERS", "")
         self.group_allow_from = set(_parse_comma_list(group_allowed_str))
 
@@ -195,7 +195,7 @@ class SignalAdapter(BasePlatformAdapter):
 
         self.client = httpx.AsyncClient(timeout=30.0)
 
-        # Health check �?verify signal-cli daemon is reachable
+        # Health check é¥?verify signal-cli daemon is reachable
         try:
             resp = await self.client.get(f"{self.http_url}/api/v1/check", timeout=10.0)
             if resp.status_code != 200:
@@ -277,7 +277,7 @@ class SignalAdapter(BasePlatformAdapter):
                             if not line:
                                 continue
                             # SSE keepalive comments (":") prove the connection
-                            # is alive �?update activity so the health monitor
+                            # is alive é¥?update activity so the health monitor
                             # doesn't report false idle warnings.
                             if line.startswith(":"):
                                 self._last_sse_activity = time.time()
@@ -332,7 +332,7 @@ class SignalAdapter(BasePlatformAdapter):
                         f"{self.http_url}/api/v1/check", timeout=10.0
                     )
                     if resp.status_code == 200:
-                        # Daemon is alive but SSE is idle �?update activity to
+                        # Daemon is alive but SSE is idle é¥?update activity to
                         # avoid repeated warnings (connection may just be quiet)
                         self._last_sse_activity = time.time()
                         logger.debug("Signal: daemon healthy, SSE idle")
@@ -378,7 +378,7 @@ class SignalAdapter(BasePlatformAdapter):
                         if sent_ts and sent_ts in self._recent_sent_timestamps:
                             self._recent_sent_timestamps.discard(sent_ts)
                             return
-                        # Genuine user Note to Self �?promote to dataMessage
+                        # Genuine user Note to Self é¥?promote to dataMessage
                         is_note_to_self = True
                         envelope_data = {**envelope_data, "dataMessage": sent_msg}
             if not is_note_to_self:
@@ -397,7 +397,7 @@ class SignalAdapter(BasePlatformAdapter):
             logger.debug("Signal: ignoring envelope with no sender")
             return
 
-        # Self-message filtering �?prevent reply loops (but allow Note to Self)
+        # Self-message filtering é¥?prevent reply loops (but allow Note to Self)
         if self._account_normalized and sender == self._account_normalized and not is_note_to_self:
             return
 
@@ -405,7 +405,7 @@ class SignalAdapter(BasePlatformAdapter):
         if self.ignore_stories and envelope_data.get("storyMessage"):
             return
 
-        # Get data message �?also check editMessage (edited messages contain
+        # Get data message é¥?also check editMessage (edited messages contain
         # their updated dataMessage inside editMessage.dataMessage)
         data_message = (
             envelope_data.get("dataMessage")
@@ -419,10 +419,10 @@ class SignalAdapter(BasePlatformAdapter):
         group_id = group_info.get("groupId") if group_info else None
         is_group = bool(group_id)
 
-        # Group message filtering �?derived from SIGNAL_GROUP_ALLOWED_USERS:
-        # - No env var set �?groups disabled (default safe behavior)
-        # - Env var set with group IDs �?only those groups allowed
-        # - Env var set with "*" �?all groups allowed
+        # Group message filtering é¥?derived from SIGNAL_GROUP_ALLOWED_USERS:
+        # - No env var set é«?groups disabled (default safe behavior)
+        # - Env var set with group IDs é«?only those groups allowed
+        # - Env var set with "*" é«?all groups allowed
         # DM auth is fully handled by run.py (_is_user_authorized)
         if is_group:
             if not self.group_allow_from:
@@ -613,7 +613,7 @@ class SignalAdapter(BasePlatformAdapter):
             self._track_sent_timestamp(result)
             # Use the timestamp from the RPC result as a pseudo message_id.
             # Signal doesn't have real message IDs, but the stream consumer
-            # needs a truthy value to follow its edit→fallback path correctly.
+            # needs a truthy value to follow its edité«æallback path correctly.
             _msg_id = str(result.get("timestamp", "")) if isinstance(result, dict) else None
             return SendResult(success=True, message_id=_msg_id or None)
         return SendResult(success=False, error="RPC send failed")
@@ -695,7 +695,7 @@ class SignalAdapter(BasePlatformAdapter):
         """Send any file as a Signal attachment via RPC.
 
         Shared implementation for send_document, send_image_file, send_voice,
-        and send_video �?avoids duplicating the validation/routing/RPC logic.
+        and send_video é¥?avoids duplicating the validation/routing/RPC logic.
         """
         await self._stop_typing_indicator(chat_id)
 
@@ -791,7 +791,7 @@ class SignalAdapter(BasePlatformAdapter):
                 pass
 
     async def stop_typing(self, chat_id: str) -> None:
-        """Public interface for stopping typing �?called by base adapter's
+        """Public interface for stopping typing é¥?called by base adapter's
         _keep_typing finally block to clean up platform-level typing tasks."""
         await self._stop_typing_indicator(chat_id)
 

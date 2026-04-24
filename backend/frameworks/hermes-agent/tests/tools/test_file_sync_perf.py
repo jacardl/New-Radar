@@ -70,7 +70,7 @@ def _report(label: str, durations: list[float]):
 # ---------------------------------------------------------------------------
 
 class TestLocalPerf:
-    """Local baseline �?no file sync, no network. Sets the floor."""
+    """Local baseline é¥?no file sync, no network. Sets the floor."""
 
     def test_echo_latency(self, local_env):
         durations = _time_executions(local_env, "echo hello", n=20)
@@ -81,10 +81,10 @@ class TestLocalPerf:
 
 @pytest.mark.ssh
 class TestSSHPerf:
-    """SSH with FileSyncManager �?mtime skip should make sync ~0ms."""
+    """SSH with FileSyncManager é¥?mtime skip should make sync ~0ms."""
 
     def test_echo_latency(self, ssh_env):
-        """Sequential echo commands �?measures per-command overhead including sync check."""
+        """Sequential echo commands é¥?measures per-command overhead including sync check."""
         durations = _time_executions(ssh_env, "echo hello", n=20)
         med = _report("ssh echo (with sync check)", durations)
         # SSH round-trip + spawn-per-call, but sync should be ~0ms (rate limited)
@@ -115,11 +115,11 @@ class TestSSHPerf:
         assert elapsed < 1.5, f"sync-triggered command took {elapsed*1000:.0f}ms (expected < 1500ms)"
 
     def test_no_sync_within_interval(self, ssh_env):
-        """Rapid sequential commands within 5s window �?no sync at all."""
+        """Rapid sequential commands within 5s window é¥?no sync at all."""
         # First command triggers sync
         ssh_env.execute("echo prime", timeout=10)
 
-        # Immediately run 10 more �?all within rate-limit window
+        # Immediately run 10 more é¥?all within rate-limit window
         durations = _time_executions(ssh_env, "echo rapid", n=10)
         med = _report("ssh echo (within interval, no sync)", durations)
 

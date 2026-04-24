@@ -1,4 +1,4 @@
-"""Tests for agent/display.py �?build_tool_preview() and inline diff previews."""
+"""Tests for agent/display.py é¥?build_tool_preview() and inline diff previews."""
 
 import os
 import pytest

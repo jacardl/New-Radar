@@ -1,6 +1,6 @@
 """
 Deep Search Agent
-一个无框架的深度搜索AI代理实现
+ä¸ä¸ªæ æ¡æ¶çæ·±åº¦æç´¢AIä»£çå®ç°
 """
 
 from .agent import DeepSearchAgent, AnspireSearchAgent, create_agent

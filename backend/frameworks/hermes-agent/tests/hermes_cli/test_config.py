@@ -308,7 +308,7 @@ class TestSanitizeEnvLines:
         """Unknown key names on one line are NOT split (avoids false positives)."""
         lines = ["CUSTOM_VAR=value123OTHER_THING=value456\n"]
         result = _sanitize_env_lines(lines)
-        # Unknown keys stay on one line �?no false split
+        # Unknown keys stay on one line é¥?no false split
         assert len(result) == 1
 
     def test_value_ending_with_digits_still_splits(self):
@@ -395,7 +395,7 @@ class TestOptionalEnvVarsRegistry:
 
 
 class TestAnthropicTokenMigration:
-    """Test that config version 8�? clears ANTHROPIC_TOKEN."""
+    """Test that config version 8é«? clears ANTHROPIC_TOKEN."""
 
     def _write_config_version(self, tmp_path, version):
         config_path = tmp_path / "config.yaml"
@@ -414,7 +414,7 @@ class TestAnthropicTokenMigration:
             assert load_env().get("ANTHROPIC_TOKEN") == ""
 
     def test_skips_on_version_9_or_later(self, tmp_path):
-        """Already at v9 �?ANTHROPIC_TOKEN is not touched."""
+        """Already at v9 é¥?ANTHROPIC_TOKEN is not touched."""
         self._write_config_version(tmp_path, 9)
         (tmp_path / ".env").write_text("ANTHROPIC_TOKEN=current-token\n")
         with patch.dict(os.environ, {
@@ -467,7 +467,7 @@ class TestCustomProviderCompatibility:
             "name": "OpenAI Direct",
             "transport": "codex_responses",
         }
-        # custom_providers removed by migration �?runtime reads via compat layer
+        # custom_providers removed by migration é¥?runtime reads via compat layer
         assert "custom_providers" not in raw
 
     def test_providers_dict_resolves_at_runtime(self, tmp_path):

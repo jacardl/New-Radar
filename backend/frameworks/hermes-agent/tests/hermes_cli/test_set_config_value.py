@@ -1,4 +1,4 @@
-"""Tests for set_config_value �?verifying secrets route to .env and config to config.yaml."""
+"""Tests for set_config_value é¥?verifying secrets route to .env and config to config.yaml."""
 
 import argparse
 import os
@@ -29,7 +29,7 @@ def _read_config(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Explicit allowlist keys �?.env
+# Explicit allowlist keys é«?.env
 # ---------------------------------------------------------------------------
 
 class TestExplicitAllowlist:
@@ -61,7 +61,7 @@ class TestExplicitAllowlist:
 
 
 # ---------------------------------------------------------------------------
-# Catch-all patterns �?.env
+# Catch-all patterns é«?.env
 # ---------------------------------------------------------------------------
 
 class TestCatchAllPatterns:
@@ -93,7 +93,7 @@ class TestCatchAllPatterns:
 
 
 # ---------------------------------------------------------------------------
-# Non-secret keys �?config.yaml
+# Non-secret keys é«?config.yaml
 # ---------------------------------------------------------------------------
 
 class TestConfigYamlRouting:
@@ -129,7 +129,7 @@ class TestConfigYamlRouting:
 
 
 # ---------------------------------------------------------------------------
-# Empty / falsy values �?regression tests for #4277
+# Empty / falsy values é¥?regression tests for #4277
 # ---------------------------------------------------------------------------
 
 class TestFalsyValues:
@@ -160,7 +160,7 @@ class TestFalsyValues:
             config_command(args)
 
     def test_config_command_accepts_empty_string(self, _isolated_hermes_home):
-        """config set KEY '' should not exit �?it should set the value."""
+        """config set KEY '' should not exit é¥?it should set the value."""
         args = argparse.Namespace(config_command="set", key="model", value="")
         config_command(args)
         config = _read_config(_isolated_hermes_home)

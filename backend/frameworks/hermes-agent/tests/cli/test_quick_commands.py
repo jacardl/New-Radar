@@ -5,7 +5,7 @@ from rich.text import Text
 import pytest
 
 
-# ── CLI tests ──────────────────────────────────────────────────────────────
+# -- CLI tests --------------------------------------------------------------
 
 class TestCLIQuickCommands:
     """Test quick command dispatch in HermesCLI.process_command."""
@@ -37,7 +37,7 @@ class TestCLIQuickCommands:
         cli = self._make_cli({"err": {"type": "exec", "command": "echo error >&2"}})
         result = cli.process_command("/err")
         assert result is True
-        # stderr fallback �?should print something
+        # stderr fallback â?should print something
         cli.console.print.assert_called_once()
 
     def test_exec_command_no_output_shows_fallback(self):
@@ -109,7 +109,7 @@ class TestCLIQuickCommands:
         assert "timed out" in args.lower()
 
 
-# ── Gateway tests ──────────────────────────────────────────────────────────
+# -- Gateway tests ----------------------------------------------------------
 
 class TestGatewayQuickCommands:
     """Test quick command dispatch in GatewayRunner._handle_message."""

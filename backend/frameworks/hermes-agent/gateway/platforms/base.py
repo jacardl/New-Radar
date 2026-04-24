@@ -26,7 +26,7 @@ def utf16_len(s: str) -> int:
 
     Telegram's message-length limit (4 096) is measured in UTF-16 code units,
     **not** Unicode code-points.  Characters outside the Basic Multilingual
-    Plane (emoji like 😀, CJK Extension B, musical symbols, �? are encoded as
+    Plane (emoji like ð, CJK Extension B, musical symbols, â? are encoded as
     surrogate pairs and therefore consume **two** UTF-16 code units each, even
     though Python's ``len()`` counts them as one.
 
@@ -37,7 +37,7 @@ def utf16_len(s: str) -> int:
 
 
 def _prefix_within_utf16_limit(s: str, limit: int) -> str:
-    """Return the longest prefix of *s* whose UTF-16 length �?*limit*.
+    """Return the longest prefix of *s* whose UTF-16 length â?*limit*.
 
     Unlike a plain ``s[:limit]``, this respects surrogate-pair boundaries so
     we never slice a multi-code-unit character in half.
@@ -85,7 +85,7 @@ def is_network_accessible(host: str) -> bool:
         addr = ipaddress.ip_address(host)
         if addr.is_loopback:
             return False
-        # ::ffff:127.0.0.1 �?Python reports is_loopback=False for mapped
+        # ::ffff:127.0.0.1 â?Python reports is_loopback=False for mapped
         # addresses, so check the underlying IPv4 explicitly.
         if getattr(addr, "ipv4_mapped", None) and addr.ipv4_mapped.is_loopback:
             return False
@@ -149,7 +149,7 @@ def resolve_proxy_url(platform_env_var: str | None = None) -> str | None:
     """Return a proxy URL from env vars, or macOS system proxy.
 
     Check order:
-      0. *platform_env_var* (e.g. ``DISCORD_PROXY``) �?highest priority
+      0. *platform_env_var* (e.g. ``DISCORD_PROXY``) â?highest priority
       1. HTTPS_PROXY / HTTP_PROXY / ALL_PROXY (and lowercase variants)
       2. macOS system proxy via ``scutil --proxy`` (auto-detect)
 
@@ -171,11 +171,11 @@ def proxy_kwargs_for_bot(proxy_url: str | None) -> dict:
     """Build kwargs for ``commands.Bot()`` / ``discord.Client()`` with proxy.
 
     Returns:
-      - SOCKS URL  �?``{"connector": ProxyConnector(..., rdns=True)}``
-      - HTTP URL   �?``{"proxy": url}``
-      - *None*     �?``{}``
+      - SOCKS URL  â?``{"connector": ProxyConnector(..., rdns=True)}``
+      - HTTP URL   â?``{"proxy": url}``
+      - *None*     â?``{}``
 
-    ``rdns=True`` forces remote DNS resolution through the proxy �?required
+    ``rdns=True`` forces remote DNS resolution through the proxy â?required
     by many SOCKS implementations (Shadowrocket, Clash) and essential for
     bypassing DNS pollution behind the GFW.
     """
@@ -189,7 +189,7 @@ def proxy_kwargs_for_bot(proxy_url: str | None) -> dict:
             return {"connector": connector}
         except ImportError:
             logger.warning(
-                "aiohttp_socks not installed �?SOCKS proxy %s ignored. "
+                "aiohttp_socks not installed â?SOCKS proxy %s ignored. "
                 "Run: pip install aiohttp-socks",
                 proxy_url,
             )
@@ -201,9 +201,9 @@ def proxy_kwargs_for_aiohttp(proxy_url: str | None) -> tuple[dict, dict]:
     """Build kwargs for standalone ``aiohttp.ClientSession`` with proxy.
 
     Returns ``(session_kwargs, request_kwargs)`` where:
-      - SOCKS �?``({"connector": ProxyConnector(...)}, {})``
-      - HTTP  �?``({}, {"proxy": url})``
-      - None  �?``({}, {})``
+      - SOCKS â?``({"connector": ProxyConnector(...)}, {})``
+      - HTTP  â?``({}, {"proxy": url})``
+      - None  â?``({}, {})``
 
     Usage::
 
@@ -222,7 +222,7 @@ def proxy_kwargs_for_aiohttp(proxy_url: str | None) -> tuple[dict, dict]:
             return {"connector": connector}, {}
         except ImportError:
             logger.warning(
-                "aiohttp_socks not installed �?SOCKS proxy %s ignored. "
+                "aiohttp_socks not installed â?SOCKS proxy %s ignored. "
                 "Run: pip install aiohttp-socks",
                 proxy_url,
             )
@@ -683,7 +683,7 @@ class MessageEvent:
     # Discord channel_skill_bindings).  A single name or ordered list.
     auto_skill: Optional[str | list[str]] = None
     
-    # Internal flag �?set for synthetic events (e.g. background process
+    # Internal flag â?set for synthetic events (e.g. background process
     # completion notifications) that must bypass user authorization checks.
     internal: bool = False
 
@@ -723,7 +723,7 @@ class SendResult:
     message_id: Optional[str] = None
     error: Optional[str] = None
     raw_response: Any = None
-    retryable: bool = False  # True for transient connection errors �?base will retry automatically
+    retryable: bool = False  # True for transient connection errors â?base will retry automatically
 
 
 def merge_pending_message_event(
@@ -755,7 +755,7 @@ def merge_pending_message_event(
 # Error substrings that indicate a transient *connection* failure worth retrying.
 # "timeout" / "timed out" / "readtimeout" / "writetimeout" are intentionally
 # excluded: a read/write timeout on a non-idempotent call (e.g. send_message)
-# means the request may have reached the server �?retrying risks duplicate
+# means the request may have reached the server â?retrying risks duplicate
 # delivery.  "connecttimeout" is safe because the connection was never
 # established.  Platforms that know a timeout is safe to retry should set
 # SendResult.retryable = True explicitly.
@@ -982,7 +982,7 @@ class BasePlatformAdapter(ABC):
         content: str,
     ) -> SendResult:
         """
-        Edit a previously sent message. Optional �?platforms that don't
+        Edit a previously sent message. Optional â?platforms that don't
         support editing return success=False and callers fall back to
         sending a new message.
         """
@@ -1110,7 +1110,7 @@ class BasePlatformAdapter(ABC):
         or file attachments (Discord). Default falls back to sending the
         file path as text.
         """
-        text = f"🔊 Audio: {audio_path}"
+        text = f"ð Audio: {audio_path}"
         if caption:
             text = f"{caption}\n{text}"
         return await self.send(chat_id=chat_id, content=text, reply_to=reply_to)
@@ -1143,7 +1143,7 @@ class BasePlatformAdapter(ABC):
         Override in subclasses to send videos as inline playable media.
         Default falls back to sending the file path as text.
         """
-        text = f"🎬 Video: {video_path}"
+        text = f"ð¬ Video: {video_path}"
         if caption:
             text = f"{caption}\n{text}"
         return await self.send(chat_id=chat_id, content=text, reply_to=reply_to)
@@ -1163,7 +1163,7 @@ class BasePlatformAdapter(ABC):
         Override in subclasses to send files as downloadable attachments.
         Default falls back to sending the file path as text.
         """
-        text = f"📎 File: {file_path}"
+        text = f"ð File: {file_path}"
         if caption:
             text = f"{caption}\n{text}"
         return await self.send(chat_id=chat_id, content=text, reply_to=reply_to)
@@ -1183,7 +1183,7 @@ class BasePlatformAdapter(ABC):
         Override in subclasses for native photo attachments.
         Default falls back to sending the file path as text.
         """
-        text = f"🖼�?Image: {image_path}"
+        text = f"ð¼ï¸?Image: {image_path}"
         if caption:
             text = f"{caption}\n{text}"
         return await self.send(chat_id=chat_id, content=text, reply_to=reply_to)
@@ -1253,7 +1253,7 @@ class BasePlatformAdapter(ABC):
         )
         ext_part = '|'.join(e.lstrip('.') for e in _LOCAL_MEDIA_EXTS)
 
-        # (?<![/:\w.]) prevents matching inside URLs (e.g. https://�?img.png)
+        # (?<![/:\w.]) prevents matching inside URLs (e.g. https://â?img.png)
         #             and relative paths (./foo.png)
         # (?:~/|/)    anchors to absolute or home-relative paths
         path_re = re.compile(
@@ -1308,7 +1308,7 @@ class BasePlatformAdapter(ABC):
         Skips send_typing when the chat is in ``_typing_paused`` (e.g. while
         the agent is waiting for dangerous-command approval).  This is critical
         for Slack's Assistant API where ``assistant_threads_setStatus`` disables
-        the compose box �?pausing lets the user type ``/approve`` or ``/deny``.
+        the compose box â?pausing lets the user type ``/approve`` or ``/deny``.
         """
         try:
             while True:
@@ -1332,7 +1332,7 @@ class BasePlatformAdapter(ABC):
     def pause_typing_for_chat(self, chat_id: str) -> None:
         """Pause typing indicator for a chat (e.g. during approval waits).
 
-        Thread-safe (CPython GIL) �?can be called from the sync agent thread
+        Thread-safe (CPython GIL) â?can be called from the sync agent thread
         while ``_keep_typing`` runs on the async event loop.
         """
         self._typing_paused.add(chat_id)
@@ -1341,9 +1341,9 @@ class BasePlatformAdapter(ABC):
         """Resume typing indicator for a chat after approval resolves."""
         self._typing_paused.discard(chat_id)
 
-    # ── Processing lifecycle hooks ──────────────────────────────────────────
+    # -- Processing lifecycle hooks ------------------------------------------
     # Subclasses override these to react to message processing events
-    # (e.g. Discord adds 👀/�?�?reactions).
+    # (e.g. Discord adds ð/â?â?reactions).
 
     async def on_processing_start(self, event: MessageEvent) -> None:
         """Hook called when background processing begins."""
@@ -1374,7 +1374,7 @@ class BasePlatformAdapter(ABC):
         """Return True if the error string indicates a read/write timeout.
 
         Timeout errors are NOT retryable and should NOT trigger plain-text
-        fallback �?the request may have already been delivered.
+        fallback â?the request may have already been delivered.
         """
         if not error:
             return False
@@ -1413,7 +1413,7 @@ class BasePlatformAdapter(ABC):
         is_network = result.retryable or self._is_retryable_error(error_str)
 
         # Timeout errors are not safe to retry (message may have been
-        # delivered) and not formatting errors �?return the failure as-is.
+        # delivered) and not formatting errors â?return the failure as-is.
         if not is_network and self._is_timeout_error(error_str):
             return result
 
@@ -1437,9 +1437,9 @@ class BasePlatformAdapter(ABC):
                     return result
                 error_str = result.error or ""
                 if not (result.retryable or self._is_retryable_error(error_str)):
-                    break  # error switched to non-transient �?fall through to plain-text fallback
+                    break  # error switched to non-transient â?fall through to plain-text fallback
             else:
-                # All retries exhausted (loop completed without break) �?notify user
+                # All retries exhausted (loop completed without break) â?notify user
                 logger.error("[%s] Failed to deliver response after %d retries: %s", self.name, max_retries, error_str)
                 notice = (
                     "\u26a0\ufe0f Message delivery failed after multiple attempts. "
@@ -1452,7 +1452,7 @@ class BasePlatformAdapter(ABC):
                 return result
 
         # Non-network / post-retry formatting failure: try plain text as fallback
-        logger.warning("[%s] Send failed: %s �?trying plain-text fallback", self.name, error_str)
+        logger.warning("[%s] Send failed: %s â?trying plain-text fallback", self.name, error_str)
         fallback_result = await self.send(
             chat_id=chat_id,
             content=f"(Response formatting failed, plain text:)\n\n{content[:3500]}",
@@ -1502,10 +1502,10 @@ class BasePlatformAdapter(ABC):
             # dispatched directly to the gateway runner.  Without this, they
             # are queued as pending messages and either:
             #   - leak into the conversation as user text (/stop, /new), or
-            #   - deadlock (/approve, /deny �?agent is blocked on Event.wait)
+            #   - deadlock (/approve, /deny â?agent is blocked on Event.wait)
             #
             # Dispatch inline: call the message handler directly and send the
-            # response.  Do NOT use _process_message_background �?it manages
+            # response.  Do NOT use _process_message_background â?it manages
             # session lifecycle and its cleanup races with the running task
             # (see PR #4926).
             cmd = event.get_command()
@@ -1544,7 +1544,7 @@ class BasePlatformAdapter(ABC):
                 return  # Don't interrupt now - will run after current task completes
 
             # Default behavior for non-photo follow-ups: interrupt the running agent
-            logger.debug("[%s] New message while session %s is active �?triggering interrupt", self.name, session_key)
+            logger.debug("[%s] New message while session %s is active â?triggering interrupt", self.name, session_key)
             self._pending_messages[session_key] = event
             # Signal the interrupt (the processing task checks this)
             self._active_sessions[session_key].set()
@@ -1554,7 +1554,7 @@ class BasePlatformAdapter(ABC):
         # the race window where a second message arriving before the task
         # starts would also pass the _active_sessions check and spawn a
         # duplicate task.  (grammY sequentialize / aiogram EventIsolation
-        # pattern �?set the guard synchronously, not inside the task.)
+        # pattern â?set the guard synchronously, not inside the task.)
         self._active_sessions[session_key] = asyncio.Event()
 
         # Spawn background task to process this message
@@ -1727,7 +1727,7 @@ class BasePlatformAdapter(ABC):
                     except Exception as img_err:
                         logger.error("[%s] Error sending image: %s", self.name, img_err, exc_info=True)
 
-                # Send extracted media files �?route by file type
+                # Send extracted media files â?route by file type
                 _AUDIO_EXTS = {'.ogg', '.opus', '.mp3', '.wav', '.m4a'}
                 _VIDEO_EXTS = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp'}
                 _IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
@@ -1843,7 +1843,7 @@ class BasePlatformAdapter(ABC):
                     metadata=_thread_metadata,
                 )
             except Exception:
-                pass  # Last resort �?don't let error reporting crash the handler
+                pass  # Last resort â?don't let error reporting crash the handler
         finally:
             # Stop typing indicator
             typing_task.cancel()
@@ -1998,9 +1998,9 @@ class BasePlatformAdapter(ABC):
             # positions that stay within the custom-unit budget.
             #
             # _safe_slice_pos() maps a custom-unit budget to the largest
-            # codepoint offset whose custom length �?budget.
+            # codepoint offset whose custom length â?budget.
             if _len is not len:
-                # Map headroom (custom units) �?codepoint slice length
+                # Map headroom (custom units) â?codepoint slice length
                 _cp_limit = _custom_unit_to_cp(remaining, headroom, _len)
             else:
                 _cp_limit = headroom
@@ -2013,7 +2013,7 @@ class BasePlatformAdapter(ABC):
 
             # Avoid splitting inside an inline code span (`...`).
             # If the text before split_at has an odd number of unescaped
-            # backticks, the split falls inside inline code �?the resulting
+            # backticks, the split falls inside inline code â?the resulting
             # chunk would have an unpaired backtick and any special characters
             # (like parentheses) inside the broken span would be unescaped,
             # causing MarkdownV2 parse errors on Telegram.

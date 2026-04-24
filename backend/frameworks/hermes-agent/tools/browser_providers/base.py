@@ -22,7 +22,7 @@ class CloudBrowserProvider(ABC):
         """Return True when all required env vars / credentials are present.
 
         Called at tool-registration time (``check_browser_requirements``) to
-        gate availability.  Must be cheap �?no network calls.
+        gate availability.  Must be cheap é¥?no network calls.
         """
 
     @abstractmethod
@@ -39,7 +39,7 @@ class CloudBrowserProvider(ABC):
             }
 
         ``bb_session_id`` is a legacy key name kept for backward compat with
-        the rest of browser_tool.py �?it holds the provider's session ID
+        the rest of browser_tool.py é¥?it holds the provider's session ID
         regardless of which provider is in use.
         """
 
@@ -55,5 +55,5 @@ class CloudBrowserProvider(ABC):
         """Best-effort session teardown during process exit.
 
         Called from atexit / signal handlers.  Must tolerate missing
-        credentials, network errors, etc. �?log and move on.
+        credentials, network errors, etc. é¥?log and move on.
         """

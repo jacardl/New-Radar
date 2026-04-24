@@ -1,4 +1,4 @@
-"""Tests for cmd_update gateway auto-restart �?systemd + launchd coverage.
+"""Tests for cmd_update gateway auto-restart é¥?systemd + launchd coverage.
 
 Ensures ``hermes update`` correctly detects running gateways managed by
 systemd (Linux) or launchd (macOS) and restarts/informs the user properly,
@@ -47,7 +47,7 @@ def _make_run_side_effect(
         if "rev-list" in joined:
             return subprocess.CompletedProcess(cmd, 0, stdout=f"{commit_count}\n", stderr="")
 
-        # systemctl list-units hermes-gateway* �?discover all gateway services
+        # systemctl list-units hermes-gateway* é¥?discover all gateway services
         if "systemctl" in joined and "list-units" in joined:
             if "--user" in joined and systemd_active:
                 return subprocess.CompletedProcess(
@@ -63,7 +63,7 @@ def _make_run_side_effect(
                 )
             return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
-        # systemctl is-active �?distinguish --user from system scope
+        # systemctl is-active é¥?distinguish --user from system scope
         if "systemctl" in joined and "is-active" in joined:
             if "--user" in joined:
                 if systemd_active:
@@ -75,7 +75,7 @@ def _make_run_side_effect(
                     return subprocess.CompletedProcess(cmd, 0, stdout="active\n", stderr="")
                 return subprocess.CompletedProcess(cmd, 3, stdout="inactive\n", stderr="")
 
-        # systemctl restart �?distinguish --user from system scope
+        # systemctl restart é¥?distinguish --user from system scope
         if "systemctl" in joined and "restart" in joined:
             if "--user" not in joined and system_service_active:
                 stderr = "" if system_restart_rc == 0 else "Failed to restart: Permission denied"
@@ -205,7 +205,7 @@ class TestLaunchdPlistCurrentness:
 
 
 # ---------------------------------------------------------------------------
-# cmd_update �?macOS launchd detection
+# cmd_update é¥?macOS launchd detection
 # ---------------------------------------------------------------------------
 
 
@@ -354,7 +354,7 @@ class TestCmdUpdateLaunchdRestart:
             gateway_cli, "is_macos", lambda: True,
         )
         plist_path = tmp_path / "ai.hermes.gateway.plist"
-        # plist does NOT exist �?no launchd service
+        # plist does NOT exist é¥?no launchd service
         monkeypatch.setattr(
             gateway_cli, "get_launchd_plist_path", lambda: plist_path,
         )
@@ -427,7 +427,7 @@ class TestCmdUpdateLaunchdRestart:
 
 
 # ---------------------------------------------------------------------------
-# cmd_update �?system-level systemd service detection
+# cmd_update é¥?system-level systemd service detection
 # ---------------------------------------------------------------------------
 
 
@@ -512,7 +512,7 @@ class TestCmdUpdateSystemService:
 
 
 # ---------------------------------------------------------------------------
-# Service PID exclusion �?the core bug fix
+# Service PID exclusion é¥?the core bug fix
 # ---------------------------------------------------------------------------
 
 
@@ -565,7 +565,7 @@ class TestServicePidExclusion:
             if c.args[0] == SERVICE_PID
         ]
         assert len(kill_calls) == 0, (
-            f"Service PID {SERVICE_PID} was killed by the manual sweep �?"
+            f"Service PID {SERVICE_PID} was killed by the manual sweep é¥?"
             f"this is the bug where update restarts then immediately kills the gateway"
         )
         # Should NOT show manual restart message

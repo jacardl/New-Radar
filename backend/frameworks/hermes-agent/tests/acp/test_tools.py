@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.tools �?tool kind mapping and ACP content building."""
+"""Tests for acp_adapter.tools é¥?tool kind mapping and ACP content building."""
 
 import pytest
 

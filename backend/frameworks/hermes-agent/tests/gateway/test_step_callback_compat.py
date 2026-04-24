@@ -128,6 +128,6 @@ class TestStepCallbackNormalization:
             else:
                 _names.append(str(_t))
 
-        # This must not raise �?documented hook pattern
+        # This must not raise é¥?documented hook pattern
         result = ", ".join(_names)
         assert result == "terminal, web_search"

@@ -1,4 +1,4 @@
-"""Tests for tools/session_search_tool.py �?helper functions and search dispatcher."""
+"""Tests for tools/session_search_tool.py é¥?helper functions and search dispatcher."""
 
 import json
 import time
@@ -247,7 +247,7 @@ class TestSessionSearch:
             {"role": "assistant", "content": "hi there"},
         ]
 
-        # Mock async_call_llm to raise RuntimeError �?summarizer returns None
+        # Mock async_call_llm to raise RuntimeError é«?summarizer returns None
         from unittest.mock import AsyncMock, patch as _patch
         with _patch("tools.session_search_tool.async_call_llm",
                      new_callable=AsyncMock,

@@ -482,7 +482,7 @@ class TestSend:
                 "rejected": False,
                 "reject_reason": None,
                 "downgraded": True,
-                "downgrade_note": "语音格式 audio/mpeg 不支持，企微仅支�?AMR 格式，已转为文件格式发�?,
+                "downgrade_note": "è¯­é³æ ¼å¼ audio/mpeg ä¸æ¯æï¼ä¼å¾®ä»æ¯æ?AMR æ ¼å¼ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?,
             }
         )
         adapter._upload_media_bytes = AsyncMock(return_value={"media_id": "media-1", "type": "file"})
@@ -497,7 +497,7 @@ class TestSend:
         adapter.send.assert_any_await(chat_id="chat-123", content="listen", reply_to=None)
         adapter.send.assert_any_await(
             chat_id="chat-123",
-            content="ℹ️ 语音格式 audio/mpeg 不支持，企微仅支�?AMR 格式，已转为文件格式发�?,
+            content="â¹ï¸ è¯­é³æ ¼å¼ audio/mpeg ä¸æ¯æï¼ä¼å¾®ä»æ¯æ?AMR æ ¼å¼ï¼å·²è½¬ä¸ºæä»¶æ ¼å¼åé?,
             reply_to=None,
         )
 

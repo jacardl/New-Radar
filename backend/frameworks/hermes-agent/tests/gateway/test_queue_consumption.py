@@ -2,7 +2,7 @@
 
 Verifies that messages queued via /queue (which store in
 adapter._pending_messages WITHOUT triggering an interrupt) are consumed
-after the agent finishes its current task �?not silently dropped.
+after the agent finishes its current task é¥?not silently dropped.
 """
 
 import asyncio
@@ -101,7 +101,7 @@ class TestQueueMessageStorage:
         assert adapter.get_pending_message(session_key) is None
 
     def test_queue_does_not_set_interrupt_event(self):
-        """The whole point of /queue �?no interrupt signal."""
+        """The whole point of /queue é¥?no interrupt signal."""
         adapter = _StubAdapter()
         session_key = "telegram:user:123"
 

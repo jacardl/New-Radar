@@ -2,14 +2,14 @@
 
 Provides a single function `save_clipboard_image(dest)` that checks the
 system clipboard for image data, saves it to *dest* as PNG, and returns
-True on success.  No external Python dependencies �?uses only OS-level
+True on success.  No external Python dependencies �¢?uses only OS-level
 CLI tools that ship with the platform (or are commonly installed).
 
 Platform support:
-  macOS   �?osascript (always available), pngpaste (if installed)
-  Windows �?PowerShell via .NET System.Windows.Forms.Clipboard
-  WSL2    �?powershell.exe via .NET System.Windows.Forms.Clipboard
-  Linux   �?wl-paste (Wayland), xclip (X11)
+  macOS   �¢?osascript (always available), pngpaste (if installed)
+  Windows �¢?PowerShell via .NET System.Windows.Forms.Clipboard
+  WSL2    �¢?powershell.exe via .NET System.Windows.Forms.Clipboard
+  Linux   �¢?wl-paste (Wayland), xclip (X11)
 """
 
 import base64
@@ -40,7 +40,7 @@ def save_clipboard_image(dest: Path) -> bool:
 def has_clipboard_image() -> bool:
     """Quick check: does the clipboard currently contain an image?
 
-    Lighter than save_clipboard_image �?doesn't extract or write anything.
+    Lighter than save_clipboard_image �¢?doesn't extract or write anything.
     """
     if sys.platform == "darwin":
         return _macos_has_image()
@@ -53,7 +53,7 @@ def has_clipboard_image() -> bool:
     return _xclip_has_image()
 
 
-# ── macOS ────────────────────────────────────────────────────────────────
+# -- macOS ----------------------------------------------------------------
 
 def _macos_save(dest: Path) -> bool:
     """Try pngpaste first (fast, handles more formats), fall back to osascript."""
@@ -67,13 +67,13 @@ def _macos_has_image() -> bool:
             ["osascript", "-e", "clipboard info"],
             capture_output=True, text=True, timeout=3,
         )
-        return "«class PNGf»" in info.stdout or "«class TIFF»" in info.stdout
+        return "��«class PNGf��»" in info.stdout or "��«class TIFF��»" in info.stdout
     except Exception:
         return False
 
 
 def _macos_pngpaste(dest: Path) -> bool:
-    """Use pngpaste (brew install pngpaste) �?fastest, cleanest."""
+    """Use pngpaste (brew install pngpaste) �¢?fastest, cleanest."""
     try:
         r = subprocess.run(
             ["pngpaste", str(dest)],
@@ -96,7 +96,7 @@ def _macos_osascript(dest: Path) -> bool:
     # Extract as PNG
     script = (
         'try\n'
-        '  set imgData to the clipboard as «class PNGf»\n'
+        '  set imgData to the clipboard as ��«class PNGf��»\n'
         f'  set f to open for access POSIX file "{dest}" with write permission\n'
         '  write imgData to f\n'
         '  close access f\n'
@@ -116,9 +116,9 @@ def _macos_osascript(dest: Path) -> bool:
     return False
 
 
-# ── Shared PowerShell scripts (native Windows + WSL2) ─────────────────────
+# -- Shared PowerShell scripts (native Windows + WSL2) ---------------------
 
-# .NET System.Windows.Forms.Clipboard �?used by both native Windows (powershell)
+# .NET System.Windows.Forms.Clipboard �¢?used by both native Windows (powershell)
 # and WSL2 (powershell.exe) paths.
 _PS_CHECK_IMAGE = (
     "Add-Type -AssemblyName System.Windows.Forms;"
@@ -136,7 +136,7 @@ _PS_EXTRACT_IMAGE = (
 )
 
 
-# ── Native Windows ────────────────────────────────────────────────────────
+# -- Native Windows --------------------------------------------------------
 
 # Native Windows uses ``powershell`` (Windows PowerShell 5.1, always present)
 # or ``pwsh`` (PowerShell 7+, optional).  Discovery is cached per-process.
@@ -187,10 +187,10 @@ def _windows_has_image() -> bool:
 
 
 def _windows_save(dest: Path) -> bool:
-    """Extract clipboard image on native Windows via PowerShell �?base64 PNG."""
+    """Extract clipboard image on native Windows via PowerShell �¢?base64 PNG."""
     ps = _get_ps_exe()
     if ps is None:
-        logger.debug("No PowerShell found �?Windows clipboard image paste unavailable")
+        logger.debug("No PowerShell found �¢?Windows clipboard image paste unavailable")
         return False
     try:
         r = subprocess.run(
@@ -214,14 +214,14 @@ def _windows_save(dest: Path) -> bool:
     return False
 
 
-# ── Linux ────────────────────────────────────────────────────────────────
+# -- Linux ----------------------------------------------------------------
 
 def _linux_save(dest: Path) -> bool:
-    """Try clipboard backends in priority order: WSL �?Wayland �?X11."""
+    """Try clipboard backends in priority order: WSL �¢?Wayland �¢?X11."""
     if _is_wsl():
         if _wsl_save(dest):
             return True
-        # Fall through �?WSLg might have wl-paste or xclip working
+        # Fall through �¢?WSLg might have wl-paste or xclip working
 
     if os.environ.get("WAYLAND_DISPLAY"):
         if _wayland_save(dest):
@@ -230,7 +230,7 @@ def _linux_save(dest: Path) -> bool:
     return _xclip_save(dest)
 
 
-# ── WSL2 (powershell.exe) ────────────────────────────────────────────────
+# -- WSL2 (powershell.exe) ------------------------------------------------
 # Reuses _PS_CHECK_IMAGE / _PS_EXTRACT_IMAGE defined above.
 
 def _wsl_has_image() -> bool:
@@ -243,14 +243,14 @@ def _wsl_has_image() -> bool:
         )
         return r.returncode == 0 and "True" in r.stdout
     except FileNotFoundError:
-        logger.debug("powershell.exe not found �?WSL clipboard unavailable")
+        logger.debug("powershell.exe not found �¢?WSL clipboard unavailable")
     except Exception as e:
         logger.debug("WSL clipboard check failed: %s", e)
     return False
 
 
 def _wsl_save(dest: Path) -> bool:
-    """Extract clipboard image via powershell.exe �?base64 �?decode to PNG."""
+    """Extract clipboard image via powershell.exe �¢?base64 �¢?decode to PNG."""
     try:
         r = subprocess.run(
             ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
@@ -269,14 +269,14 @@ def _wsl_save(dest: Path) -> bool:
         return dest.exists() and dest.stat().st_size > 0
 
     except FileNotFoundError:
-        logger.debug("powershell.exe not found �?WSL clipboard unavailable")
+        logger.debug("powershell.exe not found �¢?WSL clipboard unavailable")
     except Exception as e:
         logger.debug("WSL clipboard extraction failed: %s", e)
         dest.unlink(missing_ok=True)
     return False
 
 
-# ── Wayland (wl-paste) ──────────────────────────────────────────────────
+# -- Wayland (wl-paste) --------------------------------------------------
 
 def _wayland_has_image() -> bool:
     """Check if Wayland clipboard has image content."""
@@ -289,7 +289,7 @@ def _wayland_has_image() -> bool:
             t.startswith("image/") for t in r.stdout.splitlines()
         )
     except FileNotFoundError:
-        logger.debug("wl-paste not installed �?Wayland clipboard unavailable")
+        logger.debug("wl-paste not installed �¢?Wayland clipboard unavailable")
     except Exception:
         pass
     return False
@@ -337,7 +337,7 @@ def _wayland_save(dest: Path) -> bool:
         return True
 
     except FileNotFoundError:
-        logger.debug("wl-paste not installed �?Wayland clipboard unavailable")
+        logger.debug("wl-paste not installed �¢?Wayland clipboard unavailable")
     except Exception as e:
         logger.debug("wl-paste clipboard extraction failed: %s", e)
         dest.unlink(missing_ok=True)
@@ -355,7 +355,7 @@ def _convert_to_png(path: Path) -> bool:
     except ImportError:
         pass
     except Exception as e:
-        logger.debug("Pillow BMP→PNG conversion failed: %s", e)
+        logger.debug("Pillow BMP->PNG conversion failed: %s", e)
 
     # Fall back to ImageMagick convert
     tmp = path.with_suffix(".bmp")
@@ -369,22 +369,22 @@ def _convert_to_png(path: Path) -> bool:
             tmp.unlink(missing_ok=True)
             return True
         else:
-            # Convert failed �?restore the original file
+            # Convert failed �¢?restore the original file
             tmp.rename(path)
     except FileNotFoundError:
-        logger.debug("ImageMagick not installed �?cannot convert BMP to PNG")
+        logger.debug("ImageMagick not installed �¢?cannot convert BMP to PNG")
         if tmp.exists() and not path.exists():
             tmp.rename(path)
     except Exception as e:
-        logger.debug("ImageMagick BMP→PNG conversion failed: %s", e)
+        logger.debug("ImageMagick BMP->PNG conversion failed: %s", e)
         if tmp.exists() and not path.exists():
             tmp.rename(path)
 
-    # Can't convert �?BMP is still usable as-is for most APIs
+    # Can't convert �¢?BMP is still usable as-is for most APIs
     return path.exists() and path.stat().st_size > 0
 
 
-# ── X11 (xclip) ─────────────────────────────────────────────────────────
+# -- X11 (xclip) ---------------------------------------------------------
 
 def _xclip_has_image() -> bool:
     """Check if X11 clipboard has image content."""
@@ -412,7 +412,7 @@ def _xclip_save(dest: Path) -> bool:
         if "image/png" not in targets.stdout:
             return False
     except FileNotFoundError:
-        logger.debug("xclip not installed �?X11 clipboard image paste unavailable")
+        logger.debug("xclip not installed �¢?X11 clipboard image paste unavailable")
         return False
     except Exception:
         return False

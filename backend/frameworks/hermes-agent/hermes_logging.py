@@ -5,15 +5,15 @@ gateway call early in their startup path.  All log files live under
 ``~/.hermes/logs/`` (profile-aware via ``get_hermes_home()``).
 
 Log files produced:
-    agent.log   �?INFO+, all agent/tool/session activity (the main log)
-    errors.log  �?WARNING+, errors and warnings only (quick triage)
-    gateway.log �?INFO+, gateway-only events (created when mode="gateway")
+    agent.log   é¥?INFO+, all agent/tool/session activity (the main log)
+    errors.log  é¥?WARNING+, errors and warnings only (quick triage)
+    gateway.log é¥?INFO+, gateway-only events (created when mode="gateway")
 
 All files use ``RotatingFileHandler`` with ``RedactingFormatter`` so
 secrets are never written to disk.
 
 Component separation:
-    gateway.log only receives records from ``gateway.*`` loggers �?
+    gateway.log only receives records from ``gateway.*`` loggers é¥?
     platform adapters, session management, slash commands, delivery.
     agent.log remains the catch-all (everything goes there).
 
@@ -33,14 +33,14 @@ from typing import Optional, Sequence
 from hermes_constants import get_config_path, get_hermes_home
 
 # Sentinel to track whether setup_logging() has already run.  The function
-# is idempotent �?calling it twice is safe but the second call is a no-op
+# is idempotent é¥?calling it twice is safe but the second call is a no-op
 # unless ``force=True``.
 _logging_initialized = False
 
 # Thread-local storage for per-conversation session context.
 _session_context = threading.local()
 
-# Default log format �?includes timestamp, level, optional session tag,
+# Default log format é¥?includes timestamp, level, optional session tag,
 # logger name, and message.  The ``%(session_tag)s`` field is guaranteed to
 # exist on every LogRecord via _install_session_record_factory() below.
 _LOG_FORMAT = "%(asctime)s %(levelname)s%(session_tag)s %(name)s: %(message)s"
@@ -84,20 +84,20 @@ def clear_session_context() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Record factory �?injects session_tag into every LogRecord at creation
+# Record factory é¥?injects session_tag into every LogRecord at creation
 # ---------------------------------------------------------------------------
 
 def _install_session_record_factory() -> None:
     """Replace the global LogRecord factory with one that adds ``session_tag``.
 
     Unlike a ``logging.Filter`` on a handler or logger, the record factory
-    runs for EVERY record in the process �?including records that propagate
+    runs for EVERY record in the process é¥?including records that propagate
     from child loggers and records handled by third-party handlers.  This
     guarantees ``%(session_tag)s`` is always available in format strings,
     eliminating the KeyError that would occur if a handler used our format
     without having a ``_SessionFilter`` attached.
 
-    Idempotent �?checks for a marker attribute to avoid double-wrapping if
+    Idempotent é¥?checks for a marker attribute to avoid double-wrapping if
     the module is reloaded.
     """
     current_factory = logging.getLogRecordFactory()
@@ -114,7 +114,7 @@ def _install_session_record_factory() -> None:
     logging.setLogRecordFactory(_session_record_factory)
 
 
-# Install immediately on import �?session_tag is available on all records
+# Install immediately on import é¥?session_tag is available on all records
 # from this point forward, even before setup_logging() is called.
 _install_session_record_factory()
 
@@ -164,7 +164,7 @@ def setup_logging(
 ) -> Path:
     """Configure the Hermes logging subsystem.
 
-    Safe to call multiple times �?the second call is a no-op unless
+    Safe to call multiple times é¥?the second call is a no-op unless
     *force* is ``True``.
 
     Parameters
@@ -203,7 +203,7 @@ def setup_logging(
     log_dir = home / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    # Read config defaults (best-effort �?config may not be loaded yet).
+    # Read config defaults (best-effort é¥?config may not be loaded yet).
     cfg_level, cfg_max_size, cfg_backup = _read_logging_config()
 
     level_name = (log_level or cfg_level or "INFO").upper()
@@ -216,7 +216,7 @@ def setup_logging(
 
     root = logging.getLogger()
 
-    # --- agent.log (INFO+) �?the main activity log -------------------------
+    # --- agent.log (INFO+) é¥?the main activity log -------------------------
     _add_rotating_handler(
         root,
         log_dir / "agent.log",
@@ -226,7 +226,7 @@ def setup_logging(
         formatter=RedactingFormatter(_LOG_FORMAT),
     )
 
-    # --- errors.log (WARNING+) �?quick triage log --------------------------
+    # --- errors.log (WARNING+) é¥?quick triage log --------------------------
     _add_rotating_handler(
         root,
         log_dir / "errors.log",
@@ -301,7 +301,7 @@ class _ManagedRotatingFileHandler(RotatingFileHandler):
 
     In managed mode (NixOS), the stateDir uses setgid (2770) so new files
     inherit the hermes group. However, both _open() (initial creation) and
-    doRollover() create files via open(), which uses the process umask �?
+    doRollover() create files via open(), which uses the process umask é¥?
     typically 0022, producing 0644. This subclass applies chmod 0660 after
     both operations so the gateway and interactive users can share log files.
     """
@@ -369,7 +369,7 @@ def _add_rotating_handler(
 def _read_logging_config():
     """Best-effort read of ``logging.*`` from config.yaml.
 
-    Returns ``(level, max_size_mb, backup_count)`` �?any may be ``None``.
+    Returns ``(level, max_size_mb, backup_count)`` é¥?any may be ``None``.
     """
     try:
         import yaml

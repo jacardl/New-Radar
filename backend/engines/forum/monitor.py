@@ -1,5 +1,5 @@
 """
-日志监控�?- 实时监控三个log文件中的SummaryNode输出
+æ¥å¿çæ§å?- å®æ¶çæ§ä¸ä¸ªlogæä»¶ä¸­çSummaryNodeè¾åº
 """
 
 import os
@@ -13,253 +13,253 @@ from typing import Dict, Optional, List
 from threading import Lock
 from loguru import logger
 
-# 导入论坛主持人模�?
+# å¯¼å¥è®ºåä¸»æäººæ¨¡å?
 try:
     from .llm_host import generate_host_speech
     HOST_AVAILABLE = True
 except ImportError:
-    logger.exception("ForumEngine: 论坛主持人模块未找到，将以纯监控模式运行")
+    logger.exception("ForumEngine: è®ºåä¸»æäººæ¨¡åæªæ¾å°ï¼å°ä»¥çº¯çæ§æ¨¡å¼è¿è¡")
     HOST_AVAILABLE = False
 
 class LogMonitor:
-    """基于文件变化的智能日志监控器"""
+    """åºäºæä»¶ååçæºè½æ¥å¿çæ§å¨"""
    
     def __init__(self, log_dir: str = "logs"):
-        """初始化日志监控器"""
+        """åå§åæ¥å¿çæ§å¨"""
         self.log_dir = Path(log_dir)
         self.forum_log_file = self.log_dir / "forum.log"
        
-        # 要监控的日志文件
+        # è¦çæ§çæ¥å¿æä»¶
         self.monitored_logs = {
             'insight': self.log_dir / 'insight.log',
             'media': self.log_dir / 'media.log',
             'query': self.log_dir / 'query.log'
         }
        
-        # 监控状�?
+        # çæ§ç¶æ?
         self.is_monitoring = False
         self.monitor_thread = None
-        self.file_positions = {}  # 记录每个文件的读取位�?
-        self.file_line_counts = {}  # 记录每个文件的行�?
-        self.is_searching = False  # 是否正在搜索
-        self.search_inactive_count = 0  # 搜索非活跃计数器
-        self.write_lock = Lock()  # 写入锁，防止并发写入冲突
+        self.file_positions = {}  # è®°å½æ¯ä¸ªæä»¶çè¯»åä½ç½?
+        self.file_line_counts = {}  # è®°å½æ¯ä¸ªæä»¶çè¡æ?
+        self.is_searching = False  # æ¯å¦æ­£å¨æç´¢
+        self.search_inactive_count = 0  # æç´¢éæ´»è·è®¡æ°å¨
+        self.write_lock = Lock()  # åå¥éï¼é²æ­¢å¹¶ååå¥å²çª
         
-        # 主持人相关状�?
-        self.agent_speeches_buffer = []  # agent发言缓冲�?
-        self.host_speech_threshold = 5  # �?条agent发言触发一次主持人发言
-        self.is_host_generating = False  # 主持人是否正在生成发言
+        # ä¸»æäººç¸å³ç¶æ?
+        self.agent_speeches_buffer = []  # agentåè¨ç¼å²å?
+        self.host_speech_threshold = 5  # æ¯?æ¡agentåè¨è§¦åä¸æ¬¡ä¸»æäººåè¨
+        self.is_host_generating = False  # ä¸»æäººæ¯å¦æ­£å¨çæåè¨
        
-        # 目标节点识别模式
-        # 1. 类名（旧格式可能包含�?
-        # 2. 完整模块路径（实际日志格式，包含引擎前缀�?
-        # 3. 部分模块路径（兼容性）
-        # 4. 关键标识文本
+        # ç®æ èç¹è¯å«æ¨¡å¼
+        # 1. ç±»åï¼æ§æ ¼å¼å¯è½åå«ï¼?
+        # 2. å®æ´æ¨¡åè·¯å¾ï¼å®éæ¥å¿æ ¼å¼ï¼åå«å¼æåç¼ï¼?
+        # 3. é¨åæ¨¡åè·¯å¾ï¼å¼å®¹æ§ï¼
+        # 4. å³é®æ è¯ææ¬
         self.target_node_patterns = [
-            'FirstSummaryNode',  # 类名
-            'ReflectionSummaryNode',  # 类名
-            'InsightEngine.nodes.summary_node',  # InsightEngine完整路径
-            'MediaEngine.nodes.summary_node',  # MediaEngine完整路径
-            'QueryEngine.nodes.summary_node',  # QueryEngine完整路径
-            'nodes.summary_node',  # 模块路径（兼容性，用于部分匹配�?
-            '正在生成首次段落总结',  # FirstSummaryNode的标�?
-            '正在生成反思总结',  # ReflectionSummaryNode的标�?
+            'FirstSummaryNode',  # ç±»å
+            'ReflectionSummaryNode',  # ç±»å
+            'InsightEngine.nodes.summary_node',  # InsightEngineå®æ´è·¯å¾
+            'MediaEngine.nodes.summary_node',  # MediaEngineå®æ´è·¯å¾
+            'QueryEngine.nodes.summary_node',  # QueryEngineå®æ´è·¯å¾
+            'nodes.summary_node',  # æ¨¡åè·¯å¾ï¼å¼å®¹æ§ï¼ç¨äºé¨åå¹éï¼?
+            'æ­£å¨çæé¦æ¬¡æ®µè½æ»ç»',  # FirstSummaryNodeçæ è¯?
+            'æ­£å¨çæåææ»ç»',  # ReflectionSummaryNodeçæ è¯?
         ]
         
-        # 多行内容捕获状�?
-        self.capturing_json = {}  # 每个app的JSON捕获状�?
-        self.json_buffer = {}     # 每个app的JSON缓冲�?
-        self.json_start_line = {} # 每个app的JSON开始行
-        self.in_error_block = {}  # 每个app是否在ERROR块中
+        # å¤è¡åå®¹æè·ç¶æ?
+        self.capturing_json = {}  # æ¯ä¸ªappçJSONæè·ç¶æ?
+        self.json_buffer = {}     # æ¯ä¸ªappçJSONç¼å²å?
+        self.json_start_line = {} # æ¯ä¸ªappçJSONå¼å§è¡
+        self.in_error_block = {}  # æ¯ä¸ªappæ¯å¦å¨ERRORåä¸­
        
-        # 确保logs目录存在
+        # ç¡®ä¿logsç®å½å­å¨
         self.log_dir.mkdir(exist_ok=True)
    
     def clear_forum_log(self):
-        """清空forum.log文件"""
+        """æ¸ç©ºforum.logæä»¶"""
         try:
             if self.forum_log_file.exists():
                 self.forum_log_file.unlink()
            
-            # 创建新的forum.log文件并写入开始标�?
+            # åå»ºæ°çforum.logæä»¶å¹¶åå¥å¼å§æ è®?
             start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            # 使用write_to_forum_log函数来写入开始标记，确保格式一�?
+            # ä½¿ç¨write_to_forum_logå½æ°æ¥åå¥å¼å§æ è®°ï¼ç¡®ä¿æ ¼å¼ä¸è?
             with open(self.forum_log_file, 'w', encoding='utf-8') as f:
-                pass  # 先创建空文件
-            self.write_to_forum_log(f"=== ForumEngine 监控开�?- {start_time} ===", "SYSTEM")
+                pass  # ååå»ºç©ºæä»¶
+            self.write_to_forum_log(f"=== ForumEngine çæ§å¼å§?- {start_time} ===", "SYSTEM")
                
-            logger.info(f"ForumEngine: forum.log 已清空并初始�?)
+            logger.info(f"ForumEngine: forum.log å·²æ¸ç©ºå¹¶åå§å?)
             
-            # 重置JSON捕获状�?
+            # éç½®JSONæè·ç¶æ?
             self.capturing_json = {}
             self.json_buffer = {}
             self.json_start_line = {}
             self.in_error_block = {}
             
-            # 重置主持人相关状�?
+            # éç½®ä¸»æäººç¸å³ç¶æ?
             self.agent_speeches_buffer = []
             self.is_host_generating = False
            
         except Exception as e:
-            logger.exception(f"ForumEngine: 清空forum.log失败: {e}")
+            logger.exception(f"ForumEngine: æ¸ç©ºforum.logå¤±è´¥: {e}")
    
     def write_to_forum_log(self, content: str, source: str = None):
-        """写入内容到forum.log（线程安全）"""
+        """åå¥åå®¹å°forum.logï¼çº¿ç¨å®å¨ï¼"""
         try:
-            with self.write_lock:  # 使用锁确保线程安�?
+            with self.write_lock:  # ä½¿ç¨éç¡®ä¿çº¿ç¨å®å?
                 with open(self.forum_log_file, 'a', encoding='utf-8') as f:
                     timestamp = datetime.now().strftime('%H:%M:%S')
-                    # 将内容中的实际换行符转换为\n字符串，确保整个记录在一�?
+                    # å°åå®¹ä¸­çå®éæ¢è¡ç¬¦è½¬æ¢ä¸º\nå­ç¬¦ä¸²ï¼ç¡®ä¿æ´ä¸ªè®°å½å¨ä¸è¡?
                     content_one_line = content.replace('\n', '\\n').replace('\r', '\\r')
-                    # 如果提供了来源标签，则在时间戳后添加
+                    # å¦ææä¾äºæ¥æºæ ç­¾ï¼åå¨æ¶é´æ³åæ·»å 
                     if source:
                         f.write(f"[{timestamp}] [{source}] {content_one_line}\n")
                     else:
                         f.write(f"[{timestamp}] {content_one_line}\n")
                     f.flush()
         except Exception as e:
-            logger.exception(f"ForumEngine: 写入forum.log失败: {e}")
+            logger.exception(f"ForumEngine: åå¥forum.logå¤±è´¥: {e}")
     
     def get_log_level(self, line: str) -> Optional[str]:
-        """检测日志行的级别（INFO/ERROR/WARNING/DEBUG等）
+        """æ£æµæ¥å¿è¡ççº§å«ï¼INFO/ERROR/WARNING/DEBUGç­ï¼
         
-        支持loguru格式：YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...
+        æ¯æloguruæ ¼å¼ï¼YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...
         
         Returns:
-            'INFO', 'ERROR', 'WARNING', 'DEBUG' �?None（无法识别）
+            'INFO', 'ERROR', 'WARNING', 'DEBUG' æ?Noneï¼æ æ³è¯å«ï¼
         """
-        # 检查loguru格式：YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...
-        # 匹配模式：| LEVEL | �?| LEVEL     |
+        # æ£æ¥loguruæ ¼å¼ï¼YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...
+        # å¹éæ¨¡å¼ï¼| LEVEL | æ?| LEVEL     |
         match = re.search(r'\|\s*(INFO|ERROR|WARNING|DEBUG|TRACE|CRITICAL)\s*\|', line)
         if match:
             return match.group(1)
         return None
     
     def is_target_log_line(self, line: str) -> bool:
-        """检查是否是目标日志行（SummaryNode�?
+        """æ£æ¥æ¯å¦æ¯ç®æ æ¥å¿è¡ï¼SummaryNodeï¼?
         
-        支持多种识别方式�?
-        1. 类名：FirstSummaryNode, ReflectionSummaryNode
-        2. 完整模块路径：InsightEngine.nodes.summary_node、MediaEngine.nodes.summary_node、QueryEngine.nodes.summary_node
-        3. 部分模块路径：nodes.summary_node（兼容性）
-        4. 关键标识文本：正在生成首次段落总结、正在生成反思总结
+        æ¯æå¤ç§è¯å«æ¹å¼ï¼?
+        1. ç±»åï¼FirstSummaryNode, ReflectionSummaryNode
+        2. å®æ´æ¨¡åè·¯å¾ï¼InsightEngine.nodes.summary_nodeediaEngine.nodes.summary_nodeueryEngine.nodes.summary_node
+        3. é¨åæ¨¡åè·¯å¾ï¼nodes.summary_nodeï¼å¼å®¹æ§ï¼
+        4. å³é®æ è¯ææ¬ï¼æ­£å¨çæé¦æ¬¡æ®µè½æ»ç»ãæ­£å¨çæåææ»ç»
         
-        排除条件�?
-        - ERROR 级别的日志（错误日志不应被识别为目标节点�?
-        - 包含错误关键词的日志（JSON解析失败、JSON修复失败等）
+        æé¤æ¡ä»¶ï¼?
+        - ERROR çº§å«çæ¥å¿ï¼éè¯¯æ¥å¿ä¸åºè¢«è¯å«ä¸ºç®æ èç¹ï¼?
+        - åå«éè¯¯å³é®è¯çæ¥å¿ï¼JSONè§£æå¤±è´¥SONä¿®å¤å¤±è´¥ç­ï¼
         """
-        # 排除 ERROR 级别的日�?
+        # æé¤ ERROR çº§å«çæ¥å¿?
         log_level = self.get_log_level(line)
         if log_level == 'ERROR':
             return False
         
-        # 兼容旧检查方�?
+        # å¼å®¹æ§æ£æ¥æ¹å¼?
         if "| ERROR" in line or "| ERROR    |" in line:
             return False
         
-        # 排除包含错误关键词的日志
-        error_keywords = ["JSON解析失败", "JSON修复失败", "Traceback", "File \""]
+        # æé¤åå«éè¯¯å³é®è¯çæ¥å¿
+        error_keywords = ["JSONè§£æå¤±è´¥", "JSONä¿®å¤å¤±è´¥", "Traceback", "File \""]
         for keyword in error_keywords:
             if keyword in line:
                 return False
         
-        # 检查是否包含目标节点模�?
+        # æ£æ¥æ¯å¦åå«ç®æ èç¹æ¨¡å¼?
         for pattern in self.target_node_patterns:
             if pattern in line:
                 return True
         return False
     
     def is_valuable_content(self, line: str) -> bool:
-        """判断是否是有价值的内容（排除短小的提示信息和错误信息）"""
-        # 如果包含"清理后的输出"，则认为是有价值的
-        if "清理后的输出" in line:
+        """å¤æ­æ¯å¦æ¯æä»·å¼çåå®¹ï¼æé¤ç­å°çæç¤ºä¿¡æ¯åéè¯¯ä¿¡æ¯ï¼"""
+        # å¦æåå«"æ¸çåçè¾åº"ï¼åè®¤ä¸ºæ¯æä»·å¼ç
+        if "æ¸çåçè¾åº" in line:
             return True
         
-        # 排除常见的短小提示信息和错误信息
+        # æé¤å¸¸è§çç­å°æç¤ºä¿¡æ¯åéè¯¯ä¿¡æ¯
         exclude_patterns = [
-            "JSON解析失败",
-            "JSON修复失败",
-            "直接使用清理后的文本",
-            "JSON解析成功",
-            "成功生成",
-            "已更新段�?,
-            "正在生成",
-            "开始处�?,
-            "处理完成",
-            "已读取HOST发言",
-            "读取HOST发言失败",
-            "未找到HOST发言",
-            "调试输出",
-            "信息记录"
+            "JSONè§£æå¤±è´¥",
+            "JSONä¿®å¤å¤±è´¥",
+            "ç´æ¥ä½¿ç¨æ¸çåçææ¬",
+            "JSONè§£ææå",
+            "æåçæ",
+            "å·²æ´æ°æ®µè?,
+            "æ­£å¨çæ",
+            "å¼å§å¤ç?,
+            "å¤çå®æ",
+            "å·²è¯»åHOSTåè¨",
+            "è¯»åHOSTåè¨å¤±è´¥",
+            "æªæ¾å°HOSTåè¨",
+            "è°è¯è¾åº",
+            "ä¿¡æ¯è®°å½"
         ]
         
         for pattern in exclude_patterns:
             if pattern in line:
                 return False
         
-        # 如果行长度过短，也认为不是有价值的内容
-        # 移除时间戳：支持旧格式和新格�?
+        # å¦æè¡é¿åº¦è¿ç­ï¼ä¹è®¤ä¸ºä¸æ¯æä»·å¼çåå®¹
+        # ç§»é¤æ¶é´æ³ï¼æ¯ææ§æ ¼å¼åæ°æ ¼å¼?
         clean_line = re.sub(r'\[\d{2}:\d{2}:\d{2}\]', '', line)
         clean_line = re.sub(r'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s*\|\s*[A-Z]+\s*\|\s*[^|]+?\s*-\s*', '', clean_line)
         clean_line = clean_line.strip()
-        if len(clean_line) < 30:  # 阈值可以调�?
+        if len(clean_line) < 30:  # éå¼å¯ä»¥è°æ?
             return False
             
         return True
     
     def is_json_start_line(self, line: str) -> bool:
-        """判断是否是JSON开始行"""
-        return "清理后的输出: {" in line
+        """å¤æ­æ¯å¦æ¯JSONå¼å§è¡"""
+        return "æ¸çåçè¾åº: {" in line
     
     def is_json_end_line(self, line: str) -> bool:
-        """判断是否是JSON结束�?
+        """å¤æ­æ¯å¦æ¯JSONç»æè¡?
         
-        只判断纯粹的结束标记行，不包含任何日志格式信息（时间戳等）�?
-        如果行包含时间戳，应该先清理再判断，但这里返回False表示需要进一步处理�?
+        åªå¤æ­çº¯ç²¹çç»ææ è®°è¡ï¼ä¸åå«ä»»ä½æ¥å¿æ ¼å¼ä¿¡æ¯ï¼æ¶é´æ³ç­ï¼
+        å¦æè¡åå«æ¶é´æ³ï¼åºè¯¥åæ¸çåå¤æ­ï¼ä½è¿éè¿åFalseè¡¨ç¤ºéè¦è¿ä¸æ­¥å¤ç
         """
         stripped = line.strip()
         
-        # 如果行包含时间戳（旧格式或新格式），说明不是纯粹的结束行
-        # 旧格式：[HH:MM:SS]
+        # å¦æè¡åå«æ¶é´æ³ï¼æ§æ ¼å¼ææ°æ ¼å¼ï¼ï¼è¯´æä¸æ¯çº¯ç²¹çç»æè¡
+        # æ§æ ¼å¼ï¼[HH:MM:SS]
         if re.match(r'^\[\d{2}:\d{2}:\d{2}\]', stripped):
             return False
-        # 新格式：YYYY-MM-DD HH:mm:ss.SSS
+        # æ°æ ¼å¼ï¼YYYY-MM-DD HH:mm:ss.SSS
         if re.match(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}', stripped):
             return False
         
-        # 不包含时间戳的行，检查是否是纯结束标�?
+        # ä¸åå«æ¶é´æ³çè¡ï¼æ£æ¥æ¯å¦æ¯çº¯ç»ææ è®?
         if stripped == "}" or stripped == "] }":
             return True
         return False
     
     def extract_json_content(self, json_lines: List[str]) -> Optional[str]:
-        """从多行中提取并解析JSON内容"""
+        """ä»å¤è¡ä¸­æåå¹¶è§£æJSONåå®¹"""
         try:
-            # 找到JSON开始的位置
+            # æ¾å°JSONå¼å§çä½ç½®
             json_start_idx = -1
             for i, line in enumerate(json_lines):
-                if "清理后的输出: {" in line:
+                if "æ¸çåçè¾åº: {" in line:
                     json_start_idx = i
                     break
             
             if json_start_idx == -1:
                 return None
             
-            # 提取JSON部分
+            # æåJSONé¨å
             first_line = json_lines[json_start_idx]
-            json_start_pos = first_line.find("清理后的输出: {")
+            json_start_pos = first_line.find("æ¸çåçè¾åº: {")
             if json_start_pos == -1:
                 return None
             
-            json_part = first_line[json_start_pos + len("清理后的输出: "):]
+            json_part = first_line[json_start_pos + len("æ¸çåçè¾åº: "):]
             
-            # 如果第一行就包含完整JSON，直接处�?
+            # å¦æç¬¬ä¸è¡å°±åå«å®æ´JSONï¼ç´æ¥å¤ç?
             if json_part.strip().endswith("}") and json_part.count("{") == json_part.count("}"):
                 try:
                     json_obj = json.loads(json_part.strip())
                     return self.format_json_content(json_obj)
                 except json.JSONDecodeError:
-                    # 单行JSON解析失败，尝试修�?
+                    # åè¡JSONè§£æå¤±è´¥ï¼å°è¯ä¿®å¤?
                     fixed_json = self.fix_json_string(json_part.strip())
                     if fixed_json:
                         try:
@@ -269,23 +269,23 @@ class LogMonitor:
                             pass
                     return None
             
-            # 处理多行JSON
+            # å¤çå¤è¡JSON
             json_text = json_part
             for line in json_lines[json_start_idx + 1:]:
-                # 移除时间戳：支持旧格�?[HH:MM:SS] 和新格式 loguru (YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...)
-                # 旧格式：[HH:MM:SS]
+                # ç§»é¤æ¶é´æ³ï¼æ¯ææ§æ ¼å¼?[HH:MM:SS] åæ°æ ¼å¼ loguru (YYYY-MM-DD HH:mm:ss.SSS | LEVEL | ...)
+                # æ§æ ¼å¼ï¼[HH:MM:SS]
                 clean_line = re.sub(r'^\[\d{2}:\d{2}:\d{2}\]\s*', '', line)
-                # 新格式：移除 loguru 格式的时间戳和级别信�?
-                # 格式: YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
+                # æ°æ ¼å¼ï¼ç§»é¤ loguru æ ¼å¼çæ¶é´æ³åçº§å«ä¿¡æ?
+                # æ ¼å¼: YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
                 clean_line = re.sub(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s*\|\s*[A-Z]+\s*\|\s*[^|]+?\s*-\s*', '', clean_line)
                 json_text += clean_line
             
-            # 尝试解析JSON
+            # å°è¯è§£æJSON
             try:
                 json_obj = json.loads(json_text.strip())
                 return self.format_json_content(json_obj)
             except json.JSONDecodeError:
-                # 多行JSON解析失败，尝试修�?
+                # å¤è¡JSONè§£æå¤±è´¥ï¼å°è¯ä¿®å¤?
                 fixed_json = self.fix_json_string(json_text.strip())
                 if fixed_json:
                     try:
@@ -296,13 +296,13 @@ class LogMonitor:
                 return None
             
         except Exception as e:
-            # 其他异常也不打印错误信息，直接返回None
+            # å¶ä»å¼å¸¸ä¹ä¸æå°éè¯¯ä¿¡æ¯ï¼ç´æ¥è¿åNone
             return None
     
     def format_json_content(self, json_obj: dict) -> str:
-        """格式化JSON内容为可读形�?""
+        """æ ¼å¼åJSONåå®¹ä¸ºå¯è¯»å½¢å¼?""
         try:
-            # 提取主要内容，优先选择反思总结，其次是首次总结
+            # æåä¸»è¦åå®¹ï¼ä¼åéæ©åææ»ç»ï¼å¶æ¬¡æ¯é¦æ¬¡æ»ç»
             content = None
             
             if "updated_paragraph_latest_state" in json_obj:
@@ -310,28 +310,28 @@ class LogMonitor:
             elif "paragraph_latest_state" in json_obj:
                 content = json_obj["paragraph_latest_state"]
             
-            # 如果找到了内容，直接返回（保持换行符为\n�?
+            # å¦ææ¾å°äºåå®¹ï¼ç´æ¥è¿åï¼ä¿ææ¢è¡ç¬¦ä¸º\nï¼?
             if content:
                 return content
             
-            # 如果没有找到预期的字段，返回整个JSON的字符串表示
-            return f"清理后的输出: {json.dumps(json_obj, ensure_ascii=False, indent=2)}"
+            # å¦ææ²¡ææ¾å°é¢æçå­æ®µï¼è¿åæ´ä¸ªJSONçå­ç¬¦ä¸²è¡¨ç¤º
+            return f"æ¸çåçè¾åº: {json.dumps(json_obj, ensure_ascii=False, indent=2)}"
             
         except Exception as e:
-            logger.exception(f"ForumEngine: 格式化JSON时出�? {e}")
-            return f"清理后的输出: {json.dumps(json_obj, ensure_ascii=False, indent=2)}"
+            logger.exception(f"ForumEngine: æ ¼å¼åJSONæ¶åºé? {e}")
+            return f"æ¸çåçè¾åº: {json.dumps(json_obj, ensure_ascii=False, indent=2)}"
 
     def extract_node_content(self, line: str) -> Optional[str]:
-        """提取节点内容，去除时间戳、节点名称等前缀"""
+        """æåèç¹åå®¹ï¼å»é¤æ¶é´æ³ãèç¹åç§°ç­åç¼"""
         content = line
         
-        # 移除时间戳部分：支持旧格式和新格�?
-        # 旧格�? [HH:MM:SS]
+        # ç§»é¤æ¶é´æ³é¨åï¼æ¯ææ§æ ¼å¼åæ°æ ¼å¼?
+        # æ§æ ¼å¼? [HH:MM:SS]
         match_old = re.search(r'\[\d{2}:\d{2}:\d{2}\]\s*(.+)', content)
         if match_old:
             content = match_old.group(1).strip()
         else:
-            # 新格�? YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
+            # æ°æ ¼å¼? YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
             match_new = re.search(r'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s*\|\s*[A-Z]+\s*\|\s*[^|]+?\s*-\s*(.+)', content)
             if match_new:
                 content = match_new.group(1).strip()
@@ -339,18 +339,18 @@ class LogMonitor:
         if not content:
             return line.strip()
         
-        # 移除所有的方括号标签（包括节点名称和应用名称）
+        # ç§»é¤ææçæ¹æ¬å·æ ç­¾ï¼åæ¬èç¹åç§°ååºç¨åç§°ï¼
         content = re.sub(r'^\[.*?\]\s*', '', content)
         
-        # 继续移除可能的多个连续标�?
+        # ç»§ç»­ç§»é¤å¯è½çå¤ä¸ªè¿ç»­æ ç­?
         while re.match(r'^\[.*?\]\s*', content):
             content = re.sub(r'^\[.*?\]\s*', '', content)
         
-        # 移除常见前缀（如"首次总结: "�?反思总结: "等）
+        # ç§»é¤å¸¸è§åç¼ï¼å¦"é¦æ¬¡æ»ç»: "åææ»ç»: "ç­ï¼
         prefixes_to_remove = [
-            "首次总结: ",
-            "反思总结: ",
-            "清理后的输出: "
+            "é¦æ¬¡æ»ç»: ",
+            "åææ»ç»: ",
+            "æ¸çåçè¾åº: "
         ]
         
         for prefix in prefixes_to_remove:
@@ -358,26 +358,26 @@ class LogMonitor:
                 content = content[len(prefix):]
                 break
         
-        # 移除可能存在的应用名标签（不在方括号内的�?
+        # ç§»é¤å¯è½å­å¨çåºç¨åæ ç­¾ï¼ä¸å¨æ¹æ¬å·åçï¼?
         app_names = ['INSIGHT', 'MEDIA', 'QUERY']
         for app_name in app_names:
-            # 移除单独的APP_NAME（在行首�?
+            # ç§»é¤åç¬çAPP_NAMEï¼å¨è¡é¦ï¼?
             content = re.sub(rf'^{app_name}\s+', '', content, flags=re.IGNORECASE)
         
-        # 清理多余的空�?
+        # æ¸çå¤ä½çç©ºæ ?
         content = re.sub(r'\s+', ' ', content)
         
         return content.strip()
    
     def get_file_size(self, file_path: Path) -> int:
-        """获取文件大小"""
+        """è·åæä»¶å¤§å°"""
         try:
             return file_path.stat().st_size if file_path.exists() else 0
         except:
             return 0
    
     def get_file_line_count(self, file_path: Path) -> int:
-        """获取文件行数"""
+        """è·åæä»¶è¡æ°"""
         try:
             if not file_path.exists():
                 return 0
@@ -387,7 +387,7 @@ class LogMonitor:
             return 0
    
     def read_new_lines(self, file_path: Path, app_name: str) -> List[str]:
-        """读取文件中的新行"""
+        """è¯»åæä»¶ä¸­çæ°è¡"""
         new_lines = []
        
         try:
@@ -397,10 +397,10 @@ class LogMonitor:
             current_size = self.get_file_size(file_path)
             last_position = self.file_positions.get(app_name, 0)
            
-            # 如果文件变小了，说明被清空了，重新从头开�?
+            # å¦ææä»¶åå°äºï¼è¯´æè¢«æ¸ç©ºäºï¼éæ°ä»å¤´å¼å§?
             if current_size < last_position:
                 last_position = 0
-                # 重置JSON捕获状�?
+                # éç½®JSONæè·ç¶æ?
                 self.capturing_json[app_name] = False
                 self.json_buffer[app_name] = []
                 self.in_error_block[app_name] = False
@@ -411,25 +411,25 @@ class LogMonitor:
                     new_content = f.read()
                     new_lines = new_content.split('\n')
                    
-                    # 更新位置
+                    # æ´æ°ä½ç½®
                     self.file_positions[app_name] = f.tell()
                    
-                    # 过滤空行
+                    # è¿æ»¤ç©ºè¡
                     new_lines = [line.strip() for line in new_lines if line.strip()]
                    
         except Exception as e:
-            logger.exception(f"ForumEngine: 读取{app_name}日志失败: {e}")
+            logger.exception(f"ForumEngine: è¯»å{app_name}æ¥å¿å¤±è´¥: {e}")
        
         return new_lines
    
     def process_lines_for_json(self, lines: List[str], app_name: str) -> List[str]:
-        """处理行以捕获多行JSON内容
+        """å¤çè¡ä»¥æè·å¤è¡JSONåå®¹
         
-        实现ERROR块过滤：如果遇到ERROR级别的日志，拒绝处理直到遇到下一个INFO级别的日�?
+        å®ç°ERRORåè¿æ»¤ï¼å¦æéå°ERRORçº§å«çæ¥å¿ï¼æç»å¤çç´å°éå°ä¸ä¸ä¸ªINFOçº§å«çæ¥å¿?
         """
         captured_contents = []
         
-        # 初始化状�?
+        # åå§åç¶æ?
         if app_name not in self.capturing_json:
             self.capturing_json[app_name] = False
             self.json_buffer[app_name] = []
@@ -440,291 +440,291 @@ class LogMonitor:
             if not line.strip():
                 continue
             
-            # 首先检查日志级别，更新ERROR块状�?
+            # é¦åæ£æ¥æ¥å¿çº§å«ï¼æ´æ°ERRORåç¶æ?
             log_level = self.get_log_level(line)
             if log_level == 'ERROR':
-                # 遇到ERROR，进入ERROR块状�?
+                # éå°ERRORï¼è¿å¥ERRORåç¶æ?
                 self.in_error_block[app_name] = True
-                # 如果正在捕获JSON，立即停止并清空缓冲�?
+                # å¦ææ­£å¨æè·JSONï¼ç«å³åæ­¢å¹¶æ¸ç©ºç¼å²å?
                 if self.capturing_json[app_name]:
                     self.capturing_json[app_name] = False
                     self.json_buffer[app_name] = []
-                # 跳过当前行，不处�?
+                # è·³è¿å½åè¡ï¼ä¸å¤ç?
                 continue
             elif log_level == 'INFO':
-                # 遇到INFO，退出ERROR块状�?
+                # éå°INFOï¼éåºERRORåç¶æ?
                 self.in_error_block[app_name] = False
-            # 其他级别（WARNING、DEBUG等）保持当前状�?
+            # å¶ä»çº§å«ï¼WARNINGEBUGç­ï¼ä¿æå½åç¶æ?
             
-            # 如果在ERROR块中，拒绝处理所有内�?
+            # å¦æå¨ERRORåä¸­ï¼æç»å¤çææåå®?
             if self.in_error_block[app_name]:
-                # 如果正在捕获JSON，立即停止并清空缓冲�?
+                # å¦ææ­£å¨æè·JSONï¼ç«å³åæ­¢å¹¶æ¸ç©ºç¼å²å?
                 if self.capturing_json[app_name]:
                     self.capturing_json[app_name] = False
                     self.json_buffer[app_name] = []
-                # 跳过当前行，不处�?
+                # è·³è¿å½åè¡ï¼ä¸å¤ç?
                 continue
                 
-            # 检查是否是目标节点行和JSON开始标�?
+            # æ£æ¥æ¯å¦æ¯ç®æ èç¹è¡åJSONå¼å§æ è®?
             is_target = self.is_target_log_line(line)
             is_json_start = self.is_json_start_line(line)
             
-            # 只有目标节点（SummaryNode）的JSON输出才应该被捕获
-            # 过滤掉SearchNode等其他节点的输出（它们不是目标节点，即使有JSON也不会被捕获�?
+            # åªæç®æ èç¹ï¼SummaryNodeï¼çJSONè¾åºæåºè¯¥è¢«æè·
+            # è¿æ»¤æSearchNodeç­å¶ä»èç¹çè¾åºï¼å®ä»¬ä¸æ¯ç®æ èç¹ï¼å³ä½¿æJSONä¹ä¸ä¼è¢«æè·ï¼?
             if is_target and is_json_start:
-                # 开始捕获JSON（必须是目标节点且包�?清理后的输出: {"�?
+                # å¼å§æè·JSONï¼å¿é¡»æ¯ç®æ èç¹ä¸åå?æ¸çåçè¾åº: {"ï¼?
                 self.capturing_json[app_name] = True
                 self.json_buffer[app_name] = [line]
                 self.json_start_line[app_name] = line
                 
-                # 检查是否是单行JSON
+                # æ£æ¥æ¯å¦æ¯åè¡JSON
                 if line.strip().endswith("}"):
-                    # 单行JSON，立即处�?
+                    # åè¡JSONï¼ç«å³å¤ç?
                     content = self.extract_json_content([line])
-                    if content:  # 只有成功解析的内容才会被记录
-                        # 去除重复的标签和格式�?
+                    if content:  # åªææåè§£æçåå®¹æä¼è¢«è®°å½
+                        # å»é¤éå¤çæ ç­¾åæ ¼å¼å?
                         clean_content = self._clean_content_tags(content, app_name)
                         captured_contents.append(f"{clean_content}")
                     self.capturing_json[app_name] = False
                     self.json_buffer[app_name] = []
                     
             elif is_target and self.is_valuable_content(line):
-                # 其他有价值的SummaryNode内容（必须是目标节点且有价值）
+                # å¶ä»æä»·å¼çSummaryNodeåå®¹ï¼å¿é¡»æ¯ç®æ èç¹ä¸æä»·å¼ï¼
                 clean_content = self._clean_content_tags(self.extract_node_content(line), app_name)
                 captured_contents.append(f"{clean_content}")
                     
             elif self.capturing_json[app_name]:
-                # 正在捕获JSON的后续行
+                # æ­£å¨æè·JSONçåç»­è¡
                 self.json_buffer[app_name].append(line)
                 
-                # 检查是否是JSON结束
-                # 先清理时间戳，然后判断清理后的行是否是结束标�?
+                # æ£æ¥æ¯å¦æ¯JSONç»æ
+                # åæ¸çæ¶é´æ³ï¼ç¶åå¤æ­æ¸çåçè¡æ¯å¦æ¯ç»ææ è®?
                 cleaned_line = line.strip()
-                # 清理旧格式时间戳：[HH:MM:SS]
+                # æ¸çæ§æ ¼å¼æ¶é´æ³ï¼[HH:MM:SS]
                 cleaned_line = re.sub(r'^\[\d{2}:\d{2}:\d{2}\]\s*', '', cleaned_line)
-                # 清理新格式时间戳：YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
+                # æ¸çæ°æ ¼å¼æ¶é´æ³ï¼YYYY-MM-DD HH:mm:ss.SSS | LEVEL | module:function:line -
                 cleaned_line = re.sub(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s*\|\s*[A-Z]+\s*\|\s*[^|]+?\s*-\s*', '', cleaned_line)
                 cleaned_line = cleaned_line.strip()
                 
-                # 清理后判断是否是结束标记
+                # æ¸çåå¤æ­æ¯å¦æ¯ç»ææ è®°
                 if cleaned_line == "}" or cleaned_line == "] }":
-                    # JSON结束，处理完整的JSON
+                    # JSONç»æï¼å¤çå®æ´çJSON
                     content = self.extract_json_content(self.json_buffer[app_name])
-                    if content:  # 只有成功解析的内容才会被记录
-                        # 去除重复的标签和格式�?
+                    if content:  # åªææåè§£æçåå®¹æä¼è¢«è®°å½
+                        # å»é¤éå¤çæ ç­¾åæ ¼å¼å?
                         clean_content = self._clean_content_tags(content, app_name)
                         captured_contents.append(f"{clean_content}")
                     
-                    # 重置状�?
+                    # éç½®ç¶æ?
                     self.capturing_json[app_name] = False
                     self.json_buffer[app_name] = []
         
         return captured_contents
     
     def _trigger_host_speech(self):
-        """触发主持人发言（同步执行）"""
+        """è§¦åä¸»æäººåè¨ï¼åæ­¥æ§è¡ï¼"""
         if not HOST_AVAILABLE or self.is_host_generating:
             return
         
         try:
-            # 设置生成标志
+            # è®¾ç½®çææ å¿
             self.is_host_generating = True
             
-            # 获取缓冲区的5条发言
+            # è·åç¼å²åºç5æ¡åè¨
             recent_speeches = self.agent_speeches_buffer[:5]
             if len(recent_speeches) < 5:
                 self.is_host_generating = False
                 return
             
-            logger.info("ForumEngine: 正在生成主持人发言...")
+            logger.info("ForumEngine: æ­£å¨çæä¸»æäººåè¨...")
             
-            # 调用主持人生成发言（传入最�?条）
+            # è°ç¨ä¸»æäººçæåè¨ï¼ä¼ å¥æè¿?æ¡ï¼
             host_speech = generate_host_speech(recent_speeches)
             
             if host_speech:
-                # 写入主持人发言到forum.log
+                # åå¥ä¸»æäººåè¨å°forum.log
                 self.write_to_forum_log(host_speech, "HOST")
-                logger.info(f"ForumEngine: 主持人发言已记�?)
+                logger.info(f"ForumEngine: ä¸»æäººåè¨å·²è®°å½?)
                 
-                # 清空已处理的5条发言
+                # æ¸ç©ºå·²å¤çç5æ¡åè¨
                 self.agent_speeches_buffer = self.agent_speeches_buffer[5:]
             else:
-                logger.error("ForumEngine: 主持人发言生成失败")
+                logger.error("ForumEngine: ä¸»æäººåè¨çæå¤±è´¥")
             
-            # 重置生成标志
+            # éç½®çææ å¿
             self.is_host_generating = False
                 
         except Exception as e:
-            logger.exception(f"ForumEngine: 触发主持人发言时出�? {e}")
+            logger.exception(f"ForumEngine: è§¦åä¸»æäººåè¨æ¶åºé? {e}")
             self.is_host_generating = False
     
     def _clean_content_tags(self, content: str, app_name: str) -> str:
-        """清理内容中的重复标签和多余前缀"""
+        """æ¸çåå®¹ä¸­çéå¤æ ç­¾åå¤ä½åç¼"""
         if not content:
             return content
             
-        # 先去除所有可能的标签格式（包�?[INSIGHT]、[MEDIA]、[QUERY] 等）
-        # 使用更强力的清理方式
+        # åå»é¤ææå¯è½çæ ç­¾æ ¼å¼ï¼åæ?[INSIGHT]MEDIA]QUERY] ç­ï¼
+        # ä½¿ç¨æ´å¼ºåçæ¸çæ¹å¼
         all_app_names = ['INSIGHT', 'MEDIA', 'QUERY']
         
         for name in all_app_names:
-            # 去除 [APP_NAME] 格式（大小写不敏感）
+            # å»é¤ [APP_NAME] æ ¼å¼ï¼å¤§å°åä¸ææï¼
             content = re.sub(rf'\[{name}\]\s*', '', content, flags=re.IGNORECASE)
-            # 去除单独�?APP_NAME 格式
+            # å»é¤åç¬ç?APP_NAME æ ¼å¼
             content = re.sub(rf'^{name}\s+', '', content, flags=re.IGNORECASE)
         
-        # 去除任何其他的方括号标签
+        # å»é¤ä»»ä½å¶ä»çæ¹æ¬å·æ ç­¾
         content = re.sub(r'^\[.*?\]\s*', '', content)
         
-        # 去除可能的重复空�?
+        # å»é¤å¯è½çéå¤ç©ºæ ?
         content = re.sub(r'\s+', ' ', content)
         
         return content.strip()
    
     def monitor_logs(self):
-        """智能监控日志文件"""
-        logger.info("ForumEngine: 论坛创建�?..")
+        """æºè½çæ§æ¥å¿æä»¶"""
+        logger.info("ForumEngine: è®ºååå»ºä¸?..")
        
-        # 初始化文件行数和位置 - 记录当前状态作为基�?
+        # åå§åæä»¶è¡æ°åä½ç½® - è®°å½å½åç¶æä½ä¸ºåºçº?
         for app_name, log_file in self.monitored_logs.items():
             self.file_line_counts[app_name] = self.get_file_line_count(log_file)
             self.file_positions[app_name] = self.get_file_size(log_file)
             self.capturing_json[app_name] = False
             self.json_buffer[app_name] = []
             self.in_error_block[app_name] = False
-            # logger.info(f"ForumEngine: {app_name} 基线行数: {self.file_line_counts[app_name]}")
+            # logger.info(f"ForumEngine: {app_name} åºçº¿è¡æ°: {self.file_line_counts[app_name]}")
        
         while self.is_monitoring:
             try:
-                # 同时检测三个log文件的变�?
+                # åæ¶æ£æµä¸ä¸ªlogæä»¶çåå?
                 any_growth = False
                 any_shrink = False
                 captured_any = False
                
-                # 为每个log文件独立处理
+                # ä¸ºæ¯ä¸ªlogæä»¶ç¬ç«å¤ç
                 for app_name, log_file in self.monitored_logs.items():
                     current_lines = self.get_file_line_count(log_file)
                     previous_lines = self.file_line_counts.get(app_name, 0)
                    
                     if current_lines > previous_lines:
                         any_growth = True
-                        # 立即读取新增内容
+                        # ç«å³è¯»åæ°å¢åå®¹
                         new_lines = self.read_new_lines(log_file, app_name)
                        
-                        # 先检查是否需要触发搜索（只触发一次）
+                        # åæ£æ¥æ¯å¦éè¦è§¦åæç´¢ï¼åªè§¦åä¸æ¬¡ï¼
                         if not self.is_searching:
                             for line in new_lines:
-                                # 检查是否包含目标节点模式（支持多种格式�?
+                                # æ£æ¥æ¯å¦åå«ç®æ èç¹æ¨¡å¼ï¼æ¯æå¤ç§æ ¼å¼ï¼?
                                 if line.strip() and self.is_target_log_line(line):
-                                    # 进一步确认是首次总结节点（FirstSummaryNode或包�?正在生成首次段落总结"�?
-                                    if 'FirstSummaryNode' in line or '正在生成首次段落总结' in line:
-                                        logger.info(f"ForumEngine: 在{app_name}中检测到第一次论坛发表内�?)
+                                    # è¿ä¸æ­¥ç¡®è®¤æ¯é¦æ¬¡æ»ç»èç¹ï¼FirstSummaryNodeæåå?æ­£å¨çæé¦æ¬¡æ®µè½æ»ç»"ï¼?
+                                    if 'FirstSummaryNode' in line or 'æ­£å¨çæé¦æ¬¡æ®µè½æ»ç»' in line:
+                                        logger.info(f"ForumEngine: å¨{app_name}ä¸­æ£æµå°ç¬¬ä¸æ¬¡è®ºååè¡¨åå®?)
                                         self.is_searching = True
                                         self.search_inactive_count = 0
-                                        # 清空forum.log开始新会话
+                                        # æ¸ç©ºforum.logå¼å§æ°ä¼è¯
                                         self.clear_forum_log()
-                                        break  # 找到一个就够了，跳出循�?
+                                        break  # æ¾å°ä¸ä¸ªå°±å¤äºï¼è·³åºå¾ªç?
                        
-                        # 处理所有新增内容（如果正在搜索状态）
+                        # å¤çæææ°å¢åå®¹ï¼å¦ææ­£å¨æç´¢ç¶æï¼
                         if self.is_searching:
-                            # 使用新的处理逻辑
+                            # ä½¿ç¨æ°çå¤çé»è¾
                             captured_contents = self.process_lines_for_json(new_lines, app_name)
                             
                             for content in captured_contents:
-                                # 将app_name转换为大写作为标签（�?insight -> INSIGHT�?
+                                # å°app_nameè½¬æ¢ä¸ºå¤§åä½ä¸ºæ ç­¾ï¼å¦?insight -> INSIGHTï¼?
                                 source_tag = app_name.upper()
                                 self.write_to_forum_log(content, source_tag)
-                                # logger.info(f"ForumEngine: 捕获 - {content}")
+                                # logger.info(f"ForumEngine: æè· - {content}")
                                 captured_any = True
                                 
-                                # 将发言添加到缓冲区（格式化为完整的日志行）
+                                # å°åè¨æ·»å å°ç¼å²åºï¼æ ¼å¼åä¸ºå®æ´çæ¥å¿è¡ï¼
                                 timestamp = datetime.now().strftime('%H:%M:%S')
                                 log_line = f"[{timestamp}] [{source_tag}] {content}"
                                 self.agent_speeches_buffer.append(log_line)
                                 
-                                # 检查是否需要触发主持人发言
+                                # æ£æ¥æ¯å¦éè¦è§¦åä¸»æäººåè¨
                                 if len(self.agent_speeches_buffer) >= self.host_speech_threshold and not self.is_host_generating:
-                                    # 同步触发主持人发言
+                                    # åæ­¥è§¦åä¸»æäººåè¨
                                     self._trigger_host_speech()
                    
                     elif current_lines < previous_lines:
                         any_shrink = True
-                        # logger.info(f"ForumEngine: 检测到 {app_name} 日志缩短，将重置基线")
-                        # 重置文件位置到新的文件末�?
+                        # logger.info(f"ForumEngine: æ£æµå° {app_name} æ¥å¿ç¼©ç­ï¼å°éç½®åºçº¿")
+                        # éç½®æä»¶ä½ç½®å°æ°çæä»¶æ«å°?
                         self.file_positions[app_name] = self.get_file_size(log_file)
-                        # 重置JSON捕获状�?
+                        # éç½®JSONæè·ç¶æ?
                         self.capturing_json[app_name] = False
                         self.json_buffer[app_name] = []
                         self.in_error_block[app_name] = False
                    
-                    # 更新行数记录
+                    # æ´æ°è¡æ°è®°å½
                     self.file_line_counts[app_name] = current_lines
                
-                # 检查是否应该结束当前搜索会�?
+                # æ£æ¥æ¯å¦åºè¯¥ç»æå½åæç´¢ä¼è¯?
                 if self.is_searching:
                     if any_shrink:
-                        # log变短，结束当前搜索会话，重置为等待状�?
-                        # logger.info("ForumEngine: 日志缩短，结束当前搜索会话，回到等待状�?)
+                        # logåç­ï¼ç»æå½åæç´¢ä¼è¯ï¼éç½®ä¸ºç­å¾ç¶æ?
+                        # logger.info("ForumEngine: æ¥å¿ç¼©ç­ï¼ç»æå½åæç´¢ä¼è¯ï¼åå°ç­å¾ç¶æ?)
                         self.is_searching = False
                         self.search_inactive_count = 0
-                        # 重置主持人相关状�?
+                        # éç½®ä¸»æäººç¸å³ç¶æ?
                         self.agent_speeches_buffer = []
                         self.is_host_generating = False
-                        # 写入结束标记
+                        # åå¥ç»ææ è®°
                         end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        self.write_to_forum_log(f"=== ForumEngine 论坛结束 - {end_time} ===", "SYSTEM")
-                        # logger.info("ForumEngine: 已重置基线，等待下次FirstSummaryNode触发")
+                        self.write_to_forum_log(f"=== ForumEngine è®ºåç»æ - {end_time} ===", "SYSTEM")
+                        # logger.info("ForumEngine: å·²éç½®åºçº¿ï¼ç­å¾ä¸æ¬¡FirstSummaryNodeè§¦å")
                     elif not any_growth and not captured_any:
-                        # 没有增长也没有捕获内容，增加非活跃计�?
+                        # æ²¡æå¢é¿ä¹æ²¡ææè·åå®¹ï¼å¢å éæ´»è·è®¡æ?
                         self.search_inactive_count += 1
-                        if self.search_inactive_count >= 7200:  # 超时无活动自动结�?
-                            logger.info("ForumEngine: 长时间无活动，结束论�?)
+                        if self.search_inactive_count >= 7200:  # è¶æ¶æ æ´»å¨èªå¨ç»æ?
+                            logger.info("ForumEngine: é¿æ¶é´æ æ´»å¨ï¼ç»æè®ºå?)
                             self.is_searching = False
                             self.search_inactive_count = 0
-                            # 重置主持人相关状�?
+                            # éç½®ä¸»æäººç¸å³ç¶æ?
                             self.agent_speeches_buffer = []
                             self.is_host_generating = False
-                            # 写入结束标记
+                            # åå¥ç»ææ è®°
                             end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            self.write_to_forum_log(f"=== ForumEngine 论坛结束 - {end_time} ===", "SYSTEM")
+                            self.write_to_forum_log(f"=== ForumEngine è®ºåç»æ - {end_time} ===", "SYSTEM")
                     else:
-                        self.search_inactive_count = 0  # 重置计数�?
+                        self.search_inactive_count = 0  # éç½®è®¡æ°å?
                
-                # 短暂休眠
+                # ç­æä¼ç 
                 time.sleep(1)
                
             except Exception as e:
-                logger.exception(f"ForumEngine: 论坛记录中出�? {e}")
+                logger.exception(f"ForumEngine: è®ºåè®°å½ä¸­åºé? {e}")
                 import traceback
                 traceback.print_exc()
                 time.sleep(2)
        
-        logger.info("ForumEngine: 停止论坛日志文件")
+        logger.info("ForumEngine: åæ­¢è®ºåæ¥å¿æä»¶")
    
     def start_monitoring(self):
-        """开始智能监�?""
+        """å¼å§æºè½çæ?""
         if self.is_monitoring:
-            logger.info("ForumEngine: 论坛已经在运行中")
+            logger.info("ForumEngine: è®ºåå·²ç»å¨è¿è¡ä¸­")
             return False
        
         try:
-            # 启动监控
+            # å¯å¨çæ§
             self.is_monitoring = True
             self.monitor_thread = threading.Thread(target=self.monitor_logs, daemon=True)
             self.monitor_thread.start()
            
-            logger.info("ForumEngine: 论坛已启�?)
+            logger.info("ForumEngine: è®ºåå·²å¯å?)
             return True
            
         except Exception as e:
-            logger.exception(f"ForumEngine: 启动论坛失败: {e}")
+            logger.exception(f"ForumEngine: å¯å¨è®ºåå¤±è´¥: {e}")
             self.is_monitoring = False
             return False
    
     def stop_monitoring(self):
-        """停止监控"""
+        """åæ­¢çæ§"""
         if not self.is_monitoring:
-            logger.info("ForumEngine: 论坛未运�?)
+            logger.info("ForumEngine: è®ºåæªè¿è¡?)
             return
        
         try:
@@ -733,17 +733,17 @@ class LogMonitor:
             if self.monitor_thread and self.monitor_thread.is_alive():
                 self.monitor_thread.join(timeout=2)
            
-            # 写入结束标记
+            # åå¥ç»ææ è®°
             end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            self.write_to_forum_log(f"=== ForumEngine 论坛结束 - {end_time} ===", "SYSTEM")
+            self.write_to_forum_log(f"=== ForumEngine è®ºåç»æ - {end_time} ===", "SYSTEM")
            
-            logger.info("ForumEngine: 论坛已停�?)
+            logger.info("ForumEngine: è®ºåå·²åæ­?)
            
         except Exception as e:
-            logger.exception(f"ForumEngine: 停止论坛失败: {e}")
+            logger.exception(f"ForumEngine: åæ­¢è®ºåå¤±è´¥: {e}")
    
     def get_forum_log_content(self) -> List[str]:
-        """获取forum.log的内�?""
+        """è·åforum.logçåå®?""
         try:
             if not self.forum_log_file.exists():
                 return []
@@ -752,24 +752,24 @@ class LogMonitor:
                 return [line.rstrip('\n\r') for line in f.readlines()]
                
         except Exception as e:
-            logger.exception(f"ForumEngine: 读取forum.log失败: {e}")
+            logger.exception(f"ForumEngine: è¯»åforum.logå¤±è´¥: {e}")
             return []
 
     def fix_json_string(self, json_text: str) -> str:
-        """修复JSON字符串中的常见问题，特别是未转义的双引号"""
+        """ä¿®å¤JSONå­ç¬¦ä¸²ä¸­çå¸¸è§é®é¢ï¼ç¹å«æ¯æªè½¬ä¹çåå¼å·"""
         try:
-            # 尝试直接解析，如果成功则返回原文�?
+            # å°è¯ç´æ¥è§£æï¼å¦ææååè¿ååææ?
             json.loads(json_text)
             return json_text
         except json.JSONDecodeError:
             pass
         
-        # 修复未转义的双引号问�?
-        # 这是一个更智能的修复方法，专门处理字符串值中的双引号
+        # ä¿®å¤æªè½¬ä¹çåå¼å·é®é¢?
+        # è¿æ¯ä¸ä¸ªæ´æºè½çä¿®å¤æ¹æ³ï¼ä¸é¨å¤çå­ç¬¦ä¸²å¼ä¸­çåå¼å·
         
         try:
-            # 使用状态机方法修复JSON
-            # 遍历字符，跟踪是否在字符串值内�?
+            # ä½¿ç¨ç¶ææºæ¹æ³ä¿®å¤JSON
+            # éåå­ç¬¦ï¼è·è¸ªæ¯å¦å¨å­ç¬¦ä¸²å¼åé?
             
             fixed_text = ""
             i = 0
@@ -780,24 +780,24 @@ class LogMonitor:
                 char = json_text[i]
                 
                 if escape_next:
-                    # 处理转义字符
+                    # å¤çè½¬ä¹å­ç¬¦
                     fixed_text += char
                     escape_next = False
                     i += 1
                     continue
                 
                 if char == '\\':
-                    # 转义字符
+                    # è½¬ä¹å­ç¬¦
                     fixed_text += char
                     escape_next = True
                     i += 1
                     continue
                 
                 if char == '"' and not escape_next:
-                    # 遇到双引�?
+                    # éå°åå¼å?
                     if in_string:
-                        # 在字符串内部，检查下一个字�?
-                        # 如果下一个字符是冒号或者逗号或者大括号，说明这是字符串结束
+                        # å¨å­ç¬¦ä¸²åé¨ï¼æ£æ¥ä¸ä¸ä¸ªå­ç¬?
+                        # å¦æä¸ä¸ä¸ªå­ç¬¦æ¯åå·æèéå·æèå¤§æ¬å·ï¼è¯´æè¿æ¯å­ç¬¦ä¸²ç»æ
                         next_char_pos = i + 1
                         while next_char_pos < len(json_text) and json_text[next_char_pos].isspace():
                             next_char_pos += 1
@@ -805,55 +805,55 @@ class LogMonitor:
                         if next_char_pos < len(json_text):
                             next_char = json_text[next_char_pos]
                             if next_char in [':', ',', '}']:
-                                # 这是字符串结束，退出字符串状�?
+                                # è¿æ¯å­ç¬¦ä¸²ç»æï¼éåºå­ç¬¦ä¸²ç¶æ?
                                 in_string = False
                                 fixed_text += char
                             else:
-                                # 这是字符串内部的引号，需要转�?
+                                # è¿æ¯å­ç¬¦ä¸²åé¨çå¼å·ï¼éè¦è½¬ä¹?
                                 fixed_text += '\\"'
                         else:
-                            # 文件结束，退出字符串状�?
+                            # æä»¶ç»æï¼éåºå­ç¬¦ä¸²ç¶æ?
                             in_string = False
                             fixed_text += char
                     else:
-                        # 字符串开�?
+                        # å­ç¬¦ä¸²å¼å§?
                         in_string = True
                         fixed_text += char
                 else:
-                    # 其他字符
+                    # å¶ä»å­ç¬¦
                     fixed_text += char
                 
                 i += 1
             
-            # 尝试解析修复后的JSON
+            # å°è¯è§£æä¿®å¤åçJSON
             try:
                 json.loads(fixed_text)
                 return fixed_text
             except json.JSONDecodeError:
-                # 修复失败，返回None
+                # ä¿®å¤å¤±è´¥ï¼è¿åNone
                 return None
                 
         except Exception:
             return None
 
-# 全局监控器实�?
+# å¨å±çæ§å¨å®ä¾?
 _monitor_instance = None
 
 def get_monitor() -> LogMonitor:
-    """获取全局监控器实�?""
+    """è·åå¨å±çæ§å¨å®ä¾?""
     global _monitor_instance
     if _monitor_instance is None:
         _monitor_instance = LogMonitor()
     return _monitor_instance
 
 def start_forum_monitoring():
-    """启动ForumEngine智能监控"""
+    """å¯å¨ForumEngineæºè½çæ§"""
     return get_monitor().start_monitoring()
 
 def stop_forum_monitoring():
-    """停止ForumEngine监控"""
+    """åæ­¢ForumEngineçæ§"""
     get_monitor().stop_monitoring()
 
 def get_forum_log():
-    """获取forum.log内容"""
+    """è·åforum.logåå®¹"""
     return get_monitor().get_forum_log_content()

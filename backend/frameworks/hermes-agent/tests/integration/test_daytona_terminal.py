@@ -100,7 +100,7 @@ class TestDaytonaPersistence:
             _run("echo 'survive' > /tmp/persist_test.txt", task)
             cleanup_vm(task)  # stops (not deletes) because persistent=true
 
-            # Resume with the same task_id �?file should still exist
+            # Resume with the same task_id é¥?file should still exist
             r = _run("cat /tmp/persist_test.txt", task)
             assert r["exit_code"] == 0
             assert "survive" in r["output"]

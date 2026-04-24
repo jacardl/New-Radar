@@ -380,7 +380,7 @@ class TestFeishuAdapterMessaging(unittest.TestCase):
                 adapter.edit_message(
                     chat_id="oc_chat",
                     message_id="om_progress",
-                    content="📖 read_file: \"/tmp/image.png\"",
+                    content="ð read_file: \"/tmp/image.png\"",
                 )
             )
 
@@ -390,7 +390,7 @@ class TestFeishuAdapterMessaging(unittest.TestCase):
         self.assertEqual(captured["request"].request_body.msg_type, "text")
         self.assertEqual(
             captured["request"].request_body.content,
-            json.dumps({"text": "📖 read_file: \"/tmp/image.png\""}, ensure_ascii=False),
+            json.dumps({"text": "ð read_file: \"/tmp/image.png\""}, ensure_ascii=False),
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -424,7 +424,7 @@ class TestFeishuAdapterMessaging(unittest.TestCase):
                 adapter.edit_message(
                     chat_id="oc_chat",
                     message_id="om_progress",
-                    content="可以�?**粗体** �?*斜体*�?,
+                    content="å¯ä»¥ç?**ç²ä½** å?*æä½*ã?,
                 )
             )
 
@@ -433,7 +433,7 @@ class TestFeishuAdapterMessaging(unittest.TestCase):
         self.assertEqual(captured["calls"][1].request_body.msg_type, "text")
         self.assertEqual(
             captured["calls"][1].request_body.content,
-            json.dumps({"text": "可以�?粗体 �?斜体�?}, ensure_ascii=False),
+            json.dumps({"text": "å¯ä»¥ç?ç²ä½ å?æä½ã?}, ensure_ascii=False),
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -1393,7 +1393,7 @@ class TestAdapterBehavior(unittest.TestCase):
             return_value={"chat_id": "oc_chat", "name": "Feishu DM", "type": "dm"}
         )
         adapter._resolve_sender_profile = AsyncMock(
-            return_value={"user_id": "ou_user", "user_name": "张三", "user_id_alt": None}
+            return_value={"user_id": "ou_user", "user_name": "å¼ ä¸", "user_id_alt": None}
         )
         message = SimpleNamespace(
             chat_id="oc_chat",
@@ -1505,7 +1505,7 @@ class TestAdapterBehavior(unittest.TestCase):
         adapter = FeishuAdapter(PlatformConfig())
         adapter._dispatch_inbound_event = AsyncMock()
         # Sender name now comes from the contact API; mock it to return a known value.
-        adapter._resolve_sender_name_from_api = AsyncMock(return_value="张三")
+        adapter._resolve_sender_name_from_api = AsyncMock(return_value="å¼ ä¸")
         adapter.get_chat_info = AsyncMock(
             return_value={"chat_id": "oc_chat", "name": "Feishu DM", "type": "dm"}
         )
@@ -1537,7 +1537,7 @@ class TestAdapterBehavior(unittest.TestCase):
         event = adapter._dispatch_inbound_event.await_args.args[0]
         self.assertEqual(event.message_type, MessageType.TEXT)
         self.assertEqual(event.source.user_id, "ou_user")
-        self.assertEqual(event.source.user_name, "张三")
+        self.assertEqual(event.source.user_name, "å¼ ä¸")
         self.assertEqual(event.source.user_id_alt, "on_union")
         self.assertEqual(event.source.chat_name, "Feishu DM")
 
@@ -1556,7 +1556,7 @@ class TestAdapterBehavior(unittest.TestCase):
             chat_name="Feishu DM",
             chat_type="dm",
             user_id="ou_user",
-            user_name="张三",
+            user_name="å¼ ä¸",
         )
 
         async def _sleep(_delay):
@@ -1602,7 +1602,7 @@ class TestAdapterBehavior(unittest.TestCase):
             chat_name="Feishu DM",
             chat_type="dm",
             user_id="ou_user",
-            user_name="张三",
+            user_name="å¼ ä¸",
         )
 
         async def _sleep(_delay):
@@ -1646,7 +1646,7 @@ class TestAdapterBehavior(unittest.TestCase):
             chat_name="Feishu DM",
             chat_type="dm",
             user_id="ou_user",
-            user_name="张三",
+            user_name="å¼ ä¸",
         )
 
         async def _sleep(_delay):
@@ -1656,7 +1656,7 @@ class TestAdapterBehavior(unittest.TestCase):
             with patch("gateway.platforms.feishu.asyncio.sleep", side_effect=_sleep):
                 await adapter._dispatch_inbound_event(
                     MessageEvent(
-                        text="第一�?,
+                        text="ç¬¬ä¸å¼?,
                         message_type=MessageType.PHOTO,
                         source=source,
                         message_id="om_p1",
@@ -1666,7 +1666,7 @@ class TestAdapterBehavior(unittest.TestCase):
                 )
                 await adapter._dispatch_inbound_event(
                     MessageEvent(
-                        text="第二�?,
+                        text="ç¬¬äºå¼?,
                         message_type=MessageType.PHOTO,
                         source=source,
                         message_id="om_p2",
@@ -1683,8 +1683,8 @@ class TestAdapterBehavior(unittest.TestCase):
         adapter.handle_message.assert_awaited_once()
         event = adapter.handle_message.await_args.args[0]
         self.assertEqual(event.media_urls, ["/tmp/a.png", "/tmp/b.png"])
-        self.assertIn("第一�?, event.text)
-        self.assertIn("第二�?, event.text)
+        self.assertIn("ç¬¬ä¸å¼?, event.text)
+        self.assertIn("ç¬¬äºå¼?, event.text)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_send_image_downloads_then_uses_native_image_send(self):
@@ -1750,7 +1750,7 @@ class TestAdapterBehavior(unittest.TestCase):
             return_value={"chat_id": "oc_group", "name": "oc_group", "type": "dm"}
         )
         adapter._resolve_sender_profile = AsyncMock(
-            return_value={"user_id": "ou_user", "user_name": "张三", "user_id_alt": None}
+            return_value={"user_id": "ou_user", "user_name": "å¼ ä¸", "user_id_alt": None}
         )
         message = SimpleNamespace(
             chat_id="oc_group",
@@ -1786,9 +1786,9 @@ class TestAdapterBehavior(unittest.TestCase):
             return_value={"chat_id": "oc_chat", "name": "Feishu DM", "type": "dm"}
         )
         adapter._resolve_sender_profile = AsyncMock(
-            return_value={"user_id": "ou_user", "user_name": "张三", "user_id_alt": None}
+            return_value={"user_id": "ou_user", "user_name": "å¼ ä¸", "user_id_alt": None}
         )
-        adapter._fetch_message_text = AsyncMock(return_value="父消息内�?)
+        adapter._fetch_message_text = AsyncMock(return_value="ç¶æ¶æ¯åå®?)
         message = SimpleNamespace(
             chat_id="oc_chat",
             thread_id=None,
@@ -1811,7 +1811,7 @@ class TestAdapterBehavior(unittest.TestCase):
 
         event = adapter._dispatch_inbound_event.await_args.args[0]
         self.assertEqual(event.reply_to_message_id, "om_parent")
-        self.assertEqual(event.reply_to_text, "父消息内�?)
+        self.assertEqual(event.reply_to_text, "ç¶æ¶æ¯åå®?)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_send_replies_in_thread_when_thread_metadata_present(self):
@@ -2093,7 +2093,7 @@ class TestAdapterBehavior(unittest.TestCase):
         try:
             with patch("gateway.platforms.feishu.asyncio.to_thread", side_effect=_direct):
                 result = asyncio.run(
-                    adapter.send_document(chat_id="oc_chat", file_path=file_path, caption="报告请看")
+                    adapter.send_document(chat_id="oc_chat", file_path=file_path, caption="æ¥åè¯·ç")
                 )
         finally:
             os.unlink(file_path)
@@ -2102,7 +2102,7 @@ class TestAdapterBehavior(unittest.TestCase):
         self.assertEqual(captured["message_request"].request_body.msg_type, "post")
         self.assertIn('"tag": "media"', captured["message_request"].request_body.content)
         self.assertIn('"file_key": "file_123"', captured["message_request"].request_body.content)
-        self.assertIn("报告请看", captured["message_request"].request_body.content)
+        self.assertIn("æ¥åè¯·ç", captured["message_request"].request_body.content)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_send_image_file_uploads_image_and_sends_image_message(self):
@@ -2200,7 +2200,7 @@ class TestAdapterBehavior(unittest.TestCase):
         try:
             with patch("gateway.platforms.feishu.asyncio.to_thread", side_effect=_direct):
                 result = asyncio.run(
-                    adapter.send_image_file(chat_id="oc_chat", image_path=image_path, caption="截图说明")
+                    adapter.send_image_file(chat_id="oc_chat", image_path=image_path, caption="æªå¾è¯´æ")
                 )
         finally:
             os.unlink(image_path)
@@ -2209,7 +2209,7 @@ class TestAdapterBehavior(unittest.TestCase):
         self.assertEqual(captured["message_request"].request_body.msg_type, "post")
         self.assertIn('"tag": "img"', captured["message_request"].request_body.content)
         self.assertIn('"image_key": "img_123"', captured["message_request"].request_body.content)
-        self.assertIn("截图说明", captured["message_request"].request_body.content)
+        self.assertIn("æªå¾è¯´æ", captured["message_request"].request_body.content)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_send_video_uploads_file_and_sends_media_message(self):
@@ -2319,10 +2319,10 @@ class TestAdapterBehavior(unittest.TestCase):
         from gateway.platforms.feishu import FeishuAdapter
 
         adapter = FeishuAdapter(PlatformConfig())
-        payload = json.loads(adapter._build_post_payload("# 标题\n访问 [文档](https://example.com)"))
+        payload = json.loads(adapter._build_post_payload("# æ é¢\nè®¿é® [ææ¡£](https://example.com)"))
 
         elements = payload["zh_cn"]["content"][0]
-        self.assertEqual(elements, [{"tag": "md", "text": "# 标题\n访问 [文档](https://example.com)"}])
+        self.assertEqual(elements, [{"tag": "md", "text": "# æ é¢\nè®¿é® [ææ¡£](https://example.com)"}])
 
     @patch.dict(os.environ, {}, clear=True)
     def test_build_post_payload_wraps_markdown_in_md_tag(self):
@@ -2331,14 +2331,14 @@ class TestAdapterBehavior(unittest.TestCase):
 
         adapter = FeishuAdapter(PlatformConfig())
         payload = json.loads(
-            adapter._build_post_payload("支持 **粗体**�?斜体* �?`代码`")
+            adapter._build_post_payload("æ¯æ **ç²ä½**ã?æä½* å?`ä»£ç `")
         )
 
         elements = payload["zh_cn"]["content"][0]
         self.assertEqual(
             elements,
             [
-                {"tag": "md", "text": "支持 **粗体**�?斜体* �?`代码`"},
+                {"tag": "md", "text": "æ¯æ **ç²ä½**ã?æä½* å?`ä»£ç `"},
             ],
         )
 
@@ -2350,14 +2350,14 @@ class TestAdapterBehavior(unittest.TestCase):
         adapter = FeishuAdapter(PlatformConfig())
         payload = json.loads(
             adapter._build_post_payload(
-                "---\n1. 第一项\n  2. 子项\n- 外层\n  - 内层\n<u>下划�?/u> �?~~删除线~~"
+                "---\n1. ç¬¬ä¸é¡¹\n  2. å­é¡¹\n- å¤å±\n  - åå±\n<u>ä¸åçº?/u> å?~~å é¤çº¿~~"
             )
         )
 
         rows = payload["zh_cn"]["content"]
         self.assertEqual(
             rows,
-            [[{"tag": "md", "text": "---\n1. 第一项\n  2. 子项\n- 外层\n  - 内层\n<u>下划�?/u> �?~~删除线~~"}]],
+            [[{"tag": "md", "text": "---\n1. ç¬¬ä¸é¡¹\n  2. å­é¡¹\n- å¤å±\n  - åå±\n<u>ä¸åçº?/u> å?~~å é¤çº¿~~"}]],
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -2391,7 +2391,7 @@ class TestAdapterBehavior(unittest.TestCase):
             result = asyncio.run(
                 adapter.send(
                     chat_id="oc_chat",
-                    content="可以�?**粗体** �?*斜体*�?,
+                    content="å¯ä»¥ç?**ç²ä½** å?*æä½*ã?,
                 )
             )
 
@@ -2399,7 +2399,7 @@ class TestAdapterBehavior(unittest.TestCase):
         self.assertEqual(captured["request"].request_body.msg_type, "post")
         payload = json.loads(captured["request"].request_body.content)
         elements = payload["zh_cn"]["content"][0]
-        self.assertEqual(elements, [{"tag": "md", "text": "可以�?**粗体** �?*斜体*�?}])
+        self.assertEqual(elements, [{"tag": "md", "text": "å¯ä»¥ç?**ç²ä½** å?*æä½*ã?}])
 
     @patch.dict(os.environ, {}, clear=True)
     def test_send_falls_back_to_text_when_post_payload_is_rejected(self):
@@ -2434,7 +2434,7 @@ class TestAdapterBehavior(unittest.TestCase):
             result = asyncio.run(
                 adapter.send(
                     chat_id="oc_chat",
-                    content="可以�?**粗体** �?*斜体*�?,
+                    content="å¯ä»¥ç?**ç²ä½** å?*æä½*ã?,
                 )
             )
 
@@ -2443,7 +2443,7 @@ class TestAdapterBehavior(unittest.TestCase):
         self.assertEqual(captured["calls"][1].request_body.msg_type, "text")
         self.assertEqual(
             captured["calls"][1].request_body.content,
-            json.dumps({"text": "可以�?粗体 �?斜体�?}, ensure_ascii=False),
+            json.dumps({"text": "å¯ä»¥ç?ç²ä½ å?æä½ã?}, ensure_ascii=False),
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -2479,7 +2479,7 @@ class TestAdapterBehavior(unittest.TestCase):
             result = asyncio.run(
                 adapter.send(
                     chat_id="oc_chat",
-                    content="可以�?**粗体** �?*斜体*�?,
+                    content="å¯ä»¥ç?**ç²ä½** å?*æä½*ã?,
                 )
             )
 
@@ -2488,7 +2488,7 @@ class TestAdapterBehavior(unittest.TestCase):
         self.assertEqual(captured["calls"][1].request_body.msg_type, "text")
         self.assertEqual(
             captured["calls"][1].request_body.content,
-            json.dumps({"text": "可以�?粗体 �?斜体�?}, ensure_ascii=False),
+            json.dumps({"text": "å¯ä»¥ç?ç²ä½ å?æä½ã?}, ensure_ascii=False),
         )
 
     @patch.dict(os.environ, {}, clear=True)
@@ -2522,7 +2522,7 @@ class TestAdapterBehavior(unittest.TestCase):
             result = asyncio.run(
                 adapter.send(
                     chat_id="oc_chat",
-                    content="---\n1. 第一项\n<u>下划�?/u>\n~~删除线~~",
+                    content="---\n1. ç¬¬ä¸é¡¹\n<u>ä¸åçº?/u>\n~~å é¤çº¿~~",
                 )
             )
 
@@ -2532,7 +2532,7 @@ class TestAdapterBehavior(unittest.TestCase):
         rows = payload["zh_cn"]["content"]
         self.assertEqual(
             rows,
-            [[{"tag": "md", "text": "---\n1. 第一项\n<u>下划�?/u>\n~~删除线~~"}]],
+            [[{"tag": "md", "text": "---\n1. ç¬¬ä¸é¡¹\n<u>ä¸åçº?/u>\n~~å é¤çº¿~~"}]],
         )
 
 
@@ -2729,7 +2729,7 @@ class TestGroupMentionAtAll(unittest.TestCase):
 
         adapter = FeishuAdapter(PlatformConfig())
         message = SimpleNamespace(
-            content='{"text":"@_all 请注�?}',
+            content='{"text":"@_all è¯·æ³¨æ?}',
             mentions=[],
         )
         sender_id = SimpleNamespace(open_id="ou_any", user_id=None)
@@ -2743,10 +2743,10 @@ class TestGroupMentionAtAll(unittest.TestCase):
 
         adapter = FeishuAdapter(PlatformConfig())
         message = SimpleNamespace(content='{"text":"@_all attention"}', mentions=[])
-        # Non-allowlisted user �?should be blocked even with @_all.
+        # Non-allowlisted user â?should be blocked even with @_all.
         blocked_sender = SimpleNamespace(open_id="ou_blocked", user_id=None)
         self.assertFalse(adapter._should_accept_group_message(message, blocked_sender, ""))
-        # Allowlisted user �?should pass.
+        # Allowlisted user â?should pass.
         allowed_sender = SimpleNamespace(open_id="ou_allowed", user_id=None)
         self.assertTrue(adapter._should_accept_group_message(message, allowed_sender, ""))
 

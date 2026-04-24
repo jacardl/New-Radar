@@ -32,7 +32,7 @@ def test_manual_compress_reports_noop_without_success_banner(capsys):
 
     output = capsys.readouterr().out
     assert "No changes from compression" in output
-    assert "âœ?Compressed" not in output
+    assert "Ã©?Compressed" not in output
     assert "Rough transcript estimate: ~100 tokens (unchanged)" in output
 
 
@@ -61,6 +61,6 @@ def test_manual_compress_explains_when_token_estimate_rises(capsys):
         shell._manual_compress()
 
     output = capsys.readouterr().out
-    assert "âœ?Compressed: 4 â†?3 messages" in output
-    assert "Rough transcript estimate: ~100 â†?~120 tokens" in output
+    assert "Ã©?Compressed: 4 Ã©Â«?3 messages" in output
+    assert "Rough transcript estimate: ~100 Ã©Â«?~120 tokens" in output
     assert "denser summaries" in output

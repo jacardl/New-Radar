@@ -146,7 +146,7 @@ def get_sentiment_tool_info() -> Dict[str, Any]:
                 "Greek", "Finnish", "Swedish", "Norwegian", "Hungarian",
                 "Czech", "Bulgarian"
             ],
-            "sentiment_labels": ["非常负面", "负面", "中性", "正面", "非常正面"],
+            "sentiment_labels": ["éå¸¸è´é¢", "è´é¢", "ä¸­æ§", "æ­£é¢", "éå¸¸æ­£é¢"],
         }
     except Exception as e:
         return {
@@ -165,7 +165,7 @@ class SentimentAnalysisTool:
         "Analyze sentiment (positive/negative/neutral) of text content. "
         "Supports 22 languages including Chinese, English, Japanese, Korean. "
         "Input: a single text string or a JSON array of texts. "
-        "Output: sentiment label (非常负面/负面/中性/正面/非常正面), confidence score (0-1), "
+        "Output: sentiment label (éå¸¸è´é¢/è´é¢/ä¸­æ§/æ­£é¢/éå¸¸æ­£é¢), confidence score (0-1), "
         "and probability distribution across all sentiment levels. "
         "Higher confidence means more certain the prediction. "
         "Use this tool when you need to understand the emotional tone of crawled content, "

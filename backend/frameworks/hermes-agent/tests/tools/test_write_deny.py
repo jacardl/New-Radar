@@ -1,4 +1,4 @@
-"""Tests for _is_write_denied() �?verifies deny list blocks sensitive paths on all platforms."""
+"""Tests for _is_write_denied() é¥?verifies deny list blocks sensitive paths on all platforms."""
 
 import os
 import pytest

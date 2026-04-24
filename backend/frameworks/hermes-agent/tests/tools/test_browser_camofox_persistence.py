@@ -269,7 +269,7 @@ class TestCamofoxSoftCleanup:
             result = camofox_soft_cleanup("task-1")
 
         assert result is False
-        # Session should still be present �?not dropped
+        # Session should still be present é¥?not dropped
         import tools.browser_camofox as mod
         with mod._sessions_lock:
             assert "task-1" in mod._sessions

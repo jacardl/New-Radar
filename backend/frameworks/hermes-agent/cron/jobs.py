@@ -98,9 +98,9 @@ def parse_duration(s: str) -> int:
     Parse duration string into minutes.
     
     Examples:
-        "30m" �?30
-        "2h" �?120
-        "1d" �?1440
+        "30m" é«?30
+        "2h" é«?120
+        "1d" é«?1440
     """
     s = s.strip().lower()
     match = re.match(r'^(\d+)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days)$', s)
@@ -125,18 +125,18 @@ def parse_schedule(schedule: str) -> Dict[str, Any]:
         - For "cron": "expr" (cron expression)
     
     Examples:
-        "30m"              �?once in 30 minutes
-        "2h"               �?once in 2 hours
-        "every 30m"        �?recurring every 30 minutes
-        "every 2h"         �?recurring every 2 hours
-        "0 9 * * *"        �?cron expression
-        "2026-02-03T14:00" �?once at timestamp
+        "30m"              é«?once in 30 minutes
+        "2h"               é«?once in 2 hours
+        "every 30m"        é«?recurring every 30 minutes
+        "every 2h"         é«?recurring every 2 hours
+        "0 9 * * *"        é«?cron expression
+        "2026-02-03T14:00" é«?once at timestamp
     """
     schedule = schedule.strip()
     original = schedule
     schedule_lower = schedule.lower()
     
-    # "every X" pattern �?recurring interval
+    # "every X" pattern é«?recurring interval
     if schedule_lower.startswith("every "):
         duration_str = schedule[6:].strip()
         minutes = parse_duration(duration_str)
@@ -182,7 +182,7 @@ def parse_schedule(schedule: str) -> Dict[str, Any]:
         except ValueError as e:
             raise ValueError(f"Invalid timestamp '{schedule}': {e}")
     
-    # Duration like "30m", "2h", "1d" �?one-shot from now
+    # Duration like "30m", "2h", "1d" é«?one-shot from now
     try:
         minutes = parse_duration(schedule)
         run_at = _hermes_now() + timedelta(minutes=minutes)
@@ -585,7 +585,7 @@ def mark_job_run(job_id: str, success: bool, error: Optional[str] = None,
     Updates last_run_at, last_status, increments completed count,
     computes next_run_at, and auto-deletes if repeat limit reached.
 
-    ``delivery_error`` is tracked separately from the agent error �?a job
+    ``delivery_error`` is tracked separately from the agent error é¥?a job
     can succeed (agent produced output) but fail delivery (platform down).
     """
     jobs = load_jobs()
@@ -595,7 +595,7 @@ def mark_job_run(job_id: str, success: bool, error: Optional[str] = None,
             job["last_run_at"] = now
             job["last_status"] = "ok" if success else "error"
             job["last_error"] = error if not success else None
-            # Track delivery failures separately �?cleared on successful delivery
+            # Track delivery failures separately é¥?cleared on successful delivery
             job["last_delivery_error"] = delivery_error
             
             # Increment completed count
@@ -632,7 +632,7 @@ def advance_next_run(job_id: str) -> bool:
 
     Call this BEFORE run_job() so that if the process crashes mid-execution,
     the job won't re-fire on the next gateway restart.  This converts the
-    scheduler from at-least-once to at-most-once for recurring jobs �?missing
+    scheduler from at-least-once to at-most-once for recurring jobs é¥?missing
     one run is far better than firing dozens of times in a crash loop.
 
     One-shot jobs are left unchanged so they can still retry on restart.
@@ -706,7 +706,7 @@ def get_due_jobs() -> List[Dict[str, Any]]:
             # the next future occurrence instead of firing a stale run.
             grace = _compute_grace_seconds(schedule)
             if kind in ("cron", "interval") and (now - next_run_dt).total_seconds() > grace:
-                # Job is past its catch-up grace window �?this is a stale missed run.
+                # Job is past its catch-up grace window é¥?this is a stale missed run.
                 # Grace scales with schedule period: daily=2h, hourly=30m, 10min=5m.
                 new_next = compute_next_run(schedule, now.isoformat())
                 if new_next:

@@ -1,8 +1,8 @@
 """
-模板选择节点�?
+æ¨¡æ¿éæ©èç¹
 
-综合用户查询、三引擎报告、论坛日志与本地模板库，
-调用LLM挑选最合适的报告骨架�?
+ç»¼åç¨æ·æ¥è¯¢ãä¸å¼ææ¥åãè®ºåæ¥å¿ä¸æ¬å°æ¨¡æ¿åºï¼
+è°ç¨LLMæéæåéçæ¥åéª¨æ¶
 """
 
 import os
@@ -17,23 +17,23 @@ from ..utils.json_parser import RobustJSONParser, JSONParseError
 
 class TemplateSelectionNode(BaseNode):
     """
-    模板选择处理节点�?
+    æ¨¡æ¿éæ©å¤çèç¹
 
-    负责准备模板候选列表、构建提示词、解析LLM返回结果�?
-    并在失败时回退到内置模板�?
+    è´è´£åå¤æ¨¡æ¿åéåè¡¨ãæå»ºæç¤ºè¯ãè§£æLLMè¿åç»æï¼?
+    å¹¶å¨å¤±è´¥æ¶åéå°åç½®æ¨¡æ¿
     """
     
     def __init__(self, llm_client, template_dir: str = "ReportEngine/report_template"):
         """
-        初始化模板选择节点
+        åå§åæ¨¡æ¿éæ©èç¹
 
         Args:
-            llm_client: LLM客户�?
-            template_dir: 模板目录路径
+            llm_client: LLMå®¢æ·ç«?
+            template_dir: æ¨¡æ¿ç®å½è·¯å¾
         """
         super().__init__(llm_client, "TemplateSelectionNode")
         self.template_dir = template_dir
-        # 初始化鲁棒JSON解析器，启用所有修复策�?
+        # åå§åé²æ£JSONè§£æå¨ï¼å¯ç¨ææä¿®å¤ç­ç?
         self.json_parser = RobustJSONParser(
             enable_json_repair=True,
             enable_llm_repair=False,
@@ -42,39 +42,39 @@ class TemplateSelectionNode(BaseNode):
         
     def run(self, input_data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """
-        执行模板选择�?
+        æ§è¡æ¨¡æ¿éæ©
         
         Args:
-            input_data: 包含查询和报告内容的字典
-                - query: 原始查询
-                - reports: 三个子agent的报告列�?
-                - forum_logs: 论坛日志内容
+            input_data: åå«æ¥è¯¢åæ¥ååå®¹çå­å¸
+                - query: åå§æ¥è¯¢
+                - reports: ä¸ä¸ªå­agentçæ¥ååè¡?
+                - forum_logs: è®ºåæ¥å¿åå®¹
                 
         Returns:
-            选择的模板信息，包含名称、内容与选择理由
+            éæ©çæ¨¡æ¿ä¿¡æ¯ï¼åå«åç§°ãåå®¹ä¸éæ©çç±
         """
-        logger.info("开始模板选择...")
+        logger.info("å¼å§æ¨¡æ¿éæ©...")
         
         query = input_data.get('query', '')
         reports = input_data.get('reports', [])
         forum_logs = input_data.get('forum_logs', '')
         
-        # 获取可用模板
+        # è·åå¯ç¨æ¨¡æ¿
         available_templates = self._get_available_templates()
         
         if not available_templates:
-            logger.info("未找到预设模板，使用内置默认模板")
+            logger.info("æªæ¾å°é¢è®¾æ¨¡æ¿ï¼ä½¿ç¨åç½®é»è®¤æ¨¡æ¿")
             return self._get_fallback_template()
         
-        # 使用LLM进行模板选择
+        # ä½¿ç¨LLMè¿è¡æ¨¡æ¿éæ©
         try:
             llm_result = self._llm_template_selection(query, reports, forum_logs, available_templates)
             if llm_result:
                 return llm_result
         except Exception as e:
-            logger.exception(f"LLM模板选择失败: {str(e)}")
+            logger.exception(f"LLMæ¨¡æ¿éæ©å¤±è´¥: {str(e)}")
         
-        # 如果LLM选择失败，使用备选方�?
+        # å¦æLLMéæ©å¤±è´¥ï¼ä½¿ç¨å¤éæ¹æ¡?
         return self._get_fallback_template()
     
 
@@ -82,31 +82,31 @@ class TemplateSelectionNode(BaseNode):
     def _llm_template_selection(self, query: str, reports: List[Any], forum_logs: str, 
                               available_templates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """
-        使用LLM进行模板选择�?
+        ä½¿ç¨LLMè¿è¡æ¨¡æ¿éæ©
 
-        构造模板列表与报告摘要 �?调用LLM �?解析JSON �?
-        验证模板是否存在并返回标准结构�?
+        æé æ¨¡æ¿åè¡¨ä¸æ¥åæè¦ â?è°ç¨LLM â?è§£æJSON â?
+        éªè¯æ¨¡æ¿æ¯å¦å­å¨å¹¶è¿åæ åç»æ
 
-        参数:
-            query: 用户输入的主题词�?
-            reports: 多个分析引擎的报告内容�?
-            forum_logs: 论坛日志，可能为空�?
-            available_templates: 本地可用模板清单�?
+        åæ°:
+            query: ç¨æ·è¾å¥çä¸»é¢è¯
+            reports: å¤ä¸ªåæå¼æçæ¥ååå®¹
+            forum_logs: è®ºåæ¥å¿ï¼å¯è½ä¸ºç©º
+            available_templates: æ¬å°å¯ç¨æ¨¡æ¿æ¸å
 
-        返回:
-            dict | None: 若LLM成功返回合法结果则包含模板信息，否则为None�?
+        è¿å:
+            dict | None: è¥LLMæåè¿ååæ³ç»æååå«æ¨¡æ¿ä¿¡æ¯ï¼å¦åä¸ºNone
         """
-        logger.info("尝试使用LLM进行模板选择...")
+        logger.info("å°è¯ä½¿ç¨LLMè¿è¡æ¨¡æ¿éæ©...")
         
-        # 构建模板列表
+        # æå»ºæ¨¡æ¿åè¡¨
         template_list = "\n".join([f"- {t['name']}: {t['description']}" for t in available_templates])
         
-        # 构建报告内容摘要
+        # æå»ºæ¥ååå®¹æè¦
         reports_summary = ""
         if reports:
-            reports_summary = "\n\n=== 分析引擎报告内容 ===\n"
+            reports_summary = "\n\n=== åæå¼ææ¥ååå®¹ ===\n"
             for i, report in enumerate(reports, 1):
-                # 获取报告内容，支持不同的数据格式
+                # è·åæ¥ååå®¹ï¼æ¯æä¸åçæ°æ®æ ¼å¼
                 if isinstance(report, dict):
                     content = report.get('content', str(report))
                 elif hasattr(report, 'content'):
@@ -114,122 +114,122 @@ class TemplateSelectionNode(BaseNode):
                 else:
                     content = str(report)
                 
-                # 截断过长的内容，保留�?000个字�?
+                # æªæ­è¿é¿çåå®¹ï¼ä¿çå?000ä¸ªå­ç¬?
                 if len(content) > 1000:
-                    content = content[:1000] + "...(内容已截�?"
+                    content = content[:1000] + "...(åå®¹å·²æªæ?"
                 
-                reports_summary += f"\n报告{i}内容:\n{content}\n"
+                reports_summary += f"\næ¥å{i}åå®¹:\n{content}\n"
         
-        # 构建论坛日志摘要
+        # æå»ºè®ºåæ¥å¿æè¦
         forum_summary = ""
         if forum_logs and forum_logs.strip():
-            forum_summary = "\n\n=== 三个引擎的讨论内�?===\n"
-            # 截断过长的日志内容，保留�?00个字�?
+            forum_summary = "\n\n=== ä¸ä¸ªå¼æçè®¨è®ºåå®?===\n"
+            # æªæ­è¿é¿çæ¥å¿åå®¹ï¼ä¿çå?00ä¸ªå­ç¬?
             if len(forum_logs) > 800:
-                forum_content = forum_logs[:800] + "...(讨论内容已截�?"
+                forum_content = forum_logs[:800] + "...(è®¨è®ºåå®¹å·²æªæ?"
             else:
                 forum_content = forum_logs
             forum_summary += forum_content
         
-        user_message = f"""查询内容: {query}
+        user_message = f"""æ¥è¯¢åå®¹: {query}
 
-报告数量: {len(reports)} 个分析引擎报�?
-论坛日志: {'�? if forum_logs else '�?}
+æ¥åæ°é: {len(reports)} ä¸ªåæå¼ææ¥å?
+è®ºåæ¥å¿: {'æ? if forum_logs else 'æ?}
 {reports_summary}{forum_summary}
 
-可用模板:
+å¯ç¨æ¨¡æ¿:
 {template_list}
 
-请根据查询内容、报告内容和论坛日志的具体情况，选择最合适的模板�?""
+è¯·æ ¹æ®æ¥è¯¢åå®¹ãæ¥ååå®¹åè®ºåæ¥å¿çå·ä½æåµï¼éæ©æåéçæ¨¡æ¿""
         
-        # 调用LLM
+        # è°ç¨LLM
         response = self.llm_client.stream_invoke_to_string(SYSTEM_PROMPT_TEMPLATE_SELECTION, user_message)
 
-        # 检查响应是否为�?
+        # æ£æ¥ååºæ¯å¦ä¸ºç©?
         if not response or not response.strip():
-            logger.error("LLM返回空响�?)
+            logger.error("LLMè¿åç©ºååº?)
             return None
 
-        logger.info(f"LLM原始响应: {response}")
+        logger.info(f"LLMåå§ååº: {response}")
 
-        # 尝试解析JSON响应，使用鲁棒解析器
+        # å°è¯è§£æJSONååºï¼ä½¿ç¨é²æ£è§£æå¨
         try:
             result = self.json_parser.parse(
                 response,
-                context_name="模板选择",
+                context_name="æ¨¡æ¿éæ©",
                 expected_keys=["template_name", "selection_reason"],
             )
 
-            # 验证选择的模板是否存�?
+            # éªè¯éæ©çæ¨¡æ¿æ¯å¦å­å?
             selected_template_name = result.get('template_name', '')
             for template in available_templates:
                 if template['name'] == selected_template_name or selected_template_name in template['name']:
-                    logger.info(f"LLM选择模板: {selected_template_name}")
+                    logger.info(f"LLMéæ©æ¨¡æ¿: {selected_template_name}")
                     return {
                         'template_name': template['name'],
                         'template_content': template['content'],
-                        'selection_reason': result.get('selection_reason', 'LLM智能选择')
+                        'selection_reason': result.get('selection_reason', 'LLMæºè½éæ©')
                     }
 
-            logger.error(f"LLM选择的模板不存在: {selected_template_name}")
+            logger.error(f"LLMéæ©çæ¨¡æ¿ä¸å­å¨: {selected_template_name}")
             return None
 
         except JSONParseError as e:
-            logger.error(f"JSON解析失败: {str(e)}")
-            # 尝试从文本响应中提取模板信息
+            logger.error(f"JSONè§£æå¤±è´¥: {str(e)}")
+            # å°è¯ä»ææ¬ååºä¸­æåæ¨¡æ¿ä¿¡æ¯
             return self._extract_template_from_text(response, available_templates)
     
 
     def _extract_template_from_text(self, response: str, available_templates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """
-        从文本响应中提取模板信息�?
+        ä»ææ¬ååºä¸­æåæ¨¡æ¿ä¿¡æ¯
 
-        当LLM未输出合法JSON时，尝试匹配模板名称关键字做降级�?
+        å½LLMæªè¾åºåæ³JSONæ¶ï¼å°è¯å¹éæ¨¡æ¿åç§°å³é®å­åéçº§
 
-        参数:
-            response: 非结构化的LLM文本�?
-            available_templates: 可选模板列表�?
+        åæ°:
+            response: éç»æåçLLMææ¬
+            available_templates: å¯éæ¨¡æ¿åè¡¨
 
-        返回:
-            dict | None: 匹配成功时返回模板详情，否则为None�?
+        è¿å:
+            dict | None: å¹éæåæ¶è¿åæ¨¡æ¿è¯¦æï¼å¦åä¸ºNone
         """
-        logger.info("尝试从文本响应中提取模板信息")
+        logger.info("å°è¯ä»ææ¬ååºä¸­æåæ¨¡æ¿ä¿¡æ¯")
         
-        # 查找响应中是否包含模板名�?
+        # æ¥æ¾ååºä¸­æ¯å¦åå«æ¨¡æ¿åç§?
         for template in available_templates:
             template_name_variants = [
                 template['name'],
                 template['name'].replace('.md', ''),
-                template['name'].replace('模板', ''),
+                template['name'].replace('æ¨¡æ¿', ''),
             ]
             
             for variant in template_name_variants:
                 if variant in response:
-                    logger.info(f"在响应中找到模板: {template['name']}")
+                    logger.info(f"å¨ååºä¸­æ¾å°æ¨¡æ¿: {template['name']}")
                     return {
                         'template_name': template['name'],
                         'template_content': template['content'],
-                        'selection_reason': '从文本响应中提取'
+                        'selection_reason': 'ä»ææ¬ååºä¸­æå'
                     }
         
         return None
     
     def _get_available_templates(self) -> List[Dict[str, Any]]:
         """
-        获取可用的模板列表�?
+        è·åå¯ç¨çæ¨¡æ¿åè¡¨
 
-        枚举模板目录下的 `.md` 文件并读取内容与描述字段�?
+        æä¸¾æ¨¡æ¿ç®å½ä¸ç `.md` æä»¶å¹¶è¯»ååå®¹ä¸æè¿°å­æ®µ
 
-        返回:
-            list[dict]: 每项包含 name/path/content/description�?
+        è¿å:
+            list[dict]: æ¯é¡¹åå« name/path/content/description
         """
         templates = []
         
         if not os.path.exists(self.template_dir):
-            logger.error(f"模板目录不存�? {self.template_dir}")
+            logger.error(f"æ¨¡æ¿ç®å½ä¸å­å? {self.template_dir}")
             return templates
         
-        # 查找所有markdown模板文件
+        # æ¥æ¾ææmarkdownæ¨¡æ¿æä»¶
         for filename in os.listdir(self.template_dir):
             if filename.endswith('.md'):
                 template_path = os.path.join(self.template_dir, filename)
@@ -247,42 +247,42 @@ class TemplateSelectionNode(BaseNode):
                         'description': description
                     })
                 except Exception as e:
-                    logger.exception(f"读取模板文件失败 {filename}: {str(e)}")
+                    logger.exception(f"è¯»åæ¨¡æ¿æä»¶å¤±è´¥ {filename}: {str(e)}")
         
         return templates
     
     def _extract_template_description(self, template_name: str) -> str:
-        """根据模板名称生成描述，方便LLM理解模板定位�?""
-        if '游戏' in template_name:
-            return "适用于单款游戏产品的市场表现、玩家反馈与舆论态势深度剖析"
-        elif '企业品牌' in template_name:
-            return "适用于企业品牌声誉和形象分析"
-        elif '市场竞争' in template_name:
-            return "适用于市场竞争格局和对手分�?
-        elif '日常' in template_name or '定期' in template_name:
-            return "适用于日常监测和定期汇报"
-        elif '政策' in template_name or '行业' in template_name:
-            return "适用于政策影响和行业动态分�?
-        elif '热点' in template_name or '社会' in template_name:
-            return "适用于社会热点和公共事件分析"
-        elif '突发' in template_name or '危机' in template_name:
-            return "适用于突发事件和危机公关"
+        """æ ¹æ®æ¨¡æ¿åç§°çææè¿°ï¼æ¹ä¾¿LLMçè§£æ¨¡æ¿å®ä½""
+        if 'æ¸¸æ' in template_name:
+            return "éç¨äºåæ¬¾æ¸¸æäº§åçå¸åºè¡¨ç°ãç©å®¶åé¦ä¸èè®ºæå¿æ·±åº¦åæ"
+        elif 'ä¼ä¸åç' in template_name:
+            return "éç¨äºä¼ä¸åçå£°èªåå½¢è±¡åæ"
+        elif 'å¸åºç«äº' in template_name:
+            return "éç¨äºå¸åºç«äºæ ¼å±åå¯¹æåæ?
+        elif 'æ¥å¸¸' in template_name or 'å®æ' in template_name:
+            return "éç¨äºæ¥å¸¸çæµåå®ææ±æ¥"
+        elif 'æ¿ç­' in template_name or 'è¡ä¸' in template_name:
+            return "éç¨äºæ¿ç­å½±ååè¡ä¸å¨æåæ?
+        elif 'ç­ç¹' in template_name or 'ç¤¾ä¼' in template_name:
+            return "éç¨äºç¤¾ä¼ç­ç¹åå¬å±äºä»¶åæ"
+        elif 'çªå' in template_name or 'å±æº' in template_name:
+            return "éç¨äºçªåäºä»¶åå±æºå¬å³"
         
-        return "通用报告模板"
+        return "éç¨æ¥åæ¨¡æ¿"
     
 
     
     def _get_fallback_template(self) -> Dict[str, Any]:
         """
-        获取备用默认模板（空模板，让LLM自行发挥）�?
+        è·åå¤ç¨é»è®¤æ¨¡æ¿ï¼ç©ºæ¨¡æ¿ï¼è®©LLMèªè¡åæ¥ï¼
 
-        返回:
-            dict: 结构体字段与LLM返回一致，方便直接替换�?
+        è¿å:
+            dict: ç»æä½å­æ®µä¸LLMè¿åä¸è´ï¼æ¹ä¾¿ç´æ¥æ¿æ¢
         """
-        logger.info("未找到合适模板，使用空模板让LLM自行发挥")
+        logger.info("æªæ¾å°åéæ¨¡æ¿ï¼ä½¿ç¨ç©ºæ¨¡æ¿è®©LLMèªè¡åæ¥")
         
         return {
-            'template_name': '自由发挥模板',
+            'template_name': 'èªç±åæ¥æ¨¡æ¿',
             'template_content': '',
-            'selection_reason': '未找到合适的预设模板，让LLM根据内容自行设计报告结构'
+            'selection_reason': 'æªæ¾å°åéçé¢è®¾æ¨¡æ¿ï¼è®©LLMæ ¹æ®åå®¹èªè¡è®¾è®¡æ¥åç»æ'
         }

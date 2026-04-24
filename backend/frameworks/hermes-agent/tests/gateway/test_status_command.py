@@ -85,7 +85,7 @@ async def test_status_command_reports_running_agent_without_interrupt(monkeypatc
 
     assert "**Session ID:** `sess-1`" in result
     assert "**Tokens:** 321" in result
-    assert "**Agent Running:** Yes �? in result
+    assert "**Agent Running:** Yes é¿? in result
     assert "**Title:**" not in result
     running_agent.interrupt.assert_not_called()
     assert runner._pending_messages == {}
@@ -157,7 +157,7 @@ async def test_handle_message_persists_agent_token_counts(monkeypatch):
 @pytest.mark.asyncio
 async def test_status_command_bypasses_active_session_guard():
     """When an agent is running, /status must be dispatched immediately via
-    base.handle_message �?not queued or treated as an interrupt (#5046)."""
+    base.handle_message é¥?not queued or treated as an interrupt (#5046)."""
     import asyncio
     from gateway.platforms.base import BasePlatformAdapter, MessageEvent, MessageType
     from gateway.session import build_session_key
@@ -170,7 +170,7 @@ async def test_status_command_bypasses_active_session_guard():
 
     async def fake_handler(event):
         handler_called_with.append(event)
-        return "📊 **Hermes Gateway Status**\n**Agent Running:** Yes �?
+        return "é¦æ³ **Hermes Gateway Status**\n**Agent Running:** Yes é¿?
 
     # Concrete subclass to avoid abstract method errors
     class _ConcreteAdapter(BasePlatformAdapter):

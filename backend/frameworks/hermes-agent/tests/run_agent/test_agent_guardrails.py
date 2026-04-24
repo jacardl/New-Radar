@@ -1,9 +1,9 @@
 """Unit tests for AIAgent pre/post-LLM-call guardrails.
 
-Covers three static methods on AIAgent (inspired by PR #1321 �?@alireza78a):
-  - _sanitize_api_messages()    �?Phase 1: orphaned tool pair repair
-  - _cap_delegate_task_calls()  �?Phase 2a: subagent concurrency limit
-  - _deduplicate_tool_calls()   �?Phase 2b: identical call deduplication
+Covers three static methods on AIAgent (inspired by PR #1321 é¥?@alireza78a):
+  - _sanitize_api_messages()    é¥?Phase 1: orphaned tool pair repair
+  - _cap_delegate_task_calls()  é¥?Phase 2a: subagent concurrency limit
+  - _deduplicate_tool_calls()   é¥?Phase 2b: identical call deduplication
 """
 
 import types
@@ -35,7 +35,7 @@ def assistant_dict_call(call_id: str, name: str = "terminal") -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Phase 1 �?_sanitize_api_messages
+# Phase 1 é¥?_sanitize_api_messages
 # ---------------------------------------------------------------------------
 
 class TestSanitizeApiMessages:
@@ -110,7 +110,7 @@ class TestSanitizeApiMessages:
 
 
 # ---------------------------------------------------------------------------
-# Phase 2a �?_cap_delegate_task_calls
+# Phase 2a é¥?_cap_delegate_task_calls
 # ---------------------------------------------------------------------------
 
 class TestCapDelegateTaskCalls:
@@ -169,7 +169,7 @@ class TestCapDelegateTaskCalls:
 
 
 # ---------------------------------------------------------------------------
-# Phase 2b �?_deduplicate_tool_calls
+# Phase 2b é¥?_deduplicate_tool_calls
 # ---------------------------------------------------------------------------
 
 class TestDeduplicateToolCalls:

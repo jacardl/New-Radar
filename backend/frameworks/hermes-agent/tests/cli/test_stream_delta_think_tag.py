@@ -50,7 +50,7 @@ class TestThinkTagInProse:
             "  1. Fix reasoning mode in eval ",
             "(/think not producing ",
             "<think>",
-            " tags �?~2% gap)",
+            " tags é¥?~2% gap)",
             "\n  2. Launch production",
         ]
         for t in tokens:
@@ -120,7 +120,7 @@ class TestFlushRecovery:
         cli = _make_cli_stub()
         # Manually set up a false-positive state
         cli._in_reasoning_block = True
-        cli._stream_prefilt = " tags �?~2% gap)\n  2. Launch production"
+        cli._stream_prefilt = " tags é¥?~2% gap)\n  2. Launch production"
         cli._stream_box_opened = True
 
         # Mock _close_reasoning_box and box closing

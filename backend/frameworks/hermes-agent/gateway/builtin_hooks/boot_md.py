@@ -1,4 +1,4 @@
-"""Built-in boot-md hook �?run ~/.hermes/BOOT.md on gateway startup.
+"""Built-in boot-md hook é¥?run ~/.hermes/BOOT.md on gateway startup.
 
 This hook is always registered. It silently skips if no BOOT.md exists.
 To activate, create ``~/.hermes/BOOT.md`` with instructions for the
@@ -65,7 +65,7 @@ def _run_boot_agent(content: str) -> None:
 
 
 async def handle(event_type: str, context: dict) -> None:
-    """Gateway startup handler �?run BOOT.md if it exists."""
+    """Gateway startup handler é¥?run BOOT.md if it exists."""
     if not BOOT_FILE.exists():
         return
 

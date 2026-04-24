@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Polymarket CLI helper �?query prediction market data.
+"""Polymarket CLI helper é¥?query prediction market data.
 
 Usage:
     python3 polymarket.py search "bitcoin"
@@ -207,7 +207,7 @@ def cmd_history(condition_id: str, interval: str = "all", fidelity: int = 50):
     for pt in history:
         ts = datetime.fromtimestamp(pt["t"], tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
         price = _fmt_pct(pt["p"])
-        bar = "�? * int(float(pt["p"]) * 40)
+        bar = "é»? * int(float(pt["p"]) * 40)
         print(f"  {ts}  {price:>7}  {bar}")
 
 

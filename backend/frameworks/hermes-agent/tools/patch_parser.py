@@ -206,7 +206,7 @@ def parse_v4a_patch(patch_content: str) -> Tuple[List[PatchOperation], Optional[
 
     # Validate the parsed result
     if not operations:
-        # Empty patch is not an error �?callers get [] and can decide
+        # Empty patch is not an error é¥?callers get [] and can decide
         return operations, None
 
     parse_errors: List[str] = []
@@ -249,7 +249,7 @@ def _validate_operations(
     For UPDATE operations, hunks are simulated in order so that later
     hunks validate against post-earlier-hunk content (matching apply order).
     """
-    # Deferred import: breaks the patch_parser �?fuzzy_match circular dependency
+    # Deferred import: breaks the patch_parser é«?fuzzy_match circular dependency
     from tools.fuzzy_match import fuzzy_find_and_replace
 
     errors: List[str] = []
@@ -292,11 +292,11 @@ def _validate_operations(
                     label = f"'{hunk.context_hint}'" if hunk.context_hint else "(no hint)"
                     errors.append(
                         f"{op.file_path}: hunk {label} not found"
-                        + (f" �?{match_error}" if match_error else "")
+                        + (f" é¥?{match_error}" if match_error else "")
                     )
                 else:
                     # Advance simulation so subsequent hunks validate correctly.
-                    # Reuse the result from the call above �?no second fuzzy run.
+                    # Reuse the result from the call above é¥?no second fuzzy run.
                     simulated = new_simulated
 
         elif op.operation == OperationType.DELETE:
@@ -314,7 +314,7 @@ def _validate_operations(
             dst_result = file_ops.read_file_raw(op.new_path)
             if not dst_result.error:
                 errors.append(
-                    f"{op.new_path}: destination already exists �?move would overwrite"
+                    f"{op.new_path}: destination already exists é¥?move would overwrite"
                 )
 
         # ADD: parent directory creation handled by write_file; no pre-check needed.
@@ -349,7 +349,7 @@ def apply_v4a_operations(operations: List[PatchOperation],
         return PatchResult(
             success=False,
             error="Patch validation failed (no files were modified):\n"
-                  + "\n".join(f"  �?{e}" for e in validation_errors),
+                  + "\n".join(f"  é¥?{e}" for e in validation_errors),
         )
 
     # ---- Phase 2: apply ----
@@ -413,8 +413,8 @@ def apply_v4a_operations(operations: List[PatchOperation],
             files_created=files_created,
             files_deleted=files_deleted,
             lint=lint_results if lint_results else None,
-            error="Apply phase failed (state may be inconsistent �?run `git diff` to assess):\n"
-                  + "\n".join(f"  �?{e}" for e in errors),
+            error="Apply phase failed (state may be inconsistent é¥?run `git diff` to assess):\n"
+                  + "\n".join(f"  é¥?{e}" for e in errors),
         )
 
     return PatchResult(
@@ -481,10 +481,10 @@ def _apply_move(op: PatchOperation, file_ops: Any) -> Tuple[bool, str]:
 
 def _apply_update(op: PatchOperation, file_ops: Any) -> Tuple[bool, str]:
     """Apply an update file operation."""
-    # Deferred import: breaks the patch_parser �?fuzzy_match circular dependency
+    # Deferred import: breaks the patch_parser é«?fuzzy_match circular dependency
     from tools.fuzzy_match import fuzzy_find_and_replace
 
-    # Read current content �?raw so no line-number prefixes or per-line truncation
+    # Read current content é¥?raw so no line-number prefixes or per-line truncation
     read_result = file_ops.read_file_raw(op.file_path)
 
     if read_result.error:
@@ -545,12 +545,12 @@ def _apply_update(op: PatchOperation, file_ops: Any) -> Tuple[bool, str]:
             if hunk.context_hint:
                 occurrences = _count_occurrences(new_content, hunk.context_hint)
                 if occurrences == 0:
-                    # Hint not found �?append at end as a safe fallback
+                    # Hint not found é¥?append at end as a safe fallback
                     new_content = new_content.rstrip('\n') + '\n' + insert_text + '\n'
                 elif occurrences > 1:
                     return False, (
                         f"Addition-only hunk: context hint '{hunk.context_hint}' is ambiguous "
-                        f"({occurrences} occurrences) �?provide a more unique hint"
+                        f"({occurrences} occurrences) é¥?provide a more unique hint"
                     )
                 else:
                     hint_pos = new_content.find(hunk.context_hint)

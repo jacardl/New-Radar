@@ -1,18 +1,18 @@
 """
-Checkpoint Manager �?Transparent filesystem snapshots via shadow git repos.
+Checkpoint Manager é¥?Transparent filesystem snapshots via shadow git repos.
 
 Creates automatic snapshots of working directories before file-mutating
 operations (write_file, patch), triggered once per conversation turn.
 Provides rollback to any previous checkpoint.
 
-This is NOT a tool �?the LLM never sees it.  It's transparent infrastructure
+This is NOT a tool é¥?the LLM never sees it.  It's transparent infrastructure
 controlled by the ``checkpoints`` config flag or ``--checkpoints`` CLI flag.
 
 Architecture:
-    ~/.hermes/checkpoints/{sha256(abs_dir)[:16]}/   �?shadow git repo
-        HEAD, refs/, objects/                        �?standard git internals
-        HERMES_WORKDIR                               �?original dir path
-        info/exclude                                 �?default excludes
+    ~/.hermes/checkpoints/{sha256(abs_dir)[:16]}/   é¥?shadow git repo
+        HEAD, refs/, objects/                        é¥?standard git internals
+        HERMES_WORKDIR                               é¥?original dir path
+        info/exclude                                 é¥?default excludes
 
 The shadow repo uses GIT_DIR + GIT_WORK_TREE so no git state leaks
 into the user's project directory.
@@ -62,10 +62,10 @@ DEFAULT_EXCLUDES = [
 # Git subprocess timeout (seconds).
 _GIT_TIMEOUT: int = max(10, min(60, int(os.getenv("HERMES_CHECKPOINT_TIMEOUT", "30"))))
 
-# Max files to snapshot �?skip huge directories to avoid slowdowns.
+# Max files to snapshot é¥?skip huge directories to avoid slowdowns.
 _MAX_FILES = 50_000
 
-# Valid git commit hash pattern: 4�?0 hex chars (short or full SHA-1/SHA-256).
+# Valid git commit hash pattern: 4é¥?0 hex chars (short or full SHA-1/SHA-256).
 _COMMIT_HASH_RE = re.compile(r'^[0-9a-fA-F]{4,64}$')
 
 
@@ -96,7 +96,7 @@ def _validate_file_path(file_path: str, working_dir: str) -> Optional[str]:
     """
     if not file_path or not file_path.strip():
         return "Empty file path"
-    # Reject absolute paths �?restore targets must be relative to the workdir
+    # Reject absolute paths é¥?restore targets must be relative to the workdir
     if os.path.isabs(file_path):
         return f"File path must be relative, got absolute path: {file_path!r}"
     # Resolve and check containment within working_dir
@@ -281,7 +281,7 @@ class CheckpointManager:
         """Take a checkpoint if enabled and not already done this turn.
 
         Returns True if a checkpoint was taken, False otherwise.
-        Never raises �?all errors are silently logged.
+        Never raises é¥?all errors are silently logged.
         """
         if not self.enabled:
             return False
@@ -425,7 +425,7 @@ class CheckpointManager:
         """Restore files to a checkpoint state.
 
         Uses ``git checkout <hash> -- .`` (or a specific file) which restores
-        tracked files without moving HEAD �?safe and reversible.
+        tracked files without moving HEAD é¥?safe and reversible.
 
         Parameters
         ----------
@@ -462,7 +462,7 @@ class CheckpointManager:
         # Take a checkpoint of current state before restoring (so you can undo the undo)
         self._take(abs_dir, f"pre-rollback snapshot (restoring to {commit_hash[:8]})")
 
-        # Restore �?full directory or single file
+        # Restore é¥?full directory or single file
         restore_target = file_path if file_path else "."
         ok, stdout, err = _run_git(
             ["checkout", commit_hash, "--", restore_target],
@@ -510,7 +510,7 @@ class CheckpointManager:
                 return str(check)
             check = check.parent
 
-        # No project root found �?use the file's parent
+        # No project root found é¥?use the file's parent
         return str(candidate)
 
     # ------------------------------------------------------------------
@@ -527,7 +527,7 @@ class CheckpointManager:
             logger.debug("Checkpoint init failed: %s", err)
             return False
 
-        # Quick size guard �?don't try to snapshot enormous directories
+        # Quick size guard é¥?don't try to snapshot enormous directories
         if _dir_file_count(working_dir) > _MAX_FILES:
             logger.debug("Checkpoint skipped: >%d files in %s", _MAX_FILES, working_dir)
             return False
@@ -584,7 +584,7 @@ class CheckpointManager:
         if count <= self.max_snapshots:
             return
 
-        # For simplicity, we don't actually prune �?git's pack mechanism
+        # For simplicity, we don't actually prune é¥?git's pack mechanism
         # handles this efficiently, and the objects are small.  The log
         # listing is already limited by max_snapshots.
         # Full pruning would require rebase --onto or filter-branch which
@@ -597,7 +597,7 @@ def format_checkpoint_list(checkpoints: List[Dict], directory: str) -> str:
     if not checkpoints:
         return f"No checkpoints found for {directory}"
 
-    lines = [f"📸 Checkpoints for {directory}:\n"]
+    lines = [f"é¦æ³ Checkpoints for {directory}:\n"]
     for i, cp in enumerate(checkpoints, 1):
         # Parse ISO timestamp to something readable
         ts = cp["timestamp"]

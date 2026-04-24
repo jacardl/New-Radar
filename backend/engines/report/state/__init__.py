@@ -1,7 +1,7 @@
 """
-Report Engine状态管理模块�?
+Report Engineç¶æç®¡çæ¨¡å
 
-导出 ReportState/ReportMetadata，供Agent与Flask接口共享�?
+å¯¼åº ReportState/ReportMetadataï¼ä¾Agentä¸Flaskæ¥å£å±äº«
 """
 
 from .state import ReportState, ReportMetadata

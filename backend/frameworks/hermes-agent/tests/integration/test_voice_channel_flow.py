@@ -1,7 +1,7 @@
 """Integration tests for Discord voice channel audio flow.
 
 Uses real NaCl encryption and Opus codec (no mocks for crypto/codec).
-Does NOT require a Discord connection �?tests the VoiceReceiver
+Does NOT require a Discord connection é¥?tests the VoiceReceiver
 packet processing pipeline end-to-end.
 
 Requires: PyNaCl>=1.5.0, discord.py[voice] (opus codec)
@@ -97,10 +97,10 @@ def _make_voice_receiver(secret_key, dave_session=None, bot_ssrc=9999,
 
 
 class TestRealNaClDecrypt:
-    """End-to-end: real NaCl encrypt �?_on_packet decrypt �?buffer."""
+    """End-to-end: real NaCl encrypt é«?_on_packet decrypt é«?buffer."""
 
     def test_valid_encrypted_packet_buffered(self):
-        """Real NaCl encrypted packet �?decrypted �?buffered."""
+        """Real NaCl encrypted packet é«?decrypted é«?buffered."""
         key = _make_secret_key()
         opus_silence = b'\xf8\xff\xfe'
         receiver = _make_voice_receiver(key)
@@ -112,7 +112,7 @@ class TestRealNaClDecrypt:
         assert len(receiver._buffers[100]) > 0
 
     def test_wrong_key_packet_dropped(self):
-        """Packet encrypted with wrong key �?NaCl fails �?not buffered."""
+        """Packet encrypted with wrong key é«?NaCl fails é«?not buffered."""
         real_key = _make_secret_key()
         wrong_key = _make_secret_key()
         opus_silence = b'\xf8\xff\xfe'
@@ -124,7 +124,7 @@ class TestRealNaClDecrypt:
         assert len(receiver._buffers.get(100, b"")) == 0
 
     def test_bot_ssrc_ignored(self):
-        """Packet from bot's own SSRC �?ignored."""
+        """Packet from bot's own SSRC é«?ignored."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key, bot_ssrc=9999)
 
@@ -134,7 +134,7 @@ class TestRealNaClDecrypt:
         assert len(receiver._buffers) == 0
 
     def test_multiple_packets_accumulate(self):
-        """Multiple valid packets �?buffer grows."""
+        """Multiple valid packets é«?buffer grows."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key)
 
@@ -149,7 +149,7 @@ class TestRealNaClDecrypt:
         assert buf_size > 0, "Multiple packets should accumulate in buffer"
 
     def test_different_ssrcs_separate_buffers(self):
-        """Packets from different SSRCs �?separate buffers."""
+        """Packets from different SSRCs é«?separate buffers."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key)
 
@@ -166,7 +166,7 @@ class TestRealNaClWithDAVE:
     """NaCl decrypt + DAVE passthrough scenarios with real crypto."""
 
     def test_dave_unknown_ssrc_passthrough(self):
-        """DAVE enabled but SSRC unknown �?skip DAVE, buffer audio."""
+        """DAVE enabled but SSRC unknown é«?skip DAVE, buffer audio."""
         key = _make_secret_key()
         dave = MagicMock()  # DAVE session present but SSRC not mapped
         receiver = _make_voice_receiver(key, dave_session=dave)
@@ -181,7 +181,7 @@ class TestRealNaClWithDAVE:
         assert len(receiver._buffers[100]) > 0
 
     def test_dave_unencrypted_error_passthrough(self):
-        """DAVE raises 'Unencrypted' �?use NaCl-decrypted data as-is."""
+        """DAVE raises 'Unencrypted' é«?use NaCl-decrypted data as-is."""
         key = _make_secret_key()
         dave = MagicMock()
         dave.decrypt.side_effect = Exception(
@@ -193,13 +193,13 @@ class TestRealNaClWithDAVE:
         packet = _build_encrypted_rtp_packet(key, b'\xf8\xff\xfe', ssrc=100)
         receiver._on_packet(packet)
 
-        # DAVE was called but failed �?passthrough
+        # DAVE was called but failed é«?passthrough
         dave.decrypt.assert_called_once()
         assert 100 in receiver._buffers
         assert len(receiver._buffers[100]) > 0
 
     def test_dave_real_error_drops(self):
-        """DAVE raises non-Unencrypted error �?packet dropped."""
+        """DAVE raises non-Unencrypted error é«?packet dropped."""
         key = _make_secret_key()
         dave = MagicMock()
         dave.decrypt.side_effect = Exception("KeyRotationFailed")
@@ -213,10 +213,10 @@ class TestRealNaClWithDAVE:
 
 
 class TestFullVoiceFlow:
-    """End-to-end: encrypt �?receive �?buffer �?silence detect �?complete."""
+    """End-to-end: encrypt é«?receive é«?buffer é«?silence detect é«?complete."""
 
     def test_single_utterance_flow(self):
-        """Encrypt packets �?buffer �?silence �?check_silence returns utterance."""
+        """Encrypt packets é«?buffer é«?silence é«?check_silence returns utterance."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key)
         receiver.map_ssrc(100, 42)
@@ -240,7 +240,7 @@ class TestFullVoiceFlow:
         assert len(pcm_data) > 0
 
     def test_utterance_with_ssrc_automap(self):
-        """No SPEAKING event �?auto-map sole allowed user �?utterance processed."""
+        """No SPEAKING event é«?auto-map sole allowed user é«?utterance processed."""
         key = _make_secret_key()
         members = [
             SimpleNamespace(id=9999, name="Bot"),
@@ -249,7 +249,7 @@ class TestFullVoiceFlow:
         receiver = _make_voice_receiver(
             key, allowed_user_ids={"42"}, members=members
         )
-        # No map_ssrc call �?simulating missing SPEAKING event
+        # No map_ssrc call é¥?simulating missing SPEAKING event
 
         for seq in range(1, 30):
             packet = _build_encrypted_rtp_packet(
@@ -264,7 +264,7 @@ class TestFullVoiceFlow:
         assert completed[0][0] == 42  # auto-mapped to sole allowed user
 
     def test_pause_blocks_during_playback(self):
-        """Pause receiver �?packets ignored �?resume �?packets accepted."""
+        """Pause receiver é«?packets ignored é«?resume é«?packets accepted."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key)
 
@@ -281,7 +281,7 @@ class TestFullVoiceFlow:
         assert len(receiver._buffers[100]) > 0
 
     def test_corrupted_packet_ignored(self):
-        """Corrupted/truncated packet �?silently ignored."""
+        """Corrupted/truncated packet é«?silently ignored."""
         key = _make_secret_key()
         receiver = _make_voice_receiver(key)
 
@@ -401,7 +401,7 @@ class TestAuthFiltering:
             key, allowed_user_ids={"99"},  # Alice not allowed
             members=members,
         )
-        # No map_ssrc �?SSRC unknown, auto-map should reject
+        # No map_ssrc é¥?SSRC unknown, auto-map should reject
 
         for seq in range(1, 30):
             packet = _build_encrypted_rtp_packet(
@@ -462,7 +462,7 @@ class TestRejoinFlow:
         assert len(receiver2._decoders) == 0
 
     def test_rejoin_new_ssrc_works(self):
-        """After rejoin, user may get new SSRC �?still works."""
+        """After rejoin, user may get new SSRC é¥?still works."""
         key = _make_secret_key()
         receiver1 = _make_voice_receiver(key)
         receiver1.map_ssrc(100, 42)  # old SSRC
@@ -483,7 +483,7 @@ class TestRejoinFlow:
         assert completed[0][0] == 42
 
     def test_rejoin_without_speaking_event_automap(self):
-        """Rejoin without SPEAKING event �?auto-map sole allowed user."""
+        """Rejoin without SPEAKING event é¥?auto-map sole allowed user."""
         key = _make_secret_key()
         members = [
             SimpleNamespace(id=9999, name="Bot"),
@@ -496,12 +496,12 @@ class TestRejoinFlow:
         )
         receiver1.stop()
 
-        # Rejoin �?new key (Discord may assign new secret_key)
+        # Rejoin é¥?new key (Discord may assign new secret_key)
         new_key = _make_secret_key()
         receiver2 = _make_voice_receiver(
             new_key, allowed_user_ids={"42"}, members=members,
         )
-        # No map_ssrc �?simulating missing SPEAKING event
+        # No map_ssrc é¥?simulating missing SPEAKING event
 
         for seq in range(1, 30):
             packet = _build_encrypted_rtp_packet(
@@ -588,7 +588,7 @@ class TestEchoPreventionFlow:
         receiver = _make_voice_receiver(key)
         receiver.map_ssrc(100, 42)
 
-        # Pause �?send packets �?resume �?send more packets
+        # Pause é«?send packets é«?resume é«?send more packets
         receiver.pause()
         for seq in range(1, 5):
             packet = _build_encrypted_rtp_packet(

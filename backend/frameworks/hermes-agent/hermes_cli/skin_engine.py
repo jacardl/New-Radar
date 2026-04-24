@@ -42,34 +42,34 @@ All fields are optional. Missing values inherit from the ``default`` skin.
     # Spinner: customize the animated spinner during API calls
     spinner:
       waiting_faces:                      # Faces shown while waiting for API
-        - "(�?"
-        - "(�?"
+        - "(�¢?"
+        - "(�¢?"
       thinking_faces:                     # Faces shown during reasoning
-        - "(�?"
+        - "(�¢?"
         - "(<>)"
       thinking_verbs:                     # Verbs for spinner messages
         - "forging"
         - "plotting"
       wings:                              # Optional left/right spinner decorations
-        - ["⟪⚔", "⚔⟫"]                  # Each entry is [left, right] pair
-        - ["⟪▲", "▲⟫"]
+        - ["�¢�ª�¢", "�¢�¢�«"]                  # Each entry is [left, right] pair
+        - ["�¢�ª�¢�²", "�¢�²�¢�«"]
 
     # Branding: text strings used throughout the CLI
     branding:
       agent_name: "Hermes Agent"          # Banner title, status display
       welcome: "Welcome message"          # Shown at CLI startup
-      goodbye: "Goodbye! �?              # Shown on exit
-      response_label: " �?Hermes "       # Response box header label
-      prompt_symbol: "�?"                # Input prompt symbol
+      goodbye: "Goodbye! �¢?              # Shown on exit
+      response_label: " �¢?Hermes "       # Response box header label
+      prompt_symbol: "�¢?"                # Input prompt symbol
       help_header: "(^_^)? Commands"      # /help header text
 
-    # Tool prefix: character for tool output lines (default: �?
-    tool_prefix: "�?
+    # Tool prefix: character for tool output lines (default: �¢?
+    tool_prefix: "�¢?
 
     # Tool emojis: override the default emoji for any tool (used in spinners & progress)
     tool_emojis:
-      terminal: "�?           # Override terminal tool emoji
-      web_search: "🔮"        # Override web_search tool emoji
+      terminal: "�¢?           # Override terminal tool emoji
+      web_search: "�°�®"        # Override web_search tool emoji
       # Any tool not listed here uses its registry default
 
 USAGE
@@ -89,12 +89,12 @@ USAGE
 BUILT-IN SKINS
 ==============
 
-- ``default`` �?Classic Hermes gold/kawaii (the current look)
-- ``ares``    �?Crimson/bronze war-god theme with custom spinner wings
-- ``mono``    �?Clean grayscale monochrome
-- ``slate``   �?Cool blue developer-focused theme
-- ``daylight`` �?Light background theme with dark text and blue accents
-- ``warm-lightmode`` �?Warm brown/gold text for light terminal backgrounds
+- ``default`` �¢?Classic Hermes gold/kawaii (the current look)
+- ``ares``    �¢?Crimson/bronze war-god theme with custom spinner wings
+- ``mono``    �¢?Clean grayscale monochrome
+- ``slate``   �¢?Cool blue developer-focused theme
+- ``daylight`` �¢?Light background theme with dark text and blue accents
+- ``warm-lightmode`` �¢?Warm brown/gold text for light terminal backgrounds
 
 USER SKINS
 ==========
@@ -125,7 +125,7 @@ class SkinConfig:
     colors: Dict[str, str] = field(default_factory=dict)
     spinner: Dict[str, Any] = field(default_factory=dict)
     branding: Dict[str, str] = field(default_factory=dict)
-    tool_prefix: str = "�?
+    tool_prefix: str = "�¢?
     tool_emojis: Dict[str, str] = field(default_factory=dict)  # per-tool emoji overrides
     banner_logo: str = ""    # Rich-markup ASCII art logo (replaces HERMES_AGENT_LOGO)
     banner_hero: str = ""    # Rich-markup hero art (replaces HERMES_CADUCEUS)
@@ -155,7 +155,7 @@ class SkinConfig:
 _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
     "default": {
         "name": "default",
-        "description": "Classic Hermes �?gold and kawaii",
+        "description": "Classic Hermes �¢?gold and kawaii",
         "colors": {
             "banner_border": "#CD7F32",
             "banner_title": "#FFD700",
@@ -179,16 +179,16 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         "branding": {
             "agent_name": "Hermes Agent",
             "welcome": "Welcome to Hermes Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! �?,
-            "response_label": " �?Hermes ",
-            "prompt_symbol": "�?",
+            "goodbye": "Goodbye! �¢?,
+            "response_label": " �¢?Hermes ",
+            "prompt_symbol": "�¢?",
             "help_header": "(^_^)? Available Commands",
         },
-        "tool_prefix": "�?,
+        "tool_prefix": "�¢?,
     },
     "ares": {
         "name": "ares",
-        "description": "War-god theme �?crimson and bronze",
+        "description": "War-god theme �¢?crimson and bronze",
         "colors": {
             "banner_border": "#9F1C1C",
             "banner_title": "#C7A96B",
@@ -207,52 +207,52 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
             "session_border": "#6E584B",
         },
         "spinner": {
-            "waiting_faces": ["(�?", "(�?", "(�?", "(<>)", "(/)"],
-            "thinking_faces": ["(�?", "(�?", "(�?", "(�?", "(<>)"],
+            "waiting_faces": ["(�¢?", "(�¢?", "(�¢?", "(<>)", "(/)"],
+            "thinking_faces": ["(�¢?", "(�¢?", "(�¢?", "(�¢?", "(<>)"],
             "thinking_verbs": [
                 "forging", "marching", "sizing the field", "holding the line",
                 "hammering plans", "tempering steel", "plotting impact", "raising the shield",
             ],
             "wings": [
-                ["⟪⚔", "⚔⟫"],
-                ["⟪▲", "▲⟫"],
-                ["⟪╸", "╺⟫"],
-                ["⟪⛨", "⛨⟫"],
+                ["�¢�ª�¢", "�¢�¢�«"],
+                ["�¢�ª�¢�²", "�¢�²�¢�«"],
+                ["�¢�ª�¢�¸", "�¢�º�¢�«"],
+                ["�¢�ª�¢�¨", "�¢�¨�¢�«"],
             ],
         },
         "branding": {
             "agent_name": "Ares Agent",
             "welcome": "Welcome to Ares Agent! Type your message or /help for commands.",
-            "goodbye": "Farewell, warrior! �?,
-            "response_label": " �?Ares ",
-            "prompt_symbol": "�?�?",
-            "help_header": "(�? Available Commands",
+            "goodbye": "Farewell, warrior! �¢?,
+            "response_label": " �¢?Ares ",
+            "prompt_symbol": "�¢?�¢?",
+            "help_header": "(�¢? Available Commands",
         },
-        "tool_prefix": "�?,
-        "banner_logo": """[bold #A3261F] █████╗ ██████�?███████╗███████╗       █████╗  ██████�?███████╗███╗   ██╗████████╗[/]
-[bold #B73122]██╔══██╗██╔══██╗██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████�? ██║╚══██╔══╝[/]
-[#C93C24]███████║██████╔╝█████╗  ███████╗█████╗███████║██�? ███╗█████╗  ██╔██╗ ██�?  ██║[/]
-[#D84A28]██╔══██║██╔══██╗██╔══╝  ╚════██║╚════╝██╔══██║██�?  ██║██╔══�? ██║╚██╗██║   ██║[/]
-[#E15A2D]██�? ██║██║  ██║███████╗███████�?     ██�? ██║╚██████╔╝███████╗██�?╚████║   ██║[/]
-[#EB6C32]╚═�? ╚═╝╚═╝  ╚═╝╚══════╝╚══════�?     ╚═�? ╚═�?╚═════�?╚══════╝╚═�? ╚═══�?  ╚═╝[/]""",
-        "banner_hero": """[#9F1C1C]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#9F1C1C]⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⠟⠻⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#C7A96B]⠀⠀⠀⠀⠀⠀⠀⣠⣾⡿⠋⠀⠀⠀⠙⢿⣷⣄⠀⠀⠀⠀⠀⠀⠀[/]
-[#C7A96B]⠀⠀⠀⠀⠀⢀⣾⡿⠋⠀⠀⢠⡄⠀⠀⠙⢿⣷⡀⠀⠀⠀⠀⠀[/]
-[#DD4A3A]⠀⠀⠀⠀⣰⣿⠟⠀⠀⠀⣰⣿⣿⣆⠀⠀⠀⠻⣿⣆⠀⠀⠀⠀[/]
-[#DD4A3A]⠀⠀⠀⢰⣿⠏⠀⠀⢀⣾⡿⠉⢿⣷⡀⠀⠀⠹⣿⡆⠀⠀⠀[/]
-[#9F1C1C]⠀⠀⠀⣿⡟⠀⠀⣠⣿⠟⠀⠀⠀⠻⣿⣄⠀⠀⢻⣿⠀⠀⠀[/]
-[#9F1C1C]⠀⠀⠀⣿⡇⠀⠀⠙⠋⠀⠀⚔⠀⠀⠙⠋⠀⠀⢸⣿⠀⠀⠀[/]
-[#6B1717]⠀⠀⠀⢿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡿⠀⠀⠀[/]
-[#6B1717]⠀⠀⠀⠘⢿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⡿⠃⠀⠀⠀[/]
-[#C7A96B]⠀⠀⠀⠀⠈⠻⣿⣷⣦⣤⣀⣀⣤⣤⣶⣿⠿⠋⠀⠀⠀⠀[/]
-[#C7A96B]⠀⠀⠀⠀⠀⠀⠀⠉⠛⠿⠿⠿⠿⠛⠉⠀⠀⠀⠀⠀⠀⠀[/]
-[#DD4A3A]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⚔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[dim #6B1717]⠀⠀⠀⠀⠀⠀⠀⠀war god online⠀⠀⠀⠀⠀⠀⠀⠀[/]""",
+        "tool_prefix": "�¢?,
+        "banner_logo": """[bold #A3261F] �¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢       �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[bold #B73122]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢      �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[#C93C24]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢ �¢�¢�¢?  �¢�¢�¢[/]
+[#D84A28]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#E15A2D]�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?     �¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#EB6C32]�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?     �¢�¢�¢? �¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢?  �¢�¢�¢[/]""",
+        "banner_hero": """[#9F1C1C]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¤�¢�£�¤�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#9F1C1C]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¢�£�´�¢�£�¿�¢� �¢� �»�¢�£�¿�¢�£�¦�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#C7A96B]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£� �¢�£�¾�¢�¡�¿�¢� �¢� �¢� �¢� �¢� �¢�¢�¿�¢�£�·�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#C7A96B]�¢� �¢� �¢� �¢� �¢� �¢�¢�¢�£�¾�¢�¡�¿�¢� �¢� �¢� �¢�¢� �¢�¡�¢� �¢� �¢� �¢�¢�¿�¢�£�·�¢�¡�¢� �¢� �¢� �¢� �¢� [/]
+[#DD4A3A]�¢� �¢� �¢� �¢� �¢�£�°�¢�£�¿�¢� �¢� �¢� �¢� �¢�£�°�¢�£�¿�¢�£�¿�¢�£�¢� �¢� �¢� �¢� �»�¢�£�¿�¢�£�¢� �¢� �¢� �¢� [/]
+[#DD4A3A]�¢� �¢� �¢� �¢�¢�°�¢�£�¿�¢� �¢� �¢� �¢�¢�¢�£�¾�¢�¡�¿�¢� �¢�¢�¿�¢�£�·�¢�¡�¢� �¢� �¢� �¹�¢�£�¿�¢�¡�¢� �¢� �¢� [/]
+[#9F1C1C]�¢� �¢� �¢� �¢�£�¿�¢�¡�¢� �¢� �¢�£� �¢�£�¿�¢� �¢� �¢� �¢� �¢� �»�¢�£�¿�¢�£�¢� �¢� �¢�¢�»�¢�£�¿�¢� �¢� �¢� [/]
+[#9F1C1C]�¢� �¢� �¢� �¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢�¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¸�¢�£�¿�¢� �¢� �¢� [/]
+[#6B1717]�¢� �¢� �¢� �¢�¢�¿�¢�£�§�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¼�¢�¡�¿�¢� �¢� �¢� [/]
+[#6B1717]�¢� �¢� �¢� �¢� �¢�¢�¿�¢�£�·�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£� �¢�£�¾�¢�¡�¿�¢� �¢� �¢� �¢� [/]
+[#C7A96B]�¢� �¢� �¢� �¢� �¢� �¢� �»�¢�£�¿�¢�£�·�¢�£�¦�¢�£�¤�¢�£�¢�£�¢�£�¤�¢�£�¤�¢�£�¶�¢�£�¿�¢� �¿�¢� �¢� �¢� �¢� �¢� [/]
+[#C7A96B]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¿�¢� �¿�¢� �¿�¢� �¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#DD4A3A]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[dim #6B1717]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� war god online�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]""",
     },
     "mono": {
         "name": "mono",
-        "description": "Monochrome �?clean grayscale",
+        "description": "Monochrome �¢?clean grayscale",
         "colors": {
             "banner_border": "#555555",
             "banner_title": "#e6edf3",
@@ -274,16 +274,16 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         "branding": {
             "agent_name": "Hermes Agent",
             "welcome": "Welcome to Hermes Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! �?,
-            "response_label": " �?Hermes ",
-            "prompt_symbol": "�?",
+            "goodbye": "Goodbye! �¢?,
+            "response_label": " �¢?Hermes ",
+            "prompt_symbol": "�¢?",
             "help_header": "[?] Available Commands",
         },
-        "tool_prefix": "�?,
+        "tool_prefix": "�¢?,
     },
     "slate": {
         "name": "slate",
-        "description": "Cool blue �?developer-focused",
+        "description": "Cool blue �¢?developer-focused",
         "colors": {
             "banner_border": "#4169e1",
             "banner_title": "#7eb8f6",
@@ -305,12 +305,12 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         "branding": {
             "agent_name": "Hermes Agent",
             "welcome": "Welcome to Hermes Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! �?,
-            "response_label": " �?Hermes ",
-            "prompt_symbol": "�?",
+            "goodbye": "Goodbye! �¢?,
+            "response_label": " �¢?Hermes ",
+            "prompt_symbol": "�¢?",
             "help_header": "(^_^)? Available Commands",
         },
-        "tool_prefix": "�?,
+        "tool_prefix": "�¢?,
     },
     "daylight": {
         "name": "daylight",
@@ -342,16 +342,16 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         "branding": {
             "agent_name": "Hermes Agent",
             "welcome": "Welcome to Hermes Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! �?,
-            "response_label": " �?Hermes ",
-            "prompt_symbol": "�?",
+            "goodbye": "Goodbye! �¢?,
+            "response_label": " �¢?Hermes ",
+            "prompt_symbol": "�¢?",
             "help_header": "[?] Available Commands",
         },
-        "tool_prefix": "�?,
+        "tool_prefix": "�¢?,
     },
     "warm-lightmode": {
         "name": "warm-lightmode",
-        "description": "Warm light mode �?dark brown/gold text for light terminal backgrounds",
+        "description": "Warm light mode �¢?dark brown/gold text for light terminal backgrounds",
         "colors": {
             "banner_border": "#8B6914",
             "banner_title": "#5C3D11",
@@ -388,7 +388,7 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
     },
     "poseidon": {
         "name": "poseidon",
-        "description": "Ocean-god theme �?deep blue and seafoam",
+        "description": "Ocean-god theme �¢?deep blue and seafoam",
         "colors": {
             "banner_border": "#2A6FB9",
             "banner_title": "#A9DFFF",
@@ -407,52 +407,52 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
             "session_border": "#496884",
         },
         "spinner": {
-            "waiting_faces": ["(�?", "(Ψ)", "(�?", "(�?", "(�?"],
-            "thinking_faces": ["(Ψ)", "(�?", "(�?", "(�?", "(�?"],
+            "waiting_faces": ["(�¢?", "(��¨)", "(�¢?", "(�¢?", "(�¢?"],
+            "thinking_faces": ["(��¨)", "(�¢?", "(�¢?", "(�¢?", "(�¢?"],
             "thinking_verbs": [
                 "charting currents", "sounding the depth", "reading foam lines",
                 "steering the trident", "tracking undertow", "plotting sea lanes",
                 "calling the swell", "measuring pressure",
             ],
             "wings": [
-                ["⟪≈", "≈⟫"],
-                ["⟪�?, "Ψ�?],
-                ["⟪∿", "∿⟫"],
-                ["⟪◌", "◌⟫"],
+                ["�¢�ª�¢", "�¢�¢�«"],
+                ["�¢�ª�?, "��¨�¢?],
+                ["�¢�ª�¢�¿", "�¢�¿�¢�«"],
+                ["�¢�ª�¢", "�¢�¢�«"],
             ],
         },
         "branding": {
             "agent_name": "Poseidon Agent",
             "welcome": "Welcome to Poseidon Agent! Type your message or /help for commands.",
-            "goodbye": "Fair winds! Ψ",
-            "response_label": " Ψ Poseidon ",
-            "prompt_symbol": "Ψ �?",
-            "help_header": "(Ψ) Available Commands",
+            "goodbye": "Fair winds! ��¨",
+            "response_label": " ��¨ Poseidon ",
+            "prompt_symbol": "��¨ �¢?",
+            "help_header": "(��¨) Available Commands",
         },
-        "tool_prefix": "�?,
-        "banner_logo": """[bold #B8E8FF]██████�? ██████�?███████╗███████╗██╗██████╗  ██████�?███╗   ██�?      █████╗  ██████�?███████╗███╗   ██╗████████╗[/]
-[bold #97D6FF]██╔══██╗██╔═══██╗██╔════╝██╔════╝██║██╔══██╗██╔═══██╗████╗  ██�?     ██╔══██╗██╔════╝ ██╔════╝████�? ██║╚══██╔══╝[/]
-[#75C1F6]██████╔╝██�?  ██║███████╗█████�? ██║██║  ██║██║   ██║██╔██�?██║█████╗███████║██║  ███╗█████╗  ██╔██╗ ██�?  ██║[/]
-[#4FA2E0]██╔═══�?██�?  ██║╚════██║██╔══�? ██║██║  ██║██║   ██║██║╚██╗██║╚════╝██╔══██║██║   ██║██╔══�? ██║╚██╗██║   ██║[/]
-[#2E7CC7]██�?    ╚██████╔╝███████║███████╗██║██████╔╝╚██████╔╝██║ ╚████║      ██�? ██║╚██████╔╝███████╗██�?╚████║   ██║[/]
-[#1B4F95]╚═�?     ╚═════�?╚══════╝╚══════╝╚═╝╚═════╝  ╚═════�?╚═�? ╚═══�?     ╚═�? ╚═�?╚═════�?╚══════╝╚═�? ╚═══�?  ╚═╝[/]""",
-        "banner_hero": """[#2A6FB9]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#5DB8F5]⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#5DB8F5]⠀⠀⠀⠀⠀⠀⠀⢠⣿⠏⠀Ψ⠀⠹⣿⡄⠀⠀⠀⠀⠀⠀⠀[/]
-[#A9DFFF]⠀⠀⠀⠀⠀⠀⠀⣿⡟⠀⠀⠀⠀⠀⢻⣿⠀⠀⠀⠀⠀⠀⠀[/]
-[#A9DFFF]⠀⠀⠀≈≈≈≈≈⣿⡇⠀⠀⠀⠀⠀⢸⣿≈≈≈≈≈⠀⠀⠀[/]
-[#5DB8F5]⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀[/]
-[#2A6FB9]⠀⠀⠀⠀⠀⠀⠀⢿⣧⠀⠀⠀⠀⠀⣼⡿⠀⠀⠀⠀⠀⠀⠀[/]
-[#2A6FB9]⠀⠀⠀⠀⠀⠀⠀⠘⢿⣷⣄⣀⣠⣾⡿⠃⠀⠀⠀⠀⠀⠀⠀[/]
-[#153C73]⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⡿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#153C73]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#5DB8F5]⠀⠀⠀⠀⠀≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈⠀⠀⠀⠀⠀[/]
-[#A9DFFF]⠀⠀⠀⠀⠀⠀≈≈≈≈≈≈≈≈≈≈≈≈≈⠀⠀⠀⠀⠀⠀[/]
-[dim #153C73]⠀⠀⠀⠀⠀⠀⠀deep waters hold⠀⠀⠀⠀⠀⠀⠀[/]""",
+        "tool_prefix": "�¢?,
+        "banner_logo": """[bold #B8E8FF]�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢   �¢�¢�¢?      �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[bold #97D6FF]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢?     �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[#75C1F6]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢ �¢�¢�¢?  �¢�¢�¢[/]
+[#4FA2E0]�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢?  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#2E7CC7]�¢�¢�¢?    �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢      �¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#1B4F95]�¢�¢�¢?     �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢? �¢�¢�¢�¢�¢?     �¢�¢�¢? �¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢?  �¢�¢�¢[/]""",
+        "banner_hero": """[#2A6FB9]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¢�£�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#5DB8F5]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£� �¢�£�¾�¢�£�¿�¢�£�·�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#5DB8F5]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢� �¢�£�¿�¢� �¢� ��¨�¢� �¢� �¹�¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#A9DFFF]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢�¢�»�¢�£�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#A9DFFF]�¢� �¢� �¢� �¢�¢�¢�¢�¢�¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢�¢�¸�¢�£�¿�¢�¢�¢�¢�¢�¢� �¢� �¢� [/]
+[#5DB8F5]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢�¢�¸�¢�£�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#2A6FB9]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¿�¢�£�§�¢� �¢� �¢� �¢� �¢� �¢�£�¼�¢�¡�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#2A6FB9]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¿�¢�£�·�¢�£�¢�£�¢�£� �¢�£�¾�¢�¡�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#153C73]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �»�¢�£�¿�¢�£�¿�¢�¡�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#153C73]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#5DB8F5]�¢� �¢� �¢� �¢� �¢� �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢� �¢� �¢� �¢� �¢� [/]
+[#A9DFFF]�¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢� �¢� �¢� �¢� �¢� �¢� [/]
+[dim #153C73]�¢� �¢� �¢� �¢� �¢� �¢� �¢� deep waters hold�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]""",
     },
     "sisyphus": {
         "name": "sisyphus",
-        "description": "Sisyphean theme �?austere grayscale with persistence",
+        "description": "Sisyphean theme �¢?austere grayscale with persistence",
         "colors": {
             "banner_border": "#B7B7B7",
             "banner_title": "#F5F5F5",
@@ -471,53 +471,53 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
             "session_border": "#656565",
         },
         "spinner": {
-            "waiting_faces": ["(�?", "(�?", "(�?", "(�?", "(::)"],
-            "thinking_faces": ["(�?", "(�?", "(�?", "(�?", "(�?"],
+            "waiting_faces": ["(�¢?", "(�¢?", "(�¢?", "(�¢�¬?", "(::)"],
+            "thinking_faces": ["(�¢?", "(�¢?", "(�¢?", "(�¢?", "(�¢?"],
             "thinking_verbs": [
                 "finding traction", "measuring the grade", "resetting the boulder",
                 "counting the ascent", "testing leverage", "setting the shoulder",
                 "pushing uphill", "enduring the loop",
             ],
             "wings": [
-                ["⟪◉", "◉⟫"],
-                ["⟪◬", "◬⟫"],
-                ["⟪◌", "◌⟫"],
-                ["⟪⬤", "⬤⟫"],
+                ["�¢�ª�¢", "�¢�¢�«"],
+                ["�¢�ª�¢�¬", "�¢�¬�¢�«"],
+                ["�¢�ª�¢", "�¢�¢�«"],
+                ["�¢�ª�¢�¬�¤", "�¢�¬�¤�¢�«"],
             ],
         },
         "branding": {
             "agent_name": "Sisyphus Agent",
             "welcome": "Welcome to Sisyphus Agent! Type your message or /help for commands.",
-            "goodbye": "The boulder waits. �?,
-            "response_label": " �?Sisyphus ",
-            "prompt_symbol": "�?�?",
-            "help_header": "(�? Available Commands",
+            "goodbye": "The boulder waits. �¢?,
+            "response_label": " �¢?Sisyphus ",
+            "prompt_symbol": "�¢?�¢?",
+            "help_header": "(�¢? Available Commands",
         },
-        "tool_prefix": "�?,
-        "banner_logo": """[bold #F5F5F5]███████╗██╗███████╗██╗   ██╗██████╗ ██�? ██╗██╗   ██╗███████�?      █████╗  ██████�?███████╗███╗   ██╗████████╗[/]
-[bold #E7E7E7]██╔════╝██║██╔════╝╚██�?██╔╝██╔══██╗██�? ██║██║   ██║██╔════�?     ██╔══██╗██╔════╝ ██╔════╝████�? ██║╚══██╔══╝[/]
-[#D7D7D7]███████╗██║███████�?╚████╔�?██████╔╝███████║██�?  ██║███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██�?  ██║[/]
-[#BFBFBF]╚════██║██║╚════██�? ╚██╔�? ██╔═══�?██╔══██║██�?  ██║╚════██║╚════╝██╔══██║██║   ██║██╔══�? ██║╚██╗██║   ██║[/]
-[#8F8F8F]███████║██║███████�?  ██�?  ██�?    ██�? ██║╚██████╔╝███████║      ██�? ██║╚██████╔╝███████╗██�?╚████║   ██║[/]
-[#626262]╚══════╝╚═╝╚══════�?  ╚═�?  ╚═�?    ╚═�? ╚═�?╚═════�?╚══════╝      ╚═�? ╚═�?╚═════�?╚══════╝╚═�? ╚═══�?  ╚═╝[/]""",
-        "banner_hero": """[#B7B7B7]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#D3D3D3]⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#E7E7E7]⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀[/]
-[#F5F5F5]⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀[/]
-[#E7E7E7]⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀[/]
-[#D3D3D3]⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⡿⠃⠀⠀⠀⠀⠀⠀⠀[/]
-[#B7B7B7]⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⣿⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#919191]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#656565]⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#656565]⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#4A4A4A]⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#4A4A4A]⠀⠀⠀⠀⠀⣀⣴⣿⣿⣿⣿⣿⣿⣦⣀⠀⠀⠀⠀⠀⠀[/]
-[#656565]⠀⠀⠀━━━━━━━━━━━━━━━━━━━━━━━⠀⠀⠀[/]
-[dim #4A4A4A]⠀⠀⠀⠀⠀⠀⠀⠀⠀the boulder⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]""",
+        "tool_prefix": "�¢?,
+        "banner_logo": """[bold #F5F5F5]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢? �¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?      �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[bold #E7E7E7]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?     �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[#D7D7D7]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢ �¢�¢�¢?  �¢�¢�¢[/]
+[#BFBFBF]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#8F8F8F]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢?  �¢�¢�¢?    �¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢      �¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#626262]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?  �¢�¢�¢?  �¢�¢�¢?    �¢�¢�¢? �¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢      �¢�¢�¢? �¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢?  �¢�¢�¢[/]""",
+        "banner_hero": """[#B7B7B7]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¢�£�¢�£�¢�£�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#D3D3D3]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£� �¢�£�¾�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�·�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#E7E7E7]�¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¾�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�·�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#F5F5F5]�¢� �¢� �¢� �¢� �¢� �¢�¢�¸�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#E7E7E7]�¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#D3D3D3]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�¢�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�¡�¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#B7B7B7]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¿�¢�£�¿�¢� �¿�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#919191]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#656565]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�°�¢�¡�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#656565]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�°�¢�£�¿�¢�£�¿�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#4A4A4A]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�°�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#4A4A4A]�¢� �¢� �¢� �¢� �¢� �¢�£�¢�£�´�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¿�¢�£�¦�¢�£�¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#656565]�¢� �¢� �¢� �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢� �¢� �¢� [/]
+[dim #4A4A4A]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� the boulder�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]""",
     },
     "charizard": {
         "name": "charizard",
-        "description": "Volcanic theme �?burnt orange and ember",
+        "description": "Volcanic theme �¢?burnt orange and ember",
         "colors": {
             "banner_border": "#C75B1D",
             "banner_title": "#FFD39A",
@@ -536,48 +536,48 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
             "session_border": "#6C4724",
         },
         "spinner": {
-            "waiting_faces": ["(�?", "(�?", "(�?", "(<>)", "(🔥)"],
-            "thinking_faces": ["(�?", "(�?", "(�?", "(�?", "(🔥)"],
+            "waiting_faces": ["(�¢?", "(�¢?", "(�¢?", "(<>)", "(�°�¥)"],
+            "thinking_faces": ["(�¢?", "(�¢?", "(�¢?", "(�¢?", "(�°�¥)"],
             "thinking_verbs": [
                 "banking into the draft", "measuring burn", "reading the updraft",
                 "tracking ember fall", "setting wing angle", "holding the flame core",
                 "plotting a hot landing", "coiling for lift",
             ],
             "wings": [
-                ["⟪✦", "✦⟫"],
-                ["⟪▲", "▲⟫"],
-                ["⟪◌", "◌⟫"],
-                ["⟪◇", "◇⟫"],
+                ["�¢�ª�¢�¦", "�¢�¦�¢�«"],
+                ["�¢�ª�¢�²", "�¢�²�¢�«"],
+                ["�¢�ª�¢", "�¢�¢�«"],
+                ["�¢�ª�¢", "�¢�¢�«"],
             ],
         },
         "branding": {
             "agent_name": "Charizard Agent",
             "welcome": "Welcome to Charizard Agent! Type your message or /help for commands.",
-            "goodbye": "Flame out! �?,
-            "response_label": " �?Charizard ",
-            "prompt_symbol": "�?�?",
-            "help_header": "(�? Available Commands",
+            "goodbye": "Flame out! �¢?,
+            "response_label": " �¢?Charizard ",
+            "prompt_symbol": "�¢?�¢?",
+            "help_header": "(�¢? Available Commands",
         },
-        "tool_prefix": "�?,
-        "banner_logo": """[bold #FFF0D4] ██████╗██╗  ██�?█████╗ ██████�?██╗███████�?█████╗ ██████�?██████�?       █████╗  ██████�?███████╗███╗   ██╗████████╗[/]
-[bold #FFD39A]██╔════╝██�? ██║██╔══██╗██╔══██╗██║╚══███╔╝██╔══██╗██╔══██╗██╔══██╗      ██╔══██╗██╔════╝ ██╔════╝████�? ██║╚══██╔══╝[/]
-[#F29C38]██�?    ███████║███████║██████╔╝██�? ███╔�?███████║██████╔╝██�? ██║█████╗███████║██║  ███╗█████╗  ██╔██╗ ██�?  ██║[/]
-[#E2832B]██�?    ██╔══██║██╔══██║██╔══██╗██�?███╔�? ██╔══██║██╔══██╗██�? ██║╚════╝██╔══██║██║   ██║██╔══�? ██║╚██╗██║   ██║[/]
-[#C75B1D]╚██████╗██�? ██║██║  ██║██║  ██║██║███████╗██�? ██║██║  ██║██████╔�?     ██�? ██║╚██████╔╝███████╗██�?╚████║   ██║[/]
-[#7A3511] ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚═�? ╚═╝╚═╝  ╚═╝╚═════╝       ╚═�? ╚═�?╚═════�?╚══════╝╚═�? ╚═══�?  ╚═╝[/]""",
-        "banner_hero": """[#FFD39A]⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠶⠶⠶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#F29C38]⠀⠀⠀⠀⠀⠀⣴⠟⠁⠀⠀⠀⠀⠈⠻⣦⠀⠀⠀⠀⠀⠀[/]
-[#F29C38]⠀⠀⠀⠀⠀⣼⠏⠀⠀⠀✦⠀⠀⠀⠀⠹⣧⠀⠀⠀⠀⠀[/]
-[#E2832B]⠀⠀⠀⠀⢰⡟⠀⠀⣀⣤⣤⣤⣀⠀⠀⠀⢻⡆⠀⠀⠀⠀[/]
-[#E2832B]⠀⠀⣠⡾⠛⠁⣠⣾⠟⠉⠀⠉⠻⣷⣄⠀⠈⠛⢷⣄⠀⠀[/]
-[#C75B1D]⠀⣼⠟⠀⢀⣾⠟⠁⠀⠀⠀⠀⠀⠈⠻⣷⡀⠀⠻⣧⠀[/]
-[#C75B1D]⢸⡟⠀⠀⣿⡟⠀⠀⠀🔥⠀⠀⠀⠀⢻⣿⠀⠀⢻⡇[/]
-[#7A3511]⠀⠻⣦⡀⠘⢿⣧⡀⠀⠀⠀⠀⠀⢀⣼⡿⠃⢀⣴⠟⠀[/]
-[#7A3511]⠀⠀⠈⠻⣦⣀⠙⢿⣷⣤⣤⣤⣾⡿⠋⣀⣴⠟⠁⠀⠀[/]
-[#C75B1D]⠀⠀⠀⠀⠈⠙⠛⠶⠤⠭⠭⠤⠶⠛⠋⠁⠀⠀⠀⠀[/]
-[#F29C38]⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⢿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#F29C38]⠀⠀⠀⠀⠀⠀⠀⣼⡟⠀⠀⢻⣧⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[dim #7A3511]⠀⠀⠀⠀⠀⠀⠀tail flame lit⠀⠀⠀⠀⠀⠀⠀⠀[/]""",
+        "tool_prefix": "�¢?,
+        "banner_logo": """[bold #FFF0D4] �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢?�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?       �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[bold #FFD39A]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢      �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢ �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢[/]
+[#F29C38]�¢�¢�¢?    �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢ �¢�¢�¢?  �¢�¢�¢[/]
+[#E2832B]�¢�¢�¢?    �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#C75B1D]�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?     �¢�¢�¢? �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢   �¢�¢�¢[/]
+[#7A3511] �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢�¢  �¢�¢�¢�¢�¢�¢�¢�¢�¢�¢       �¢�¢�¢? �¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢?�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢�¢? �¢�¢�¢�¢�¢?  �¢�¢�¢[/]""",
+        "banner_hero": """[#FFD39A]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¢�£�¤�¢� �¶�¢� �¶�¢� �¶�¢�£�¤�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#F29C38]�¢� �¢� �¢� �¢� �¢� �¢� �¢�£�´�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �»�¢�£�¦�¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#F29C38]�¢� �¢� �¢� �¢� �¢� �¢�£�¼�¢� �¢� �¢� �¢� �¢�¦�¢� �¢� �¢� �¢� �¢� �¹�¢�£�§�¢� �¢� �¢� �¢� �¢� [/]
+[#E2832B]�¢� �¢� �¢� �¢� �¢�¢�°�¢�¡�¢� �¢� �¢�£�¢�£�¤�¢�£�¤�¢�£�¤�¢�£�¢� �¢� �¢� �¢�¢�»�¢�¡�¢� �¢� �¢� �¢� [/]
+[#E2832B]�¢� �¢� �¢�£� �¢�¡�¾�¢� �¢� �¢�£� �¢�£�¾�¢� �¢� �¢� �¢� �¢� �»�¢�£�·�¢�£�¢� �¢� �¢� �¢�¢�·�¢�£�¢� �¢� [/]
+[#C75B1D]�¢� �¢�£�¼�¢� �¢� �¢�¢�¢�£�¾�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �»�¢�£�·�¢�¡�¢� �¢� �»�¢�£�§�¢� [/]
+[#C75B1D]�¢�¢�¸�¢�¡�¢� �¢� �¢�£�¿�¢�¡�¢� �¢� �¢� �°�¥�¢� �¢� �¢� �¢� �¢�¢�»�¢�£�¿�¢� �¢� �¢�¢�»�¢�¡[/]
+[#7A3511]�¢� �¢� �»�¢�£�¦�¢�¡�¢� �¢�¢�¿�¢�£�§�¢�¡�¢� �¢� �¢� �¢� �¢� �¢�¢�¢�£�¼�¢�¡�¿�¢� �¢�¢�¢�£�´�¢� �¢� [/]
+[#7A3511]�¢� �¢� �¢� �¢� �»�¢�£�¦�¢�£�¢� �¢�¢�¿�¢�£�·�¢�£�¤�¢�£�¤�¢�£�¤�¢�£�¾�¢�¡�¿�¢� �¢�£�¢�£�´�¢� �¢� �¢� �¢� [/]
+[#C75B1D]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¶�¢� �¤�¢� �­�¢� �­�¢� �¤�¢� �¶�¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#F29C38]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�°�¢�¡�¿�¢�¢�¿�¢�£�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[#F29C38]�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢�£�¼�¢�¡�¢� �¢� �¢�¢�»�¢�£�§�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]
+[dim #7A3511]�¢� �¢� �¢� �¢� �¢� �¢� �¢� tail flame lit�¢� �¢� �¢� �¢� �¢� �¢� �¢� �¢� [/]""",
     },
 }
 
@@ -625,7 +625,7 @@ def _build_skin_config(data: Dict[str, Any]) -> SkinConfig:
         colors=colors,
         spinner=spinner,
         branding=branding,
-        tool_prefix=data.get("tool_prefix", default.get("tool_prefix", "�?)),
+        tool_prefix=data.get("tool_prefix", default.get("tool_prefix", "�¢?)),
         tool_emojis=data.get("tool_emojis", {}),
         banner_logo=data.get("banner_logo", ""),
         banner_hero=data.get("banner_hero", ""),
@@ -721,7 +721,7 @@ def init_skin_from_config(config: dict) -> None:
 # =============================================================================
 
 
-def get_active_prompt_symbol(fallback: str = "�?") -> str:
+def get_active_prompt_symbol(fallback: str = "�¢?") -> str:
     """Get the interactive prompt symbol from the active skin."""
     try:
         return get_active_skin().get_branding("prompt_symbol", fallback)
@@ -739,7 +739,7 @@ def get_active_help_header(fallback: str = "(^_^)? Available Commands") -> str:
 
 
 
-def get_active_goodbye(fallback: str = "Goodbye! �?) -> str:
+def get_active_goodbye(fallback: str = "Goodbye! �¢?) -> str:
     """Get the goodbye line from the active skin."""
     try:
         return get_active_skin().get_branding("goodbye", fallback)

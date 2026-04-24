@@ -106,7 +106,7 @@ def _load_supermemory_config(hermes_home: str) -> dict:
         except Exception:
             logger.debug("Failed to parse %s", config_path, exc_info=True)
 
-    # Keep raw container_tag �?template variables like {identity} are resolved
+    # Keep raw container_tag é¥?template variables like {identity} are resolved
     # in initialize(), and _sanitize_tag runs AFTER resolution.
     raw_tag = str(config.get("container_tag", _DEFAULT_CONTAINER_TAG)).strip()
     config["container_tag"] = raw_tag if raw_tag else _DEFAULT_CONTAINER_TAG

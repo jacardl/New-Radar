@@ -19,8 +19,8 @@ _EXPECTED_WRITE_ERRNOS = {errno.EACCES, errno.EPERM, errno.EROFS}
 # ---------------------------------------------------------------------------
 # Read-size guard: cap the character count returned to the model.
 # We're model-agnostic so we can't count tokens; characters are a safe proxy.
-# 100K chars �?25�?5K tokens across typical tokenisers.  Files larger than
-# this in a single read are a context-window hazard �?the model should use
+# 100K chars â?25â?5K tokens across typical tokenisers.  Files larger than
+# this in a single read are a context-window hazard â?the model should use
 # offset+limit to read the relevant section.
 #
 # Configurable via config.yaml:  file_read_max_chars: 200000
@@ -56,11 +56,11 @@ def _get_max_read_chars() -> int:
 _LARGE_FILE_HINT_BYTES = 512_000  # 512 KB
 
 # ---------------------------------------------------------------------------
-# Device path blocklist �?reading these hangs the process (infinite output
+# Device path blocklist â?reading these hangs the process (infinite output
 # or blocking on input).  Checked by path only (no I/O).
 # ---------------------------------------------------------------------------
 _BLOCKED_DEVICE_PATHS = frozenset({
-    # Infinite output �?never reach EOF
+    # Infinite output â?never reach EOF
     "/dev/zero", "/dev/random", "/dev/urandom", "/dev/full",
     # Blocks waiting for input
     "/dev/stdin", "/dev/tty", "/dev/console",
@@ -74,9 +74,9 @@ _BLOCKED_DEVICE_PATHS = frozenset({
 def _is_blocked_device(filepath: str) -> bool:
     """Return True if the path would hang the process (infinite output or blocking input).
 
-    Uses the *literal* path �?no symlink resolution �?because the model
+    Uses the *literal* path â?no symlink resolution â?because the model
     specifies paths directly and realpath follows symlinks all the way
-    through (e.g. /dev/stdin �?/proc/self/fd/0 �?/dev/pts/0), defeating
+    through (e.g. /dev/stdin â?/proc/self/fd/0 â?/dev/pts/0), defeating
     the check.
     """
     normalized = os.path.expanduser(filepath)
@@ -135,11 +135,11 @@ _file_ops_cache: dict = {}
 #   "last_key":     the key of the most recent read/search call (or None)
 #   "consecutive":  how many times that exact call has been repeated in a row
 #   "read_history": set of (path, offset, limit) tuples for get_read_files_summary
-#   "dedup":        dict mapping (resolved_path, offset, limit) �?mtime float
+#   "dedup":        dict mapping (resolved_path, offset, limit) â?mtime float
 #                   Used to skip re-reads of unchanged files.  Reset on
 #                   context compression (the original content is summarised
 #                   away so the model needs the full content again).
-#   "read_timestamps": dict mapping resolved_path �?modification-time float
+#   "read_timestamps": dict mapping resolved_path â?modification-time float
 #                      recorded when the file was last read (or written) by
 #                      this task.  Used by write_file and patch to detect
 #                      external changes between the agent's read and write.
@@ -282,9 +282,9 @@ def clear_file_ops_cache(task_id: str = None):
 def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = "default") -> str:
     """Read a file with pagination and line numbers."""
     try:
-        # ── Device path guard ─────────────────────────────────────────
+        # -- Device path guard -----------------------------------------
         # Block paths that would hang the process (infinite output,
-        # blocking on input).  Pure path check �?no I/O.
+        # blocking on input).  Pure path check â?no I/O.
         if _is_blocked_device(path):
             return json.dumps({
                 "error": (
@@ -295,7 +295,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
 
         _resolved = Path(path).expanduser().resolve()
 
-        # ── Binary file guard ─────────────────────────────────────────
+        # -- Binary file guard -----------------------------------------
         # Block binary files by extension (no I/O).
         if has_binary_extension(str(_resolved)):
             _ext = _resolved.suffix.lower()
@@ -306,7 +306,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 ),
             })
 
-        # ── Hermes internal path guard ────────────────────────────────
+        # -- Hermes internal path guard --------------------------------
         # Prevent prompt injection via catalog or hub metadata files.
         from hermes_constants import get_hermes_home as _get_hh
         _hermes_home = _get_hh().resolve()
@@ -327,7 +327,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
             except ValueError:
                 pass
 
-        # ── Dedup check ───────────────────────────────────────────────
+        # -- Dedup check -----------------------------------------------
         # If we already read this exact (path, offset, limit) and the
         # file hasn't been modified since, return a lightweight stub
         # instead of re-sending the same content.  Saves context tokens.
@@ -348,20 +348,20 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                         "content": (
                             "File unchanged since last read. The content from "
                             "the earlier read_file result in this conversation is "
-                            "still current �?refer to that instead of re-reading."
+                            "still current â?refer to that instead of re-reading."
                         ),
                         "path": path,
                         "dedup": True,
                     }, ensure_ascii=False)
             except OSError:
-                pass  # stat failed �?fall through to full read
+                pass  # stat failed â?fall through to full read
 
-        # ── Perform the read ──────────────────────────────────────────
+        # -- Perform the read ------------------------------------------
         file_ops = _get_file_ops(task_id)
         result = file_ops.read_file(path, offset, limit)
         result_dict = result.to_dict()
 
-        # ── Character-count guard ─────────────────────────────────────
+        # -- Character-count guard -------------------------------------
         # We're model-agnostic so we can't count tokens; characters are
         # the best proxy we have.  If the read produced an unreasonable
         # amount of content, reject it and tell the model to narrow down.
@@ -385,7 +385,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 "file_size": file_size,
             }, ensure_ascii=False)
 
-        # ── Redact secrets (after guard check to skip oversized content) ──
+        # -- Redact secrets (after guard check to skip oversized content) --
         if result.content:
             result.content = redact_sensitive_text(result.content)
             result_dict["content"] = result.content
@@ -401,7 +401,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 "to keep context usage efficient."
             ))
 
-        # ── Track for consecutive-loop detection ──────────────────────
+        # -- Track for consecutive-loop detection ----------------------
         read_key = ("read", path, offset, limit)
         with _read_tracker_lock:
             # Ensure "dedup" key exists (backward compat with old tracker state)
@@ -424,7 +424,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 task_data["dedup"][dedup_key] = _mtime_now
                 task_data.setdefault("read_timestamps", {})[resolved_str] = _mtime_now
             except OSError:
-                pass  # Can't stat �?skip tracking for this entry
+                pass  # Can't stat â?skip tracking for this entry
 
         if count >= 4:
             # Hard block: stop returning content to break the loop
@@ -454,7 +454,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
 def reset_file_dedup(task_id: str = None):
     """Clear the deduplication cache for file reads.
 
-    Called after context compression �?the original read content has been
+    Called after context compression â?the original read content has been
     summarised away, so the model needs the full content if it reads the
     same file again.  Without this, reads after compression would return
     a "file unchanged" stub pointing at content that no longer exists in
@@ -478,7 +478,7 @@ def notify_other_tool_call(task_id: str = "default"):
 
     Called by the tool dispatcher (model_tools.py) whenever a tool OTHER
     than read_file / search_files is executed.  This ensures we only warn
-    or block on *truly consecutive* repeated reads �?if the agent does
+    or block on *truly consecutive* repeated reads â?if the agent does
     anything else in between (write, patch, terminal, etc.) the counter
     resets and the next read is treated as fresh.
     """
@@ -493,7 +493,7 @@ def _update_read_timestamp(filepath: str, task_id: str) -> None:
     """Record the file's current modification time after a successful write.
 
     Called after write_file and patch so that consecutive edits by the
-    same task don't trigger false staleness warnings �?each write
+    same task don't trigger false staleness warnings â?each write
     refreshes the stored timestamp to match the file's new state.
     """
     try:
@@ -512,7 +512,7 @@ def _check_file_staleness(filepath: str, task_id: str) -> str | None:
 
     Returns a warning string if the file is stale (mtime changed since
     the last read_file call for this task), or None if the file is fresh
-    or was never read.  Does not block �?the write still proceeds.
+    or was never read.  Does not block â?the write still proceeds.
     """
     try:
         resolved = str(Path(filepath).expanduser().resolve())
@@ -524,11 +524,11 @@ def _check_file_staleness(filepath: str, task_id: str) -> str | None:
             return None
         read_mtime = task_data.get("read_timestamps", {}).get(resolved)
     if read_mtime is None:
-        return None  # File was never read �?nothing to compare against
+        return None  # File was never read â?nothing to compare against
     try:
         current_mtime = os.path.getmtime(resolved)
     except OSError:
-        return None  # Can't stat �?file may have been deleted, let write handle it
+        return None  # Can't stat â?file may have been deleted, let write handle it
     if current_mtime != read_mtime:
         return (
             f"Warning: {filepath} was modified since you last read it "
@@ -610,7 +610,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
             for _p in _paths_to_check:
                 _update_read_timestamp(_p, task_id)
         result_json = json.dumps(result_dict, ensure_ascii=False)
-        # Hint when old_string not found �?saves iterations where the agent
+        # Hint when old_string not found â?saves iterations where the agent
         # retries with stale content instead of re-reading the file.
         if result_dict.get("error") and "Could not find" in str(result_dict["error"]):
             result_json += "\n\n[Hint: old_string not found. Use read_file to verify the current content, or search_files to locate the text.]"
@@ -677,7 +677,7 @@ def search_tool(pattern: str, target: str = "content", path: str = ".",
             )
 
         result_json = json.dumps(result_dict, ensure_ascii=False)
-        # Hint when results were truncated �?explicit next offset is clearer
+        # Hint when results were truncated â?explicit next offset is clearer
         # than relying on the model to infer it from total_count vs match count.
         if result_dict.get("truncated"):
             next_offset = offset + limit
@@ -702,7 +702,7 @@ def _check_file_reqs():
 
 READ_FILE_SCHEMA = {
     "name": "read_file",
-    "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files �?use vision_analyze for images.",
+    "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files â?use vision_analyze for images.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -716,7 +716,7 @@ READ_FILE_SCHEMA = {
 
 WRITE_FILE_SCHEMA = {
     "name": "write_file",
-    "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file �?use 'patch' for targeted edits.",
+    "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file â?use 'patch' for targeted edits.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -746,7 +746,7 @@ PATCH_SCHEMA = {
 
 SEARCH_FILES_SCHEMA = {
     "name": "search_files",
-    "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls �?results sorted by modification time.",
+    "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls â?results sorted by modification time.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -793,7 +793,7 @@ def _handle_search_files(args, **kw):
         output_mode=args.get("output_mode", "content"), context=args.get("context", 0), task_id=tid)
 
 
-registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="📖", max_result_size_chars=float('inf'))
-registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="✍️", max_result_size_chars=100_000)
-registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="🔧", max_result_size_chars=100_000)
-registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="🔎", max_result_size_chars=100_000)
+registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="ð", max_result_size_chars=float('inf'))
+registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="âï¸", max_result_size_chars=100_000)
+registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="ð§", max_result_size_chars=100_000)
+registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="ð", max_result_size_chars=100_000)

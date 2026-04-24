@@ -3,7 +3,7 @@
 Solana Blockchain CLI Tool for Hermes Agent
 --------------------------------------------
 Queries the Solana JSON-RPC API and CoinGecko for enriched on-chain data.
-Uses only Python standard library �?no external packages required.
+Uses only Python standard library é¥?no external packages required.
 
 Usage:
   python3 solana_client.py stats
@@ -35,8 +35,8 @@ RPC_URL = os.environ.get(
 
 LAMPORTS_PER_SOL = 1_000_000_000
 
-# Well-known Solana token names �?avoids API calls for common tokens.
-# Maps mint address �?(symbol, name).
+# Well-known Solana token names é¥?avoids API calls for common tokens.
+# Maps mint address é«?(symbol, name).
 KNOWN_TOKENS: Dict[str, tuple] = {
     "So11111111111111111111111111111111111111112":  ("SOL",   "Solana"),
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": ("USDC",  "USD Coin"),
@@ -63,7 +63,7 @@ KNOWN_TOKENS: Dict[str, tuple] = {
     "A8C3xuqscfmyLrte3VwJvtPHXvcSN3FjDbUaSMAkQrCS": ("PENGU", "Pudgy Penguins"),
 }
 
-# Reverse lookup: symbol �?mint (for the `price` command).
+# Reverse lookup: symbol é«?mint (for the `price` command).
 _SYMBOL_TO_MINT = {v[0].upper(): k for k, v in KNOWN_TOKENS.items()}
 
 
@@ -124,7 +124,7 @@ def _rpc_call(method: str, params: list = None, retries: int = 2) -> Any:
     return None
 
 
-# Keep backward compat �?the rest of the code uses `rpc()`.
+# Keep backward compat é¥?the rest of the code uses `rpc()`.
 rpc = _rpc_call
 
 
@@ -169,14 +169,14 @@ def _short_mint(mint: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Price & token name helpers (CoinGecko �?free, no API key)
+# Price & token name helpers (CoinGecko é¥?free, no API key)
 # ---------------------------------------------------------------------------
 
 def fetch_prices(mints: List[str], max_lookups: int = 20) -> Dict[str, float]:
     """Fetch USD prices for mint addresses via CoinGecko (one per request).
 
     CoinGecko free tier doesn't support batch Solana token lookups,
-    so we do individual calls �?capped at *max_lookups* to stay within
+    so we do individual calls é¥?capped at *max_lookups* to stay within
     rate limits. Returns {mint: usd_price}.
     """
     prices: Dict[str, float] = {}
@@ -350,7 +350,7 @@ def cmd_wallet(args):
             entry["value_usd"] = usd_value
         enriched.append(entry)
 
-    # Sort: tokens with known USD value first (highest→lowest), then unknowns
+    # Sort: tokens with known USD value first (highesté«æ£owest), then unknowns
     enriched.sort(key=lambda x: (x.get("value_usd") is not None, x.get("value_usd") or 0), reverse=True)
 
     # Apply limit unless --all
@@ -600,7 +600,7 @@ def cmd_whales(args):
         "slot":              slot,
         "min_threshold_SOL": args.min_sol,
         "large_transfers":   whales,
-        "note":              "Scans latest block only �?point-in-time snapshot.",
+        "note":              "Scans latest block only é¥?point-in-time snapshot.",
     }
     if sol_price:
         out["sol_price_usd"] = sol_price
@@ -632,7 +632,7 @@ def cmd_price(args):
         out["price_usd"] = prices[mint]
     else:
         out["price_usd"] = None
-        out["note"] = "Price not available �?token may not be listed on CoinGecko."
+        out["note"] = "Price not available é¥?token may not be listed on CoinGecko."
     print_json(out)
 
 

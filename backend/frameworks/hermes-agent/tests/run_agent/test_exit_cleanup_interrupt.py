@@ -3,7 +3,7 @@
 ``except Exception`` does not catch ``KeyboardInterrupt`` (which inherits
 from ``BaseException``).  A second Ctrl+C during exit cleanup must not
 abort remaining cleanup steps.  These tests exercise the actual production
-code paths �?not a copy of the try/except pattern.
+code paths é¥?not a copy of the try/except pattern.
 """
 
 import atexit
@@ -14,7 +14,7 @@ import pytest
 
 
 class TestCronJobCleanup:
-    """cron/scheduler.py �?end_session + close in the finally block."""
+    """cron/scheduler.py é¥?end_session + close in the finally block."""
 
     def test_keyboard_interrupt_in_end_session_does_not_skip_close(self):
         """If end_session raises KeyboardInterrupt, close() must still run."""

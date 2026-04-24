@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 
 
 # ---------------------------------------------------------------------------
-# Shared test config dict �?mirrors _get_env_config() return shape.
+# Shared test config dict é¥?mirrors _get_env_config() return shape.
 # ---------------------------------------------------------------------------
 def _make_env_config(**overrides):
     """Return a minimal _get_env_config()-shaped dict with optional overrides."""

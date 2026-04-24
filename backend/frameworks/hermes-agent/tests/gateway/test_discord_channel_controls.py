@@ -100,7 +100,7 @@ def make_message(*, channel, content: str, mentions=None):
     )
 
 
-# ── ignored_channels ─────────────────────────────────────────────────
+# -- ignored_channels -------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -118,7 +118,7 @@ async def test_ignored_channel_blocks_message(adapter, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_ignored_channel_blocks_even_with_mention(adapter, monkeypatch):
-    """Ignored channels take priority �?even @mentions are dropped."""
+    """Ignored channels take priority â?even @mentions are dropped."""
     monkeypatch.setenv("DISCORD_REQUIRE_MENTION", "true")
     monkeypatch.setenv("DISCORD_IGNORED_CHANNELS", "500")
 
@@ -200,7 +200,7 @@ async def test_dms_unaffected_by_ignored_channels(adapter, monkeypatch):
     adapter.handle_message.assert_awaited_once()
 
 
-# ── no_thread_channels ───────────────────────────────────────────────
+# -- no_thread_channels -----------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -281,7 +281,7 @@ async def test_no_thread_with_auto_thread_disabled_is_noop(adapter, monkeypatch)
     adapter.handle_message.assert_awaited_once()
 
 
-# ── config.py bridging ───────────────────────────────────────────────
+# -- config.py bridging -----------------------------------------------
 
 
 def test_config_bridges_ignored_channels(monkeypatch, tmp_path):
@@ -295,7 +295,7 @@ def test_config_bridges_ignored_channels(monkeypatch, tmp_path):
     }))
     monkeypatch.setenv("HERMES_HOME", str(tmp_path))
     # Use setenv (not delenv) so monkeypatch registers cleanup even when
-    # the var doesn't exist yet �?load_gateway_config will overwrite it.
+    # the var doesn't exist yet â?load_gateway_config will overwrite it.
     monkeypatch.setenv("DISCORD_IGNORED_CHANNELS", "")
 
     from gateway.config import load_gateway_config

@@ -1,13 +1,13 @@
 """
-测试RobustJSONParser的各种修复能力�?
+æµè¯RobustJSONParserçåç§ä¿®å¤è½å
 
-验证解析器能够处理：
-1. 基本的markdown包裹
-2. 思考内容清�?
-3. 缺少逗号的修�?
-4. 括号不平衡的修复
-5. 控制字符转义
-6. 尾随逗号移除
+éªè¯è§£æå¨è½å¤å¤çï¼
+1. åºæ¬çmarkdownåè£¹
+2. æèåå®¹æ¸ç?
+3. ç¼ºå°éå·çä¿®å¤?
+4. æ¬å·ä¸å¹³è¡¡çä¿®å¤
+5. æ§å¶å­ç¬¦è½¬ä¹
+6. å°¾ééå·ç§»é¤
 """
 
 import json
@@ -16,137 +16,137 @@ from json_parser import RobustJSONParser, JSONParseError
 
 
 class TestRobustJSONParser(unittest.TestCase):
-    """测试鲁棒JSON解析器的各种修复策略�?""
+    """æµè¯é²æ£JSONè§£æå¨çåç§ä¿®å¤ç­ç¥""
 
     def setUp(self):
-        """初始化解析器�?""
+        """åå§åè§£æå¨""
         self.parser = RobustJSONParser(
-            enable_json_repair=False,  # 先测试本地修�?
+            enable_json_repair=False,  # åæµè¯æ¬å°ä¿®å¤?
             enable_llm_repair=False,
         )
 
     def test_basic_json(self):
-        """测试解析基本的合法JSON�?""
+        """æµè¯è§£æåºæ¬çåæ³JSON""
         json_str = '{"name": "test", "value": 123}'
-        result = self.parser.parse(json_str, "基本测试")
+        result = self.parser.parse(json_str, "åºæ¬æµè¯")
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["value"], 123)
 
     def test_markdown_wrapped(self):
-        """测试解析被```json包裹的JSON�?""
+        """æµè¯è§£æè¢«```jsonåè£¹çJSON""
         json_str = """```json
 {
   "name": "test",
   "value": 123
 }
 ```"""
-        result = self.parser.parse(json_str, "Markdown包裹测试")
+        result = self.parser.parse(json_str, "Markdownåè£¹æµè¯")
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["value"], 123)
 
     def test_thinking_content_removal(self):
-        """测试清理思考内容�?""
-        json_str = """<thinking>让我想想如何构造这个JSON</thinking>
+        """æµè¯æ¸çæèåå®¹""
+        json_str = """<thinking>è®©ææ³æ³å¦ä½æé è¿ä¸ªJSON</thinking>
 {
   "name": "test",
   "value": 123
 }"""
-        result = self.parser.parse(json_str, "思考内容清理测�?)
+        result = self.parser.parse(json_str, "æèåå®¹æ¸çæµè¯?)
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["value"], 123)
 
     def test_missing_comma_fix(self):
-        """测试修复缺少的逗号�?""
-        # 这是实际错误中常见的情况：数组元素之间缺少逗号
+        """æµè¯ä¿®å¤ç¼ºå°çéå·""
+        # è¿æ¯å®ééè¯¯ä¸­å¸¸è§çæåµï¼æ°ç»åç´ ä¹é´ç¼ºå°éå·
         json_str = """{
   "totalWords": 40000,
   "globalGuidelines": [
-    "重点突出技术红利分配失�?
-    "详略策略：技术创�?
+    "éç¹çªåºææ¯çº¢å©åéå¤±è¡?
+    "è¯¦ç¥ç­ç¥ï¼ææ¯åæ?
   ],
   "chapters": []
 }"""
-        result = self.parser.parse(json_str, "缺少逗号修复测试")
+        result = self.parser.parse(json_str, "ç¼ºå°éå·ä¿®å¤æµè¯")
         self.assertEqual(len(result["globalGuidelines"]), 2)
 
     def test_unbalanced_brackets(self):
-        """测试修复括号不平衡�?""
-        # 缺少结束括号
+        """æµè¯ä¿®å¤æ¬å·ä¸å¹³è¡¡""
+        # ç¼ºå°ç»ææ¬å·
         json_str = """{
   "name": "test",
   "nested": {
     "value": 123
   }
-"""  # 缺少最外层�?}
-        result = self.parser.parse(json_str, "括号不平衡测�?)
+"""  # ç¼ºå°æå¤å±ç?}
+        result = self.parser.parse(json_str, "æ¬å·ä¸å¹³è¡¡æµè¯?)
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["nested"]["value"], 123)
 
     def test_control_character_escape(self):
-        """测试转义控制字符�?""
-        # JSON字符串中的裸换行符应该被转义
+        """æµè¯è½¬ä¹æ§å¶å­ç¬¦""
+        # JSONå­ç¬¦ä¸²ä¸­çè£¸æ¢è¡ç¬¦åºè¯¥è¢«è½¬ä¹
         json_str = """{
-  "text": "这是第一�?
-这是第二�?,
+  "text": "è¿æ¯ç¬¬ä¸è¡?
+è¿æ¯ç¬¬äºè¡?,
   "value": 123
 }"""
-        result = self.parser.parse(json_str, "控制字符转义测试")
-        # 确保换行符被正确处理
-        self.assertIn("第一�?, result["text"])
-        self.assertIn("第二�?, result["text"])
+        result = self.parser.parse(json_str, "æ§å¶å­ç¬¦è½¬ä¹æµè¯")
+        # ç¡®ä¿æ¢è¡ç¬¦è¢«æ­£ç¡®å¤ç
+        self.assertIn("ç¬¬ä¸è¡?, result["text"])
+        self.assertIn("ç¬¬äºè¡?, result["text"])
 
     def test_trailing_comma_removal(self):
-        """测试移除尾随逗号�?""
+        """æµè¯ç§»é¤å°¾ééå·""
         json_str = """{
   "name": "test",
   "value": 123,
   "items": [1, 2, 3,],
 }"""
-        result = self.parser.parse(json_str, "尾随逗号测试")
+        result = self.parser.parse(json_str, "å°¾ééå·æµè¯")
         self.assertEqual(result["name"], "test")
         self.assertEqual(len(result["items"]), 3)
 
     def test_colon_equals_fix(self):
-        """测试修复冒号等号错误�?""
+        """æµè¯ä¿®å¤åå·ç­å·éè¯¯""
         json_str = """{
   "name":= "test",
   "value": 123
 }"""
-        result = self.parser.parse(json_str, "冒号等号测试")
+        result = self.parser.parse(json_str, "åå·ç­å·æµè¯")
         self.assertEqual(result["name"], "test")
 
     def test_extract_first_json(self):
-        """测试从文本中提取第一个JSON结构�?""
-        json_str = """这是一些说明文字，下面是JSON�?
+        """æµè¯ä»ææ¬ä¸­æåç¬¬ä¸ä¸ªJSONç»æ""
+        json_str = """è¿æ¯ä¸äºè¯´ææå­ï¼ä¸é¢æ¯JSONï¼?
 {
   "name": "test",
   "value": 123
 }
-后面还有一些其他文�?""
-        result = self.parser.parse(json_str, "提取JSON测试")
+åé¢è¿æä¸äºå¶ä»æå­?""
+        result = self.parser.parse(json_str, "æåJSONæµè¯")
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["value"], 123)
 
     def test_unterminated_string_with_json_repair(self):
-        """测试使用json_repair库修复未终止的字符串�?""
-        # 创建启用json_repair的解析器
+        """æµè¯ä½¿ç¨json_repairåºä¿®å¤æªç»æ­¢çå­ç¬¦ä¸²""
+        # åå»ºå¯ç¨json_repairçè§£æå¨
         parser_with_repair = RobustJSONParser(
             enable_json_repair=True,
             enable_llm_repair=False,
         )
 
-        # 模拟实际错误：字符串中有未转义的控制字符或引�?
+        # æ¨¡æå®ééè¯¯ï¼å­ç¬¦ä¸²ä¸­ææªè½¬ä¹çæ§å¶å­ç¬¦æå¼å?
         json_str = """{
-  "template_name": "特定政策报告",
-  "selection_reason": "这是测试内容"
+  "template_name": "ç¹å®æ¿ç­æ¥å",
+  "selection_reason": "è¿æ¯æµè¯åå®¹"
 }"""
-        result = parser_with_repair.parse(json_str, "未终止字符串测试")
-        # 只要能够解析成功，不报错就可以了
+        result = parser_with_repair.parse(json_str, "æªç»æ­¢å­ç¬¦ä¸²æµè¯")
+        # åªè¦è½å¤è§£ææåï¼ä¸æ¥éå°±å¯ä»¥äº
         self.assertIsInstance(result, dict)
         self.assertIn("template_name", result)
 
     def test_array_with_best_match(self):
-        """测试从数组中提取最佳匹配的元素�?""
+        """æµè¯ä»æ°ç»ä¸­æåæä½³å¹éçåç´ ""
         json_str = """[
   {
     "name": "test",
@@ -160,40 +160,40 @@ class TestRobustJSONParser(unittest.TestCase):
 ]"""
         result = self.parser.parse(
             json_str,
-            "数组最佳匹配测�?,
+            "æ°ç»æä½³å¹éæµè¯?,
             expected_keys=["totalWords", "globalGuidelines", "chapters"],
         )
-        # 应该提取第二个元素，因为它匹配了3个键
+        # åºè¯¥æåç¬¬äºä¸ªåç´ ï¼å ä¸ºå®å¹éäº3ä¸ªé®
         self.assertEqual(result["totalWords"], 40000)
         self.assertEqual(len(result["globalGuidelines"]), 2)
 
     def test_key_alias_recovery(self):
-        """测试键名别名恢复�?""
+        """æµè¯é®åå«åæ¢å¤""
         json_str = """{
   "templateName": "test_template",
   "selectionReason": "This is a test"
 }"""
         result = self.parser.parse(
             json_str,
-            "键别名测�?,
+            "é®å«åæµè¯?,
             expected_keys=["template_name", "selection_reason"],
         )
-        # 应该自动映射 templateName -> template_name
+        # åºè¯¥èªå¨æ å° templateName -> template_name
         self.assertEqual(result["template_name"], "test_template")
         self.assertEqual(result["selection_reason"], "This is a test")
 
     def test_complex_real_world_case(self):
-        """测试真实世界的复杂案例（类似实际错误）�?""
-        # 模拟实际错误：缺少逗号、有markdown包裹、有思考内�?
-        json_str = """<thinking>我需要构造一个篇幅规�?/thinking>
+        """æµè¯çå®ä¸ççå¤ææ¡ä¾ï¼ç±»ä¼¼å®ééè¯¯ï¼""
+        # æ¨¡æå®ééè¯¯ï¼ç¼ºå°éå·ãæmarkdownåè£¹ãææèåå®?
+        json_str = """<thinking>æéè¦æé ä¸ä¸ªç¯å¹è§å?/thinking>
 ```json
 {
   "totalWords": 40000,
   "tolerance": 2000,
   "globalGuidelines": [
-    "重点突出技术红利分配失衡、人才流失与职业认同危机等结构性矛�?
-    "详略策略：技术创新与传统技艺的碰撞"
-    "案例导向：优先引用真实数据和调研"
+    "éç¹çªåºææ¯çº¢å©åéå¤±è¡¡ãäººææµå¤±ä¸èä¸è®¤åå±æºç­ç»ææ§çç?
+    "è¯¦ç¥ç­ç¥ï¼ææ¯åæ°ä¸ä¼ ç»æèºçç¢°æ"
+    "æ¡ä¾å¯¼åï¼ä¼åå¼ç¨çå®æ°æ®åè°ç "
   ],
   "chapters": [
     {
@@ -203,23 +203,23 @@ class TestRobustJSONParser(unittest.TestCase):
   ]
 }
 ```"""
-        result = self.parser.parse(json_str, "复杂真实案例测试")
+        result = self.parser.parse(json_str, "å¤æçå®æ¡ä¾æµè¯")
         self.assertEqual(result["totalWords"], 40000)
         self.assertEqual(result["tolerance"], 2000)
         self.assertEqual(len(result["globalGuidelines"]), 3)
         self.assertEqual(len(result["chapters"]), 1)
 
     def test_expected_keys_validation(self):
-        """测试期望键的验证�?""
+        """æµè¯ææé®çéªè¯""
         json_str = '{"name": "test"}'
-        # 不应该因为缺少键而失败，只是警告
+        # ä¸åºè¯¥å ä¸ºç¼ºå°é®èå¤±è´¥ï¼åªæ¯è­¦å
         result = self.parser.parse(
-            json_str, "键验证测�?, expected_keys=["name", "value"]
+            json_str, "é®éªè¯æµè¯?, expected_keys=["name", "value"]
         )
         self.assertIn("name", result)
 
     def test_wrapper_key_extraction(self):
-        """测试从包裹键中提取数据�?""
+        """æµè¯ä»åè£¹é®ä¸­æåæ°æ®""
         json_str = """{
   "wrapper": {
     "name": "test",
@@ -227,64 +227,64 @@ class TestRobustJSONParser(unittest.TestCase):
   }
 }"""
         result = self.parser.parse(
-            json_str, "包裹键测�?, extract_wrapper_key="wrapper"
+            json_str, "åè£¹é®æµè¯?, extract_wrapper_key="wrapper"
         )
         self.assertEqual(result["name"], "test")
         self.assertEqual(result["value"], 123)
 
     def test_empty_input(self):
-        """测试空输入�?""
+        """æµè¯ç©ºè¾å¥""
         with self.assertRaises(JSONParseError):
-            self.parser.parse("", "空输入测�?)
+            self.parser.parse("", "ç©ºè¾å¥æµè¯?)
 
     def test_invalid_json_after_all_repairs(self):
-        """测试所有修复策略都无法处理的情况�?""
-        # 这是一个严重损坏的JSON，无法修�?
-        json_str = "{完全不是JSON格式的内�?##"
+        """æµè¯ææä¿®å¤ç­ç¥é½æ æ³å¤ççæåµ""
+        # è¿æ¯ä¸ä¸ªä¸¥éæåçJSONï¼æ æ³ä¿®å¤?
+        json_str = "{å®å¨ä¸æ¯JSONæ ¼å¼çåå®?##"
         with self.assertRaises(JSONParseError):
-            self.parser.parse(json_str, "无法修复测试")
+            self.parser.parse(json_str, "æ æ³ä¿®å¤æµè¯")
 
 
 def run_manual_test():
-    """手动运行测试，打印详细信息�?""
+    """æå¨è¿è¡æµè¯ï¼æå°è¯¦ç»ä¿¡æ¯""
     print("=" * 60)
-    print("开始测试RobustJSONParser")
+    print("å¼å§æµè¯RobustJSONParser")
     print("=" * 60)
 
     parser = RobustJSONParser(enable_json_repair=False, enable_llm_repair=False)
 
-    # 测试实际错误案例
+    # æµè¯å®ééè¯¯æ¡ä¾
     test_case = """```json
 {
   "totalWords": 40000,
   "tolerance": 2000,
   "globalGuidelines": [
-    "重点突出技术红利分配失衡、人才流失与职业认同危机等结构性矛�?
-    "详略策略：技术创新与传统技艺的碰撞"
+    "éç¹çªåºææ¯çº¢å©åéå¤±è¡¡ãäººææµå¤±ä¸èä¸è®¤åå±æºç­ç»ææ§çç?
+    "è¯¦ç¥ç­ç¥ï¼ææ¯åæ°ä¸ä¼ ç»æèºçç¢°æ"
   ],
   "chapters": []
 }
 ```"""
 
-    print("\n测试案例�?)
+    print("\næµè¯æ¡ä¾ï¼?)
     print(test_case)
     print("\n" + "=" * 60)
 
     try:
-        result = parser.parse(test_case, "手动测试")
-        print("\n�?解析成功�?)
-        print("\n解析结果�?)
+        result = parser.parse(test_case, "æå¨æµè¯")
+        print("\nâ?è§£ææåï¼?)
+        print("\nè§£æç»æï¼?)
         print(json.dumps(result, ensure_ascii=False, indent=2))
     except Exception as e:
-        print(f"\n�?解析失败: {e}")
+        print(f"\nâ?è§£æå¤±è´¥: {e}")
 
     print("\n" + "=" * 60)
 
 
 if __name__ == "__main__":
-    # 运行手动测试
+    # è¿è¡æå¨æµè¯
     run_manual_test()
 
-    # 运行单元测试
-    print("\n\n运行单元测试...")
+    # è¿è¡ååæµè¯
+    print("\n\nè¿è¡ååæµè¯...")
     unittest.main(verbosity=2)

@@ -899,7 +899,7 @@ def test_run_conversation_codex_continues_after_ack_stop_message(monkeypatch):
     agent = _build_agent(monkeypatch)
     responses = [
         _codex_ack_message_response(
-            "Absolutely �?I can do that. I'll inspect ~/openclaw-studio and report back with a walkthrough."
+            "Absolutely é¥?I can do that. I'll inspect ~/openclaw-studio and report back with a walkthrough."
         ),
         _codex_tool_call_response(),
         _codex_message_response("Architecture summary complete."),
@@ -1018,7 +1018,7 @@ def test_dump_api_request_debug_uses_chat_completions_url(monkeypatch, tmp_path)
 
 
 def _codex_reasoning_only_response(*, encrypted_content="enc_abc123", summary_text="Thinking..."):
-    """Codex response containing only reasoning items �?no message text, no tool calls."""
+    """Codex response containing only reasoning items é¥?no message text, no tool calls."""
     return SimpleNamespace(
         output=[
             SimpleNamespace(
@@ -1082,7 +1082,7 @@ def test_normalize_codex_response_reasoning_with_content_is_stop(monkeypatch):
 
 
 def test_run_conversation_codex_continues_after_reasoning_only_response(monkeypatch):
-    """End-to-end: reasoning-only �?final message should succeed, not hit retry loop."""
+    """End-to-end: reasoning-only é«?final message should succeed, not hit retry loop."""
     agent = _build_agent(monkeypatch)
     responses = [
         _codex_reasoning_only_response(),

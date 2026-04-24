@@ -14,7 +14,7 @@ This module ties together the foundation layers:
 - ``hermes_cli.model_normalize``  -- per-provider name formatting
 
 Provider switching uses the ``--provider`` flag exclusively.
-No colon-based ``provider:model`` syntax �?colons are reserved for
+No colon-based ``provider:model`` syntax é¥?colons are reserved for
 OpenRouter variant suffixes (``:free``, ``:extended``, ``:fast``).
 """
 
@@ -155,7 +155,7 @@ MODEL_ALIASES: dict[str, ModelIdentity] = {
 
 
 # ---------------------------------------------------------------------------
-# Direct aliases �?exact model+provider+base_url for endpoints that aren't
+# Direct aliases é¥?exact model+provider+base_url for endpoints that aren't
 # in the models.dev catalog (e.g. Ollama Cloud, local servers).
 # Checked BEFORE catalog resolution.  Format:
 #   alias -> (model_id, provider, base_url)
@@ -368,7 +368,7 @@ def get_authenticated_provider_slugs(
     """Return slugs of providers that have credentials.
 
     Uses ``list_authenticated_providers()`` which is backed by the models.dev
-    in-memory cache (1 hr TTL) �?no extra network cost.
+    in-memory cache (1 hr TTL) é¥?no extra network cost.
     """
     try:
         providers = list_authenticated_providers(
@@ -483,9 +483,9 @@ def switch_model(
                 from hermes_cli.config import validate_config_structure
                 _cfg_issues = validate_config_structure()
                 if _cfg_issues:
-                    _switch_err += "\n\nRun 'hermes doctor' �?config issues detected:"
+                    _switch_err += "\n\nRun 'hermes doctor' é¥?config issues detected:"
                     for _ci in _cfg_issues[:3]:
-                        _switch_err += f"\n  �?{_ci.message}"
+                        _switch_err += f"\n  é¥?{_ci.message}"
             except Exception:
                 pass
             return ModelSwitchResult(
@@ -532,7 +532,7 @@ def switch_model(
             _, new_model, resolved_alias = alias_result
 
     # =================================================================
-    # PATH B: No explicit provider �?resolve from model input
+    # PATH B: No explicit provider é¥?resolve from model input
     # =================================================================
     else:
         # --- Step a: Try alias resolution on current provider ---
@@ -573,7 +573,7 @@ def switch_model(
                     )
             else:
                 # --- Step c: On aggregator, convert vendor:model to vendor/model ---
-                # Only convert when there's no slash �?a slash means the name
+                # Only convert when there's no slash é¥?a slash means the name
                 # is already in vendor/model format and the colon is a variant
                 # tag (:free, :extended, :fast) that must be preserved.
                 colon_pos = raw_input.find(":")
@@ -762,17 +762,17 @@ def list_authenticated_providers(
     """Detect which providers have credentials and list their curated models.
 
     Uses the curated model lists from hermes_cli/models.py (OPENROUTER_MODELS,
-    _PROVIDER_MODELS) �?NOT the full models.dev catalog.  These are hand-picked
+    _PROVIDER_MODELS) é¥?NOT the full models.dev catalog.  These are hand-picked
     agentic models that work well as agent backends.
 
     Returns a list of dicts, each with:
-      - slug: str �?the --provider value to use
-      - name: str �?display name
+      - slug: str é¥?the --provider value to use
+      - name: str é¥?display name
       - is_current: bool
       - is_user_defined: bool
-      - models: list[str] �?curated model IDs (up to max_models)
-      - total_models: int �?total curated count
-      - source: str �?"built-in", "models.dev", "user-config"
+      - models: list[str] é¥?curated model IDs (up to max_models)
+      - total_models: int é¥?total curated count
+      - source: str é¥?"built-in", "models.dev", "user-config"
 
     Only includes providers that have API keys set or are user-defined endpoints.
     """
@@ -803,9 +803,9 @@ def list_authenticated_providers(
         if not isinstance(pdata, dict):
             continue
 
-        # Prefer auth.py PROVIDER_REGISTRY for env var names �?it's our
+        # Prefer auth.py PROVIDER_REGISTRY for env var names é¥?it's our
         # source of truth.  models.dev can have wrong mappings (e.g.
-        # minimax-cn �?MINIMAX_API_KEY instead of MINIMAX_CN_API_KEY).
+        # minimax-cn é«?MINIMAX_API_KEY instead of MINIMAX_CN_API_KEY).
         pconfig = PROVIDER_REGISTRY.get(hermes_id)
         if pconfig and pconfig.api_key_env_vars:
             env_vars = list(pconfig.api_key_env_vars)
@@ -843,7 +843,7 @@ def list_authenticated_providers(
     from hermes_cli.providers import HERMES_OVERLAYS
     from hermes_cli.auth import PROVIDER_REGISTRY as _auth_registry
 
-    # Build reverse mapping: models.dev ID �?Hermes provider ID.
+    # Build reverse mapping: models.dev ID é«?Hermes provider ID.
     # HERMES_OVERLAYS keys may be models.dev IDs (e.g. "github-copilot")
     # while _PROVIDER_MODELS and config.yaml use Hermes IDs ("copilot").
     _mdev_to_hermes = {v: k for k, v in PROVIDER_TO_MODELS_DEV.items()}
@@ -852,7 +852,7 @@ def list_authenticated_providers(
         if pid in seen_slugs:
             continue
 
-        # Resolve Hermes slug �?e.g. "github-copilot" �?"copilot"
+        # Resolve Hermes slug é¥?e.g. "github-copilot" é«?"copilot"
         hermes_slug = _mdev_to_hermes.get(pid, pid)
         if hermes_slug in seen_slugs:
             continue
@@ -902,7 +902,7 @@ def list_authenticated_providers(
         # The credential pool gates anthropic behind
         # is_provider_explicitly_configured() to prevent auxiliary tasks
         # from silently consuming Claude Code tokens (PR #4210).
-        # But the /model picker is discovery-oriented �?we WANT to show
+        # But the /model picker is discovery-oriented é¥?we WANT to show
         # providers the user can switch to, even if they aren't currently
         # configured.
         if not has_creds and hermes_slug == "anthropic":
@@ -921,7 +921,7 @@ def list_authenticated_providers(
         if not has_creds:
             continue
 
-        # Use curated list �?look up by Hermes slug, fall back to overlay key
+        # Use curated list é¥?look up by Hermes slug, fall back to overlay key
         model_ids = curated.get(hermes_slug, []) or curated.get(pid, [])
         total = len(model_ids)
         top = model_ids[:max_models]

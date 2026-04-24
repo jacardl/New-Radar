@@ -1,26 +1,26 @@
-﻿"""
-专为 AI Agent 设计的本地舆情数据库查询工具�?(MediaCrawlerDB)
+ï»¿"""
+ä¸ä¸º AI Agent è®¾è®¡çæ¬å°èææ°æ®åºæ¥è¯¢å·¥å·ï¿½?(MediaCrawlerDB)
 
-版本: 3.0
-最后更�? 2025-08-23
+çæ¬: 3.0
+æåæ´ï¿½? 2025-08-23
 
-此脚本将复杂的本地MySQL数据库查询功能封装成一系列目标明确、参数清晰的独立工具�?
-专为AI Agent调用而设计。Agent只需根据任务意图（如搜索热点、全局搜索话题�?
-按时间范围分析、获取评论）选择合适的工具，无需编写复杂的SQL语句�?
+æ­¤èæ¬å°å¤æçæ¬å°MySQLæ°æ®åºæ¥è¯¢åè½å°è£æä¸ç³»åç®æ æç¡®ãåæ°æ¸æ°çç¬ç«å·¥å·ï¿½?
+ä¸ä¸ºAI Agentè°ç¨èè®¾è®¡gentåªéæ ¹æ®ä»»å¡æå¾ï¼å¦æç´¢ç­ç¹ãå¨å±æç´¢è¯é¢ï¿½?
+ææ¶é´èå´åæãè·åè¯è®ºï¼éæ©åéçå·¥å·ï¼æ éç¼åå¤æçSQLè¯­å¥ï¿½?
 
-V3.0 核心更新:
-- 智能热度计算: `search_hot_content`不再需要`sort_by`参数，改为内部使用统一的加权热度算法，
-  综合点赞、评论、分享、观看等数据计算热度分值，使结果更智能、更符合综合热度�?
-- 新增平台精搜工具: 新增 `search_topic_on_platform` 工具，作为特例，
-  允许Agent在特定平台（B站、微博等七大平台）上对某一话题进行精确搜索，并支持时间筛选�?
-- 结构优化: 调整了数据结构与函数文档，以适应新功能�?
+V3.0 æ ¸å¿æ´æ°:
+- æºè½ç­åº¦è®¡ç®: `search_hot_content`ä¸åéè¦`sort_by`åæ°ï¼æ¹ä¸ºåé¨ä½¿ç¨ç»ä¸çå æç­åº¦ç®æ³ï¼
+  ç»¼åç¹èµãè¯è®ºãåäº«ãè§çç­æ°æ®è®¡ç®ç­åº¦åå¼ï¼ä½¿ç»ææ´æºè½ãæ´ç¬¦åç»¼åç­åº¦ï¿½?
+- æ°å¢å¹³å°ç²¾æå·¥å·: æ°å¢ `search_topic_on_platform` å·¥å·ï¼ä½ä¸ºç¹ä¾ï¼
+  åè®¸Agentå¨ç¹å®å¹³å°ï¼Bç«ãå¾®åç­ä¸å¤§å¹³å°ï¼ä¸å¯¹æä¸è¯é¢è¿è¡ç²¾ç¡®æç´¢ï¼å¹¶æ¯ææ¶é´ç­éï¿½?
+- ç»æä¼å: è°æ´äºæ°æ®ç»æä¸å½æ°ææ¡£ï¼ä»¥éåºæ°åè½ï¿½?
 
-主要工具:
-- search_hot_content: 查找指定时间范围内的综合热度最高的内容�?
-- search_topic_globally: 在整个数据库中全局搜索与特定话题相关的所有内容和评论�?
-- search_topic_by_date: 在指定的历史日期范围内搜索与特定话题相关的内容�?
-- get_comments_for_topic: 专门提取公众对于某一特定话题的评论数据�?
-- search_topic_on_platform: 在指定的单个社交媒体平台上搜索特定话题�?
+ä¸»è¦å·¥å·:
+- search_hot_content: æ¥æ¾æå®æ¶é´èå´åçç»¼åç­åº¦æé«çåå®¹ï¿½?
+- search_topic_globally: å¨æ´ä¸ªæ°æ®åºä¸­å¨å±æç´¢ä¸ç¹å®è¯é¢ç¸å³çææåå®¹åè¯è®ºï¿½?
+- search_topic_by_date: å¨æå®çåå²æ¥æèå´åæç´¢ä¸ç¹å®è¯é¢ç¸å³çåå®¹ï¿½?
+- get_comments_for_topic: ä¸é¨æåå¬ä¼å¯¹äºæä¸ç¹å®è¯é¢çè¯è®ºæ°æ®ï¿½?
+- search_topic_on_platform: å¨æå®çåä¸ªç¤¾äº¤åªä½å¹³å°ä¸æç´¢ç¹å®è¯é¢ï¿½?
 """
 
 import os
@@ -36,11 +36,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- 1. 数据结构定义 ---
+# --- 1. æ°æ®ç»æå®ä¹ ---
 
 @dataclass
 class QueryResult:
-    """统一的数据库查询结果数据�?""
+    """ç»ä¸çæ°æ®åºæ¥è¯¢ç»ææ°æ®ï¿½?""
     platform: str
     content_type: str
     title_or_content: str
@@ -54,19 +54,19 @@ class QueryResult:
 
 @dataclass
 class DBResponse:
-    """封装工具的完整返回结�?""
+    """å°è£å·¥å·çå®æ´è¿åç»ï¿½?""
     tool_name: str
     parameters: Dict[str, Any]
     results: List[QueryResult] = field(default_factory=list)
     results_count: int = 0
     error_message: Optional[str] = None
 
-# --- 2. 核心客户端与专用工具�?---
+# --- 2. æ ¸å¿å®¢æ·ç«¯ä¸ä¸ç¨å·¥å·ï¿½?---
 import concurrent.futures
 from backend.db.connection import fetch_all
 
 def _run_async(coro):
-    """安全的异步执行包装器，兼容多线程与事件循环环�?""
+    """å®å¨çå¼æ­¥æ§è¡åè£å¨ï¼å¼å®¹å¤çº¿ç¨ä¸äºä»¶å¾ªç¯ç¯ï¿½?""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -79,10 +79,10 @@ def _run_async(coro):
         return asyncio.run(coro)
 
 class MediaCrawlerDB:
-    """本地数据库舆情检索工�?""
+    """æ¬å°æ°æ®åºèææ£ç´¢å·¥ï¿½?""
     
     def __init__(self):
-        """初始化，无需外部API"""
+        """åå§åï¼æ éå¤é¨API"""
         pass
 
     @staticmethod
@@ -94,7 +94,7 @@ class MediaCrawlerDB:
             if isinstance(ts, str) and ts.isdigit():
                 ts = int(ts)
             if isinstance(ts, int):
-                if ts > 1e11:  # 13位毫秒时间戳
+                if ts > 1e11:  # 13ä½æ¯«ç§æ¶é´æ³
                     return datetime.fromtimestamp(ts / 1000)
                 return datetime.fromtimestamp(ts)
             if isinstance(ts, str):
@@ -104,22 +104,22 @@ class MediaCrawlerDB:
         return None
         
     def _safe_query(self, sql: str, params: dict) -> List[dict]:
-        """安全查询单表，如果表不存在则静默忽略"""
+        """å®å¨æ¥è¯¢åè¡¨ï¼å¦æè¡¨ä¸å­å¨åéé»å¿½ç¥"""
         try:
             res = _run_async(fetch_all(sql, params))
             from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
             db_utils._engine = None  # Prevent event loop reuse issues
             return res
         except Exception as e:
-            # 捕获表不存在等异常，不影响其他表查询
-            logger.debug(f"查询跳过 (可能表不存在): {e}")
+            # æè·è¡¨ä¸å­å¨ç­å¼å¸¸ï¼ä¸å½±åå¶ä»è¡¨æ¥è¯¢
+            logger.debug(f"æ¥è¯¢è·³è¿ (å¯è½è¡¨ä¸å­å¨): {e}")
             from backend.db.connection import fetch_all as db_fetch_all, execute_write as db_execute
             db_utils._engine = None
             return []
 
     def _build_keyword_conditions(self, topic: str, columns: List[str]) -> Tuple[str, dict]:
         """
-        (不再使用�?LIKE 模糊匹配，保留此函数以防其他地方调用)
+        (ä¸åä½¿ç¨ï¿½?LIKE æ¨¡ç³å¹éï¼ä¿çæ­¤å½æ°ä»¥é²å¶ä»å°æ¹è°ç¨)
         """
         keywords = [k.strip() for k in topic.replace('+', ' ').split() if k.strip()][:5]
         if not keywords:
@@ -137,8 +137,8 @@ class MediaCrawlerDB:
         
     def _build_vector_conditions(self, topic: str) -> Tuple[str, dict]:
         """
-        使用本地 Embedding 进行向量相似度匹配�?
-        返回: SQL 排序/计算片段 �?params (包含 query_vector 字符�?
+        ä½¿ç¨æ¬å° Embedding è¿è¡åéç¸ä¼¼åº¦å¹éï¿½?
+        è¿å: SQL æåº/è®¡ç®çæ®µ ï¿½?params (åå« query_vector å­ç¬¦ï¿½?
         """
         from utils.embedding import get_embedding
         try:
@@ -159,10 +159,10 @@ class MediaCrawlerDB:
         limit: int = 50
     ) -> DBResponse:
         """
-        【工具】查找热点内�? 提取数据库中 MindSpider 抓取的每日热点�?
+        ãå·¥å·ãæ¥æ¾ç­ç¹åï¿½? æåæ°æ®åºä¸­ MindSpider æåçæ¯æ¥ç­ç¹ï¿½?
         """
         params_for_log = {'time_period': time_period, 'limit': limit}
-        logger.info(f"--- TOOL: 查找本地热点内容 (params: {params_for_log}) ---")
+        logger.info(f"--- TOOL: æ¥æ¾æ¬å°ç­ç¹åå®¹ (params: {params_for_log}) ---")
         
         now = datetime.now()
         days = {'24h': 1, 'week': 7, 'year': 365}.get(time_period, 7)
@@ -192,10 +192,10 @@ class MediaCrawlerDB:
 
     def search_topic_globally(self, topic: str, limit_per_table: int = 10) -> DBResponse:
         """
-        【工具】全局话题搜索: 在本地多平台数据表中模糊检索话题�?
+        ãå·¥å·ãå¨å±è¯é¢æç´¢: å¨æ¬å°å¤å¹³å°æ°æ®è¡¨ä¸­æ¨¡ç³æ£ç´¢è¯é¢ï¿½?
         """
         params_for_log = {'topic': topic, 'limit_per_table': limit_per_table}
-        logger.info(f"--- TOOL: 本地全库话题搜索 (params: {params_for_log}) ---")
+        logger.info(f"--- TOOL: æ¬å°å¨åºè¯é¢æç´¢ (params: {params_for_log}) ---")
         
         table_config = {
             "seed": ("daily_news", "add_ts", ["title", "description"], "source_platform = 'seed_document'"),
@@ -213,12 +213,12 @@ class MediaCrawlerDB:
             order_sql, params = self._build_vector_conditions(topic)
             params["limit"] = limit_per_table
             
-            # 使用 embedding IS NOT NULL 来确保我们只搜索已向量化的数据，或者你可以退回到 LIKE
+            # ä½¿ç¨ embedding IS NOT NULL æ¥ç¡®ä¿æä»¬åªæç´¢å·²åéåçæ°æ®ï¼æèä½ å¯ä»¥éåå° LIKE
             if "query_vector" in params:
                 cond_sql = f"embedding IS NOT NULL"
                 order_clause = f"{order_sql} ASC"
             else:
-                # 降级处理
+                # éçº§å¤ç
                 cond_sql, fallback_params = self._build_keyword_conditions(topic, cols)
                 params.update(fallback_params)
                 order_clause = f"{col_time} DESC"
@@ -235,17 +235,17 @@ class MediaCrawlerDB:
                 time_val = r.get('time') or r.get('created_time') or r.get('add_ts') or r.get('create_time')
                 url = r.get('note_url') or r.get('video_url') or r.get('content_url') or r.get('aweme_url') or r.get('url')
                 
-                # 提取额外格式数据
+                # æåé¢å¤æ ¼å¼æ°æ®
                 extra_info_str = r.get('extra_info', '')
                 if extra_info_str:
                     try:
                         import json
                         extra_data = json.loads(extra_info_str)
                         if 'images' in extra_data and extra_data['images']:
-                            content += f" [包含 {len(extra_data['images'])} 张图片]"
+                            content += f" [åå« {len(extra_data['images'])} å¼ å¾ç]"
                         if 'video_url' in extra_data and extra_data['video_url']:
-                            content += f" [包含视频]"
-                        # 可以提取更多的点赞等互动数据
+                            content += f" [åå«è§é¢]"
+                        # å¯ä»¥æåæ´å¤çç¹èµç­äºå¨æ°æ®
                     except Exception:
                         pass
                 
@@ -263,16 +263,16 @@ class MediaCrawlerDB:
 
     def search_topic_by_date(self, topic: str, start_date: str, end_date: str, limit_per_table: int = 10) -> DBResponse:
         """
-        【工具】按日期搜索话题: 在限定的时间段内查询本地库�?
+        ãå·¥å·ãææ¥ææç´¢è¯é¢: å¨éå®çæ¶é´æ®µåæ¥è¯¢æ¬å°åºï¿½?
         """
         params_for_log = {'topic': topic, 'start_date': start_date, 'end_date': end_date, 'limit_per_table': limit_per_table}
-        logger.info(f"--- TOOL: 本地按日期搜索话�?(params: {params_for_log}) ---")
+        logger.info(f"--- TOOL: æ¬å°ææ¥ææç´¢è¯ï¿½?(params: {params_for_log}) ---")
         
         try:
             start_ts = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
             end_ts = int((datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)).timestamp() * 1000)
         except Exception:
-            return DBResponse("search_topic_by_date", params_for_log, error_message="日期格式错误，需�?YYYY-MM-DD")
+            return DBResponse("search_topic_by_date", params_for_log, error_message="æ¥ææ ¼å¼éè¯¯ï¼éï¿½?YYYY-MM-DD")
             
         table_config = {
             "xhs": ("xhs_note", "time", ["title", "\"desc\""]),
@@ -305,16 +305,16 @@ class MediaCrawlerDB:
                 content = r.get('desc', '') or r.get('content_text', '')
                 time_val = r.get('time') or r.get('created_time') or r.get('add_ts')
                 
-                # 提取额外格式数据
+                # æåé¢å¤æ ¼å¼æ°æ®
                 extra_info_str = r.get('extra_info', '')
                 if extra_info_str:
                     try:
                         import json
                         extra_data = json.loads(extra_info_str)
                         if 'images' in extra_data and extra_data['images']:
-                            content += f" [包含 {len(extra_data['images'])} 张图片]"
+                            content += f" [åå« {len(extra_data['images'])} å¼ å¾ç]"
                         if 'video_url' in extra_data and extra_data['video_url']:
-                            content += f" [包含视频]"
+                            content += f" [åå«è§é¢]"
                     except Exception:
                         pass
 
@@ -332,10 +332,10 @@ class MediaCrawlerDB:
         
     def get_comments_for_topic(self, topic: str, limit: int = 50) -> DBResponse:
         """
-        【工具】获取话题讨�? 直接从本地各平台的评论表中挖掘网民原话�?
+        ãå·¥å·ãè·åè¯é¢è®¨ï¿½? ç´æ¥ä»æ¬å°åå¹³å°çè¯è®ºè¡¨ä¸­ææç½æ°åè¯ï¿½?
         """
         params_for_log = {'topic': topic, 'limit': limit}
-        logger.info(f"--- TOOL: 本地挖掘话题讨论 (params: {params_for_log}) ---")
+        logger.info(f"--- TOOL: æ¬å°ææè¯é¢è®¨è®º (params: {params_for_log}) ---")
         
         table_config = {
             "xhs": ("xhs_note_comment", "create_time"),
@@ -360,7 +360,7 @@ class MediaCrawlerDB:
                 order_clause = f"{col_time} DESC"
                 
             sql = f"SELECT content, {col_time} as time, nickname FROM {tb_name} WHERE {cond_sql} ORDER BY {order_clause} LIMIT :limit"
-            # 兼容知乎贴吧字段�?
+            # å¼å®¹ç¥ä¹è´´å§å­æ®µï¿½?
             if platform in ["zhihu", "tieba"]:
                 sql = sql.replace("nickname", "user_nickname as nickname")
                 
@@ -370,7 +370,7 @@ class MediaCrawlerDB:
                     platform=platform,
                     content_type="comment",
                     title_or_content=r.get('content', ''),
-                    author_nickname=r.get('nickname', '网友'),
+                    author_nickname=r.get('nickname', 'ç½å'),
                     publish_time=self._parse_timestamp(r.get('time')),
                     source_table=f"{platform}_comment"
                 ))
@@ -386,23 +386,23 @@ class MediaCrawlerDB:
         limit: int = 20
     ) -> DBResponse:
         """
-        【工具】平台定向搜�? 精确查询本地某单一平台的数据表�?
+        ãå·¥å·ãå¹³å°å®åæï¿½? ç²¾ç¡®æ¥è¯¢æ¬å°æåä¸å¹³å°çæ°æ®è¡¨ï¿½?
         """
         params_for_log = {'platform': platform, 'topic': topic, 'start_date': start_date, 'end_date': end_date, 'limit': limit}
-        logger.info(f"--- TOOL: 本地定向平台搜索 (params: {params_for_log}) ---")
+        logger.info(f"--- TOOL: æ¬å°å®åå¹³å°æç´¢ (params: {params_for_log}) ---")
 
         table_map = {
             'xhs': ('xhs_note', 'title', 'desc', 'time'),
             'bilibili': ('bilibili_video', 'title', 'desc', 'create_time'),
             'douyin': ('douyin_aweme', 'title', 'desc', 'create_time'),
-            'weibo': ('weibo_note', 'content', 'content', 'create_time'), # 微博通常用content代替title和desc
+            'weibo': ('weibo_note', 'content', 'content', 'create_time'), # å¾®åéå¸¸ç¨contentä»£æ¿titleådesc
             'kuaishou': ('kuaishou_video', 'title', 'desc', 'create_time'),
             'zhihu': ('zhihu_content', 'title', 'content_text', 'created_time'),
             'tieba': ('tieba_note', 'title', 'desc', 'add_ts')
         }
         
         if platform not in table_map:
-            return DBResponse("search_topic_on_platform", params_for_log, error_message=f"不支持的平台: {platform}")
+            return DBResponse("search_topic_on_platform", params_for_log, error_message=f"ä¸æ¯æçå¹³å°: {platform}")
 
         tb_name, col_title, col_desc, col_time = table_map[platform]
         
@@ -417,7 +417,7 @@ class MediaCrawlerDB:
             params.update(fallback_params)
             order_clause = f"{col_time} DESC"
             
-        # 构建时间过滤
+        # æå»ºæ¶é´è¿æ»¤
         time_filter = ""
         if start_date and end_date:
             try:
@@ -451,7 +451,7 @@ class MediaCrawlerDB:
         return DBResponse("search_topic_on_platform", params_for_log, results=all_results, results_count=len(all_results))
 
 def get_search_tools():
-    """返回供LLM调用的工具列�?""
+    """è¿åä¾LLMè°ç¨çå·¥å·åï¿½?""
     search_db = MediaCrawlerDB()
     return [
         search_db.search_hot_content,
@@ -461,20 +461,20 @@ def get_search_tools():
         search_db.search_topic_on_platform
     ]
 
-# --- 3. 测试与使用示�?---
+# --- 3. æµè¯ä¸ä½¿ç¨ç¤ºï¿½?---
 def print_response_summary(response: DBResponse):
-    """简化的打印函数，用于展示测试结�?""
+    """ç®åçæå°å½æ°ï¼ç¨äºå±ç¤ºæµè¯ç»ï¿½?""
     if response.error_message:
-        logger.info(f"工具 '{response.tool_name}' 执行出错: {response.error_message}")
+        logger.info(f"å·¥å· '{response.tool_name}' æ§è¡åºé: {response.error_message}")
         return
 
     params_str = ", ".join(f"{k}='{v}'" for k, v in response.parameters.items())
-    logger.info(f"查询: 工具='{response.tool_name}', 参数=[{params_str}]")
-    logger.info(f"找到 {response.results_count} 条相关记录�?)
+    logger.info(f"æ¥è¯¢: å·¥å·='{response.tool_name}', åæ°=[{params_str}]")
+    logger.info(f"æ¾å° {response.results_count} æ¡ç¸å³è®°å½ï¿½?)
     
-    # 统一为一个消息输�?
+    # ç»ä¸ä¸ºä¸ä¸ªæ¶æ¯è¾ï¿½?
     output_lines = []
-    output_lines.append("==== 查询结果预览（最多前5条） ====")
+    output_lines.append("==== æ¥è¯¢ç»æé¢è§ï¼æå¤å5æ¡ï¼ ====")
     if response.results and len(response.results) > 0:
         for idx, res in enumerate(response.results[:5], 1):
             content_preview = (res.title_or_content.replace('\n', ' ')[:70] + '...') if res.title_or_content and len(res.title_or_content) > 70 else (res.title_or_content or '')
@@ -485,13 +485,13 @@ def print_response_summary(response: DBResponse):
             engagement_str = ", ".join(f"{k}: {v}" for k, v in engagement_dict.items() if v)
             output_lines.append(
                 f"{idx}. [{res.platform.upper()}/{res.content_type}] {content_preview}\n"
-                f"   作�? {author_str} | 时间: {publish_time_str}"
-                f"{hotness_str} | 源关键词: '{res.source_keyword or 'N/A'}'\n"
-                f"   链接: {res.url or 'N/A'}\n"
-                f"   互动数据: {{{engagement_str}}}"
+                f"   ä½ï¿½? {author_str} | æ¶é´: {publish_time_str}"
+                f"{hotness_str} | æºå³é®è¯: '{res.source_keyword or 'N/A'}'\n"
+                f"   é¾æ¥: {res.url or 'N/A'}\n"
+                f"   äºå¨æ°æ®: {{{engagement_str}}}"
             )
     else:
-        output_lines.append("暂无相关内容�?)
+        output_lines.append("ææ ç¸å³åå®¹ï¿½?)
     output_lines.append("=" * 60)
     logger.info('\n'.join(output_lines))
 
@@ -499,30 +499,30 @@ if __name__ == "__main__":
     
     try:
         db_agent_tools = MediaCrawlerDB()
-        logger.info("数据库工具初始化成功，开始执行测试场�?..\n")
+        logger.info("æ°æ®åºå·¥å·åå§åæåï¼å¼å§æ§è¡æµè¯åºï¿½?..\n")
         
-        # 场景1: (�? 查找过去一周综合热度最高的内容 (不再需要sort_by)
+        # åºæ¯1: (ï¿½? æ¥æ¾è¿å»ä¸å¨ç»¼åç­åº¦æé«çåå®¹ (ä¸åéè¦sort_by)
         response1 = db_agent_tools.search_hot_content(time_period='week', limit=5)
         print_response_summary(response1)
 
-        # 场景2: 查找过去24小时内综合热度最高的内容
+        # åºæ¯2: æ¥æ¾è¿å»24å°æ¶åç»¼åç­åº¦æé«çåå®¹
         response2 = db_agent_tools.search_hot_content(time_period='24h', limit=5)
         print_response_summary(response2)
 
-        # 场景3: 全局搜索"罗永�?
-        response3 = db_agent_tools.search_topic_globally(topic="罗永�?, limit_per_table=2)
+        # åºæ¯3: å¨å±æç´¢"ç½æ°¸ï¿½?
+        response3 = db_agent_tools.search_topic_globally(topic="ç½æ°¸ï¿½?, limit_per_table=2)
         print_response_summary(response3)
 
-        # 场景4: (新增) 在B站上精确搜索"论文"
-        response4 = db_agent_tools.search_topic_on_platform(platform='bilibili', topic="论文", limit=5)
+        # åºæ¯4: (æ°å¢) å¨Bç«ä¸ç²¾ç¡®æç´¢"è®ºæ"
+        response4 = db_agent_tools.search_topic_on_platform(platform='bilibili', topic="è®ºæ", limit=5)
         print_response_summary(response4)
 
-        # 场景5: (新增) 在微博上精确搜索 "许凯" 在特定一天内的内�?
-        response5 = db_agent_tools.search_topic_on_platform(platform='weibo', topic="许凯", start_date='2025-08-22', end_date='2025-08-22', limit=5)
+        # åºæ¯5: (æ°å¢) å¨å¾®åä¸ç²¾ç¡®æç´¢ "è®¸å¯" å¨ç¹å®ä¸å¤©åçåï¿½?
+        response5 = db_agent_tools.search_topic_on_platform(platform='weibo', topic="è®¸å¯", start_date='2025-08-22', end_date='2025-08-22', limit=5)
         print_response_summary(response5)
 
     except ValueError as e:
-        logger.exception(f"初始化失�? {e}")
-        logger.exception("请确保相关的数据库环境变量已正确设置, 或在代码中直接提供连接信息�?)
+        logger.exception(f"åå§åå¤±ï¿½? {e}")
+        logger.exception("è¯·ç¡®ä¿ç¸å³çæ°æ®åºç¯å¢åéå·²æ­£ç¡®è®¾ç½®, æå¨ä»£ç ä¸­ç´æ¥æä¾è¿æ¥ä¿¡æ¯ï¿½?)
     except Exception as e:
-        logger.exception(f"测试过程中发生未知错�? {e}")
+        logger.exception(f"æµè¯è¿ç¨ä¸­åçæªç¥éï¿½? {e}")

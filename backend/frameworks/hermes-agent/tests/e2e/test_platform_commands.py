@@ -2,11 +2,11 @@
 
 Each test drives a message through the full async pipeline:
     adapter.handle_message(event)
-        �?BasePlatformAdapter._process_message_background()
-        �?GatewayRunner._handle_message() (command dispatch)
-        �?adapter.send() (captured for assertions)
+        é«?BasePlatformAdapter._process_message_background()
+        é«?GatewayRunner._handle_message() (command dispatch)
+        é«?adapter.send() (captured for assertions)
 
-No LLM involved �?only gateway-level commands are tested.
+No LLM involved é¥?only gateway-level commands are tested.
 Tests are parametrized over platforms via the ``platform`` fixture in conftest.
 """
 
@@ -183,7 +183,7 @@ class TestSendFailureResilience:
         adapter.set_message_handler(adapter._message_handler) # re-wire with same handler
 
         event = make_event(platform, "/help")
-        # Should not raise �?pipeline handles send failures internally
+        # Should not raise é¥?pipeline handles send failures internally
         await adapter.handle_message(event)
         await asyncio.sleep(0.3)
 

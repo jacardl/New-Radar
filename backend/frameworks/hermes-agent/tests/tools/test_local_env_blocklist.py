@@ -75,7 +75,7 @@ class TestProviderEnvBlocklist:
 
     def test_registry_derived_vars_are_stripped(self):
         """Vars from the provider registry (ANTHROPIC_TOKEN, ZAI_API_KEY, etc.)
-        must also be blocked �?not just the hand-written extras."""
+        must also be blocked é¥?not just the hand-written extras."""
         registry_vars = {
             "ANTHROPIC_TOKEN": "ant-tok",
             "CLAUDE_CODE_OAUTH_TOKEN": "cc-tok",
@@ -198,7 +198,7 @@ class TestBlocklistCoverage:
 
     def test_registry_vars_are_in_blocklist(self):
         """Every api_key_env_var and base_url_env_var from PROVIDER_REGISTRY
-        must appear in the blocklist �?ensures no drift."""
+        must appear in the blocklist é¥?ensures no drift."""
         from hermes_cli.auth import PROVIDER_REGISTRY
 
         for pconfig in PROVIDER_REGISTRY.values():

@@ -4,7 +4,7 @@ Scans ``plugins/context_engine/<name>/`` directories for context engine
 plugins.  Each subdirectory must contain ``__init__.py`` with a class
 implementing the ContextEngine ABC.
 
-Context engines are separate from the general plugin system �?they live
+Context engines are separate from the general plugin system é¥?they live
 in the repo and are always available without user installation.  Only ONE
 can be active at a time, selected via ``context.engine`` in config.yaml.
 The default engine is ``"compressor"`` (the built-in ContextCompressor).
@@ -34,7 +34,7 @@ def discover_context_engines() -> List[Tuple[str, str, bool]]:
     """Scan plugins/context_engine/ for available engines.
 
     Returns list of (name, description, is_available) tuples.
-    Does NOT import the engines �?just reads plugin.yaml for metadata
+    Does NOT import the engines é¥?just reads plugin.yaml for metadata
     and does a lightweight availability check.
     """
     results = []
@@ -60,7 +60,7 @@ def discover_context_engines() -> List[Tuple[str, str, bool]]:
             except Exception:
                 pass
 
-        # Quick availability check �?try loading and calling is_available()
+        # Quick availability check é¥?try loading and calling is_available()
         available = True
         try:
             engine = _load_engine_from_dir(child)
@@ -101,8 +101,8 @@ def _load_engine_from_dir(engine_dir: Path) -> Optional["ContextEngine"]:
     """Import an engine module and extract the ContextEngine instance.
 
     The module must have either:
-    - A register(ctx) function (plugin-style) �?we simulate a ctx
-    - A top-level class that extends ContextEngine �?we instantiate it
+    - A register(ctx) function (plugin-style) é¥?we simulate a ctx
+    - A top-level class that extends ContextEngine é¥?we instantiate it
     """
     name = engine_dir.name
     module_name = f"plugins.context_engine.{name}"

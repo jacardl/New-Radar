@@ -72,7 +72,7 @@ class TestHandleUpdateCommand:
             # Easier: just patch the __file__ resolution in the method
             pass
 
-        # Simpler approach â€?mock at method level using a wrapper
+        # Simpler approach Ã©Â¥?mock at method level using a wrapper
         from gateway.run import GatewayRunner
         runner = _make_runner()
 
@@ -415,7 +415,7 @@ class TestSendUpdateNotification:
         }
         (hermes_home / ".update_pending.json").write_text(json.dumps(pending))
         (hermes_home / ".update_output.txt").write_text(
-            "â†?Found 3 new commit(s)\nâœ?Code updated!\nâœ?Update complete!"
+            "Ã©Â«?Found 3 new commit(s)\nÃ©?Code updated!\nÃ©?Update complete!"
         )
         (hermes_home / ".update_exit_code").write_text("0")
 
@@ -442,7 +442,7 @@ class TestSendUpdateNotification:
         pending = {"platform": "telegram", "chat_id": "111", "user_id": "222"}
         (hermes_home / ".update_pending.json").write_text(json.dumps(pending))
         (hermes_home / ".update_output.txt").write_text(
-            "\x1b[32mâœ?Code updated!\x1b[0m\n\x1b[1mDone\x1b[0m"
+            "\x1b[32mÃ©?Code updated!\x1b[0m\n\x1b[1mDone\x1b[0m"
         )
         (hermes_home / ".update_exit_code").write_text("0")
 
@@ -476,7 +476,7 @@ class TestSendUpdateNotification:
 
         sent_text = mock_adapter.send.call_args[0][1]
         # Should start with truncation marker
-        assert "â€? in sent_text
+        assert "Ã©Â¥? in sent_text
         # Total message should not be absurdly long
         assert len(sent_text) < 4500
 
@@ -537,7 +537,7 @@ class TestSendUpdateNotification:
         pending_path.write_text(json.dumps({
             "platform": "telegram", "chat_id": "111", "user_id": "222",
         }))
-        output_path.write_text("âœ?Done")
+        output_path.write_text("Ã©?Done")
         exit_code_path.write_text("0")
 
         mock_adapter = AsyncMock()
@@ -563,7 +563,7 @@ class TestSendUpdateNotification:
         pending_path.write_text(json.dumps({
             "platform": "telegram", "chat_id": "111", "user_id": "222",
         }))
-        output_path.write_text("âœ?Done")
+        output_path.write_text("Ã©?Done")
         exit_code_path.write_text("0")
 
         # Adapter send raises

@@ -31,7 +31,7 @@ class TestIsNetworkAccessible:
         assert is_network_accessible("::1") is False
 
     def test_ipv4_mapped_loopback(self):
-        # ::ffff:127.0.0.1 �?Python's is_loopback returns False for mapped
+        # ::ffff:127.0.0.1 é¥?Python's is_loopback returns False for mapped
         # addresses; the helper must unwrap and check ipv4_mapped.
         assert is_network_accessible("::ffff:127.0.0.1") is False
 

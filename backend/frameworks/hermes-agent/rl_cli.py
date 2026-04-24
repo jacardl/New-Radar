@@ -36,7 +36,7 @@ from hermes_cli.env_loader import load_hermes_dotenv
 
 _loaded_env_paths = load_hermes_dotenv(hermes_home=_hermes_home, project_env=_project_env)
 for _env_path in _loaded_env_paths:
-    print(f"�?Loaded environment variables from {_env_path}")
+    print(f"â?Loaded environment variables from {_env_path}")
 
 # Set terminal working directory to tinker-atropos submodule
 # This ensures terminal commands run in the right context for RL work
@@ -44,12 +44,12 @@ tinker_atropos_dir = Path(__file__).parent / 'tinker-atropos'
 if tinker_atropos_dir.exists():
     os.environ['TERMINAL_CWD'] = str(tinker_atropos_dir)
     os.environ['HERMES_QUIET'] = '1'  # Disable temp subdirectory creation
-    print(f"📂 Terminal working directory: {tinker_atropos_dir}")
+    print(f"ð Terminal working directory: {tinker_atropos_dir}")
 else:
     # Fall back to hermes-agent directory if submodule not found
     os.environ['TERMINAL_CWD'] = str(Path(__file__).parent)
     os.environ['HERMES_QUIET'] = '1'
-    print(f"⚠️  tinker-atropos submodule not found, using: {Path(__file__).parent}")
+    print(f"â ï¸  tinker-atropos submodule not found, using: {Path(__file__).parent}")
 
 # Import agent and tools
 from run_agent import AIAgent
@@ -97,7 +97,7 @@ def load_hermes_config() -> dict:
                 config["base_url"] = file_config["base_url"]
                 
         except Exception as e:
-            print(f"⚠️  Warning: Failed to load config.yaml: {e}")
+            print(f"â ï¸  Warning: Failed to load config.yaml: {e}")
     
     return config
 
@@ -190,7 +190,7 @@ def check_requirements():
         errors.append(f"Missing RL API keys: {', '.join(missing_rl_keys)}")
     
     if errors:
-        print("�?Missing requirements:")
+        print("â?Missing requirements:")
         for error in errors:
             print(f"   - {error}")
         print("\nPlease set these environment variables in your .env file or shell.")
@@ -281,27 +281,27 @@ def main(
     if base_url is None:
         base_url = config["base_url"]
     
-    print("🎯 RL Training Agent")
+    print("ð¯ RL Training Agent")
     print("=" * 60)
     
     # Handle setup check
     if check_server:
-        print("\n🔍 Checking tinker-atropos setup...")
+        print("\nð Checking tinker-atropos setup...")
         ok, result = check_tinker_atropos()
         if ok:
-            print("�?tinker-atropos submodule found")
+            print("â?tinker-atropos submodule found")
             print(f"   Path: {result.get('path')}")
             print(f"   Environments found: {result.get('environments_count', 0)}")
             
             # Also check API keys
             missing = get_missing_keys()
             if missing:
-                print(f"\n⚠️  Missing API keys: {', '.join(missing)}")
+                print(f"\nâ ï¸  Missing API keys: {', '.join(missing)}")
                 print("   Add them to ~/.hermes/.env")
             else:
-                print("�?API keys configured")
+                print("â?API keys configured")
         else:
-            print(f"�?tinker-atropos not set up: {result}")
+            print(f"â?tinker-atropos not set up: {result}")
             print("\nTo set up:")
             print("  git submodule update --init")
             print("  pip install -e ./tinker-atropos")
@@ -309,12 +309,12 @@ def main(
     
     # Handle environment listing
     if list_environments:
-        print("\n📋 Available RL Environments:")
+        print("\nð Available RL Environments:")
         print("-" * 40)
         try:
             data = list_environments_sync()
             if "error" in data:
-                print(f"�?Error: {data['error']}")
+                print(f"â?Error: {data['error']}")
                 return
             
             envs = data.get("environments", [])
@@ -325,17 +325,17 @@ def main(
                 return
             
             for env in envs:
-                print(f"\n  📦 {env['name']}")
+                print(f"\n  ð¦ {env['name']}")
                 print(f"     Class: {env['class_name']}")
                 print(f"     Path: {env['file_path']}")
                 if env.get('description'):
                     desc = env['description'][:100] + "..." if len(env.get('description', '')) > 100 else env.get('description', '')
                     print(f"     Description: {desc}")
             
-            print(f"\n📊 Total: {len(envs)} environments")
+            print(f"\nð Total: {len(envs)} environments")
             print("\nUse `rl_select_environment(name)` to select an environment for training.")
         except Exception as e:
-            print(f"�?Error listing environments: {e}")
+            print(f"â?Error listing environments: {e}")
             print("\nMake sure tinker-atropos is set up:")
             print("  git submodule update --init")
             print("  pip install -e ./tinker-atropos")
@@ -347,7 +347,7 @@ def main(
     
     # Set default task if none provided
     if not task and not interactive:
-        print("\n⚠️  No task provided. Use --interactive for interactive mode or provide a task.")
+        print("\nâ ï¸  No task provided. Use --interactive for interactive mode or provide a task.")
         print("\nExamples:")
         print('  python rl_cli.py "Train a model on GSM8k math problems"')
         print('  python rl_cli.py "Create an RL environment for code generation"')
@@ -357,12 +357,12 @@ def main(
     # Get API key
     api_key = api_key or os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        print("�?No API key provided. Set OPENROUTER_API_KEY or pass --api-key")
+        print("â?No API key provided. Set OPENROUTER_API_KEY or pass --api-key")
         sys.exit(1)
     
-    print(f"\n🤖 Model: {model}")
-    print(f"🔧 Max iterations: {max_iterations}")
-    print(f"📁 Toolsets: {', '.join(RL_TOOLSETS)}")
+    print(f"\nð¤ Model: {model}")
+    print(f"ð§ Max iterations: {max_iterations}")
+    print(f"ð Toolsets: {', '.join(RL_TOOLSETS)}")
     print("=" * 60)
     
     # Create agent with RL configuration
@@ -380,20 +380,20 @@ def main(
     
     if interactive:
         # Interactive mode - multiple conversations
-        print("\n🔄 Interactive RL Training Mode")
+        print("\nð Interactive RL Training Mode")
         print("Type 'quit' or 'exit' to end the session.")
         print("Type 'status' to check active training runs.")
         print("-" * 40)
         
         while True:
             try:
-                user_input = input("\n🎯 RL Task> ").strip()
+                user_input = input("\nð¯ RL Task> ").strip()
                 
                 if not user_input:
                     continue
                 
                 if user_input.lower() in ('quit', 'exit', 'q'):
-                    print("\n👋 Goodbye!")
+                    print("\nð Goodbye!")
                     break
                 
                 if user_input.lower() == 'status':
@@ -403,7 +403,7 @@ def main(
                     result = asyncio.run(rl_list_runs())
                     runs = json.loads(result)
                     if isinstance(runs, list) and runs:
-                        print("\n📊 Active Runs:")
+                        print("\nð Active Runs:")
                         for run in runs:
                             print(f"  - {run['run_id']}: {run['environment']} ({run['status']})")
                     else:
@@ -416,26 +416,26 @@ def main(
                 print("\n" + "=" * 60)
                 
             except KeyboardInterrupt:
-                print("\n\n👋 Interrupted. Goodbye!")
+                print("\n\nð Interrupted. Goodbye!")
                 break
             except Exception as e:
-                print(f"\n�?Error: {e}")
+                print(f"\nâ?Error: {e}")
                 if verbose:
                     import traceback
                     traceback.print_exc()
     else:
         # Single task mode
-        print(f"\n📝 Task: {task}")
+        print(f"\nð Task: {task}")
         print("-" * 40)
         
         try:
             response = agent.run_conversation(task)
             print("\n" + "=" * 60)
-            print("�?Task completed")
+            print("â?Task completed")
         except KeyboardInterrupt:
-            print("\n\n⚠️ Interrupted by user")
+            print("\n\nâ ï¸ Interrupted by user")
         except Exception as e:
-            print(f"\n�?Error: {e}")
+            print(f"\nâ?Error: {e}")
             if verbose:
                 import traceback
                 traceback.print_exc()

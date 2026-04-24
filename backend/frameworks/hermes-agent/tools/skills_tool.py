@@ -7,23 +7,23 @@ Skills are organized as directories containing a SKILL.md file (the main instruc
 and optional supporting files like references, templates, and examples.
 
 Inspired by Anthropic's Claude Skills system with progressive disclosure architecture:
-- Metadata (name �?4 chars, description �?024 chars) - shown in skills_list
+- Metadata (name â?4 chars, description â?024 chars) - shown in skills_list
 - Full Instructions - loaded via skill_view when needed
 - Linked Files (references, templates) - loaded on demand
 
 Directory Structure:
     skills/
-    ├── my-skill/
-    �?  ├── SKILL.md           # Main instructions (required)
-    �?  ├── references/        # Supporting documentation
-    �?  �?  ├── api.md
-    �?  �?  └── examples.md
-    �?  ├── templates/         # Templates for output
-    �?  �?  └── template.md
-    �?  └── assets/            # Supplementary files (agentskills.io standard)
-    └── category/              # Category folder for organization
-        └── another-skill/
-            └── SKILL.md
+    â-- my-skill/
+    â?  â-- SKILL.md           # Main instructions (required)
+    â?  â-- references/        # Supporting documentation
+    â?  â?  â-- api.md
+    â?  â?  â-- examples.md
+    â?  â-- templates/         # Templates for output
+    â?  â?  â-- template.md
+    â?  â-- assets/            # Supplementary files (agentskills.io standard)
+    â-- category/              # Category folder for organization
+        â-- another-skill/
+            â-- SKILL.md
 
 SKILL.md Format (YAML Frontmatter, agentskills.io compatible):
     ---
@@ -31,10 +31,10 @@ SKILL.md Format (YAML Frontmatter, agentskills.io compatible):
     description: Brief description # Required, max 1024 chars
     version: 1.0.0                # Optional
     license: MIT                  # Optional (agentskills.io)
-    platforms: [macos]            # Optional �?restrict to specific OS platforms
+    platforms: [macos]            # Optional â?restrict to specific OS platforms
                                   #   Valid: macos, linux, windows
                                   #   Omit to load on all platforms (default)
-    prerequisites:                # Optional �?legacy runtime requirements
+    prerequisites:                # Optional â?legacy runtime requirements
       env_vars: [API_KEY]         #   Legacy env var names are normalized into
                                   #   required_environment_variables on load.
       commands: [curl, jq]        #   Command checks remain advisory only.
@@ -134,7 +134,7 @@ def set_secret_capture_callback(callback) -> None:
 def skill_matches_platform(frontmatter: Dict[str, Any]) -> bool:
     """Check if a skill is compatible with the current OS platform.
 
-    Delegates to ``agent.skill_utils.skill_matches_platform`` �?kept here
+    Delegates to ``agent.skill_utils.skill_matches_platform`` â?kept here
     as a public re-export so existing callers don't need updating.
     """
     from agent.skill_utils import skill_matches_platform as _impl
@@ -419,7 +419,7 @@ def check_skills_requirements() -> bool:
 def _parse_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
     """Parse YAML frontmatter from markdown content.
 
-    Delegates to ``agent.skill_utils.parse_frontmatter`` �?kept here
+    Delegates to ``agent.skill_utils.parse_frontmatter`` â?kept here
     as a public re-export so existing callers don't need updating.
     """
     from agent.skill_utils import parse_frontmatter
@@ -462,7 +462,7 @@ def _parse_tags(tags_value) -> List[str]:
     - Comma-separated string: "tag1, tag2"
 
     Args:
-        tags_value: Raw tags value �?may be a list or string
+        tags_value: Raw tags value â?may be a list or string
 
     Returns:
         List of tag strings
@@ -474,7 +474,7 @@ def _parse_tags(tags_value) -> List[str]:
     if isinstance(tags_value, list):
         return [str(t).strip() for t in tags_value if t]
 
-    # String fallback �?handle bracket-wrapped or comma-separated
+    # String fallback â?handle bracket-wrapped or comma-separated
     tags_value = str(tags_value).strip()
     if tags_value.startswith("[") and tags_value.endswith("]"):
         tags_value = tags_value[1:-1]
@@ -486,7 +486,7 @@ def _parse_tags(tags_value) -> List[str]:
 def _get_disabled_skill_names() -> Set[str]:
     """Load disabled skill names from config.
 
-    Delegates to ``agent.skill_utils.get_disabled_skill_names`` �?kept here
+    Delegates to ``agent.skill_utils.get_disabled_skill_names`` â?kept here
     as a public re-export so existing callers don't need updating.
     """
     from agent.skill_utils import get_disabled_skill_names
@@ -776,7 +776,7 @@ def skill_view(name: str, file_path: str = None, task_id: str = None) -> str:
                 ensure_ascii=False,
             )
 
-        # Read the file once �?reused for platform check and main content below
+        # Read the file once â?reused for platform check and main content below
         try:
             content = skill_md.read_text(encoding="utf-8")
         except Exception as e:
@@ -993,7 +993,7 @@ def skill_view(name: str, file_path: str = None, task_id: str = None) -> str:
                         ]
                     )
 
-            # assets/ �?agentskills.io standard directory for supplementary files
+            # assets/ â?agentskills.io standard directory for supplementary files
             assets_dir = skill_dir / "assets"
             if assets_dir.exists():
                 for f in assets_dir.rglob("*"):
@@ -1033,7 +1033,7 @@ def skill_view(name: str, file_path: str = None, task_id: str = None) -> str:
         try:
             rel_path = str(skill_md.relative_to(SKILLS_DIR))
         except ValueError:
-            # External skill �?use path relative to the skill's own parent dir
+            # External skill â?use path relative to the skill's own parent dir
             rel_path = str(skill_md.relative_to(skill_md.parent.parent)) if skill_md.parent.parent else skill_md.name
         skill_name = frontmatter.get(
             "name", skill_md.stem if not skill_dir else skill_dir.name
@@ -1065,7 +1065,7 @@ def skill_view(name: str, file_path: str = None, task_id: str = None) -> str:
 
         # Register available skill env vars so they pass through to sandboxed
         # execution environments (execute_code, terminal).  Only vars that are
-        # actually set get registered �?missing ones are reported as setup_needed.
+        # actually set get registered â?missing ones are reported as setup_needed.
         available_env_names = [
             e["name"]
             for e in required_env_vars
@@ -1167,11 +1167,11 @@ def skill_view(name: str, file_path: str = None, task_id: str = None) -> str:
 
 if __name__ == "__main__":
     """Test the skills tool"""
-    print("🎯 Skills Tool Test")
+    print("ð¯ Skills Tool Test")
     print("=" * 60)
 
     # Test listing skills
-    print("\n📋 Listing all skills:")
+    print("\nð Listing all skills:")
     result = json.loads(skills_list())
     if result["success"]:
         print(
@@ -1181,12 +1181,12 @@ if __name__ == "__main__":
         print("\nFirst 10 skills:")
         for skill in result["skills"][:10]:
             cat = f"[{skill['category']}] " if skill.get("category") else ""
-            print(f"  �?{cat}{skill['name']}: {skill['description'][:60]}...")
+            print(f"  â?{cat}{skill['name']}: {skill['description'][:60]}...")
     else:
         print(f"Error: {result['error']}")
 
     # Test viewing a skill
-    print("\n📖 Viewing skill 'axolotl':")
+    print("\nð Viewing skill 'axolotl':")
     result = json.loads(skill_view("axolotl"))
     if result["success"]:
         print(f"Name: {result['name']}")
@@ -1198,7 +1198,7 @@ if __name__ == "__main__":
         print(f"Error: {result['error']}")
 
     # Test viewing a reference file
-    print("\n📄 Viewing reference file 'axolotl/references/dataset-formats.md':")
+    print("\nð Viewing reference file 'axolotl/references/dataset-formats.md':")
     result = json.loads(skill_view("axolotl", "references/dataset-formats.md"))
     if result["success"]:
         print(f"File: {result['file']}")
@@ -1254,7 +1254,7 @@ registry.register(
         category=args.get("category"), task_id=kw.get("task_id")
     ),
     check_fn=check_skills_requirements,
-    emoji="📚",
+    emoji="ð",
 )
 registry.register(
     name="skill_view",
@@ -1264,5 +1264,5 @@ registry.register(
         args.get("name", ""), file_path=args.get("file_path"), task_id=kw.get("task_id")
     ),
     check_fn=check_skills_requirements,
-    emoji="📚",
+    emoji="ð",
 )

@@ -2,7 +2,7 @@
 """Fetch YouTube transcripts for Memento quiz generation.
 
 Requires: pip install youtube-transcript-api
-The quiz question *generation* is done by the agent's LLM �?this script only fetches transcripts.
+The quiz question *generation* is done by the agent's LLM é¥?this script only fetches transcripts.
 """
 
 import argparse

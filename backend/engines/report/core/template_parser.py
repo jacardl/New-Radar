@@ -1,9 +1,9 @@
 """
-Markdown模板切片工具�?
+Markdownæ¨¡æ¿åçå·¥å·
 
-LLM需要“按章调用”，因此必须把Markdown模板解析为结构化章节队列�?
-这里通过轻量正则和缩进启发式，兼容�? 标题”与
-�? **1.0 标题** /   - 1.1 子标题”等多种写法�?
+LLMéè¦"æç« è°ç¨"ï¼å æ­¤å¿é¡»æMarkdownæ¨¡æ¿è§£æä¸ºç»æåç« èéå
+è¿ééè¿è½»éæ­£ååç¼©è¿å¯åå¼ï¼å¼å®¹â? æ é¢"ä¸
+â? **1.0 æ é¢** /   - 1.1 å­æ é¢"ç­å¤ç§åæ³
 """
 
 from __future__ import annotations
@@ -19,10 +19,10 @@ SECTION_ORDER_STEP = 10
 @dataclass
 class TemplateSection:
     """
-    模板章节实体�?
+    æ¨¡æ¿ç« èå®ä½
 
-    记录标题、slug、序号、层级、原始标题、章节编号与提纲�?
-    方便后续节点在提示词中引用并保持锚点一致�?
+    è®°å½æ é¢lugãåºå·ãå±çº§ãåå§æ é¢ãç« èç¼å·ä¸æçº²ï¼?
+    æ¹ä¾¿åç»­èç¹å¨æç¤ºè¯ä¸­å¼ç¨å¹¶ä¿æéç¹ä¸è´
     """
 
     title: str
@@ -36,9 +36,9 @@ class TemplateSection:
 
     def to_dict(self) -> dict:
         """
-        将章节实体序列化为字典�?
+        å°ç« èå®ä½åºååä¸ºå­å¸
 
-        该结构广泛用于提示词上下文以�?layout/word budget 节点的输入�?
+        è¯¥ç»æå¹¿æ³ç¨äºæç¤ºè¯ä¸ä¸æä»¥å?layout/word budget èç¹çè¾å¥
         """
         return {
             "title": self.title,
@@ -51,19 +51,19 @@ class TemplateSection:
         }
 
 
-# 解析表达式刻意避免使�?`.*`，以保持匹配的确定性，
-# 并规避不可信模板文本中常见的正则DoS风险�?
+# è§£æè¡¨è¾¾å¼å»æé¿åä½¿ç?`.*`ï¼ä»¥ä¿æå¹éçç¡®å®æ§ï¼
+# å¹¶è§é¿ä¸å¯ä¿¡æ¨¡æ¿ææ¬ä¸­å¸¸è§çæ­£åDoSé£é©
 heading_pattern = re.compile(
     r"""
-    (?P<marker>\#{1,6})       # Markdown标题标记
-    [ \t]+                    # 必需的空白字�?
-    (?P<title>[^\r\n]+)       # 不包含换行的标题文本
+    (?P<marker>\#{1,6})       # Markdownæ é¢æ è®°
+    [ \t]+                    # å¿éçç©ºç½å­ç¬?
+    (?P<title>[^\r\n]+)       # ä¸åå«æ¢è¡çæ é¢ææ¬
     """,
     re.VERBOSE,
 )
 bullet_pattern = re.compile(
     r"""
-    (?P<marker>[-*+])         # 列表项目符号
+    (?P<marker>[-*+])         # åè¡¨é¡¹ç®ç¬¦å·
     [ \t]+
     (?P<title>[^\r\n]+)
     """,
@@ -76,7 +76,7 @@ number_pattern = re.compile(
         (?:\.(?:0|[1-9]\d*))*
     )
     (?:
-        (?:[ \t\u00A0\u3000�?�?]+|\.(?!\d))+
+        (?:[ \t\u00A0\u3000ï¼?]+|\.(?!\d))+
         (?P<label>[^\r\n]*)
     )?
     """,
@@ -86,17 +86,17 @@ number_pattern = re.compile(
 
 def parse_template_sections(template_md: str) -> List[TemplateSection]:
     """
-    将Markdown模板切分成章节列表（按大标题）�?
+    å°Markdownæ¨¡æ¿ååæç« èåè¡¨ï¼æå¤§æ é¢ï¼
 
-    返回的每个TemplateSection都携带slug/order/章节号，
-    方便后续分章调用与锚点生成。解析时会同时兼�?
-    �? 标题”“无符号编号”“列表提纲”等不同写法�?
+    è¿åçæ¯ä¸ªTemplateSectioné½æºå¸¦slug/order/ç« èå·ï¼
+    æ¹ä¾¿åç»­åç« è°ç¨ä¸éç¹çæãè§£ææ¶ä¼åæ¶å¼å®?
+    â? æ é¢""æ ç¬¦å·ç¼å·""åè¡¨æçº²"ç­ä¸ååæ³
 
-    参数:
-        template_md: 模板Markdown全文�?
+    åæ°:
+        template_md: æ¨¡æ¿Markdownå¨æ
 
-    返回:
-        list[TemplateSection]: 结构化的章节序列�?
+    è¿å:
+        list[TemplateSection]: ç»æåçç« èåºå
     """
 
     sections: List[TemplateSection] = []
@@ -130,12 +130,12 @@ def parse_template_sections(template_md: str) -> List[TemplateSection]:
             order += SECTION_ORDER_STEP
             continue
 
-        # 提纲条目
+        # æçº²æ¡ç®
         if current:
             current.outline.append(meta["title"])
 
     for idx, section in enumerate(sections, start=1):
-        # 为每个章节生成稳定的chapter_id，便于后续引�?
+        # ä¸ºæ¯ä¸ªç« èçæç¨³å®çchapter_idï¼ä¾¿äºåç»­å¼ç?
         section.chapter_id = f"S{idx}"
 
     return sections
@@ -143,17 +143,17 @@ def parse_template_sections(template_md: str) -> List[TemplateSection]:
 
 def _classify_line(stripped: str, indent: int) -> Optional[dict]:
     """
-    根据缩进与符号分类行�?
+    æ ¹æ®ç¼©è¿ä¸ç¬¦å·åç±»è¡
 
-    借助正则判断当前行是章节标题、提纲还是普通列表项�?
-    并衍�?depth/slug/number 等派生信息�?
+    åå©æ­£åå¤æ­å½åè¡æ¯ç« èæ é¢ãæçº²è¿æ¯æ®éåè¡¨é¡¹ï¼?
+    å¹¶è¡ç?depth/slug/number ç­æ´¾çä¿¡æ¯
 
-    参数:
-        stripped: 去除前后空格后的原始行�?
-        indent: 行首空格数量，用于区分层级�?
+    åæ°:
+        stripped: å»é¤ååç©ºæ ¼åçåå§è¡
+        indent: è¡é¦ç©ºæ ¼æ°éï¼ç¨äºåºåå±çº§
 
-    返回:
-        dict | None: 识别后的元数据；无法识别时返回None�?
+    è¿å:
+        dict | None: è¯å«åçåæ°æ®ï¼æ æ³è¯å«æ¶è¿åNone
     """
 
     heading_match = heading_pattern.fullmatch(stripped)
@@ -187,7 +187,7 @@ def _classify_line(stripped: str, indent: int) -> Optional[dict]:
             "slug": slug,
         }
 
-    # 兼容�?.1 ...”没有前缀符号的行
+    # å¼å®¹â?.1 ..."æ²¡æåç¼ç¬¦å·çè¡
     number_match = number_pattern.fullmatch(stripped)
     if number_match and number_match.group("label"):
         payload = stripped
@@ -210,7 +210,7 @@ def _classify_line(stripped: str, indent: int) -> Optional[dict]:
 
 
 def _strip_markup(text: str) -> str:
-    """去除包裹�?*、__等强调标记，避免干扰标题匹配�?""
+    """å»é¤åè£¹ç?*_ç­å¼ºè°æ è®°ï¼é¿åå¹²æ°æ é¢å¹é""
     if text.startswith(("**", "__")) and text.endswith(("**", "__")) and len(text) > 4:
         return text[2:-2].strip()
     return text
@@ -218,16 +218,16 @@ def _strip_markup(text: str) -> str:
 
 def _split_number(payload: str) -> dict:
     """
-    拆分编号与标题�?
+    æåç¼å·ä¸æ é¢
 
-    例如 `1.2 市场趋势` 会被拆成 number=1.2、label=市场趋势�?
-    并提�?display 用于回填标题�?
+    ä¾å¦ `1.2 å¸åºè¶å¿` ä¼è¢«ææ number=1.2abel=å¸åºè¶å¿ï¼?
+    å¹¶æä¾?display ç¨äºåå¡«æ é¢
 
-    参数:
-        payload: 原始标题字符串�?
+    åæ°:
+        payload: åå§æ é¢å­ç¬¦ä¸²
 
-    返回:
-        dict: 包含 number/title/display�?
+    è¿å:
+        dict: åå« number/title/display
     """
     match = number_pattern.fullmatch(payload)
     number = match.group("num") if match else ""
@@ -244,14 +244,14 @@ def _split_number(payload: str) -> dict:
 
 def _build_slug(number: str, title: str) -> str:
     """
-    根据编号/标题生成锚点，优先复用编号，缺失时对标题slug化�?
+    æ ¹æ®ç¼å·/æ é¢çæéç¹ï¼ä¼åå¤ç¨ç¼å·ï¼ç¼ºå¤±æ¶å¯¹æ é¢slugå
 
-    参数:
-        number: 章节编号�?
-        title: 标题文本�?
+    åæ°:
+        number: ç« èç¼å·
+        title: æ é¢ææ¬
 
-    返回:
-        str: 形如 `section-1-0` 的slug�?
+    è¿å:
+        str: å½¢å¦ `section-1-0` çslug
     """
     if number:
         token = number.replace(".", "-")
@@ -263,12 +263,12 @@ def _build_slug(number: str, title: str) -> str:
 
 def _slugify_text(text: str) -> str:
     """
-    对任意文本做降噪与转写，得到URL友好的slug片段�?
+    å¯¹ä»»æææ¬åéåªä¸è½¬åï¼å¾å°URLåå¥½çslugçæ®µ
 
-    会规整大小写、移除特殊符号并保留汉字，确保锚点可读�?
+    ä¼è§æ´å¤§å°åãç§»é¤ç¹æ®ç¬¦å·å¹¶ä¿çæ±å­ï¼ç¡®ä¿éç¹å¯è¯»
     """
     text = unicodedata.normalize("NFKD", text)
-    text = text.replace("·", "-").replace(" ", "-")
+    text = text.replace("�·", "-").replace(" ", "-")
     text = re.sub(r"[^0-9a-zA-Z\u4e00-\u9fff-]+", "-", text)
     text = re.sub(r"-{2,}", "-", text)
     return text.strip("-").lower()
@@ -276,16 +276,16 @@ def _slugify_text(text: str) -> str:
 
 def _ensure_unique_slug(slug: str, used: set) -> str:
     """
-    若slug重复则自动追加序号，直到在used集合中唯一�?
+    è¥slugéå¤åèªå¨è¿½å åºå·ï¼ç´å°å¨usedéåä¸­å¯ä¸
 
-    通过 `-2/-3...` 的方式保证相同标题不会产生重复锚点�?
+    éè¿ `-2/-3...` çæ¹å¼ä¿è¯ç¸åæ é¢ä¸ä¼äº§çéå¤éç¹
 
-    参数:
-        slug: 初始slug�?
-        used: 已使用集合�?
+    åæ°:
+        slug: åå§slug
+        used: å·²ä½¿ç¨éå
 
-    返回:
-        str: 去重后的slug�?
+    è¿å:
+        str: å»éåçslug
     """
     if slug not in used:
         used.add(slug)

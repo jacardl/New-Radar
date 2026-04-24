@@ -20,7 +20,7 @@ def _sanitize_env_file_if_needed(path: Path) -> None:
 
     python-dotenv does not handle corrupted lines where multiple
     KEY=VALUE pairs are concatenated on a single line (missing newline).
-    This produces mangled values �?e.g. a bot token duplicated 8×
+    This produces mangled values é¥?e.g. a bot token duplicated 8è³
     (see #8908).
 
     We delegate to ``hermes_cli.config._sanitize_env_lines`` which
@@ -32,7 +32,7 @@ def _sanitize_env_file_if_needed(path: Path) -> None:
     try:
         from hermes_cli.config import _sanitize_env_lines
     except ImportError:
-        return  # early bootstrap �?config module not available yet
+        return  # early bootstrap é¥?config module not available yet
 
     read_kw = {"encoding": "utf-8", "errors": "replace"}
     try:
@@ -57,7 +57,7 @@ def _sanitize_env_file_if_needed(path: Path) -> None:
                     pass
                 raise
     except Exception:
-        pass  # best-effort �?don't block gateway startup
+        pass  # best-effort é¥?don't block gateway startup
 
 
 def load_hermes_dotenv(

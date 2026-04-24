@@ -1,9 +1,9 @@
-﻿"""
-通用数据库工具（异步�?
+ï»¿"""
+éç¨æ°æ®åºå·¥å·ï¼å¼æ­¥ï¿½?
 
-此模块提供基�?SQLAlchemy 2.x 异步引擎的数据库访问封装，支�?MySQL �?PostgreSQL�?
-数据模型定义位置�?
-- 无（本模块仅提供连接与查询工具，不定义数据模型）
+æ­¤æ¨¡åæä¾åºï¿½?SQLAlchemy 2.x å¼æ­¥å¼æçæ°æ®åºè®¿é®å°è£ï¼æ¯ï¿½?MySQL ï¿½?PostgreSQLï¿½?
+æ°æ®æ¨¡åå®ä¹ä½ç½®ï¿½?
+- æ ï¼æ¬æ¨¡åä»æä¾è¿æ¥ä¸æ¥è¯¢å·¥å·ï¼ä¸å®ä¹æ°æ®æ¨¡åï¼
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ __all__ = [
 _engine: Optional[AsyncEngine] = None
 
 def _run_async(coro):
-    """安全的异步执行包装器，兼容多线程与事件循环环�?""
+    """å®å¨çå¼æ­¥æ§è¡åè£å¨ï¼å¼å®¹å¤çº¿ç¨ä¸äºä»¶å¾ªç¯ç¯ï¿½?""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -47,7 +47,7 @@ def _build_database_url() -> str:
     host: str = settings.DB_HOST or ""
     port: str = str(settings.DB_PORT or "")
     
-    # 自动探测 Docker 环境，修正本地回环地址
+    # èªå¨æ¢æµ Docker ç¯å¢ï¼ä¿®æ­£æ¬å°åç¯å°å
     if os.path.exists("/.dockerenv") and host in ("localhost", "127.0.0.1"):
         host = "db"
         if port == "5444":
@@ -58,15 +58,15 @@ def _build_database_url() -> str:
     db_name: str = settings.DB_NAME or ""
 
     if os.getenv("DATABASE_URL"):
-        return os.getenv("DATABASE_URL")  # 直接使用外部提供的完整URL
+        return os.getenv("DATABASE_URL")  # ç´æ¥ä½¿ç¨å¤é¨æä¾çå®æ´URL
 
     password = quote_plus(password)
 
     if dialect in ("postgresql", "postgres"):
-        # PostgreSQL 使用 asyncpg 驱动
+        # PostgreSQL ä½¿ç¨ asyncpg é©±å¨
         return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db_name}"
 
-    # 默认 MySQL 使用 aiomysql 驱动
+    # é»è®¤ MySQL ä½¿ç¨ aiomysql é©±å¨
     return f"mysql+aiomysql://{user}:{password}@{host}:{port}/{db_name}"
 
 
@@ -84,18 +84,18 @@ def get_async_engine() -> AsyncEngine:
 
 async def fetch_all(query: str, params: Optional[Union[Iterable[Any], Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
     """
-    执行只读查询并返回字典列表�?
+    æ§è¡åªè¯»æ¥è¯¢å¹¶è¿åå­å¸åè¡¨ï¿½?
     """
     engine: AsyncEngine = get_async_engine()
     async with engine.connect() as conn:
         result = await conn.execute(text(query), params or {})
         rows = result.mappings().all()
-        # �?RowMapping 转换为普通字�?
+        # ï¿½?RowMapping è½¬æ¢ä¸ºæ®éå­ï¿½?
         return [dict(row) for row in rows]
 
 async def execute_write(query: str, params: Optional[Union[Iterable[Any], Dict[str, Any]]] = None) -> int:
     """
-    执行写操作（INSERT/UPDATE/DELETE）并返回受影响的行数�?
+    æ§è¡åæä½ï¼INSERT/UPDATE/DELETEï¼å¹¶è¿ååå½±åçè¡æ°ï¿½?
     """
     engine: AsyncEngine = get_async_engine()
     async with engine.begin() as conn:
@@ -104,7 +104,7 @@ async def execute_write(query: str, params: Optional[Union[Iterable[Any], Dict[s
 
 async def execute_write_many(query: str, params: List[Dict[str, Any]]) -> int:
     """
-    批量执行写操作（INSERT/UPDATE/DELETE）以极大提升性能�?
+    æ¹éæ§è¡åæä½ï¼INSERT/UPDATE/DELETEï¼ä»¥æå¤§æåæ§è½ï¿½?
     """
     if not params:
         return 0

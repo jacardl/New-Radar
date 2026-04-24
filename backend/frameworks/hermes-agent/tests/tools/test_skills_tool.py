@@ -1,4 +1,4 @@
-"""Tests for tools/skills_tool.py �?skill discovery and viewing."""
+"""Tests for tools/skills_tool.py é¥?skill discovery and viewing."""
 
 import json
 import os
@@ -609,7 +609,7 @@ class TestSkillMatchesPlatform:
 
 
 # ---------------------------------------------------------------------------
-# _find_all_skills �?platform filtering integration
+# _find_all_skills é¥?platform filtering integration
 # ---------------------------------------------------------------------------
 
 

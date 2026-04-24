@@ -1,4 +1,4 @@
-"""Tests for FileSyncManager �?mtime tracking, deletion detection, transactional rollback."""
+"""Tests for FileSyncManager é¥?mtime tracking, deletion detection, transactional rollback."""
 
 import os
 import time
@@ -133,7 +133,7 @@ class TestTransactionalRollback:
         # First sync fails (swallowed, logged, state rolled back)
         mgr.sync(force=True)
 
-        # State should be empty (rolled back) �?next sync retries all files
+        # State should be empty (rolled back) é¥?next sync retries all files
         good_upload = MagicMock()
         mgr._upload_fn = good_upload
         mgr.sync(force=True)

@@ -317,7 +317,7 @@ def _upscale_image(image_url: str, original_prompt: str) -> Dict[str, Any]:
             "enable_safety_checker": UPSCALER_SAFETY_CHECKER
         }
         
-        # Use sync API �?fal_client.submit() uses httpx.Client (no event loop).
+        # Use sync API â?fal_client.submit() uses httpx.Client (no event loop).
         # The async API (submit_async) caches a global httpx.AsyncClient via
         # @cached_property, which breaks when asyncio.run() destroys the loop
         # between calls (gateway thread-pool pattern).
@@ -326,7 +326,7 @@ def _upscale_image(image_url: str, original_prompt: str) -> Dict[str, Any]:
             arguments=upscaler_arguments,
         )
         
-        # Get the upscaled result (sync �?blocks until done)
+        # Get the upscaled result (sync â?blocks until done)
         result = handler.get()
         
         if result and "image" in result:
@@ -455,7 +455,7 @@ def image_generate_tool(
             arguments=arguments,
         )
         
-        # Get the result (sync �?blocks until done)
+        # Get the result (sync â?blocks until done)
         result = handler.get()
         
         generation_time = (datetime.datetime.now() - start_time).total_seconds()
@@ -556,7 +556,7 @@ def check_image_generation_requirements() -> bool:
             return False
         
         # Check if fal_client is available
-        import fal_client  # noqa: F401 �?SDK presence check
+        import fal_client  # noqa: F401 â?SDK presence check
         return True
         
     except ImportError:
@@ -568,39 +568,39 @@ if __name__ == "__main__":
     """
     Simple test/demo when run directly
     """
-    print("🎨 Image Generation Tools Module - FLUX 2 Pro + Auto Upscaling")
+    print("ð¨ Image Generation Tools Module - FLUX 2 Pro + Auto Upscaling")
     print("=" * 60)
     
     # Check if API key is available
     api_available = check_fal_api_key()
     
     if not api_available:
-        print("�?FAL_KEY environment variable not set")
+        print("â?FAL_KEY environment variable not set")
         print("Please set your API key: export FAL_KEY='your-key-here'")
         print("Get API key at: https://fal.ai/")
         exit(1)
     else:
-        print("�?FAL.ai API key found")
+        print("â?FAL.ai API key found")
     
     # Check if fal_client is available
     try:
         import fal_client
-        print("�?fal_client library available")
+        print("â?fal_client library available")
     except ImportError:
-        print("�?fal_client library not found")
+        print("â?fal_client library not found")
         print("Please install: pip install fal-client")
         exit(1)
     
-    print("🛠�?Image generation tools ready for use!")
-    print(f"🤖 Using model: {DEFAULT_MODEL}")
-    print(f"🔍 Auto-upscaling with: {UPSCALER_MODEL} ({UPSCALER_FACTOR}x)")
+    print("ð ï¸?Image generation tools ready for use!")
+    print(f"ð¤ Using model: {DEFAULT_MODEL}")
+    print(f"ð Auto-upscaling with: {UPSCALER_MODEL} ({UPSCALER_FACTOR}x)")
     
     # Show debug mode status
     if _debug.active:
-        print(f"🐛 Debug mode ENABLED - Session ID: {_debug.session_id}")
+        print(f"ð Debug mode ENABLED - Session ID: {_debug.session_id}")
         print(f"   Debug logs will be saved to: ./logs/image_tools_debug_{_debug.session_id}.json")
     else:
-        print("🐛 Debug mode disabled (set IMAGE_TOOLS_DEBUG=true to enable)")
+        print("ð Debug mode disabled (set IMAGE_TOOLS_DEBUG=true to enable)")
     
     print("\nBasic usage:")
     print("  from image_generation_tool import image_generate_tool")
@@ -689,5 +689,5 @@ registry.register(
     check_fn=check_image_generation_requirements,
     requires_env=[],
     is_async=False,  # Switched to sync fal_client API to fix "Event loop is closed" in gateway
-    emoji="🎨",
+    emoji="ð¨",
 )

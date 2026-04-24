@@ -1,4 +1,4 @@
-"""Tests for payload/context-length �?compression retry logic in AIAgent.
+"""Tests for payload/context-length é«?compression retry logic in AIAgent.
 
 Verifies that:
 - HTTP 413 errors trigger history compression and retry
@@ -179,7 +179,7 @@ class TestHTTP413Compression:
         but if conversation_history still holds the original (pre-compression) list,
         _flush_messages_to_session_db computes flush_from = max(len(history), 0) which
         exceeds len(compressed_messages), so messages[flush_from:] is empty and nothing
-        is written to the new session �?"Session found but has no messages" on resume.
+        is written to the new session é«?"Session found but has no messages" on resume.
         """
         err_413 = _make_413_error()
         ok_resp = _mock_response(content="OK", finish_reason="stop")
@@ -258,7 +258,7 @@ class TestHTTP413Compression:
 
         OpenRouter returns HTTP 400 (not 413) for context-length errors. Before
         the fix, this was caught by the generic 4xx handler which aborted
-        immediately �?now it correctly triggers compression+retry.
+        immediately é¥?now it correctly triggers compression+retry.
         """
         err_400 = Exception(
             "Error code: 400 - {'error': {'message': "
@@ -381,7 +381,7 @@ class TestHTTP413Compression:
             patch.object(agent, "_save_trajectory"),
             patch.object(agent, "_cleanup_task_resources"),
         ):
-            # Compression returns same number of messages �?can't compress further
+            # Compression returns same number of messages é«?can't compress further
             mock_compress.return_value = (
                 [{"role": "user", "content": "hello"}],
                 "same prompt",
@@ -405,7 +405,7 @@ class TestPreflightCompression:
         agent.context_compressor.threshold_tokens = 200
 
         # Build a history that will be large enough to trigger preflight
-        # (each message ~50 chars �?13 tokens, 40 messages �?520 tokens > 200 threshold)
+        # (each message ~50 chars é®?13 tokens, 40 messages é®?520 tokens > 200 threshold)
         big_history = []
         for i in range(20):
             big_history.append({"role": "user", "content": f"Message number {i} with some extra text padding"})
@@ -438,7 +438,7 @@ class TestPreflightCompression:
     def test_no_preflight_when_under_threshold(self, agent):
         """When history fits within context, no preflight compression needed."""
         agent.compression_enabled = True
-        # Large context �?history easily fits
+        # Large context é¥?history easily fits
         agent.context_compressor.context_length = 1000000
         agent.context_compressor.threshold_tokens = 850000
 

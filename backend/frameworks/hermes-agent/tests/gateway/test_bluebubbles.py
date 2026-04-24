@@ -197,7 +197,7 @@ class TestBlueBubblesWebhookParsing:
 
 class TestBlueBubblesGuidResolution:
     def test_raw_guid_returned_as_is(self, monkeypatch):
-        """If target already contains ';' it's a raw GUID �?return unchanged."""
+        """If target already contains ';' it's a raw GUID é¥?return unchanged."""
         adapter = _make_adapter(monkeypatch)
         import asyncio
 
@@ -350,7 +350,7 @@ class TestBlueBubblesAttachmentDownload:
         assert result == "/tmp/report.pdf"
 
     def test_download_returns_none_without_client(self, monkeypatch):
-        """No client �?returns None gracefully."""
+        """No client é«?returns None gracefully."""
         adapter = _make_adapter(monkeypatch)
         adapter.client = None
         import asyncio
@@ -371,7 +371,7 @@ class TestBlueBubblesWebhookUrl:
 
     def test_default_host(self, monkeypatch):
         adapter = _make_adapter(monkeypatch)
-        # Default webhook_host is 0.0.0.0 �?normalized to localhost
+        # Default webhook_host is 0.0.0.0 é«?normalized to localhost
         assert "localhost" in adapter._webhook_url
         assert str(adapter.webhook_port) in adapter._webhook_url
         assert adapter.webhook_path in adapter._webhook_url
@@ -471,7 +471,7 @@ class TestBlueBubblesWebhookRegistration:
     # -- _register_webhook --
 
     def test_register_fresh(self, monkeypatch):
-        """No existing webhook �?POST creates one."""
+        """No existing webhook é«?POST creates one."""
         import asyncio
         adapter = _make_adapter(monkeypatch)
         adapter.client = self._mock_client(
@@ -484,7 +484,7 @@ class TestBlueBubblesWebhookRegistration:
         assert ok is True
 
     def test_register_accepts_201(self, monkeypatch):
-        """BB might return 201 Created �?must still succeed."""
+        """BB might return 201 Created é¥?must still succeed."""
         import asyncio
         adapter = _make_adapter(monkeypatch)
         adapter.client = self._mock_client(
@@ -497,7 +497,7 @@ class TestBlueBubblesWebhookRegistration:
         assert ok is True
 
     def test_register_reuses_existing(self, monkeypatch):
-        """Crash resilience �?existing registration is reused, no POST needed."""
+        """Crash resilience é¥?existing registration is reused, no POST needed."""
         import asyncio
         adapter = _make_adapter(monkeypatch)
         url = adapter._webhook_url
@@ -560,7 +560,7 @@ class TestBlueBubblesWebhookRegistration:
         assert ok is True
 
     def test_unregister_removes_all_duplicates(self, monkeypatch):
-        """Multiple orphaned registrations for same URL �?all get removed."""
+        """Multiple orphaned registrations for same URL é¥?all get removed."""
         import asyncio
         adapter = _make_adapter(monkeypatch)
         url = adapter._webhook_url

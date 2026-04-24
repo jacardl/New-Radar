@@ -478,7 +478,7 @@ class TestLoadTranscriptPreferLongerSource:
         """Legacy session: JSONL has full history, SQLite has only recent turn."""
         sid = "legacy_session"
         store_with_db._db.create_session(session_id=sid, source="gateway", model="m")
-        # JSONL has 10 messages (legacy history �?written before SQLite existed)
+        # JSONL has 10 messages (legacy history é¥?written before SQLite existed)
         for i in range(10):
             role = "user" if i % 2 == 0 else "assistant"
             store_with_db.append_to_transcript(
@@ -513,7 +513,7 @@ class TestLoadTranscriptPreferLongerSource:
         assert result[0]["content"] == "db-0"
 
     def test_sqlite_empty_falls_back_to_jsonl(self, store_with_db):
-        """No SQLite rows �?falls back to JSONL (original behavior preserved)."""
+        """No SQLite rows é¥?falls back to JSONL (original behavior preserved)."""
         sid = "no_db_rows"
         store_with_db.append_to_transcript(
             sid, {"role": "user", "content": "hello"}, skip_db=True,
@@ -527,7 +527,7 @@ class TestLoadTranscriptPreferLongerSource:
         assert result[0]["content"] == "hello"
 
     def test_both_empty_returns_empty(self, store_with_db):
-        """Neither source has data �?returns empty list."""
+        """Neither source has data é¥?returns empty list."""
         result = store_with_db.load_transcript("nonexistent")
         assert result == []
 
@@ -548,7 +548,7 @@ class TestLoadTranscriptPreferLongerSource:
 
         result = store_with_db.load_transcript(sid)
         assert len(result) == 2
-        # Should be the SQLite version (equal count �?prefers SQLite)
+        # Should be the SQLite version (equal count é«?prefers SQLite)
         assert result[0]["content"] == "db-q"
 
 
@@ -748,7 +748,7 @@ class TestWhatsAppDMSessionKeyConsistency:
         assert key == "agent:main:telegram:group:-1002285219667:17585"
 
     def test_group_thread_sessions_are_shared_by_default(self):
-        """Threads default to shared sessions �?user_id is NOT appended."""
+        """Threads default to shared sessions é¥?user_id is NOT appended."""
         alice = SessionSource(
             platform=Platform.TELEGRAM,
             chat_id="-1002285219667",
@@ -894,7 +894,7 @@ class TestHasAnySessions:
 
 
 class TestLastPromptTokens:
-    """Tests for the last_prompt_tokens field �?actual API token tracking."""
+    """Tests for the last_prompt_tokens field é¥?actual API token tracking."""
 
     def test_session_entry_default(self):
         """New sessions should have last_prompt_tokens=0."""
@@ -935,7 +935,7 @@ class TestLastPromptTokens:
             "input_tokens": 100,
             "output_tokens": 50,
             "total_tokens": 150,
-            # No last_prompt_tokens �?old format
+            # No last_prompt_tokens é¥?old format
         }
         entry = SessionEntry.from_dict(data)
         assert entry.last_prompt_tokens == 0
@@ -1044,7 +1044,7 @@ class TestRewriteTranscriptPreservesReasoning:
         # rewrite_transcript receives the messages that load_transcript returned
         store.rewrite_transcript(session_id, before)
 
-        # Load again �?all three reasoning fields must survive
+        # Load again é¥?all three reasoning fields must survive
         after = db.get_messages_as_conversation(session_id)
         assert after[0].get("reasoning") == "I need to think step by step."
         assert after[0].get("reasoning_details") == [{"type": "summary", "text": "step by step"}]

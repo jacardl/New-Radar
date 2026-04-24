@@ -85,7 +85,7 @@ class TestApiServerAdapterToolset:
                                         "provider": None, "api_mode": None,
                                         "command": None, "args": []}
             mock_model.return_value = "test/model"
-            # No platform_toolsets override �?should fall back to hermes-api-server default
+            # No platform_toolsets override é¥?should fall back to hermes-api-server default
             mock_config.return_value = {}
             mock_agent_cls.return_value = MagicMock()
 

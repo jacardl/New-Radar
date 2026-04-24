@@ -47,7 +47,7 @@ _debug = DebugSession("vision_tools", env_var="VISION_TOOLS_DEBUG")
 
 # Configurable HTTP download timeout for _download_image().
 # Separate from auxiliary.vision.timeout which governs the LLM API call.
-# Resolution: config.yaml auxiliary.vision.download_timeout �?env var �?30s default.
+# Resolution: config.yaml auxiliary.vision.download_timeout é«?env var é«?30s default.
 def _resolve_download_timeout() -> float:
     env_val = os.getenv("HERMES_VISION_DOWNLOAD_TIMEOUT", "").strip()
     if env_val:
@@ -277,7 +277,7 @@ def _image_to_base64_data_url(image_path: Path, mime_type: Optional[str] = None)
     return data_url
 
 
-# Hard limit for vision API payloads (20 MB) �?matches the most restrictive
+# Hard limit for vision API payloads (20 MB) é¥?matches the most restrictive
 # major provider (Gemini inline data limit).  Images above this are rejected.
 _MAX_BASE64_BYTES = 20 * 1024 * 1024
 
@@ -311,7 +311,7 @@ def _resize_image_for_vision(image_path: Path, mime_type: Optional[str] = None,
     file_size = image_path.stat().st_size
     estimated_b64 = (file_size * 4) // 3 + 100  # ~header overhead
     if estimated_b64 <= max_base64_bytes:
-        # Small enough �?just encode directly.
+        # Small enough é¥?just encode directly.
         data_url = _image_to_base64_data_url(image_path, mime_type=mime_type)
         if len(data_url) <= max_base64_bytes:
             return data_url
@@ -323,7 +323,7 @@ def _resize_image_for_vision(image_path: Path, mime_type: Optional[str] = None,
         from PIL import Image
         import io as _io
     except ImportError:
-        logger.info("Pillow not installed �?cannot auto-resize oversized image")
+        logger.info("Pillow not installed é¥?cannot auto-resize oversized image")
         if data_url is None:
             data_url = _image_to_base64_data_url(image_path, mime_type=mime_type)
         return data_url  # caller will raise the size error
@@ -350,7 +350,7 @@ def _resize_image_for_vision(image_path: Path, mime_type: Optional[str] = None,
 
     # Strategy: halve dimensions until base64 fits, up to 4 rounds.
     # For JPEG, also try reducing quality at each size step.
-    # For PNG, quality is irrelevant �?only dimension reduction helps.
+    # For PNG, quality is irrelevant é¥?only dimension reduction helps.
     quality_steps = (85, 70, 50) if pil_format == "JPEG" else (None,)
     prev_dims = (img.width, img.height)
     candidate = None  # will be set on first loop iteration
@@ -501,14 +501,14 @@ async def vision_analyze_tool(
         if not detected_mime_type:
             raise ValueError("Only real image files are supported for vision analysis.")
         
-        # Convert image to base64 �?send at full resolution first.
+        # Convert image to base64 é¥?send at full resolution first.
         # If the provider rejects it as too large, we auto-resize and retry.
         logger.info("Converting image to base64...")
         image_data_url = _image_to_base64_data_url(temp_image_path, mime_type=detected_mime_type)
         data_size_kb = len(image_data_url) / 1024
         logger.info("Image converted to base64 (%.1f KB)", data_size_kb)
 
-        # Hard limit (20 MB) �?no provider accepts payloads this large.
+        # Hard limit (20 MB) é¥?no provider accepts payloads this large.
         if len(image_data_url) > _MAX_BASE64_BYTES:
             # Try to resize down to 5 MB before giving up.
             image_data_url = _resize_image_for_vision(
@@ -589,7 +589,7 @@ async def vision_analyze_tool(
             else:
                 raise
         
-        # Extract the analysis �?fall back to reasoning if content is empty
+        # Extract the analysis é¥?fall back to reasoning if content is empty
         analysis = extract_content_or_reasoning(response)
 
         # Retry once on empty content (reasoning-only response)
@@ -621,7 +621,7 @@ async def vision_analyze_tool(
         error_msg = f"Error analyzing image: {str(e)}"
         logger.error("%s", error_msg, exc_info=True)
         
-        # Detect vision capability errors �?give the model a clear message
+        # Detect vision capability errors é¥?give the model a clear message
         # so it can inform the user instead of a cryptic API error.
         err_str = str(e).lower()
         if any(hint in err_str for hint in (
@@ -694,27 +694,27 @@ if __name__ == "__main__":
     """
     Simple test/demo when run directly
     """
-    print("👁�?Vision Tools Module")
+    print("é¦æé?Vision Tools Module")
     print("=" * 40)
     
     # Check if vision model is available
     api_available = check_vision_requirements()
     
     if not api_available:
-        print("�?No auxiliary vision model available")
+        print("é?No auxiliary vision model available")
         print("Configure a supported multimodal backend (OpenRouter, Nous, Codex, Anthropic, or a custom OpenAI-compatible endpoint).")
         exit(1)
     else:
-        print("�?Vision model available")
+        print("é?Vision model available")
     
-    print("🛠�?Vision tools ready for use!")
+    print("é¦æ´é?Vision tools ready for use!")
     
     # Show debug mode status
     if _debug.active:
-        print(f"🐛 Debug mode ENABLED - Session ID: {_debug.session_id}")
+        print(f"é¦æ° Debug mode ENABLED - Session ID: {_debug.session_id}")
         print(f"   Debug logs will be saved to: ./logs/vision_tools_debug_{_debug.session_id}.json")
     else:
-        print("🐛 Debug mode disabled (set VISION_TOOLS_DEBUG=true to enable)")
+        print("é¦æ° Debug mode disabled (set VISION_TOOLS_DEBUG=true to enable)")
     
     print("\nBasic usage:")
     print("  from vision_tools import vision_analyze_tool")
@@ -785,5 +785,5 @@ registry.register(
     handler=_handle_vision_analyze,
     check_fn=check_vision_requirements,
     is_async=True,
-    emoji="👁�?,
+    emoji="é¦æé?,
 )

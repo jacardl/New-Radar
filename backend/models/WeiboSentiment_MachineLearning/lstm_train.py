@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-LSTM情感分析模型训练脚本
+LSTMææåææ¨¡åè®­ç»èæ¬
 """
 import argparse
 import os
@@ -18,7 +18,7 @@ from base_model import BaseModel
 
 
 class LSTMDataset(Dataset):
-    """LSTM数据�?""
+    """LSTMæ°æ®é?""
     
     def __init__(self, data: List[Tuple[str, int]], word2vec_model):
         self.data = []
@@ -30,7 +30,7 @@ class LSTMDataset(Dataset):
                 if word in word2vec_model.wv.key_to_index:
                     vectors.append(word2vec_model.wv[word])
             
-            if len(vectors) > 0:  # 确保有有效的词向�?
+            if len(vectors) > 0:  # ç¡®ä¿æææçè¯åé?
                 vectors = torch.Tensor(vectors)
                 self.data.append(vectors)
                 self.label.append(label)
@@ -43,7 +43,7 @@ class LSTMDataset(Dataset):
 
 
 def collate_fn(data):
-    """批处理函�?""
+    """æ¹å¤çå½æ?""
     data.sort(key=lambda x: len(x[0]), reverse=True)
     data_length = [len(sq[0]) for sq in data]
     x = [i[0] for i in data]
@@ -53,7 +53,7 @@ def collate_fn(data):
 
 
 class LSTMNet(nn.Module):
-    """LSTM网络结构"""
+    """LSTMç½ç»ç»æ"""
     
     def __init__(self, input_size, hidden_size, num_layers):
         super(LSTMNet, self).__init__()
@@ -61,7 +61,7 @@ class LSTMNet(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, 
                            batch_first=True, bidirectional=True)
-        self.fc = nn.Linear(hidden_size * 2, 1)  # 双向LSTM
+        self.fc = nn.Linear(hidden_size * 2, 1)  # ååLSTM
         self.sigmoid = nn.Sigmoid()
     
     def forward(self, x, lengths):
@@ -72,7 +72,7 @@ class LSTMNet(nn.Module):
         packed_input = pack_padded_sequence(input=x, lengths=lengths, batch_first=True)
         packed_out, (h_n, h_c) = self.lstm(packed_input, (h0, c0))
         
-        # 双向LSTM，拼接最后的隐藏状�?
+        # ååLSTMï¼æ¼æ¥æåçéèç¶æ?
         lstm_out = torch.cat([h_n[-2], h_n[-1]], 1)
         out = self.fc(lstm_out)
         out = self.sigmoid(out)
@@ -80,7 +80,7 @@ class LSTMNet(nn.Module):
 
 
 class LSTMModel(BaseModel):
-    """LSTM情感分析模型"""
+    """LSTMææåææ¨¡å"""
     
     def __init__(self):
         super().__init__("LSTM")
@@ -88,17 +88,17 @@ class LSTMModel(BaseModel):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
     def _train_word2vec(self, train_data: List[Tuple[str, int]], **kwargs):
-        """训练Word2Vec词向�?""
-        print("训练Word2Vec词向�?..")
+        """è®­ç»Word2Vecè¯åé?""
+        print("è®­ç»Word2Vecè¯åé?..")
         
-        # 准备Word2Vec输入数据
+        # åå¤Word2Vecè¾å¥æ°æ®
         wv_input = [text.split(" ") for text, _ in train_data]
         
         vector_size = kwargs.get('vector_size', 64)
         min_count = kwargs.get('min_count', 1)
         epochs = kwargs.get('epochs', 1000)
         
-        # 训练Word2Vec
+        # è®­ç»Word2Vec
         self.word2vec_model = models.Word2Vec(
             wv_input,
             vector_size=vector_size,
@@ -106,16 +106,16 @@ class LSTMModel(BaseModel):
             epochs=epochs
         )
         
-        print(f"Word2Vec训练完成，词向量维度: {vector_size}")
+        print(f"Word2Vecè®­ç»å®æï¼è¯åéç»´åº¦: {vector_size}")
         
     def train(self, train_data: List[Tuple[str, int]], **kwargs) -> None:
-        """训练LSTM模型"""
-        print(f"开始训�?{self.model_name} 模型...")
+        """è®­ç»LSTMæ¨¡å"""
+        print(f"å¼å§è®­ç»?{self.model_name} æ¨¡å...")
         
-        # 训练Word2Vec
+        # è®­ç»Word2Vec
         self._train_word2vec(train_data, **kwargs)
         
-        # 超参�?
+        # è¶åæ?
         learning_rate = kwargs.get('learning_rate', 5e-4)
         num_epochs = kwargs.get('num_epochs', 5)
         batch_size = kwargs.get('batch_size', 100)
@@ -123,22 +123,22 @@ class LSTMModel(BaseModel):
         hidden_size = kwargs.get('hidden_size', 64)
         num_layers = kwargs.get('num_layers', 2)
         
-        print(f"LSTM超参�? lr={learning_rate}, epochs={num_epochs}, "
+        print(f"LSTMè¶åæ? lr={learning_rate}, epochs={num_epochs}, "
               f"batch_size={batch_size}, hidden_size={hidden_size}")
         
-        # 创建数据�?
+        # åå»ºæ°æ®é?
         train_dataset = LSTMDataset(train_data, self.word2vec_model)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, 
                                  collate_fn=collate_fn, shuffle=True)
         
-        # 创建模型
+        # åå»ºæ¨¡å
         self.model = LSTMNet(embed_size, hidden_size, num_layers).to(self.device)
         
-        # 损失函数和优化器
+        # æå¤±å½æ°åä¼åå¨
         criterion = nn.BCELoss()
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         
-        # 训练循环
+        # è®­ç»å¾ªç¯
         self.model.train()
         for epoch in range(num_epochs):
             total_loss = 0
@@ -148,12 +148,12 @@ class LSTMModel(BaseModel):
                 x = x.to(self.device)
                 labels = labels.to(self.device)
                 
-                # 前向传播
+                # ååä¼ æ­
                 outputs = self.model(x, lengths)
                 logits = outputs.view(-1)
                 loss = criterion(logits, labels)
                 
-                # 反向传播
+                # ååä¼ æ­
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
@@ -165,23 +165,23 @@ class LSTMModel(BaseModel):
                     avg_loss = total_loss / num_batches
                     print(f"Epoch [{epoch+1}/{num_epochs}], Step [{i+1}], Loss: {avg_loss:.4f}")
             
-            # 保存每个epoch的模�?
+            # ä¿å­æ¯ä¸ªepochçæ¨¡å?
             if kwargs.get('save_each_epoch', False):
                 epoch_model_path = f"./model/lstm_epoch_{epoch+1}.pth"
                 os.makedirs(os.path.dirname(epoch_model_path), exist_ok=True)
                 torch.save(self.model.state_dict(), epoch_model_path)
-                print(f"已保存模�? {epoch_model_path}")
+                print(f"å·²ä¿å­æ¨¡å? {epoch_model_path}")
         
         self.is_trained = True
-        print(f"{self.model_name} 模型训练完成�?)
+        print(f"{self.model_name} æ¨¡åè®­ç»å®æï¼?)
     
     def predict(self, texts: List[str]) -> List[int]:
-        """预测文本情感"""
+        """é¢æµææ¬ææ"""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，请先调用train方法")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼è¯·åè°ç¨trainæ¹æ³")
         
-        # 创建数据�?
-        test_data = [(text, 0) for text in texts]  # 标签无关紧要
+        # åå»ºæ°æ®é?
+        test_data = [(text, 0) for text in texts]  # æ ç­¾æ å³ç´§è¦
         test_dataset = LSTMDataset(test_data, self.word2vec_model)
         test_loader = DataLoader(test_dataset, batch_size=32, collate_fn=collate_fn)
         
@@ -194,28 +194,28 @@ class LSTMModel(BaseModel):
                 outputs = self.model(x, lengths)
                 outputs = outputs.view(-1)
                 
-                # 转换为类别标�?
+                # è½¬æ¢ä¸ºç±»å«æ ç­?
                 preds = (outputs > 0.5).cpu().numpy()
                 predictions.extend(preds.astype(int).tolist())
         
         return predictions
     
     def predict_single(self, text: str) -> Tuple[int, float]:
-        """预测单条文本的情�?""
+        """é¢æµåæ¡ææ¬çææ?""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，请先调用train方法")
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼è¯·åè°ç¨trainæ¹æ³")
         
-        # 转换为词向量
+        # è½¬æ¢ä¸ºè¯åé
         vectors = []
         for word in text.split(" "):
             if word in self.word2vec_model.wv.key_to_index:
                 vectors.append(self.word2vec_model.wv[word])
         
         if len(vectors) == 0:
-            return 0, 0.5  # 如果没有有效词向量，返回默认�?
+            return 0, 0.5  # å¦ææ²¡æææè¯åéï¼è¿åé»è®¤å?
         
-        # 转换为tensor
-        x = torch.Tensor(vectors).unsqueeze(0).to(self.device)  # 添加batch维度
+        # è½¬æ¢ä¸ºtensor
+        x = torch.Tensor(vectors).unsqueeze(0).to(self.device)  # æ·»å batchç»´åº¦
         lengths = [len(vectors)]
         
         self.model.eval()
@@ -228,16 +228,16 @@ class LSTMModel(BaseModel):
         return prediction, confidence
     
     def save_model(self, model_path: str = None) -> None:
-        """保存模型"""
+        """ä¿å­æ¨¡å"""
         if not self.is_trained:
-            raise ValueError(f"模型 {self.model_name} 尚未训练，无法保�?)
+            raise ValueError(f"æ¨¡å {self.model_name} å°æªè®­ç»ï¼æ æ³ä¿å­?)
         
         if model_path is None:
             model_path = f"./model/{self.model_name.lower()}_model.pth"
         
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         
-        # 保存模型状态和Word2Vec
+        # ä¿å­æ¨¡åç¶æåWord2Vec
         model_data = {
             'model_state_dict': self.model.state_dict(),
             'word2vec_model': self.word2vec_model,
@@ -250,19 +250,19 @@ class LSTMModel(BaseModel):
         }
         
         torch.save(model_data, model_path)
-        print(f"模型已保存到: {model_path}")
+        print(f"æ¨¡åå·²ä¿å­å°: {model_path}")
     
     def load_model(self, model_path: str) -> None:
-        """加载模型"""
+        """å è½½æ¨¡å"""
         if not os.path.exists(model_path):
-            raise FileNotFoundError(f"模型文件不存�? {model_path}")
+            raise FileNotFoundError(f"æ¨¡åæä»¶ä¸å­å? {model_path}")
         
         model_data = torch.load(model_path, map_location=self.device)
         
-        # 加载Word2Vec
+        # å è½½Word2Vec
         self.word2vec_model = model_data['word2vec_model']
         
-        # 重建LSTM网络
+        # éå»ºLSTMç½ç»
         config = model_data['model_config']
         self.model = LSTMNet(
             config['embed_size'],
@@ -270,54 +270,54 @@ class LSTMModel(BaseModel):
             config['num_layers']
         ).to(self.device)
         
-        # 加载模型权重
+        # å è½½æ¨¡åæé
         self.model.load_state_dict(model_data['model_state_dict'])
         
         self.is_trained = True
-        print(f"已加载模�? {model_path}")
+        print(f"å·²å è½½æ¨¡å? {model_path}")
 
 
 def main():
-    """主函�?""
-    parser = argparse.ArgumentParser(description='LSTM情感分析模型训练')
+    """ä¸»å½æ?""
+    parser = argparse.ArgumentParser(description='LSTMææåææ¨¡åè®­ç»')
     parser.add_argument('--train_path', type=str, default='./data/weibo2018/train.txt',
-                        help='训练数据路径')
+                        help='è®­ç»æ°æ®è·¯å¾')
     parser.add_argument('--test_path', type=str, default='./data/weibo2018/test.txt',
-                        help='测试数据路径')
+                        help='æµè¯æ°æ®è·¯å¾')
     parser.add_argument('--model_path', type=str, default='./model/lstm_model.pth',
-                        help='模型保存路径')
+                        help='æ¨¡åä¿å­è·¯å¾')
     parser.add_argument('--epochs', type=int, default=5,
-                        help='训练轮数')
+                        help='è®­ç»è½®æ°')
     parser.add_argument('--batch_size', type=int, default=100,
-                        help='批大�?)
+                        help='æ¹å¤§å°?)
     parser.add_argument('--hidden_size', type=int, default=64,
-                        help='LSTM隐藏层大�?)
+                        help='LSTMéèå±å¤§å°?)
     parser.add_argument('--learning_rate', type=float, default=5e-4,
-                        help='学习�?)
+                        help='å­¦ä¹ ç?)
     parser.add_argument('--eval_only', action='store_true',
-                        help='仅评估已有模型，不进行训�?)
+                        help='ä»è¯ä¼°å·²ææ¨¡åï¼ä¸è¿è¡è®­ç»?)
     
     args = parser.parse_args()
     
-    # 创建模型
+    # åå»ºæ¨¡å
     model = LSTMModel()
     
     if args.eval_only:
-        # 仅评估模�?
-        print("评估模式：加载已有模型进行评�?)
+        # ä»è¯ä¼°æ¨¡å¼?
+        print("è¯ä¼°æ¨¡å¼ï¼å è½½å·²ææ¨¡åè¿è¡è¯ä¼?)
         model.load_model(args.model_path)
         
-        # 加载测试数据
+        # å è½½æµè¯æ°æ®
         _, test_data = BaseModel.load_data(args.train_path, args.test_path)
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         model.evaluate(test_data)
     else:
-        # 训练模式
-        # 加载数据
+        # è®­ç»æ¨¡å¼
+        # å è½½æ°æ®
         train_data, test_data = BaseModel.load_data(args.train_path, args.test_path)
         
-        # 训练模型
+        # è®­ç»æ¨¡å
         model.train(
             train_data,
             num_epochs=args.epochs,
@@ -326,25 +326,25 @@ def main():
             learning_rate=args.learning_rate
         )
         
-        # 评估模型
+        # è¯ä¼°æ¨¡å
         model.evaluate(test_data)
         
-        # 保存模型
+        # ä¿å­æ¨¡å
         model.save_model(args.model_path)
         
-        # 示例预测
-        print("\n示例预测:")
+        # ç¤ºä¾é¢æµ
+        print("\nç¤ºä¾é¢æµ:")
         test_texts = [
-            "今天天气真好，心情很�?,
-            "这部电影太无聊了，浪费时�?,
-            "哈哈哈，太有趣了"
+            "ä»å¤©å¤©æ°çå¥½ï¼å¿æå¾æ£?,
+            "è¿é¨çµå½±å¤ªæ èäºï¼æµªè´¹æ¶é?,
+            "åååï¼å¤ªæè¶£äº"
         ]
         
         for text in test_texts:
             pred, conf = model.predict_single(text)
-            sentiment = "正面" if pred == 1 else "负面"
-            print(f"文本: {text}")
-            print(f"预测: {sentiment} (置信�? {conf:.4f})")
+            sentiment = "æ­£é¢" if pred == 1 else "è´é¢"
+            print(f"ææ¬: {text}")
+            print(f"é¢æµ: {sentiment} (ç½®ä¿¡åº? {conf:.4f})")
             print()
 
 

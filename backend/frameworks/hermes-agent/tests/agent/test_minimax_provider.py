@@ -1,4 +1,4 @@
-"""Tests for MiniMax provider hardening �?context lengths, thinking, catalog, beta headers, transport."""
+"""Tests for MiniMax provider hardening é¥?context lengths, thinking, catalog, beta headers, transport."""
 
 from unittest.mock import patch
 
@@ -275,7 +275,7 @@ class TestMinimaxPreserveDots:
     """Verify that MiniMax model names preserve dots through the Anthropic adapter.
 
     MiniMax model IDs like 'MiniMax-M2.7' must NOT have dots converted to
-    hyphens �?the endpoint expects the exact name with dots.
+    hyphens é¥?the endpoint expects the exact name with dots.
     """
 
     def test_minimax_provider_preserves_dots(self):

@@ -3,7 +3,7 @@
 Base Blockchain CLI Tool for Hermes Agent
 ------------------------------------------
 Queries the Base (Ethereum L2) JSON-RPC API and CoinGecko for enriched on-chain data.
-Uses only Python standard library �?no external packages required.
+Uses only Python standard library é¥?no external packages required.
 
 Usage:
   python3 base_client.py stats
@@ -53,7 +53,7 @@ IFACE_ERC1155 = "d9b67a26"
 # Transfer(address,address,uint256) event topic
 TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-# Well-known Base tokens �?maps lowercase address -> (symbol, name, decimals).
+# Well-known Base tokens é¥?maps lowercase address -> (symbol, name, decimals).
 KNOWN_TOKENS: Dict[str, Tuple[str, str, int]] = {
     "0x4200000000000000000000000000000000000006": ("WETH",   "Wrapped Ether",               18),
     "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": ("USDC",   "USD Coin",                     6),
@@ -262,14 +262,14 @@ def _eth_call(to: str, selector: str, args: str = "", block: str = "latest") -> 
 
 
 # ---------------------------------------------------------------------------
-# Price & token name helpers (CoinGecko �?free, no API key)
+# Price & token name helpers (CoinGecko é¥?free, no API key)
 # ---------------------------------------------------------------------------
 
 def fetch_prices(addresses: List[str], max_lookups: int = 20) -> Dict[str, float]:
     """Fetch USD prices for Base token addresses via CoinGecko (one per request).
 
     CoinGecko free tier doesn't support batch Base token lookups,
-    so we do individual calls �?capped at *max_lookups* to stay within
+    so we do individual calls é¥?capped at *max_lookups* to stay within
     rate limits. Returns {lowercase_address: usd_price}.
     """
     prices: Dict[str, float] = {}
@@ -901,7 +901,7 @@ def cmd_whales(args):
         "block_time":         hex_to_int(block.get("timestamp")),
         "min_threshold_ETH":  args.min_eth,
         "large_transfers":    whales,
-        "note":               "Scans latest block only �?point-in-time snapshot.",
+        "note":               "Scans latest block only é¥?point-in-time snapshot.",
     }
     if eth_price:
         out["eth_price_usd"] = eth_price
@@ -945,7 +945,7 @@ def cmd_price(args):
         out["price_usd"] = prices[addr]
     else:
         out["price_usd"] = None
-        out["note"] = "Price not available �?token may not be listed on CoinGecko."
+        out["note"] = "Price not available é¥?token may not be listed on CoinGecko."
     print_json(out)
 
 

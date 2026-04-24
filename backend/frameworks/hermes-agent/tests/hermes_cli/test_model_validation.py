@@ -95,13 +95,13 @@ class TestParseModelInput:
         assert model == "http://localhost:8080/model"
 
     def test_custom_colon_model_single(self):
-        """custom:model-name �?anonymous custom provider."""
+        """custom:model-name é«?anonymous custom provider."""
         provider, model = parse_model_input("custom:qwen-2.5", "openrouter")
         assert provider == "custom"
         assert model == "qwen-2.5"
 
     def test_custom_triple_syntax(self):
-        """custom:name:model �?named custom provider."""
+        """custom:name:model é«?named custom provider."""
         provider, model = parse_model_input("custom:local-server:qwen-2.5", "openrouter")
         assert provider == "custom:local-server"
         assert model == "qwen-2.5"
@@ -113,9 +113,9 @@ class TestParseModelInput:
         assert model == "my-model"
 
     def test_custom_triple_empty_model_falls_back(self):
-        """custom:name: with no model �?treated as custom:name (bare)."""
+        """custom:name: with no model é«?treated as custom:name (bare)."""
         provider, model = parse_model_input("custom:name:", "openrouter")
-        # Empty model after second colon �?no triple match, falls through
+        # Empty model after second colon é«?no triple match, falls through
         assert provider == "custom"
         assert model == "name:"
 
@@ -326,7 +326,7 @@ class TestCopilotNormalization:
         assert copilot_model_api_mode("gpt-5.2") == "codex_responses"
 
     def test_copilot_api_mode_gpt5_mini_uses_chat(self):
-        """gpt-5-mini is the exception �?uses Chat Completions."""
+        """gpt-5-mini is the exception é¥?uses Chat Completions."""
         assert copilot_model_api_mode("gpt-5-mini") == "chat_completions"
 
     def test_copilot_api_mode_non_gpt5_uses_chat(self):
@@ -378,7 +378,7 @@ class TestCopilotNormalization:
         assert opencode_model_api_mode("opencode-go", "opencode-go/minimax-m2.5") == "anthropic_messages"
 
 
-# -- validate �?format checks -----------------------------------------------
+# -- validate é¥?format checks -----------------------------------------------
 
 class TestValidateFormatChecks:
     def test_empty_model_rejected(self):
@@ -405,7 +405,7 @@ class TestValidateFormatChecks:
         assert "not found" in result["message"]
 
 
-# -- validate �?API found ----------------------------------------------------
+# -- validate é¥?API found ----------------------------------------------------
 
 class TestValidateApiFound:
     def test_model_found_in_api(self):
@@ -424,7 +424,7 @@ class TestValidateApiFound:
         assert result["recognized"] is True
 
 
-# -- validate �?API not found ------------------------------------------------
+# -- validate é¥?API not found ------------------------------------------------
 
 class TestValidateApiNotFound:
     def test_model_not_in_api_accepted_with_warning(self):
@@ -454,7 +454,7 @@ class TestValidateApiNotFound:
         assert "not found" in result["message"]
 
 
-# -- validate �?API unreachable �?accept and persist everything ----------------
+# -- validate é¥?API unreachable é¥?accept and persist everything ----------------
 
 class TestValidateApiFallback:
     def test_any_model_accepted_when_api_down(self):
@@ -463,7 +463,7 @@ class TestValidateApiFallback:
         assert result["persist"] is True
 
     def test_unknown_model_also_accepted_when_api_down(self):
-        """No hardcoded catalog gatekeeping �?accept, persist, and warn."""
+        """No hardcoded catalog gatekeeping é¥?accept, persist, and warn."""
         result = _validate("anthropic/claude-next-gen", api_models=None)
         assert result["accepted"] is True
         assert result["persist"] is True
@@ -503,7 +503,7 @@ class TestValidateApiFallback:
         assert "http://localhost:8000/v1" in result["message"]
 
 
-# -- validate �?Codex auto-correction ------------------------------------------
+# -- validate é¥?Codex auto-correction ------------------------------------------
 
 class TestValidateCodexAutoCorrection:
     """Auto-correction for typos on openai-codex provider."""

@@ -1,4 +1,4 @@
-"""Tests for tools/cronjob_tools.py �?prompt scanning, schedule/list/remove dispatchers."""
+"""Tests for tools/cronjob_tools.py é¥?prompt scanning, schedule/list/remove dispatchers."""
 
 import json
 import pytest

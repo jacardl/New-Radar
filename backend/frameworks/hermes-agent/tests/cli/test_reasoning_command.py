@@ -492,7 +492,7 @@ class TestInlineThinkBlockExtraction(unittest.TestCase):
         agent = self._make_agent()
         api_msg = self._build_msg("Just a plain response.")
         result = agent._build_assistant_message(api_msg, "stop")
-        # No structured reasoning AND no inline think blocks �?None
+        # No structured reasoning AND no inline think blocks é«?None
         self.assertIsNone(result["reasoning"])
 
     def test_structured_reasoning_takes_priority(self):
@@ -653,7 +653,7 @@ class TestReasoningDeltasFiredFlag(unittest.TestCase):
 
     def test_build_assistant_message_skips_callback_when_streaming_active(self):
         """When streaming is active, callback should NEVER fire from
-        _build_assistant_message �?reasoning was already displayed during the
+        _build_assistant_message é¥?reasoning was already displayed during the
         stream (either via reasoning_content deltas or content tag extraction).
         Any missed reasoning is caught by the CLI post-response fallback."""
         agent = self._make_agent()
@@ -673,7 +673,7 @@ class TestReasoningDeltasFiredFlag(unittest.TestCase):
         )
         agent._build_assistant_message(msg, "stop")
 
-        # Callback should NOT fire �?streaming is active
+        # Callback should NOT fire é¥?streaming is active
         self.assertEqual(captured, [])
 
     def test_build_assistant_message_fires_callback_without_streaming(self):

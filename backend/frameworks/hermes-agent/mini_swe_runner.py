@@ -217,7 +217,7 @@ class MiniSWERunner:
         # Tool definition
         self.tools = [TERMINAL_TOOL_DEFINITION]
         
-        print("🤖 Mini-SWE Runner initialized")
+        print("ð¤ Mini-SWE Runner initialized")
         print(f"   Model: {self.model}")
         print(f"   Environment: {self.env_type}")
         if self.env_type != "local":
@@ -226,14 +226,14 @@ class MiniSWERunner:
     
     def _create_env(self):
         """Create the execution environment."""
-        print(f"🔧 Creating {self.env_type} environment...")
+        print(f"ð§ Creating {self.env_type} environment...")
         self.env = create_environment(
             env_type=self.env_type,
             image=self.image,
             cwd=self.cwd,
             timeout=self.command_timeout
         )
-        print("�?Environment ready")
+        print("â?Environment ready")
     
     def _cleanup_env(self):
         """Cleanup the execution environment."""
@@ -406,7 +406,7 @@ class MiniSWERunner:
             Dict with trajectory, completion status, and metadata
         """
         print(f"\n{'='*60}")
-        print(f"📝 Task: {task[:80]}{'...' if len(task) > 80 else ''}")
+        print(f"ð Task: {task[:80]}{'...' if len(task) > 80 else ''}")
         print(f"{'='*60}")
         
         # Initialize environment
@@ -435,7 +435,7 @@ Complete the user's task step by step."""
         try:
             while api_call_count < self.max_iterations:
                 api_call_count += 1
-                print(f"\n🔄 API call #{api_call_count}/{self.max_iterations}")
+                print(f"\nð API call #{api_call_count}/{self.max_iterations}")
                 
                 # Prepare API messages
                 api_messages = [{"role": "system", "content": system_prompt}] + messages
@@ -456,11 +456,11 @@ Complete the user's task step by step."""
                 
                 # Log assistant response
                 if assistant_message.content:
-                    print(f"🤖 Assistant: {assistant_message.content[:100]}...")
+                    print(f"ð¤ Assistant: {assistant_message.content[:100]}...")
                 
                 # Check for tool calls
                 if assistant_message.tool_calls:
-                    print(f"🔧 Tool calls: {len(assistant_message.tool_calls)}")
+                    print(f"ð§ Tool calls: {len(assistant_message.tool_calls)}")
                     
                     # Add assistant message with tool calls
                     messages.append({
@@ -489,7 +489,7 @@ Complete the user's task step by step."""
                         command = args.get("command", "echo 'No command provided'")
                         timeout = args.get("timeout", self.command_timeout)
                         
-                        print(f"   📞 terminal: {command[:60]}...")
+                        print(f"   ð terminal: {command[:60]}...")
                         
                         # Execute command
                         result = self._execute_command(command, timeout)
@@ -505,7 +505,7 @@ Complete the user's task step by step."""
                         
                         # Check for task completion signal
                         if "MINI_SWE_AGENT_FINAL_OUTPUT" in result["output"]:
-                            print("   �?Task completion signal detected!")
+                            print("   â?Task completion signal detected!")
                             completed = True
                         
                         # Add tool response
@@ -515,7 +515,7 @@ Complete the user's task step by step."""
                             "tool_call_id": tc.id
                         })
                         
-                        print(f"   �?exit_code={result['exit_code']}, output={len(result['output'])} chars")
+                        print(f"   â?exit_code={result['exit_code']}, output={len(result['output'])} chars")
                     
                     # If task completed, we can stop
                     if completed:
@@ -530,11 +530,11 @@ Complete the user's task step by step."""
                         "content": final_response
                     })
                     completed = True
-                    print("🎉 Agent finished (no more tool calls)")
+                    print("ð Agent finished (no more tool calls)")
                     break
             
             if api_call_count >= self.max_iterations:
-                print(f"⚠️  Reached max iterations ({self.max_iterations})")
+                print(f"â ï¸  Reached max iterations ({self.max_iterations})")
         
         finally:
             # Cleanup environment
@@ -571,13 +571,13 @@ Complete the user's task step by step."""
         """
         results = []
         
-        print(f"\n📦 Running batch of {len(prompts)} tasks")
-        print(f"📁 Output: {output_file}")
+        print(f"\nð¦ Running batch of {len(prompts)} tasks")
+        print(f"ð Output: {output_file}")
         
         with open(output_file, 'w', encoding='utf-8') as f:
             for i, prompt in enumerate(prompts, 1):
                 print(f"\n{'='*60}")
-                print(f"📋 Task {i}/{len(prompts)}")
+                print(f"ð Task {i}/{len(prompts)}")
                 print(f"{'='*60}")
                 
                 try:
@@ -588,7 +588,7 @@ Complete the user's task step by step."""
                     f.write(json.dumps(result, ensure_ascii=False) + "\n")
                     f.flush()
                     
-                    print(f"�?Task {i} completed (api_calls={result['api_calls']})")
+                    print(f"â?Task {i} completed (api_calls={result['api_calls']})")
                     
                 except Exception as e:
                     self.logger.error(f"Error on task {i}: {e}")
@@ -603,7 +603,7 @@ Complete the user's task step by step."""
                     f.write(json.dumps(error_result, ensure_ascii=False) + "\n")
                     f.flush()
         
-        print(f"\n�?Batch complete! {len(results)} trajectories saved to {output_file}")
+        print(f"\nâ?Batch complete! {len(results)} trajectories saved to {output_file}")
         return results
 
 
@@ -652,7 +652,7 @@ def main(
         # Batch from file
         python mini_swe_runner.py --prompts_file tasks.jsonl --output_file results.jsonl
     """
-    print("🚀 Mini-SWE Runner with Hermes Trajectory Format")
+    print("ð Mini-SWE Runner with Hermes Trajectory Format")
     print("=" * 60)
     
     # Initialize runner
@@ -676,10 +676,10 @@ def main(
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
         
-        print(f"\n📁 Trajectory saved to: {output_file}")
-        print(f"�?Completed: {result['completed']}")
-        print(f"📞 API calls: {result['api_calls']}")
-        print(f"💬 Turns: {len(result['conversations'])}")
+        print(f"\nð Trajectory saved to: {output_file}")
+        print(f"â?Completed: {result['completed']}")
+        print(f"ð API calls: {result['api_calls']}")
+        print(f"ð¬ Turns: {len(result['conversations'])}")
         
     elif prompts_file:
         # Batch mode
@@ -695,13 +695,13 @@ def main(
                         prompts.append(line)
         
         if not prompts:
-            print(f"�?No prompts found in {prompts_file}")
+            print(f"â?No prompts found in {prompts_file}")
             return
         
         runner.run_batch(prompts, output_file)
     
     else:
-        print("�?Please provide either --task or --prompts_file")
+        print("â?Please provide either --task or --prompts_file")
         print("   Example: python mini_swe_runner.py --task 'Create a hello world script'")
 
 

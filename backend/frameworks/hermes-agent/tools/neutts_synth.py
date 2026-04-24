@@ -2,7 +2,7 @@
 """Standalone NeuTTS synthesis helper.
 
 Called by tts_tool.py via subprocess to keep the TTS model (~500MB)
-in a separate process that exits after synthesis �?no lingering memory.
+in a separate process that exits after synthesis é¥?no lingering memory.
 
 Usage:
     python -m tools.neutts_synth --text "Hello" --out output.wav \

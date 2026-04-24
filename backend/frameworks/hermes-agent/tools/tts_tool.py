@@ -471,7 +471,7 @@ def _generate_neutts(text: str, output_path: str, tts_config: Dict[str, Any]) ->
     model = neutts_config.get("model", "neuphonic/neutts-air-q4-gguf")
     device = neutts_config.get("device", "cpu")
 
-    # NeuTTS outputs WAV natively �?use a .wav path for generation,
+    # NeuTTS outputs WAV natively é¥?use a .wav path for generation,
     # let the caller convert to the final format afterward.
     wav_path = output_path
     if not output_path.endswith(".wav"):
@@ -503,7 +503,7 @@ def _generate_neutts(text: str, output_path: str, tts_config: Dict[str, Any]) ->
             subprocess.run(conv_cmd, check=True, timeout=30)
             os.remove(wav_path)
         else:
-            # No ffmpeg �?just rename the WAV to the expected path
+            # No ffmpeg é¥?just rename the WAV to the expected path
             os.rename(wav_path, output_path)
 
     return output_path
@@ -657,7 +657,7 @@ def text_to_speech_tool(
             }, ensure_ascii=False)
 
         # Try Opus conversion for Telegram compatibility
-        # Edge TTS outputs MP3, NeuTTS outputs WAV �?both need ffmpeg conversion
+        # Edge TTS outputs MP3, NeuTTS outputs WAV é¥?both need ffmpeg conversion
         voice_compatible = False
         if provider in ("edge", "neutts", "minimax") and not file_str.endswith(".ogg"):
             opus_path = _convert_to_opus(file_str)
@@ -1005,7 +1005,7 @@ def stream_tts_to_speaker(
 # Main -- quick diagnostics
 # ===========================================================================
 if __name__ == "__main__":
-    print("🔊 Text-to-Speech Tool Module")
+    print("é¦æ° Text-to-Speech Tool Module")
     print("=" * 50)
 
     def _check(importer, label):
@@ -1025,7 +1025,7 @@ if __name__ == "__main__":
         f"{'set' if resolve_openai_audio_api_key() else 'not set (VOICE_TOOLS_OPENAI_KEY or OPENAI_API_KEY)'}"
     )
     print(f"  MiniMax:    {'API key set' if os.getenv('MINIMAX_API_KEY') else 'not set (MINIMAX_API_KEY)'}")
-    print(f"  ffmpeg:     {'�?found' if _has_ffmpeg() else '�?not found (needed for Telegram Opus)'}")
+    print(f"  ffmpeg:     {'é?found' if _has_ffmpeg() else 'é?not found (needed for Telegram Opus)'}")
     print(f"\n  Output dir: {DEFAULT_OUTPUT_DIR}")
 
     config = _load_tts_config()
@@ -1065,5 +1065,5 @@ registry.register(
         text=args.get("text", ""),
         output_path=args.get("output_path")),
     check_fn=check_tts_requirements,
-    emoji="🔊",
+    emoji="é¦æ°",
 )

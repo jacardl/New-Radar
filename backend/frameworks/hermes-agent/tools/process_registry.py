@@ -90,7 +90,7 @@ class ProcessSession:
     watcher_thread_id: str = ""
     watcher_interval: int = 0                   # 0 = no watcher configured
     notify_on_complete: bool = False             # Queue agent notification on exit
-    # Watch patterns �?trigger agent notification when output matches any pattern
+    # Watch patterns é¥?trigger agent notification when output matches any pattern
     watch_patterns: List[str] = field(default_factory=list)
     _watch_hits: int = field(default=0, repr=False)          # total matches delivered
     _watch_suppressed: int = field(default=0, repr=False)    # matches dropped by rate limit
@@ -129,7 +129,7 @@ class ProcessRegistry:
         # Side-channel for check_interval watchers (gateway reads after agent run)
         self.pending_watchers: List[Dict[str, Any]] = []
 
-        # Notification queue �?unified queue for all background process events.
+        # Notification queue é¥?unified queue for all background process events.
         # Completion notifications (notify_on_complete) and watch pattern matches
         # both land here, distinguished by "type" field.  CLI process_loop and
         # gateway drain this after each agent turn to auto-trigger new turns.
@@ -195,14 +195,14 @@ class ProcessRegistry:
                         "type": "watch_disabled",
                         "suppressed": session._watch_suppressed,
                         "message": (
-                            f"Watch patterns disabled for process {session.id} �?"
+                            f"Watch patterns disabled for process {session.id} é¥?"
                             f"too many matches ({session._watch_suppressed} suppressed). "
                             f"Use process(action='poll') to check output manually."
                         ),
                     })
                 return
 
-            # Under the rate limit �?deliver notification
+            # Under the rate limit é¥?deliver notification
             session._watch_window_hits += 1
             session._watch_hits += 1
             # Clear overload tracker since we got a delivery through
@@ -593,7 +593,7 @@ class ProcessRegistry:
         """Move a session from running to finished.
 
         Idempotent: if the session was already moved (e.g. kill_process raced
-        with the reader thread), the second call is a no-op �?no duplicate
+        with the reader thread), the second call is a no-op é¥?no duplicate
         completion notification is enqueued.
         """
         with self._lock:
@@ -1137,7 +1137,7 @@ def _handle_process(args, **kw):
     import json as _json
     task_id = kw.get("task_id")
     action = args.get("action", "")
-    # Coerce to string �?some models send session_id as an integer
+    # Coerce to string é¥?some models send session_id as an integer
     session_id = str(args.get("session_id", "")) if args.get("session_id") is not None else ""
 
     if action == "list":
@@ -1168,5 +1168,5 @@ registry.register(
     toolset="terminal",
     schema=PROCESS_SCHEMA,
     handler=_handle_process,
-    emoji="⚙️",
+    emoji="é¿æ¬ç¬",
 )

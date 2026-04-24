@@ -174,7 +174,7 @@ class BrowserUseProvider(CloudBrowserProvider):
         try:
             config = self._get_config()
         except ValueError:
-            logger.warning("Cannot close Browser Use session %s �?missing credentials", session_id)
+            logger.warning("Cannot close Browser Use session %s é¥?missing credentials", session_id)
             return False
 
         try:
@@ -202,7 +202,7 @@ class BrowserUseProvider(CloudBrowserProvider):
     def emergency_cleanup(self, session_id: str) -> None:
         config = self._get_config_or_none()
         if config is None:
-            logger.warning("Cannot emergency-cleanup Browser Use session %s �?missing credentials", session_id)
+            logger.warning("Cannot emergency-cleanup Browser Use session %s é¥?missing credentials", session_id)
             return
         try:
             requests.patch(

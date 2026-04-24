@@ -63,7 +63,7 @@ def _git_repo_root(cwd=None):
 
 
 def _setup_worktree(repo_root):
-    """Test version of _setup_worktree �?creates a worktree."""
+    """Test version of _setup_worktree é¥?creates a worktree."""
     import uuid
     short_id = uuid.uuid4().hex[:8]
     wt_name = f"hermes-{short_id}"
@@ -108,7 +108,7 @@ def _cleanup_worktree(info):
     has_unpushed = bool(result.stdout.strip())
 
     if has_unpushed:
-        return False  # Did not clean up �?has unpushed commits
+        return False  # Did not clean up é¥?has unpushed commits
 
     subprocess.run(
         ["git", "worktree", "remove", wt_path, "--force"],
@@ -233,7 +233,7 @@ class TestWorktreeCleanup:
         )
 
         # The git_repo fixture already has a fake remote ref so the initial
-        # commit is seen as "pushed".  No unpushed commits �?cleanup proceeds.
+        # commit is seen as "pushed".  No unpushed commits é«?cleanup proceeds.
         result = _cleanup_worktree(info)
         assert result is True  # Cleaned up despite dirty working tree
         assert not Path(info["path"]).exists()
@@ -252,7 +252,7 @@ class TestWorktreeCleanup:
         )
 
         result = _cleanup_worktree(info)
-        assert result is False  # Kept �?has unpushed commits
+        assert result is False  # Kept é¥?has unpushed commits
         assert Path(info["path"]).exists()
 
     def test_branch_deleted_on_cleanup(self, git_repo):
@@ -330,7 +330,7 @@ class TestWorktreeInclude:
         )
         info = _setup_worktree(str(git_repo))
         assert info is not None
-        # Should not crash �?just skip all lines
+        # Should not crash é¥?just skip all lines
 
 
 class TestGitignoreManagement:
@@ -372,7 +372,7 @@ class TestMultipleWorktrees:
     """Test running multiple worktrees concurrently (the core use case)."""
 
     def test_ten_concurrent_worktrees(self, git_repo):
-        """Create 10 worktrees �?simulating 10 parallel agents."""
+        """Create 10 worktrees é¥?simulating 10 parallel agents."""
         worktrees = []
         for _ in range(10):
             info = _setup_worktree(str(git_repo))
@@ -512,7 +512,7 @@ class TestStaleWorktreePruning:
         info = _setup_worktree(str(git_repo))
         assert info is not None
 
-        # Don't modify mtime �?it's recent
+        # Don't modify mtime é¥?it's recent
         worktrees_dir = git_repo / ".worktrees"
         cutoff = time.time() - (24 * 3600)
 
@@ -543,7 +543,7 @@ class TestStaleWorktreePruning:
             cwd=info["path"], capture_output=True,
         )
 
-        # Make it old (25h �?in the 24-72h soft tier)
+        # Make it old (25h é¥?in the 24-72h soft tier)
         old_time = time.time() - (25 * 3600)
         os.utime(info["path"], (old_time, old_time))
 
@@ -553,7 +553,7 @@ class TestStaleWorktreePruning:
             capture_output=True, text=True, cwd=info["path"],
         )
         has_unpushed = bool(result.stdout.strip())
-        assert has_unpushed  # Has unpushed commits �?not pruned in soft tier
+        assert has_unpushed  # Has unpushed commits é«?not pruned in soft tier
         assert Path(info["path"]).exists()
 
     def test_force_prunes_very_old_worktree(self, git_repo):
@@ -571,7 +571,7 @@ class TestStaleWorktreePruning:
             cwd=info["path"], capture_output=True,
         )
 
-        # Make it very old (73h �?beyond the 72h hard threshold)
+        # Make it very old (73h é¥?beyond the 72h hard threshold)
         old_time = time.time() - (73 * 3600)
         os.utime(info["path"], (old_time, old_time))
 

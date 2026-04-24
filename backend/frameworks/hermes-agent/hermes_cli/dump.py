@@ -3,7 +3,7 @@ Dump command for hermes CLI.
 
 Outputs a compact, plain-text summary of the user's Hermes setup
 that can be copy-pasted into Discord/GitHub/Telegram for support context.
-No ANSI colors, no checkmarks �?just data.
+No ANSI colors, no checkmarks é¥?just data.
 """
 
 import json

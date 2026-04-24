@@ -289,7 +289,7 @@ class HermesAgentLoop:
                     pass  # Fall through to no tool calls
 
             if assistant_msg.tool_calls:
-                # Normalize tool calls to dicts �?they may come as objects
+                # Normalize tool calls to dicts é¥?they may come as objects
                 # (OpenAI API) or dicts (vLLM ToolCallTranslator).
                 def _tc_to_dict(tc):
                     if isinstance(tc, dict):

@@ -1,5 +1,5 @@
 """
-Tests for environments/agent_loop.py �?HermesAgentLoop.
+Tests for environments/agent_loop.py â?HermesAgentLoop.
 
 Tests the multi-turn agent engine using mocked servers, without needing
 real API keys or running servers.
@@ -30,7 +30,7 @@ except ImportError:
     pytest.skip("atroposlib not installed", allow_module_level=True)
 
 
-# ─── Mock server infrastructure ─────────────────────────────────────────
+# --- Mock server infrastructure -----------------------------------------
 
 
 @dataclass
@@ -128,7 +128,7 @@ def make_tool_response(
     )
 
 
-# ─── Tests ───────────────────────────────────────────────────────────────
+# --- Tests ---------------------------------------------------------------
 
 
 class TestAgentResult:

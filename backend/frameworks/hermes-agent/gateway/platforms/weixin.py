@@ -506,7 +506,7 @@ async def _upload_ciphertext(
     """Upload encrypted media to the CDN.
 
     Accepts either a constructed CDN URL (from upload_param) or a direct
-    upload_full_url �?both use POST with the raw ciphertext as the body.
+    upload_full_url â?both use POST with the raw ciphertext as the body.
     """
     timeout = aiohttp.ClientTimeout(total=120)
     async with session.post(upload_url, data=ciphertext, headers={"Content-Type": "application/octet-stream"}, timeout=timeout) as response:
@@ -581,7 +581,7 @@ def _rewrite_headers_for_weixin(line: str) -> str:
     level = len(match.group(1))
     title = match.group(2).strip()
     if level == 1:
-        return f"【{title}�?
+        return f"ã{title}ã?
     return f"**{title}**"
 
 
@@ -747,7 +747,7 @@ def _looks_like_chatty_line_for_weixin(line: str) -> bool:
         return False
     if line.startswith((" ", "\t")):
         return False
-    if stripped.startswith((">", "-", "*", "�?)):
+    if stripped.startswith((">", "-", "*", "ã?)):
         return False
     if re.match(r"^\*\*[^*]+\*\*$", stripped):
         return False
@@ -761,7 +761,7 @@ def _looks_like_heading_line_for_weixin(line: str) -> bool:
     stripped = line.strip()
     if not stripped:
         return False
-    return len(stripped) <= 24 and stripped.endswith((":", "�?))
+    return len(stripped) <= 24 and stripped.endswith((":", "ï¼?))
 
 
 def _should_split_short_chat_block_for_weixin(block: str) -> bool:
@@ -807,7 +807,7 @@ def _split_text_for_weixin_delivery(
     Only fall back to block-aware packing when the payload exceeds
     ``max_length``.
 
-    *per_line* (``split_per_line=True``): Legacy behavior �?top-level line
+    *per_line* (``split_per_line=True``): Legacy behavior â?top-level line
     breaks become separate chat messages; oversized units still use
     block-aware packing.
 
@@ -829,7 +829,7 @@ def _split_text_for_weixin_delivery(
             chunks.extend(_pack_markdown_blocks_for_weixin(unit, max_length))
         return [c for c in chunks if c] or [content]
 
-    # Compact (default): single message when under the limit �?unless the
+    # Compact (default): single message when under the limit â?unless the
     # content looks like a short chatty exchange, in which case split into
     # separate bubbles for a more natural chat feel.
     if len(content) <= max_length:
@@ -868,7 +868,7 @@ def _extract_text(item_list: List[Dict[str, Any]]) -> str:
             ref_type = ref_item.get("type")
             if ref_type in (ITEM_IMAGE, ITEM_VIDEO, ITEM_FILE, ITEM_VOICE):
                 title = ref.get("title") or ""
-                prefix = f"[引用媒体: {title}]\n" if title else "[引用媒体]\n"
+                prefix = f"[å¼ç¨åªä½: {title}]\n" if title else "[å¼ç¨åªä½]\n"
                 return f"{prefix}{text}".strip()
             if ref_item:
                 parts: List[str] = []
@@ -878,7 +878,7 @@ def _extract_text(item_list: List[Dict[str, Any]]) -> str:
                 if ref_text:
                     parts.append(ref_text)
                 if parts:
-                    return f"[引用: {' | '.join(parts)}]\n{text}".strip()
+                    return f"[å¼ç¨: {' | '.join(parts)}]\n{text}".strip()
             return text
     for item in item_list:
         if item.get("type") == ITEM_VOICE:
@@ -953,7 +953,7 @@ async def qr_login(
             logger.error("weixin: QR response missing qrcode")
             return None
 
-        print("\n请使用微信扫描以下二维码�?)
+        print("\nè¯·ä½¿ç¨å¾®ä¿¡æ«æä»¥ä¸äºç»´ç ï¼?)
         if qrcode_url:
             print(qrcode_url)
         try:
@@ -964,7 +964,7 @@ async def qr_login(
             qr.make(fit=True)
             qr.print_ascii(invert=True)
         except Exception:
-            print("（终端二维码渲染失败，请直接打开上面的二维码链接�?)
+            print("ï¼ç»ç«¯äºç»´ç æ¸²æå¤±è´¥ï¼è¯·ç´æ¥æå¼ä¸é¢çäºç»´ç é¾æ¥ï¼?)
 
         deadline = time.time() + timeout_seconds
         current_base_url = ILINK_BASE_URL
@@ -990,7 +990,7 @@ async def qr_login(
             if status == "wait":
                 print(".", end="", flush=True)
             elif status == "scaned":
-                print("\n已扫码，请在微信里确�?..")
+                print("\nå·²æ«ç ï¼è¯·å¨å¾®ä¿¡éç¡®è®?..")
             elif status == "scaned_but_redirect":
                 redirect_host = str(status_resp.get("redirect_host") or "")
                 if redirect_host:
@@ -998,9 +998,9 @@ async def qr_login(
             elif status == "expired":
                 refresh_count += 1
                 if refresh_count > 3:
-                    print("\n二维码多次过期，请重新执行登录�?)
+                    print("\näºç»´ç å¤æ¬¡è¿æï¼è¯·éæ°æ§è¡ç»å½ã?)
                     return None
-                print(f"\n二维码已过期，正在刷�?.. ({refresh_count}/3)")
+                print(f"\näºç»´ç å·²è¿æï¼æ­£å¨å·æ?.. ({refresh_count}/3)")
                 try:
                     qr_resp = await _api_get(
                         session,
@@ -1030,7 +1030,7 @@ async def qr_login(
                     base_url=base_url,
                     user_id=user_id,
                 )
-                print(f"\n微信连接成功，account_id={account_id}")
+                print(f"\nå¾®ä¿¡è¿æ¥æåï¼account_id={account_id}")
                 return {
                     "account_id": account_id,
                     "token": token,
@@ -1039,7 +1039,7 @@ async def qr_login(
                 }
             await asyncio.sleep(1)
 
-        print("\n微信登录超时�?)
+        print("\nå¾®ä¿¡ç»å½è¶æ¶ã?)
         return None
 
 
@@ -1048,8 +1048,8 @@ class WeixinAdapter(BasePlatformAdapter):
 
     MAX_MESSAGE_LENGTH = 4000
 
-    # WeChat does not support editing sent messages �?streaming must use the
-    # fallback "send-final-only" path so the cursor (�? is never left visible.
+    # WeChat does not support editing sent messages â?streaming must use the
+    # fallback "send-final-only" path so the cursor (â? is never left visible.
     SUPPORTS_MESSAGE_EDITING = False
 
     def __init__(self, config: PlatformConfig):
@@ -1632,7 +1632,7 @@ class WeixinAdapter(BasePlatformAdapter):
         ciphertext = _aes128_ecb_encrypt(plaintext, aes_key)
 
         # Prefer upload_full_url (direct CDN), fall back to constructed CDN URL
-        # from upload_param.  Both paths use POST �?the old PUT for
+        # from upload_param.  Both paths use POST â?the old PUT for
         # upload_full_url caused 404s on the WeChat CDN.
         if upload_full_url:
             upload_url = upload_full_url

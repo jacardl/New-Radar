@@ -142,7 +142,7 @@ class TestIsSkillDisabled:
 
 
 # ---------------------------------------------------------------------------
-# get_disabled_skill_names �?explicit platform param & env var fallback
+# get_disabled_skill_names é¥?explicit platform param & env var fallback
 # ---------------------------------------------------------------------------
 
 class TestGetDisabledSkillNames:
@@ -245,7 +245,7 @@ class TestGetDisabledSkillNames:
 
 
 # ---------------------------------------------------------------------------
-# _find_all_skills �?disabled filtering
+# _find_all_skills é¥?disabled filtering
 # ---------------------------------------------------------------------------
 
 class TestFindAllSkillsFiltering:

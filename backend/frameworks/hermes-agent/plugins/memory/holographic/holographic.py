@@ -2,11 +2,11 @@
 
 HRRs are a vector symbolic architecture for encoding compositional structure
 into fixed-width distributed representations. This module uses *phase vectors*:
-each concept is a vector of angles in [0, 2π). The algebraic operations are:
+each concept is a vector of angles in [0, 2èº). The algebraic operations are:
 
-  bind   �?circular convolution (phase addition)  �?associates two concepts
-  unbind �?circular correlation (phase subtraction) �?retrieves a bound value
-  bundle �?superposition (circular mean)           �?merges multiple concepts
+  bind   é¥?circular convolution (phase addition)  é¥?associates two concepts
+  unbind é¥?circular correlation (phase subtraction) é¥?retrieves a bound value
+  bundle é¥?superposition (circular mean)           é¥?merges multiple concepts
 
 Phase encoding is numerically stable, avoids the magnitude collapse of
 traditional complex-number HRRs, and maps cleanly to cosine similarity.
@@ -15,8 +15,8 @@ Atoms are generated deterministically from SHA-256 so representations are
 identical across processes, machines, and language versions.
 
 References:
-  Plate (1995) �?Holographic Reduced Representations
-  Gayler (2004) �?Vector Symbolic Architectures answer Jackendoff's challenges
+  Plate (1995) é¥?Holographic Reduced Representations
+  Gayler (2004) é¥?Vector Symbolic Architectures answer Jackendoff's challenges
 """
 
 import hashlib
@@ -48,7 +48,7 @@ def encode_atom(word: str, dim: int = 1024) -> "np.ndarray":
     Algorithm:
     - Generate enough SHA-256 blocks by hashing f"{word}:{i}" for i=0,1,2,...
     - Concatenate digests, interpret as uint16 values via struct.unpack
-    - Scale to [0, 2π): phases = values * (2π / 65536)
+    - Scale to [0, 2èº): phases = values * (2èº / 65536)
     - Truncate to dim elements
     - Returns np.float64 array of shape (dim,)
     """
@@ -81,7 +81,7 @@ def unbind(memory: "np.ndarray", key: "np.ndarray") -> "np.ndarray":
     """Circular correlation = element-wise phase subtraction.
 
     Unbinding retrieves the value associated with a key from a memory vector.
-    unbind(bind(a, b), a) �?b  (up to superposition noise)
+    unbind(bind(a, b), a) é®?b  (up to superposition noise)
     """
     _require_numpy()
     return (memory - key) % _TWO_PI
@@ -143,7 +143,7 @@ def encode_fact(content: str, entities: list[str], dim: int = 1024) -> "np.ndarr
     3. bundle all components together
 
     This enables algebraic extraction:
-        unbind(fact, bind(entity, ROLE_ENTITY)) �?content_vector
+        unbind(fact, bind(entity, ROLE_ENTITY)) é®?content_vector
     """
     _require_numpy()
 
@@ -161,7 +161,7 @@ def encode_fact(content: str, entities: list[str], dim: int = 1024) -> "np.ndarr
 
 
 def phases_to_bytes(phases: "np.ndarray") -> bytes:
-    """Serialize phase vector to bytes. float64 tobytes �?8 KB at dim=1024."""
+    """Serialize phase vector to bytes. float64 tobytes é¥?8 KB at dim=1024."""
     _require_numpy()
     return phases.tobytes()
 

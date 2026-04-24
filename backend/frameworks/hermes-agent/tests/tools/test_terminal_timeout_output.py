@@ -4,7 +4,7 @@ from tools.environments.local import LocalEnvironment
 
 class TestTimeoutPreservesPartialOutput:
     """When a command times out, any output captured before the deadline
-    should be included in the result �?not discarded."""
+    should be included in the result é¥?not discarded."""
 
     def test_timeout_includes_partial_output(self):
         """A command that prints then sleeps past the deadline should

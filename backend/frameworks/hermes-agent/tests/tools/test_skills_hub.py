@@ -1,4 +1,4 @@
-"""Tests for tools/skills_hub.py �?source adapters, lock file, taps, dedup logic."""
+"""Tests for tools/skills_hub.py é¥?source adapters, lock file, taps, dedup logic."""
 
 import json
 from pathlib import Path
@@ -99,7 +99,7 @@ class TestTrustLevelFor:
     def test_two_part_identifier(self):
         src = self._source()
         result = src.trust_level_for("owner/repo")
-        # No path part �?still resolves repo correctly
+        # No path part é¥?still resolves repo correctly
         assert result in ("trusted", "community")
 
 
@@ -400,7 +400,7 @@ class TestSkillsShSource:
                 resp.status_code = 404
                 return resp
             if url.endswith("/contents/"):
-                # Root listing for shallow scan �?return empty so it falls through
+                # Root listing for shallow scan é¥?return empty so it falls through
                 resp.status_code = 200
                 resp.json = lambda: []
                 return resp
@@ -409,7 +409,7 @@ class TestSkillsShSource:
                 resp.status_code = 404
                 return resp
             if url.endswith("owner/repo"):
-                # Repo info �?default branch
+                # Repo info é«?default branch
                 resp.status_code = 200
                 resp.json = lambda: {"default_branch": "main"}
                 return resp
@@ -951,7 +951,7 @@ class TestConvertToSkillMd:
 
 
 # ---------------------------------------------------------------------------
-# unified_search �?dedup logic
+# unified_search é¥?dedup logic
 # ---------------------------------------------------------------------------
 
 
@@ -1214,7 +1214,7 @@ class TestQuarantineBundleBinaryAssets:
 
 
 # ---------------------------------------------------------------------------
-# GitHubSource._download_directory �?tree API + fallback (#2940)
+# GitHubSource._download_directory é¥?tree API + fallback (#2940)
 # ---------------------------------------------------------------------------
 
 

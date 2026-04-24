@@ -1,4 +1,4 @@
-"""URL safety checks �?blocks requests to private/internal network addresses.
+"""URL safety checks é¥?blocks requests to private/internal network addresses.
 
 Prevents SSRF (Server-Side Request Forgery) where a malicious prompt or
 skill could trick the agent into fetching internal resources like cloud
@@ -30,7 +30,7 @@ _BLOCKED_HOSTNAMES = frozenset({
 })
 
 # 100.64.0.0/10 (CGNAT / Shared Address Space, RFC 6598) is NOT covered by
-# ipaddress.is_private �?it returns False for both is_private and is_global.
+# ipaddress.is_private é¥?it returns False for both is_private and is_global.
 # Must be blocked explicitly. Used by carrier-grade NAT, Tailscale/WireGuard
 # VPNs, and some cloud internal networks.
 _CGNAT_NETWORK = ipaddress.ip_network("100.64.0.0/10")
@@ -69,9 +69,9 @@ def is_safe_url(url: str) -> bool:
         try:
             addr_info = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
         except socket.gaierror:
-            # DNS resolution failed �?fail closed. If DNS can't resolve it,
+            # DNS resolution failed é¥?fail closed. If DNS can't resolve it,
             # the HTTP client will also fail, so blocking loses nothing.
-            logger.warning("Blocked request �?DNS resolution failed for: %s", hostname)
+            logger.warning("Blocked request é¥?DNS resolution failed for: %s", hostname)
             return False
 
         for family, _, _, _, sockaddr in addr_info:
@@ -91,7 +91,7 @@ def is_safe_url(url: str) -> bool:
         return True
 
     except Exception as exc:
-        # Fail closed on unexpected errors �?don't let parsing edge cases
+        # Fail closed on unexpected errors é¥?don't let parsing edge cases
         # become SSRF bypass vectors
-        logger.warning("Blocked request �?URL safety check error for %s: %s", url, exc)
+        logger.warning("Blocked request é¥?URL safety check error for %s: %s", url, exc)
         return False

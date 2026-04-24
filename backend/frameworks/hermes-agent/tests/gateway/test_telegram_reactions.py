@@ -36,7 +36,7 @@ def _make_event(chat_id: str = "123", message_id: str = "456") -> MessageEvent:
     )
 
 
-# ── _reactions_enabled ───────────────────────────────────────────────
+# -- _reactions_enabled -----------------------------------------------
 
 
 def test_reactions_disabled_by_default(monkeypatch):
@@ -81,7 +81,7 @@ def test_reactions_disabled_with_no(monkeypatch):
     assert adapter._reactions_enabled() is False
 
 
-# ── _set_reaction ────────────────────────────────────────────────────
+# -- _set_reaction ----------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -122,7 +122,7 @@ async def test_set_reaction_handles_api_error_gracefully(monkeypatch):
     assert result is False
 
 
-# ── on_processing_start ──────────────────────────────────────────────
+# -- on_processing_start ----------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -170,7 +170,7 @@ async def test_on_processing_start_handles_missing_ids(monkeypatch):
     adapter._bot.set_message_reaction.assert_not_awaited()
 
 
-# ── on_processing_complete ───────────────────────────────────────────
+# -- on_processing_complete -------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -229,7 +229,7 @@ async def test_on_processing_complete_cancelled_keeps_existing_reaction(monkeypa
     adapter._bot.set_message_reaction.assert_not_awaited()
 
 
-# ── config.py bridging ───────────────────────────────────────────────
+# -- config.py bridging -----------------------------------------------
 
 
 def test_config_bridges_telegram_reactions(monkeypatch, tmp_path):
@@ -243,7 +243,7 @@ def test_config_bridges_telegram_reactions(monkeypatch, tmp_path):
     }))
     monkeypatch.setenv("HERMES_HOME", str(tmp_path))
     # Use setenv (not delenv) so monkeypatch registers cleanup even when
-    # the var doesn't exist yet �?load_gateway_config will overwrite it.
+    # the var doesn't exist yet â?load_gateway_config will overwrite it.
     monkeypatch.setenv("TELEGRAM_REACTIONS", "")
 
     from gateway.config import load_gateway_config
