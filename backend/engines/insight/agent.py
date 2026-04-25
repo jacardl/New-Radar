@@ -58,73 +58,73 @@ For clustering analysis, enable_kmeans=true parameter can be passed to group sim
 
 
 class DeepSearchAgent(BaseHermesAgent):
- """Deep Search Agent for Insight Engine"""
+    """Deep Search Agent for Insight Engine"""
 
- def __init__(self, config: Optional[Settings] = None, session_id: Optional[str] = None):
- """
- Initialize Deep Search Agent.
+    def __init__(self, config: Optional[Settings] = None, session_id: Optional[str] = None):
+        """
+        Initialize Deep Search Agent.
 
- Args:
- config: Optional config object (defaults to global settings).
- session_id: Session ID for Hermes AIAgent.
- """
- self.config = config or settings
- self.session_id = session_id or f"insight_engine_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        Args:
+            config: Optional config object (defaults to global settings).
+            session_id: Session ID for Hermes AIAgent.
+        """
+        self.config = config or settings
+        self.session_id = session_id or f"insight_engine_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
- # Initialize BaseHermesAgent (Hermes AIAgent + LocalDatabaseSearchTool)
- super().__init__(
- name="InsightSearchAgent",
- role_instruction=INSIGHT_ENGINE_ROLE_INSTRUCTION,
- session_id=self.session_id
- )
+        # Initialize BaseHermesAgent (Hermes AIAgent + LocalDatabaseSearchTool)
+        super().__init__(
+            name="InsightSearchAgent",
+            role_instruction=INSIGHT_ENGINE_ROLE_INSTRUCTION,
+            session_id=self.session_id
+        )
 
- # Initialize LLM client
- self.llm_client = self._initialize_llm()
+        # Initialize LLM client
+        self.llm_client = self._initialize_llm()
 
- # Initialize clustering model (lazy load)
- self._clustering_model = None
+        # Initialize clustering model (lazy load)
+        self._clustering_model = None
 
- # Initialize sentiment analyzer
- self.sentiment_analyzer = multilingual_sentiment_analyzer
+        # Initialize sentiment analyzer
+        self.sentiment_analyzer = multilingual_sentiment_analyzer
 
- # Initialize processing nodes
- self._initialize_nodes()
+        # Initialize processing nodes
+        self._initialize_nodes()
 
- # State
- self.state = State()
+        # State
+        self.state = State()
 
- # Ensure output directory exists
- os.makedirs(self.config.OUTPUT_DIR, exist_ok=True)
+        # Ensure output directory exists
+        os.makedirs(self.config.OUTPUT_DIR, exist_ok=True)
 
- logger.info(f"Insight Agent initialized (BaseHermesAgent + Hermes AIAgent)")
- logger.info(f"Using LLM: {self.llm_client.get_model_info()}")
- logger.info(f"Search: LocalDatabaseSearchTool only (crawled_data table)")
- logger.info(f"Sentiment analysis: WeiboMultilingualSentiment (22 languages)")
+        logger.info(f"Insight Agent initialized (BaseHermesAgent + Hermes AIAgent)")
+        logger.info(f"Using LLM: {self.llm_client.get_model_info()}")
+        logger.info(f"Search: LocalDatabaseSearchTool only (crawled_data table)")
+        logger.info(f"Sentiment analysis: WeiboMultilingualSentiment (22 languages)")
 
- def _initialize_llm(self) -> LLMClient:
- """Initialize LLM client."""
- return LLMClient(
- api_key=self.config.INSIGHT_ENGINE_API_KEY,
- model_name=self.config.INSIGHT_ENGINE_MODEL_NAME,
- base_url=self.config.INSIGHT_ENGINE_BASE_URL,
- )
+    def _initialize_llm(self) -> LLMClient:
+        """Initialize LLM client."""
+        return LLMClient(
+            api_key=self.config.INSIGHT_ENGINE_API_KEY,
+            model_name=self.config.INSIGHT_ENGINE_MODEL_NAME,
+            base_url=self.config.INSIGHT_ENGINE_BASE_URL,
+        )
 
- def _initialize_nodes(self):
- """ ?""
- self.first_search_node = FirstSearchNode(self.llm_client)
- self.reflection_node = ReflectionNode(self.llm_client)
- self.first_summary_node = FirstSummaryNode(self.llm_client)
- self.reflection_summary_node = ReflectionSummaryNode(self.llm_client)
- self.report_formatting_node = ReportFormattingNode(self.llm_client)
+    def _initialize_nodes(self):
+        """Initialize processing nodes."""
+        self.first_search_node = FirstSearchNode(self.llm_client)
+        self.reflection_node = ReflectionNode(self.llm_client)
+        self.first_summary_node = FirstSummaryNode(self.llm_client)
+        self.reflection_summary_node = ReflectionSummaryNode(self.llm_client)
+        self.report_formatting_node = ReportFormattingNode(self.llm_client)
 
- def _get_clustering_model(self):
- """ ?""
- if self._clustering_model is None:
- logger.info(" 载 类模 (paraphrase-multilingual-MiniLM-L12-v2)...")
- self._clustering_model = SentenceTransformer(
- "paraphrase-multilingual-MiniLM-L12-v2"
- )
- return self._clustering_model
+    def _get_clustering_model(self):
+        """Get clustering model (lazy load)."""
+        if self._clustering_model is None:
+            logger.info("Loading clustering model (paraphrase-multilingual-MiniLM-L12-v2)...")
+            self._clustering_model = SentenceTransformer(
+                "paraphrase-multilingual-MiniLM-L12-v2"
+            )
+        return self._clustering_model
 
  def _validate_date_format(self, date_str: str) -> bool:
  """
