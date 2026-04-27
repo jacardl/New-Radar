@@ -1,82 +1,60 @@
+# =============================================================================
+# New Radar - Hermes Agent Gateway
+# =============================================================================
+
 FROM python:3.11-slim-bookworm
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Replace default debian repositories with TUNA mirror for faster/stable downloads in China
-RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
-
-# Prevent Python from writing .pyc files, buffer stdout/stderr, and pin common tooling paths
+# Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PATH="/root/.local/bin:${PATH}" \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-# Install system dependencies required by scientific Python stack, Playwright, Streamlit, and WeasyPrint PDF
-RUN set -euo pipefail; \
-    apt-get update; \
-    if apt-cache show libgdk-pixbuf-2.0-0 >/dev/null 2>&1; then \
-        GDK_PIXBUF_PKG=libgdk-pixbuf-2.0-0; \
-    else \
-        GDK_PIXBUF_PKG=libgdk-pixbuf2.0-0; \
-    fi; \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        curl \
-        git \
-        libgl1 \
-        libglib2.0-0 \
-        libgtk-3-0 \
-        libpango-1.0-0 \
-        libpangocairo-1.0-0 \
-        libpangoft2-1.0-0 \
-        "${GDK_PIXBUF_PKG}" \
-        libffi-dev \
-        libcairo2 \
-        libatk1.0-0 \
-        libatk-bridge2.0-0 \
-        libxcb1 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxext6 \
-        libxfixes3 \
-        libxi6 \
-        libxtst6 \
-        libnss3 \
-        libxrandr2 \
-        libxkbcommon0 \
-        libasound2 \
-        libx11-xcb1 \
-        libxshmfence1 \
-        libgbm1 \
-        ffmpeg \
-        nodejs \
-        npm; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*
+    PYTHONIOENCODING=utf-8 \
+    PYTHONUTF8=1 \
+    PYTHONPATH=/app/hermes-agent:/app
 
 WORKDIR /app
 
-# Upgrade pip to latest version
-RUN pip install --upgrade pip
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies first to leverage Docker layer caching
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+# Install Hermes Agent from local directory
+# Use Chinese PyPI mirror for faster download
+COPY hermes-agent /app/hermes-agent
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -e /app/hermes-agent[cli,messaging,api_server]
 
-# Install Playwright browser binaries (system deps already handled above)
-RUN python -m playwright install chromium
+# Copy application files (mcp-servers, skills, microservices)
+COPY mcp-servers/ /app/mcp-servers/
+COPY skills/ /app/skills/
+COPY microservices/ /app/microservices/
 
-# Copy .env
-COPY .env.example .env
+# Install MCP server and microservices dependencies
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    "mcp>=1.2.0,<2" \
+    "sqlalchemy>=2.0.0,<3" \
+    "asyncpg>=0.29.0,<1" \
+    "httpx>=0.28.0,<1" \
+    "loguru" \
+    "pydantic>=2.0.0" \
+    "pydantic-settings"
 
-# Copy application source
-COPY . .
+# Create runtime directories
+RUN mkdir -p /app/logs /app/final_reports
 
-# Ensure runtime directories exist even if ignored in build context
-RUN mkdir -p /ms-playwright logs final_reports insight_engine_streamlit_reports media_engine_streamlit_reports query_engine_streamlit_reports
+# Environment variables
+ENV HERMES_API_PORT=8642
+ENV DB_HOST=db
+ENV DB_PORT=5432
+ENV DB_USER=radar
+ENV DB_PASSWORD=radar
+ENV DB_NAME=radar
 
-EXPOSE 5000
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8642/health || exit 1
 
-# Default command launches the Flask orchestrator
-CMD ["python", "app.py"]
+# Default command - run Hermes gateway
+CMD ["hermes", "gateway", "run"]

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "installed": {
+    "skill-creator": {
+      "source": "skills.sh",
+      "identifier": "skills-sh/openai/skills/skill-creator",
+      "trust_level": "trusted",
+      "scan_verdict": "caution",
+      "content_hash": "sha256:b234bc55996b9364",
+      "install_path": "skill-creator",
+      "files": [
+        "LICENSE.txt",
+        "SKILL.md",
+        "agents/openai.yaml",
+        "references/openai_yaml.md",
+        "scripts/generate_openai_yaml.py",
+        "scripts/init_skill.py",
+        "scripts/quick_validate.py"
+      ],
+      "metadata": {
+        "detail_url": "https://skills.sh/openai/skills/skill-creator",
+        "repo_url": "https://github.com/openai/skills",
+        "weekly_installs": "404",
+        "install_command": "npx skills add https://github.com/openai/skills --skill skill-creator",
+        "security_audits": {
+          "agent-trust-hub": "Pass",
+          "socket": "Pass",
+          "snyk": "Pass"
+        }
+      },
+      "installed_at": "2026-04-26T14:12:28.100740+00:00",
+      "updated_at": "2026-04-26T14:12:28.100792+00:00"
+    }
+  }
+}

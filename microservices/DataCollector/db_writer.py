@@ -66,16 +66,15 @@ class DatabaseWriter:
         async with pool.acquire() as conn:
             for record in records:
                 try:
-                    create_time = int(time.time() * 1000)
                     embedding = json.dumps([])  # 向量可后续生成
 
                     await conn.execute(
                         """
                         INSERT INTO crawled_data (
                             platform, content_type, content, source_url, source_keyword,
-                            create_time, embedding, ip_location, user_id, nickname,
+                            embedding, ip_location, user_id, nickname,
                             liked_count, collected_count, comment_count, share_count
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                         ON CONFLICT DO NOTHING
                         """,
                         record.get("platform", "unknown"),
@@ -83,7 +82,6 @@ class DatabaseWriter:
                         record.get("content", ""),
                         record.get("source_url", ""),
                         record.get("source_keyword", ""),
-                        create_time,
                         embedding,
                         record.get("ip_location", ""),
                         record.get("user_id", ""),

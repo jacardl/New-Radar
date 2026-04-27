@@ -1,0 +1,1552 @@
+{
+  "timestamp": "2026-04-26T11:16:27.299747",
+  "session_id": "20260426_105927_9df7e8",
+  "reason": "max_retries_exhausted",
+  "request": {
+    "method": "POST",
+    "url": "https://api.minimaxi.com/anthropic/chat/completions",
+    "headers": {
+      "Authorization": "Bearer None",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "model": "MiniMax-M2.7",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hermes update"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Let me check the current state of the Hermes setup:"
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_4wsln9i8n2k8_1",
+              "name": "terminal",
+              "input": {
+                "command": "hermes --version 2>/dev/null || echo \"hermes not in PATH\""
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_4wsln9i8n2k8_2",
+              "name": "terminal",
+              "input": {
+                "command": "ls -la /app/.hermes/ 2>/dev/null | head -20"
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_4wsln9i8n2k8_3",
+              "name": "terminal",
+              "input": {
+                "command": "git -C /app/.hermes/ rev-parse HEAD 2>/dev/null && git -C /app/.hermes/ remote -v 2>/dev/null"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4wsln9i8n2k8_1",
+              "content": "{\"output\": \"Hermes Agent v0.11.0 (2026.4.23)\\nProject: /app/hermes-agent\\nPython: 3.11.15\\nOpenAI SDK: 2.32.0\\nUpdate available: 111 commits behind — run 'hermes update'\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4wsln9i8n2k8_2",
+              "content": "{\"output\": \"total 5756\\ndrwx------ 1 root root    4096 Apr 26 11:00 .\\ndrwxr-xr-x 1 root root    4096 Apr 26 09:47 ..\\n-rw-r--r-- 1 root root     145 Apr 26 11:00 .hermes_history\\n-rw------- 1 root root   42146 Apr 26 09:22 .skills_prompt_snapshot.json\\n-rw-r--r-- 1 root root      15 Apr 26 09:22 .tirith-install-failed\\n-rw-r--r-- 1 root root      41 Apr 26 10:24 .update_check\\n-rw-r--r-- 1 root root     513 Apr 26 09:20 SOUL.md\\n-rw------- 1 root root     762 Apr 26 09:21 auth.json\\n-rw-r--r-- 1 root root       0 Apr 26 09:21 auth.lock\\ndrwxr-xr-x 1 root root    4096 Apr 26 09:21 bin\\ndrwxr-xr-x 1 root root    4096 Apr 26 10:56 cache\\n-rw------- 1 root root     399 Apr 26 10:59 channel_directory.json\\ndrwxr-xr-x 1 root root    4096 Apr 26 10:26 checkpoints\\n-rwxrwxrwx 1 root root    6696 Apr 26 09:57 config.yaml\\ndrwx------ 1 root root    4096 Apr 26 09:21 cron\\n-rw-r--r-- 1 root root     112 Apr 26 10:59 gateway.lock\\n-rwxr-xr-x 1 root root     112 Apr 26 10:59 gateway.pid\\n-rw-r--r-- 1 root root     405 Apr 26 10:59 gateway_state.json\\ndrwxr-xr-x 1 root root    4096 Apr 26 10:24 images\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4wsln9i8n2k8_3",
+              "content": "{\"output\": \"\", \"exit_code\": 128, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_m9aag8fhm6jy_1",
+              "name": "terminal",
+              "input": {
+                "command": "git -C /app/hermes-agent remote -v && git -C /app/hermes-agent rev-parse HEAD"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_m9aag8fhm6jy_1",
+              "content": "{\"output\": \"origin\\thttps://github.com/NousResearch/hermes-agent.git (fetch)\\norigin\\thttps://github.com/NousResearch/hermes-agent.git (push)\\n023b1bff11c2a01a435f1956a0e2ac1773a065f3\", \"exit_code\": 0, \"error\": null}\n\n[Subdirectory context discovered: hermes-agent/AGENTS.md]\n# Hermes Agent - Development Guide\n\nInstructions for AI coding assistants and developers working on the hermes-agent codebase.\n\n## Development Environment\n\n```bash\n# Prefer .venv; fall back to venv if that's what your checkout has.\nsource .venv/bin/activate   # or: source venv/bin/activate\n```\n\n`scripts/run_tests.sh` probes `.venv` first, then `venv`, then\n`$HOME/.hermes/hermes-agent/venv` (for worktrees that share a venv with the\nmain checkout).\n\n## Project Structure\n\nFile counts shift constantly — don't treat the tree below as exhaustive.\nThe canonical source is the filesystem. The notes call out the load-bearing\nentry points you'll actually edit.\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent class — core conversation loop (~12k LOC)\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # Toolset definitions, _HERMES_CORE_TOOLS list\n├── cli.py                # HermesCLI class — interactive CLI orchestrator (~11k LOC)\n├── hermes_state.py       # SessionDB — SQLite session store (FTS5 search)\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # setup_logging() — agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # Agent internals (provider adapters, memory, caching, compression, etc.)\n├── hermes_cli/           # CLI subcommands, setup wizard, plugins loader, skin engine\n├── tools/                # Tool implementations — auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity)\n├── gateway/              # Messaging gateway — run.py + session.py + platforms/\n│   ├── platforms/        # Adapter per platform (telegram, discord, slack, whatsapp,\n│   │                     #   homeassistant, signal, matrix, mattermost, email, sms,\n│   │                     #   dingtalk, wecom, weixin, feishu, qqbot, bluebubbles,\n│   │                     #   webhook, api_server, ...). See ADDING_A_PLATFORM.md.\n│   └── builtin_hooks/    # Always-registered gateway hooks (boot-md, ...)\n├── plugins/              # Plugin system (see \"Plugins\" section below)\n│   ├── memory/           # Memory-provider plugins (honcho, mem0, supermemory, ...)\n│   ├── context_engine/   # Context-engine plugins\n│   └── <others>/         # Dashboard, image-gen, disk-cleanup, examples, ...\n├── optional-skills/      # Heavier/niche skills shipped but NOT active by default\n├── skills/               # Built-in skills bundled with the repo\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n│   └── src/              # entry.tsx, app.tsx, gatewayClient.ts + app/components/hooks/lib\n├── tui_gateway/          # Python JSON-RPC backend for the TUI\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains integration)\n├── cron/                 # Scheduler — jobs.py, scheduler.py\n├── environments/         # RL training environments (Atropos)\n├── scripts/              # run_tests.sh, release.py, auxiliary scripts\n├── website/              # Docusaurus docs site\n└── tests/                # Pytest suite (~15k tests across ~700 files as of Apr 2026)\n```\n\n**User config:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys only).\n**Logs:** `~/.hermes/logs/` — `agent.log` (INFO+), `errors.log` (WARNING+),\n`gateway.log` when running the gateway. Profile-aware via `get_hermes_home()`.\nBrowse with `hermes logs [--follow] [--level ...] [--session ...]`.\n\n## File Dependency Chain\n\n```\ntools/registry.py  (no deps — imported by all tool files)\n       ↑\ntools/*.py  (each calls registry.register() at import time)\n       ↑\nmodel_tools.py  (imports tools/registry + triggers tool discovery)\n       ↑\nrun_agent.py, cli.py, batch_runner.py, environments/\n```\n\n---\n\n## AIAgent Class (run_agent.py)\n\nThe real `AIAgent.__init__` takes ~60 parameters (credentials, routing, callbacks,\nsession context, budget, credential pool, etc.). The signature below is the\nminimum subset you'll usually touch — read `run_agent.py` for the full list.\n\n```python\nclass AIAgent:\n    def __init__(self,\n        base_url: str = None,\n        api_key: str = None,\n        provider: str = None,\n        api_mode: str = None,              # \"chat_completions\" | \"codex_responses\" | ...\n        model: str = \"\",                   # empty → resolved from config/provider later\n        max_iterations: int = 90,          # tool-calling iterations (shared with subagents)\n        enabled_toolsets: list = None,\n        disabled_toolsets: list = None,\n        quiet_mode: bool = False,\n        save_trajectories: bool = False,\n        platform: str = None,              # \"cli\", \"telegram\", etc.\n        session_id: str = None,\n        skip_context_files: bool = False,\n        skip_memory: bool = False,\n        credential_pool=None,\n        # ... plus callbacks, thread/user/chat IDs, iteration_budget, fallback_model,\n        # checkpoints config, prefill_messages, service_tier, reasoning_config, etc.\n    ): ...\n\n    def chat(self, message: str) -> str:\n        \"\"\"Simple interface — returns final response string.\"\"\"\n\n    def run_conversation(self, user_message: str, system_message: str = None,\n                         conversation_history: list = None, task_id: str = None) -> dict:\n        \"\"\"Full interface — returns dict with final_response + messages.\"\"\"\n```\n\n### Agent Loop\n\nThe core loop is inside `run_conversation()` — entirely synchronous, with\ninterrupt checks, budget tracking, and a one-turn grace call:\n\n```python\nwhile (api_call_count < self.max_iterations and self.iteration_budget.remaining > 0) \\\n        or self._budget_grace_call:\n    if self._interrupt_requested: break\n    response = client.chat.completions.create(model=model, messages=messages, tools=tool_schemas)\n    if response.tool_calls:\n        for tool_call in response.tool_calls:\n            result = handle_function_call(tool_call.name, tool_call.args, task_id)\n            messages.append(tool_result_message(result))\n        api_call_count += 1\n    else:\n        return response.content\n```\n\nMessages follow OpenAI format: `{\"role\": \"system/user/assistant/tool\", ...}`.\nReasoning content is stored in `assistant_msg[\"reasoning\"]`.\n\n---\n\n## CLI Architecture (cli.py)\n\n- **Rich** for banner/panels, **prompt_toolkit** for input with autocomplete\n- **KawaiiSpinner** (`agent/display.py`) — animated faces during API calls, `┊` activity feed for tool results\n- `load_cli_config()` in cli.py merges hardcoded defaults + user config YAML\n- **Skin engine** (`hermes_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text\n- `process_command()` is a method on `HermesCLI` — dispatches on canonical command name resolved via `resolve_command()` from the central registry\n- Skill slash commands: `agent/skill_commands.py` scans `~/.hermes/skills/`, injects as **user message** (not system prompt) to preserve prompt caching\n\n### Slash Command Registry (`hermes_cli/commands.py`)\n\nAll slash commands are defined in a central `COMMAND_REGISTRY` list of `CommandDef` objects. Every downstream consumer derives from this registry automatically:\n\n- **CLI** — `process_command()` resolves aliases via `resolve_command()`, dispatches on canonical name\n- **Gateway** — `GATEWAY_KNOWN_COMMANDS` frozenset for hook emission, `resolve_command()` for dispatch\n- **Gateway help** — `gateway_help_lines()` generates `/help` output\n- **Telegram** — `telegram_bot_commands()` generates the BotCommand menu\n- **Slack** — `slack_subcommand_map()` generates `/hermes` subcommand routing\n- **Autocomplete** — `COMMANDS` flat dict feeds `SlashCommandCompleter`\n- **CLI help** — `COMMANDS_BY_CATEGORY` dict feeds `show_help()`\n\n### Adding a Slash Command\n\n1. Add a `CommandDef` entry to `COMMAND_RE\n\n[...truncated AGENTS.md: 35,069 chars total]"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Running `hermes update` — 111 commits behind:"
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_kjvqymrgpo3e_1",
+              "name": "terminal",
+              "input": {
+                "command": "cd /app/hermes-agent && git fetch origin && git log --oneline HEAD..origin/master | wc -l",
+                "timeout": 30
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_kjvqymrgpo3e_1",
+              "content": "{\"output\": \"fatal: unable to access 'https://github.com/NousResearch/hermes-agent.git/': Failed to connect to github.com port 443 after 21055 ms: Couldn't connect to server\", \"exit_code\": 128, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Network is unavailable — can't reach github.com (connection refused on port 443). The update requires internet access to fetch the latest commits.\n\nIf you have a proxy or VPN available, you could configure it first, then retry. Otherwise, you're stuck on the current build (`023b1bff` — Apr 23, v0.11.0) until connectivity is restored."
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "hermes update"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_w6ffsvrvnwi1_1",
+              "name": "terminal",
+              "input": {
+                "command": "hermes update 2>&1",
+                "timeout": 60
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_w6ffsvrvnwi1_1",
+              "content": "{\"output\": \"⚕ Updating Hermes Agent...\\n\\n→ Fetching updates...\\n→ Local changes detected — stashing before update...\\nSaved working directory and index state On main: hermes-update-autostash-20260426-110515\\n→ Found 111 new commit(s)\\n→ Pulling updates...\\n→ Restoring local changes...\\n✗ Update pulled new code, but restoring local changes hit conflicts.\\nAuto-merging agent/anthropic_adapter.py\\nCONFLICT (content): Merge conflict in agent/anthropic_adapter.py\\nAuto-merging agent/auxiliary_client.py\\nCONFLICT (content): Merge conflict in agent/auxiliary_client.py\\nAuto-merging agent/codex_responses_adapter.py\\nCONFLICT (content): Merge conflict in agent/codex_responses_adapter.py\\nAuto-merging agent/context_compressor.py\\nCONFLICT (content): Merge conflict in agent/context_compressor.py\\nAuto-merging agent/model_metadata.py\\nCONFLICT (content): Merge conflict in agent/model_metadata.py\\nAuto-merging agent/transports/__init__.py\\nCONFLICT (content): Merge conflict in agent/transports/__init__.py\\nAuto-merging agent/transports/chat_completions.py\\nCONFLICT (content): Merge conflict in agent/transports/chat_completions.py\\nAuto-merging agent/transports/codex.py\\nCONFLICT (content): Merge conflict in agent/transports/codex.py\\nAuto-merging agent/transports/types.py\\nCONFLICT (content): Merge conflict in agent/transports/types.py\\nAuto-merging cli.py\\nCONFLICT (content): Merge conflict in cli.py\\nAuto-merging cron/jobs.py\\nCONFLICT (content): Merge conflict in cron/jobs.py\\nAuto-merging cron/scheduler.py\\nCONFLICT (content): Merge conflict in cron/scheduler.py\\nAuto-merging gateway/platforms/api_server.py\\nCONFLICT (content): Merge conflict in gateway/platforms/api_server.py\\nAuto-merging gateway/platforms/base.py\\nCONFLICT (content): Merge conflict in gateway/platforms/base.py\\nAuto-merging gateway/platforms/discord.py\\nCONFLICT (content): Merge conflict in gateway/platforms/discord.py\\nAuto-merging gateway/run.py\\nCONFLICT (content): Merge conflict in gateway/run.py\\nAuto-merging gateway/session.py\\nCONFLICT (content): Merge conflict in gateway/session.py\\nAuto-merging hermes_cli/auth.py\\nCONFLICT (content): Merge conflict in hermes_cli/auth.py\\nAuto-merging hermes_cli/commands.py\\nCONFLICT (content): Merge conflict in hermes_cli/commands.py\\nAuto-merging hermes_cli/config.py\\nCONFLICT (content): Merge conflict in hermes_cli/config.py\\nAuto-merging hermes_cli/doctor.py\\nCONFLICT (content): Merge conflict in hermes_cli/doctor.py\\nAuto-merging hermes_cli/hooks.py\\nCONFLICT (content): Merge conflict in hermes_cli/hooks.py\\nAuto-merging hermes_cli/main.py\\nCONFLICT (content): Merge conflict in hermes_cli/main.py\\nAuto-merging hermes_cli/model_switch.py\\nCONFLICT (content): Merge conflict in hermes_cli/model_switch.py\\nAuto-merging hermes_cli/models.py\\nCONFLICT (content): Merge conflict in hermes_cli/models.py\\nAuto-merging hermes_cli/providers.py\\nCONFLICT (content): Merge conflict in hermes_cli/providers.py\\nAuto-merging hermes_cli/runtime_provider.py\\nCONFLICT (content): Merge conflict in hermes_cli/runtime_provider.py\\nAuto-merging hermes_cli/setup.py\\nCONFLICT (content): Merge conflict in hermes_cli/setup.py\\nAuto-merging hermes_cli/tools_config.py\\nCONFLICT (content): Merge conflict in hermes_cli/tools_config.py\\nAuto-merging hermes_state.py\\nCONFLICT (content): Merge conflict in hermes_state.py\\nAuto-merging model_tools.py\\nCONFLICT (content): Merge conflict in model_tools.py\\nAuto-merging plugins/example-dashboard/dashboard/dist/index.js\\nCONFLICT (content): Merge conflict in plugins/example-dashboard/dashboard/dist/index.js\\nAuto-merging plugins/example-dashboard/dashboard/manifest.json\\nCONFLICT (content): Merge conflict in plugins/example-dashboard/dashboard/manifest.json\\nAuto-merging plugins/memory/openviking/__init__.py\\nCONFLICT (content): Merge conflict in plugins/memory/openviking/__init__.py\\nAuto-merging run_agent.py\\nCONFLICT (content): Merge conflict in run_agent.py\\nAuto-merging scripts/install.sh\\nCONFLICT (content): Merge conflict in scripts/install.sh\\nAuto-merging scripts/release.py\\nCONFLICT (content): Merge conflict in scripts/release.py\\nAuto-merging skills/mlops/inference/obliteratus/SKILL.md\\nCONFLICT (content): Merge conflict in skills/mlops/inference/obliteratus/SKILL.md\\nAuto-merging tests/agent/test_auxiliary_named_custom_providers.py\\nCONFLICT (content): Merge conflict in tests/agent/test_auxiliary_named_custom_providers.py\\nAuto-merging tests/agent/test_context_compressor.py\\nCONFLICT (content): Merge conflict in tests/agent/test_context_compressor.py\\nAuto-merging tests/agent/test_model_metadata.py\\nCONFLICT (content): Merge conflict in tests/agent/test_model_metadata.py\\nAuto-merging tests/agent/transports/test_chat_completions.py\\nCONFLICT (content): Merge conflict in tests/agent/transports/test_chat_completions.py\\nAuto-merging tests/agent/transports/test_codex_transport.py\\nCONFLICT (content): Merge conflict in tests/agent/transports/test_codex_transport.py\\nAuto-merging tests/agent/transports/test_transport.py\\nCONFLICT (content): Merge conflict in tests/agent/transports/test_transport.py\\nAuto-merging tests/agent/transports/test_types.py\\nCONFLICT (content): Merge conflict in tests/agent/transports/test_types.py\\nAuto-merging tests/cli/test_cli_new_session.py\\nCONFLICT (content): Merge conflict in tests/cli/test_cli_new_session.py\\nAuto-merging tests/e2e/conftest.py\\nCONFLICT (content): Merge conflict in tests/e2e/conftest.py\\nCONFLICT (modify/delete): tests/gateway/test_async_memory_flush.py deleted in Updated upstream and modified in Stashed changes.  Version Stashed changes of tests/gateway/test_async_memory_flush.py left in tree.\\nCONFLICT (modify/delete): tests/gateway/test_flush_memory_stale_guard.py deleted in Updated upstream and modified in Stashed changes.  Version Stashed changes of tests/gateway/test_flush_memory_stale_guard.py left in tree.\\nAuto-merging tests/gateway/test_reasoning_command.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_reasoning_command.py\\nAuto-merging tests/gateway/test_resume_command.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_resume_command.py\\nAuto-merging tests/gateway/test_session_boundary_hooks.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_session_boundary_hooks.py\\nAuto-merging tests/gateway/test_session_boundary_security_state.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_session_boundary_security_state.py\\nAuto-merging tests/gateway/test_session_info.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_session_info.py\\nAuto-merging tests/gateway/test_session_model_override_routing.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_session_model_override_routing.py\\nAuto-merging tests/gateway/test_session_model_reset.py\\nCONFLICT (content): Merge conflict in tests/gateway/test_session_model_reset.py\\nAuto-merging tests/hermes_cli/test_custom_provider_model_switch.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_custom_provider_model_switch.py\\nAuto-merging tests/hermes_cli/test_doctor.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_doctor.py\\nAuto-merging tests/hermes_cli/test_model_switch_context_display.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_model_switch_context_display.py\\nAuto-merging tests/hermes_cli/test_models.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_models.py\\nAuto-merging tests/hermes_cli/test_runtime_provider_resolution.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_runtime_provider_resolution.py\\nAuto-merging tests/hermes_cli/test_setup_noninteractive.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_setup_noninteractive.py\\nAuto-merging tests/hermes_cli/test_tools_config.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_tools_config.py\\nAuto-merging tests/hermes_cli/test_tui_npm_install.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_tui_npm_install.py\\nAuto-merging tests/hermes_cli/test_tui_resume_flow.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_tui_resume_flow.py\\nAuto-merging tests/hermes_cli/test_web_server.py\\nCONFLICT (content): Merge conflict in tests/hermes_cli/test_web_server.py\\nAuto-merging tests/run_agent/test_compress_focus_plugin_fallback.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_compress_focus_plugin_fallback.py\\nAuto-merging tests/run_agent/test_compression_feasibility.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_compression_feasibility.py\\nAuto-merging tests/run_agent/test_deepseek_reasoning_content_echo.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_deepseek_reasoning_content_echo.py\\nCONFLICT (modify/delete): tests/run_agent/test_flush_memories_codex.py deleted in Updated upstream and modified in Stashed changes.  Version Stashed changes of tests/run_agent/test_flush_memories_codex.py left in tree.\\nAuto-merging tests/run_agent/test_provider_parity.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_provider_parity.py\\nAuto-merging tests/run_agent/test_run_agent.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_run_agent.py\\nAuto-merging tests/run_agent/test_run_agent_codex_responses.py\\nCONFLICT (content): Merge conflict in tests/run_agent/test_run_agent_codex_responses.py\\nAuto-merging tests/test_hermes_state.py\\nCONFLICT (content): Merge conflict in tests/test_hermes_state.py\\nAuto-merging tests/test_model_tools.py\\nCONFLICT (content): Merge conflict in tests/test_model_tools.py\\nAuto-merging tests/test_toolsets.py\\nCONFLICT (content): Merge conflict in tests/test_toolsets.py\\nAuto-merging tests/test_tui_gateway_server.py\\nCONFLICT (content): Merge conflict in tests/test_tui_gateway_server.py\\nAuto-merging tests/tools/test_cron_approval_mode.py\\nCONFLICT (content): Merge conflict in tests/tools/test_cron_approval_mode.py\\nAuto-merging tests/tools/test_discord_tool.py\\nCONFLICT (content): Merge conflict in tests/tools/test_discord_tool.py\\nAuto-merging tests/tools/test_watch_patterns.py\\nCONFLICT (content): Merge conflict in tests/tools/test_watch_patterns.py\\nAuto-merging tests/tools/test_yolo_mode.py\\nCONFLICT (content): Merge conflict in tests/tools/test_yolo_mode.py\\nAuto-merging tests/tui_gateway/test_protocol.py\\nCONFLICT (content): Merge conflict in tests/tui_gateway/test_protocol.py\\nAuto-merging tools/approval.py\\nCONFLICT (content): Merge conflict in tools/approval.py\\nAuto-merging tools/cronjob_tools.py\\nCONFLICT (content): Merge conflict in tools/cronjob_tools.py\\nAuto-merging tools/discord_tool.py\\nCONFLICT (content): Merge conflict in tools/discord_tool.py\\nAuto-merging tools/process_registry.py\\nCONFLICT (content): Merge conflict in tools/process_registry.py\\nAuto-merging tools/terminal_tool.py\\nCONFLICT (content): Merge conflict in tools/terminal_tool.py\\nAuto-merging toolsets.py\\nCONFLICT (content): Merge conflict in toolsets.py\\nAuto-merging tui_gateway/server.py\\nCONFLICT (content): Merge conflict in tui_gateway/server.py\\nAuto-merging ui-tui/README.md\\nCONFLICT (content): Merge conflict in ui-tui/README.md\\nAuto-merging ui-tui/packages/hermes-ink/src/ink/components/AlternateScreen.tsx\\nCONFLICT (content): Merge conflict in ui-tui/packages/hermes-ink/src/ink/components/AlternateScreen.tsx\\nAuto-merging ui-tui/packages/hermes-ink/src/ink/dom.ts\\nCONFLICT (content): Merge conflict in ui-tui/packages/hermes-ink/src/ink/dom.ts\\nAuto-merging ui-tui/packages/hermes-ink/src/ink/screen.ts\\nCONFLICT (content): Merge conflict in ui-tui/packages/hermes-ink/src/ink/screen.ts\\nAuto-merging ui-tui/packages/hermes-ink/src/ink/selection.ts\\nCONFLICT (content): Merge conflict in ui-tui/packages/hermes-ink/src/ink/selection.ts\\nAuto-merging ui-tui/packages/hermes-ink/src/ink/termio/osc.test.ts\\nCONFLICT (content): Merge conflict in ui-tui/packages/hermes-ink/src/ink/termio/osc.test.ts\\nAuto-merging ui-tui/src/__tests__/createGatewayEventHandler.test.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/__tests__/createGatewayEventHandler.test.ts\\nAuto-merging ui-tui/src/__tests__/createSlashHandler.test.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/__tests__/createSlashHandler.test.ts\\nAuto-merging ui-tui/src/__tests__/details.test.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/__tests__/details.test.ts\\nAuto-merging ui-tui/src/__tests__/platform.test.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/__tests__/platform.test.ts\\nAuto-merging ui-tui/src/app.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/app.tsx\\nAuto-merging ui-tui/src/app/interfaces.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/interfaces.ts\\nAuto-merging ui-tui/src/app/slash/commands/core.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/slash/commands/core.ts\\nAuto-merging ui-tui/src/app/slash/commands/session.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/slash/commands/session.ts\\nAuto-merging ui-tui/src/app/slash/commands/setup.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/slash/commands/setup.ts\\nAuto-merging ui-tui/src/app/turnController.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/turnController.ts\\nAuto-merging ui-tui/src/app/uiStore.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/uiStore.ts\\nAuto-merging ui-tui/src/app/useComposerState.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/useComposerState.ts\\nAuto-merging ui-tui/src/app/useInputHandlers.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/useInputHandlers.ts\\nAuto-merging ui-tui/src/app/useMainApp.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/app/useMainApp.ts\\nAuto-merging ui-tui/src/components/appChrome.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/appChrome.tsx\\nAuto-merging ui-tui/src/components/appOverlays.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/appOverlays.tsx\\nAuto-merging ui-tui/src/components/messageLine.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/messageLine.tsx\\nAuto-merging ui-tui/src/components/modelPicker.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/modelPicker.tsx\\nAuto-merging ui-tui/src/components/sessionPicker.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/sessionPicker.tsx\\nAuto-merging ui-tui/src/components/skillsHub.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/skillsHub.tsx\\nAuto-merging ui-tui/src/components/thinking.tsx\\nCONFLICT (content): Merge conflict in ui-tui/src/components/thinking.tsx\\nAuto-merging ui-tui/src/content/hotkeys.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/content/hotkeys.ts\\nAuto-merging ui-tui/src/gatewayTypes.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/gatewayTypes.ts\\nAuto-merging ui-tui/src/lib/platform.ts\\nCONFLICT (content): Merge conflict in ui-tui/src/lib/platform.ts\\nAuto-merging web/src/pages/AnalyticsPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/AnalyticsPage.tsx\\nAuto-merging web/src/pages/ChatPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/ChatPage.tsx\\nAuto-merging web/src/pages/ConfigPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/ConfigPage.tsx\\nAuto-merging web/src/pages/CronPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/CronPage.tsx\\nAuto-merging web/src/pages/DocsPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/DocsPage.tsx\\nAuto-merging web/src/pages/EnvPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/EnvPage.tsx\\nAuto-merging web/src/pages/LogsPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/LogsPage.tsx\\nAuto-merging web/src/pages/SessionsPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/SessionsPage.tsx\\nAuto-merging web/src/pages/SkillsPage.tsx\\nCONFLICT (content): Merge conflict in web/src/pages/SkillsPage.tsx\\nAuto-merging web/src/plugins/slots.ts\\nCONFLICT (content): Merge conflict in web/src/plugins/slots.ts\\nAuto-merging website/docs/developer-guide/session-storage.md\\nCONFLICT (content): Merge conflict in website/docs/developer-guide/session-storage.md\\nAuto-merging website/docs/guides/build-a-hermes-plugin.md\\nCONFLICT (content): Merge conflict in website/docs/guides/build-a-hermes-plugin.md\\nAuto-merging website/docs/reference/cli-commands.md\\nCONFLICT (content): Merge conflict in website/docs/reference/cli-commands.md\\nAuto-merging website/docs/reference/environment-variables.md\\nCONFLICT (content): Merge conflict in website/docs/reference/environment-variables.md\\nAuto-merging website/docs/user-guide/configuration.md\\nCONFLICT (content): Merge conflict in website/docs/user-guide/configuration.md\\nCONFLICT (modify/delete): website/docs/user-guide/features/dashboard-plugins.md deleted in Updated upstream and modified in Stashed changes.  Version Stashed changes of website/docs/user-guide/features/dashboard-plugins.md left in tree.\\nAuto-merging website/docs/user-guide/features/fallback-providers.md\\nCONFLICT (content): Merge conflict in website/docs/user-guide/features/fallback-providers.md\\nAuto-merging website/docs/user-guide/features/hooks.md\\nCONFLICT (content): Merge conflict in website/docs/user-guide/features/hooks.md\\nAuto-merging website/docs/user-guide/features/web-dashboard.md\\nCONFLICT (content): Merge conflict in website/docs/user-guide/features/web-dashboard.md\\nAuto-merging website/docs/user-guide/messaging/webhooks.md\\nCONFLICT (content): Merge conflict in website/docs/user-guide/messaging/webhooks.md\\nAuto-merging website/sidebars.ts\\nCONFLICT (content): Merge conflict in website/sidebars.ts\\nOn branch main\\nYour branch is up to date with 'origin/main'.\\n\\nChanges to be committed:\\n  (use \\\"git restore --staged <file>...\\\" to unstage)\\n\\tmodified:   .dockerignore\\n\\tmodified:   .env.example\\n\\tmodified:   .envrc\\n\\tmodified:   .gitattributes\\n\\tmodified:   .github/ISSUE_TEMPLATE/bug_report.yml\\n\\tmodified:   .github/ISSUE_TEMPLATE/config.yml\\n\\tmodified:   .github/ISSUE_TEMPLATE/feature_request.yml\\n\\tmodified:   .github/ISSUE_TEMPLATE/setup_help.yml\\n\\tmodified:   .github/PULL_REQUEST_TEMPLATE.md\\n\\tmodified:   .github/actions/nix-setup/action.yml\\n\\tmodified:   .github/workflows/contributor-check.yml\\n\\tmodified:   .github/workflows/deploy-site.yml\\n\\tmodified:   .github/workflows/docker-publish.yml\\n\\tmodified:   .github/workflows/docs-site-checks.yml\\n\\tmodified:   .github/workflows/nix-lockfile-check.yml\\n\\tmodified:   .github/workflows/nix-lockfile-fix.yml\\n\\tmodified:   .github/workflows/nix.yml\\n\\tmodified:   .github/workflows/skills-index.yml\\n\\tmodified:   .github/workflows/supply-chain-audit.yml\\n\\tmodified:   .github/workflows/tests.yml\\n\\tmodified:   .gitignore\\n\\tmodified:   .gitmodules\\n\\tmodified:   .mailmap\\n\\tmodified:   .plans/openai-api-server.md\\n\\tmodified:   .plans/streaming-support.md\\n\\tmodified:   AGENTS.md\\n\\tmodified:   CONTRIBUTING.md\\n\\tmodified:   Dockerfile\\n\\tmodified:   LICENSE\\n\\tmodified:   MANIFEST.in\\n\\tmodified:   README.md\\n\\tmodified:   RELEASE_v0.10.0.md\\n\\tmodified:   RELEASE_v0.11.0.md\\n\\tmodified:   RELEASE_v0.2.0.md\\n\\tmodified:   RELEASE_v0.3.0.md\\n\\tmodified:   RELEASE_v0.4.0.md\\n\\tmodified:   RELEASE_v0.5.0.md\\n\\tmodified:   RELEASE_v0.6.0.md\\n\\tmodified:   RELEASE_v0.7.0.md\\n\\tmodified:   RELEASE_v0.8.0.md\\n\\tmodified:   RELEASE_v0.9.0.md\\n\\tmodified:   SECURITY.md\\n\\tmodified:   acp_adapter/__init__.py\\n\\tmodified:   acp_adapter/__main__.py\\n\\tmodified:   acp_adapter/auth.py\\n\\tmodified:   acp_adapter/entry.py\\n\\tmodified:   acp_adapter/events.py\\n\\tmodified:   acp_adapter/permissions.py\\n\\tmodified:   acp_adapter/server.py\\n\\tmodified:   acp_adapter/session.py\\n\\tmodified:   acp_adapter/tools.py\\n\\tmodified:   acp_registry/agent.json\\n\\tmodified:   acp_registry/icon.svg\\n\\tmodified:   agent/__init__.py\\n\\tmodified:   agent/account_usage.py\\n\\tmodified:   agent/bedrock_adapter.py\\n\\tmodified:   agent/context_engine.py\\n\\tmodified:   agent/context_references.py\\n\\tmodified:   agent/copilot_acp_client.py\\n\\tmodified:   agent/credential_pool.py\\n\\tmodified:   agent/credential_sources.py\\n\\tmodified:   agent/display.py\\n\\tmodified:   agent/error_classifier.py\\n\\tmodified:   agent/file_safety.py\\n\\tmodified:   agent/gemini_cloudcode_adapter.py\\n\\tmodified:   agent/gemini_native_adapter.py\\n\\tmodified:   agent/gemini_schema.py\\n\\tmodified:   agent/google_code_assist.py\\n\\tmodified:   agent/google_oauth.py\\n\\t\\n\\n... [OUTPUT TRUNCATED - 116357 chars omitted out of 166357 total] ...\\n\\nmd\\n\\tmodified:   website/docs/guides/local-llm-on-mac.md\\n\\tmodified:   website/docs/guides/migrate-from-openclaw.md\\n\\tmodified:   website/docs/guides/python-library.md\\n\\tmodified:   website/docs/guides/team-telegram-assistant.md\\n\\tmodified:   website/docs/guides/tips.md\\n\\tmodified:   website/docs/guides/use-mcp-with-hermes.md\\n\\tmodified:   website/docs/guides/use-soul-with-hermes.md\\n\\tmodified:   website/docs/guides/use-voice-mode-with-hermes.md\\n\\tmodified:   website/docs/guides/webhook-github-pr-review.md\\n\\tmodified:   website/docs/guides/work-with-skills.md\\n\\tmodified:   website/docs/index.md\\n\\tmodified:   website/docs/integrations/index.md\\n\\tmodified:   website/docs/integrations/providers.md\\n\\tmodified:   website/docs/reference/_category_.json\\n\\tmodified:   website/docs/reference/faq.md\\n\\tmodified:   website/docs/reference/mcp-config-reference.md\\n\\tmodified:   website/docs/reference/optional-skills-catalog.md\\n\\tmodified:   website/docs/reference/profile-commands.md\\n\\tmodified:   website/docs/reference/skills-catalog.md\\n\\tmodified:   website/docs/reference/slash-commands.md\\n\\tmodified:   website/docs/reference/tools-reference.md\\n\\tmodified:   website/docs/reference/toolsets-reference.md\\n\\tmodified:   website/docs/user-guide/_category_.json\\n\\tmodified:   website/docs/user-guide/checkpoints-and-rollback.md\\n\\tmodified:   website/docs/user-guide/cli.md\\n\\tmodified:   website/docs/user-guide/docker.md\\n\\tmodified:   website/docs/user-guide/features/_category_.json\\n\\tmodified:   website/docs/user-guide/features/acp.md\\n\\tmodified:   website/docs/user-guide/features/api-server.md\\n\\tmodified:   website/docs/user-guide/features/batch-processing.md\\n\\tmodified:   website/docs/user-guide/features/browser.md\\n\\tmodified:   website/docs/user-guide/features/built-in-plugins.md\\n\\tmodified:   website/docs/user-guide/features/code-execution.md\\n\\tmodified:   website/docs/user-guide/features/context-files.md\\n\\tmodified:   website/docs/user-guide/features/context-references.md\\n\\tmodified:   website/docs/user-guide/features/credential-pools.md\\n\\tmodified:   website/docs/user-guide/features/cron.md\\n\\tmodified:   website/docs/user-guide/features/delegation.md\\n\\tmodified:   website/docs/user-guide/features/honcho.md\\n\\tmodified:   website/docs/user-guide/features/image-generation.md\\n\\tmodified:   website/docs/user-guide/features/mcp.md\\n\\tmodified:   website/docs/user-guide/features/memory-providers.md\\n\\tmodified:   website/docs/user-guide/features/memory.md\\n\\tmodified:   website/docs/user-guide/features/overview.md\\n\\tmodified:   website/docs/user-guide/features/personality.md\\n\\tmodified:   website/docs/user-guide/features/plugins.md\\n\\tmodified:   website/docs/user-guide/features/provider-routing.md\\n\\tmodified:   website/docs/user-guide/features/rl-training.md\\n\\tmodified:   website/docs/user-guide/features/skills.md\\n\\tmodified:   website/docs/user-guide/features/skins.md\\n\\tmodified:   website/docs/user-guide/features/spotify.md\\n\\tmodified:   website/docs/user-guide/features/tool-gateway.md\\n\\tmodified:   website/docs/user-guide/features/tools.md\\n\\tmodified:   website/docs/user-guide/features/tts.md\\n\\tmodified:   website/docs/user-guide/features/vision.md\\n\\tmodified:   website/docs/user-guide/features/voice-mode.md\\n\\tmodified:   website/docs/user-guide/git-worktrees.md\\n\\tmodified:   website/docs/user-guide/messaging/_category_.json\\n\\tmodified:   website/docs/user-guide/messaging/bluebubbles.md\\n\\tmodified:   website/docs/user-guide/messaging/dingtalk.md\\n\\tmodified:   website/docs/user-guide/messaging/discord.md\\n\\tmodified:   website/docs/user-guide/messaging/email.md\\n\\tmodified:   website/docs/user-guide/messaging/feishu.md\\n\\tmodified:   website/docs/user-guide/messaging/homeassistant.md\\n\\tmodified:   website/docs/user-guide/messaging/index.md\\n\\tmodified:   website/docs/user-guide/messaging/matrix.md\\n\\tmodified:   website/docs/user-guide/messaging/mattermost.md\\n\\tmodified:   website/docs/user-guide/messaging/open-webui.md\\n\\tmodified:   website/docs/user-guide/messaging/qqbot.md\\n\\tmodified:   website/docs/user-guide/messaging/signal.md\\n\\tmodified:   website/docs/user-guide/messaging/slack.md\\n\\tmodified:   website/docs/user-guide/messaging/sms.md\\n\\tmodified:   website/docs/user-guide/messaging/telegram.md\\n\\tmodified:   website/docs/user-guide/messaging/wecom-callback.md\\n\\tmodified:   website/docs/user-guide/messaging/wecom.md\\n\\tmodified:   website/docs/user-guide/messaging/weixin.md\\n\\tmodified:   website/docs/user-guide/messaging/whatsapp.md\\n\\tmodified:   website/docs/user-guide/profiles.md\\n\\tmodified:   website/docs/user-guide/security.md\\n\\tmodified:   website/docs/user-guide/sessions.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/apple/apple-apple-notes.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/apple/apple-apple-reminders.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/apple/apple-findmy.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/apple/apple-imessage.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-hermes-agent.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-opencode.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-architecture-diagram.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-ascii-art.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-ascii-video.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-baoyu-comic.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-baoyu-infographic.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-creative-ideation.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-design-md.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-excalidraw.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-manim-video.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-p5js.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-pixel-art.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-popular-web-designs.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/creative/creative-songwriting-and-ai-music.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/data-science/data-science-jupyter-live-kernel.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/devops/devops-webhook-subscriptions.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/dogfood/dogfood-dogfood.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/email/email-himalaya.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/gaming/gaming-minecraft-modpack-server.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/gaming/gaming-pokemon-player.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-codebase-inspection.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-github-auth.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-github-code-review.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-github-issues.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-github-pr-workflow.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/github/github-github-repo-management.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mcp/mcp-native-mcp.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/media/media-gif-search.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/media/media-heartmula.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/media/media-songsee.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/media/media-spotify.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/media/media-youtube-content.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-evaluation-lm-evaluation-harness.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-evaluation-weights-and-biases.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-huggingface-hub.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-inference-llama-cpp.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-inference-obliteratus.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-inference-outlines.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-inference-vllm.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-models-audiocraft.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-models-segment-anything.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-research-dspy.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-training-axolotl.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-training-trl-fine-tuning.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/mlops/mlops-training-unsloth.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/note-taking/note-taking-obsidian.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-google-workspace.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-linear.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-maps.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-nano-pdf.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-notion.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-ocr-and-documents.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/productivity/productivity-powerpoint.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/red-teaming/red-teaming-godmode.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/research/research-arxiv.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/research/research-blogwatcher.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/research/research-llm-wiki.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/research/research-polymarket.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/research/research-research-paper-writing.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/smart-home/smart-home-openhue.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/social-media/social-media-xurl.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-plan.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-requesting-code-review.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-subagent-driven-development.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-systematic-debugging.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-test-driven-development.md\\n\\tmodified:   website/docs/user-guide/skills/bundled/software-development/software-development-writing-plans.md\\n\\tmodified:   website/docs/user-guide/skills/godmode.md\\n\\tmodified:   website/docs/user-guide/skills/google-workspace.md\\n\\tmodified:   website/docs/user-guide/skills/optional/autonomous-ai-agents/autonomous-ai-agents-blackbox.md\\n\\tmodified:   website/docs/user-guide/skills/optional/autonomous-ai-agents/autonomous-ai-agents-honcho.md\\n\\tmodified:   website/docs/user-guide/skills/optional/blockchain/blockchain-base.md\\n\\tmodified:   website/docs/user-guide/skills/optional/blockchain/blockchain-solana.md\\n\\tmodified:   website/docs/user-guide/skills/optional/communication/communication-one-three-one-rule.md\\n\\tmodified:   website/docs/user-guide/skills/optional/creative/creative-blender-mcp.md\\n\\tmodified:   website/docs/user-guide/skills/optional/creative/creative-concept-diagrams.md\\n\\tmodified:   website/docs/user-guide/skills/optional/creative/creative-meme-generation.md\\n\\tmodified:   website/docs/user-guide/skills/optional/creative/creative-touchdesigner-mcp.md\\n\\tmodified:   website/docs/user-guide/skills/optional/devops/devops-cli.md\\n\\tmodified:   website/docs/user-guide/skills/optional/devops/devops-docker-management.md\\n\\tmodified:   website/docs/user-guide/skills/optional/dogfood/dogfood-adversarial-ux-test.md\\n\\tmodified:   website/docs/user-guide/skills/optional/email/email-agentmail.md\\n\\tmodified:   website/docs/user-guide/skills/optional/health/health-fitness-nutrition.md\\n\\tmodified:   website/docs/user-guide/skills/optional/health/health-neuroskill-bci.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mcp/mcp-fastmcp.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mcp/mcp-mcporter.md\\n\\tmodified:   website/docs/user-guide/skills/optional/migration/migration-openclaw-migration.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-accelerate.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-chroma.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-clip.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-faiss.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-flash-attention.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-guidance.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-hermes-atropos-environments.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-huggingface-tokenizers.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-instructor.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-lambda-labs.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-llava.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-modal.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-nemo-curator.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-peft.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-pinecone.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-pytorch-fsdp.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-pytorch-lightning.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-qdrant.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-saelens.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-simpo.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-slime.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-stable-diffusion.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-tensorrt-llm.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-torchtitan.md\\n\\tmodified:   website/docs/user-guide/skills/optional/mlops/mlops-whisper.md\\n\\tmodified:   website/docs/user-guide/skills/optional/productivity/productivity-canvas.md\\n\\tmodified:   website/docs/user-guide/skills/optional/productivity/productivity-memento-flashcards.md\\n\\tmodified:   website/docs/user-guide/skills/optional/productivity/productivity-siyuan.md\\n\\tmodified:   website/docs/user-guide/skills/optional/productivity/productivity-telephony.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-bioinformatics.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-domain-intel.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-drug-discovery.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-duckduckgo-search.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-gitnexus-explorer.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-parallel-cli.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-qmd.md\\n\\tmodified:   website/docs/user-guide/skills/optional/research/research-scrapling.md\\n\\tmodified:   website/docs/user-guide/skills/optional/security/security-1password.md\\n\\tmodified:   website/docs/user-guide/skills/optional/security/security-oss-forensics.md\\n\\tmodified:   website/docs/user-guide/skills/optional/security/security-sherlock.md\\n\\tmodified:   website/docs/user-guide/skills/optional/web-development/web-development-page-agent.md\\n\\tmodified:   website/docs/user-guide/tui.md\\n\\tmodified:   website/docusaurus.config.ts\\n\\tmodified:   website/package-lock.json\\n\\tmodified:   website/package.json\\n\\tmodified:   website/scripts/extract-skills.py\\n\\tmodified:   website/scripts/generate-skill-docs.py\\n\\tmodified:   website/scripts/prebuild.mjs\\n\\tmodified:   website/src/css/custom.css\\n\\tmodified:   website/src/pages/skills/index.tsx\\n\\tmodified:   website/src/pages/skills/styles.module.css\\n\\tmodified:   website/static/img/docs/cli-layout.svg\\n\\tmodified:   website/static/img/docs/session-recap.svg\\n\\tmodified:   website/static/img/favicon.svg\\n\\tmodified:   website/tsconfig.json\\n\\nUnmerged paths:\\n  (use \\\"git restore --staged <file>...\\\" to unstage)\\n  (use \\\"git add/rm <file>...\\\" as appropriate to mark resolution)\\n\\tboth modified:   agent/anthropic_adapter.py\\n\\tboth modified:   agent/auxiliary_client.py\\n\\tboth modified:   agent/codex_responses_adapter.py\\n\\tboth modified:   agent/context_compressor.py\\n\\tboth modified:   agent/model_metadata.py\\n\\tboth modified:   agent/transports/__init__.py\\n\\tboth modified:   agent/transports/chat_completions.py\\n\\tboth modified:   agent/transports/codex.py\\n\\tboth modified:   agent/transports/types.py\\n\\tboth modified:   cli.py\\n\\tboth modified:   cron/jobs.py\\n\\tboth modified:   cron/scheduler.py\\n\\tboth modified:   gateway/platforms/api_server.py\\n\\tboth modified:   gateway/platforms/base.py\\n\\tboth modified:   gateway/platforms/discord.py\\n\\tboth modified:   gateway/run.py\\n\\tboth modified:   gateway/session.py\\n\\tboth modified:   hermes_cli/auth.py\\n\\tboth modified:   hermes_cli/commands.py\\n\\tboth modified:   hermes_cli/config.py\\n\\tboth modified:   hermes_cli/doctor.py\\n\\tboth modified:   hermes_cli/hooks.py\\n\\tboth modified:   hermes_cli/main.py\\n\\tboth modified:   hermes_cli/model_switch.py\\n\\tboth modified:   hermes_cli/models.py\\n\\tboth modified:   hermes_cli/providers.py\\n\\tboth modified:   hermes_cli/runtime_provider.py\\n\\tboth modified:   hermes_cli/setup.py\\n\\tboth modified:   hermes_cli/tools_config.py\\n\\tboth modified:   hermes_state.py\\n\\tboth modified:   model_tools.py\\n\\tboth modified:   plugins/example-dashboard/dashboard/dist/index.js\\n\\tboth modified:   plugins/example-dashboard/dashboard/manifest.json\\n\\tboth modified:   plugins/memory/openviking/__init__.py\\n\\tboth modified:   run_agent.py\\n\\tboth modified:   scripts/install.sh\\n\\tboth modified:   scripts/release.py\\n\\tboth modified:   skills/mlops/inference/obliteratus/SKILL.md\\n\\tboth modified:   tests/agent/test_auxiliary_named_custom_providers.py\\n\\tboth modified:   tests/agent/test_context_compressor.py\\n\\tboth modified:   tests/agent/test_model_metadata.py\\n\\tboth modified:   tests/agent/transports/test_chat_completions.py\\n\\tboth modified:   tests/agent/transports/test_codex_transport.py\\n\\tboth modified:   tests/agent/transports/test_transport.py\\n\\tboth modified:   tests/agent/transports/test_types.py\\n\\tboth modified:   tests/cli/test_cli_new_session.py\\n\\tboth modified:   tests/e2e/conftest.py\\n\\tdeleted by us:   tests/gateway/test_async_memory_flush.py\\n\\tdeleted by us:   tests/gateway/test_flush_memory_stale_guard.py\\n\\tboth modified:   tests/gateway/test_reasoning_command.py\\n\\tboth modified:   tests/gateway/test_resume_command.py\\n\\tboth modified:   tests/gateway/test_session_boundary_hooks.py\\n\\tboth modified:   tests/gateway/test_session_boundary_security_state.py\\n\\tboth modified:   tests/gateway/test_session_info.py\\n\\tboth modified:   tests/gateway/test_session_model_override_routing.py\\n\\tboth modified:   tests/gateway/test_session_model_reset.py\\n\\tboth modified:   tests/hermes_cli/test_custom_provider_model_switch.py\\n\\tboth modified:   tests/hermes_cli/test_doctor.py\\n\\tboth modified:   tests/hermes_cli/test_model_switch_context_display.py\\n\\tboth modified:   tests/hermes_cli/test_models.py\\n\\tboth modified:   tests/hermes_cli/test_runtime_provider_resolution.py\\n\\tboth modified:   tests/hermes_cli/test_setup_noninteractive.py\\n\\tboth modified:   tests/hermes_cli/test_tools_config.py\\n\\tboth modified:   tests/hermes_cli/test_tui_npm_install.py\\n\\tboth modified:   tests/hermes_cli/test_tui_resume_flow.py\\n\\tboth modified:   tests/hermes_cli/test_web_server.py\\n\\tboth modified:   tests/run_agent/test_compress_focus_plugin_fallback.py\\n\\tboth modified:   tests/run_agent/test_compression_feasibility.py\\n\\tboth modified:   tests/run_agent/test_deepseek_reasoning_content_echo.py\\n\\tdeleted by us:   tests/run_agent/test_flush_memories_codex.py\\n\\tboth modified:   tests/run_agent/test_provider_parity.py\\n\\tboth modified:   tests/run_agent/test_run_agent.py\\n\\tboth modified:   tests/run_agent/test_run_agent_codex_responses.py\\n\\tboth modified:   tests/test_hermes_state.py\\n\\tboth modified:   tests/test_model_tools.py\\n\\tboth modified:   tests/test_toolsets.py\\n\\tboth modified:   tests/test_tui_gateway_server.py\\n\\tboth modified:   tests/tools/test_cron_approval_mode.py\\n\\tboth modified:   tests/tools/test_discord_tool.py\\n\\tboth modified:   tests/tools/test_watch_patterns.py\\n\\tboth modified:   tests/tools/test_yolo_mode.py\\n\\tboth modified:   tests/tui_gateway/test_protocol.py\\n\\tboth modified:   tools/approval.py\\n\\tboth modified:   tools/cronjob_tools.py\\n\\tboth modified:   tools/discord_tool.py\\n\\tboth modified:   tools/process_registry.py\\n\\tboth modified:   tools/terminal_tool.py\\n\\tboth modified:   toolsets.py\\n\\tboth modified:   tui_gateway/server.py\\n\\tboth modified:   ui-tui/README.md\\n\\tboth modified:   ui-tui/packages/hermes-ink/src/ink/components/AlternateScreen.tsx\\n\\tboth modified:   ui-tui/packages/hermes-ink/src/ink/dom.ts\\n\\tboth modified:   ui-tui/packages/hermes-ink/src/ink/screen.ts\\n\\tboth modified:   ui-tui/packages/hermes-ink/src/ink/selection.ts\\n\\tboth modified:   ui-tui/packages/hermes-ink/src/ink/termio/osc.test.ts\\n\\tboth modified:   ui-tui/src/__tests__/createGatewayEventHandler.test.ts\\n\\tboth modified:   ui-tui/src/__tests__/createSlashHandler.test.ts\\n\\tboth modified:   ui-tui/src/__tests__/details.test.ts\\n\\tboth modified:   ui-tui/src/__tests__/platform.test.ts\\n\\tboth modified:   ui-tui/src/app.tsx\\n\\tboth modified:   ui-tui/src/app/interfaces.ts\\n\\tboth modified:   ui-tui/src/app/slash/commands/core.ts\\n\\tboth modified:   ui-tui/src/app/slash/commands/session.ts\\n\\tboth modified:   ui-tui/src/app/slash/commands/setup.ts\\n\\tboth modified:   ui-tui/src/app/turnController.ts\\n\\tboth modified:   ui-tui/src/app/uiStore.ts\\n\\tboth modified:   ui-tui/src/app/useComposerState.ts\\n\\tboth modified:   ui-tui/src/app/useInputHandlers.ts\\n\\tboth modified:   ui-tui/src/app/useMainApp.ts\\n\\tboth modified:   ui-tui/src/components/appChrome.tsx\\n\\tboth modified:   ui-tui/src/components/appOverlays.tsx\\n\\tboth modified:   ui-tui/src/components/messageLine.tsx\\n\\tboth modified:   ui-tui/src/components/modelPicker.tsx\\n\\tboth modified:   ui-tui/src/components/sessionPicker.tsx\\n\\tboth modified:   ui-tui/src/components/skillsHub.tsx\\n\\tboth modified:   ui-tui/src/components/thinking.tsx\\n\\tboth modified:   ui-tui/src/content/hotkeys.ts\\n\\tboth modified:   ui-tui/src/gatewayTypes.ts\\n\\tboth modified:   ui-tui/src/lib/platform.ts\\n\\tboth modified:   web/src/pages/AnalyticsPage.tsx\\n\\tboth modified:   web/src/pages/ChatPage.tsx\\n\\tboth modified:   web/src/pages/ConfigPage.tsx\\n\\tboth modified:   web/src/pages/CronPage.tsx\\n\\tboth modified:   web/src/pages/DocsPage.tsx\\n\\tboth modified:   web/src/pages/EnvPage.tsx\\n\\tboth modified:   web/src/pages/LogsPage.tsx\\n\\tboth modified:   web/src/pages/SessionsPage.tsx\\n\\tboth modified:   web/src/pages/SkillsPage.tsx\\n\\tboth modified:   web/src/plugins/slots.ts\\n\\tboth modified:   website/docs/developer-guide/session-storage.md\\n\\tboth modified:   website/docs/guides/build-a-hermes-plugin.md\\n\\tboth modified:   website/docs/reference/cli-commands.md\\n\\tboth modified:   website/docs/reference/environment-variables.md\\n\\tboth modified:   website/docs/user-guide/configuration.md\\n\\tdeleted by us:   website/docs/user-guide/features/dashboard-plugins.md\\n\\tboth modified:   website/docs/user-guide/features/fallback-providers.md\\n\\tboth modified:   website/docs/user-guide/features/hooks.md\\n\\tboth modified:   website/docs/user-guide/features/web-dashboard.md\\n\\tboth modified:   website/docs/user-guide/messaging/webhooks.md\\n\\tboth modified:   website/sidebars.ts\\n\\nConflicted files:\\n  • agent/anthropic_adapter.py\\n  • agent/auxiliary_client.py\\n  • agent/codex_responses_adapter.py\\n  • agent/context_compressor.py\\n  • agent/model_metadata.py\\n  • agent/transports/__init__.py\\n  • agent/transports/chat_completions.py\\n  • agent/transports/codex.py\\n  • agent/transports/types.py\\n  • cli.py\\n  • cron/jobs.py\\n  • cron/scheduler.py\\n  • gateway/platforms/api_server.py\\n  • gateway/platforms/base.py\\n  • gateway/platforms/discord.py\\n  • gateway/run.py\\n  • gateway/session.py\\n  • hermes_cli/auth.py\\n  • hermes_cli/commands.py\\n  • hermes_cli/config.py\\n  • hermes_cli/doctor.py\\n  • hermes_cli/hooks.py\\n  • hermes_cli/main.py\\n  • hermes_cli/model_switch.py\\n  • hermes_cli/models.py\\n  • hermes_cli/providers.py\\n  • hermes_cli/runtime_provider.py\\n  • hermes_cli/setup.py\\n  • hermes_cli/tools_config.py\\n  • hermes_state.py\\n  • model_tools.py\\n  • plugins/example-dashboard/dashboard/dist/index.js\\n  • plugins/example-dashboard/dashboard/manifest.json\\n  • plugins/memory/openviking/__init__.py\\n  • run_agent.py\\n  • scripts/install.sh\\n  • scripts/release.py\\n  • skills/mlops/inference/obliteratus/SKILL.md\\n  • tests/agent/test_auxiliary_named_custom_providers.py\\n  • tests/agent/test_context_compressor.py\\n  • tests/agent/test_model_metadata.py\\n  • tests/agent/transports/test_chat_completions.py\\n  • tests/agent/transports/test_codex_transport.py\\n  • tests/agent/transports/test_transport.py\\n  • tests/agent/transports/test_types.py\\n  • tests/cli/test_cli_new_session.py\\n  • tests/e2e/conftest.py\\n  • tests/gateway/test_async_memory_flush.py\\n  • tests/gateway/test_flush_memory_stale_guard.py\\n  • tests/gateway/test_reasoning_command.py\\n  • tests/gateway/test_resume_command.py\\n  • tests/gateway/test_session_boundary_hooks.py\\n  • tests/gateway/test_session_boundary_security_state.py\\n  • tests/gateway/test_session_info.py\\n  • tests/gateway/test_session_model_override_routing.py\\n  • tests/gateway/test_session_model_reset.py\\n  • tests/hermes_cli/test_custom_provider_model_switch.py\\n  • tests/hermes_cli/test_doctor.py\\n  • tests/hermes_cli/test_model_switch_context_display.py\\n  • tests/hermes_cli/test_models.py\\n  • tests/hermes_cli/test_runtime_provider_resolution.py\\n  • tests/hermes_cli/test_setup_noninteractive.py\\n  • tests/hermes_cli/test_tools_config.py\\n  • tests/hermes_cli/test_tui_npm_install.py\\n  • tests/hermes_cli/test_tui_resume_flow.py\\n  • tests/hermes_cli/test_web_server.py\\n  • tests/run_agent/test_compress_focus_plugin_fallback.py\\n  • tests/run_agent/test_compression_feasibility.py\\n  • tests/run_agent/test_deepseek_reasoning_content_echo.py\\n  • tests/run_agent/test_flush_memories_codex.py\\n  • tests/run_agent/test_provider_parity.py\\n  • tests/run_agent/test_run_agent.py\\n  • tests/run_agent/test_run_agent_codex_responses.py\\n  • tests/test_hermes_state.py\\n  • tests/test_model_tools.py\\n  • tests/test_toolsets.py\\n  • tests/test_tui_gateway_server.py\\n  • tests/tools/test_cron_approval_mode.py\\n  • tests/tools/test_discord_tool.py\\n  • tests/tools/test_watch_patterns.py\\n  • tests/tools/test_yolo_mode.py\\n  • tests/tui_gateway/test_protocol.py\\n  • tools/approval.py\\n  • tools/cronjob_tools.py\\n  • tools/discord_tool.py\\n  • tools/process_registry.py\\n  • tools/terminal_tool.py\\n  • toolsets.py\\n  • tui_gateway/server.py\\n  • ui-tui/README.md\\n  • ui-tui/packages/hermes-ink/src/ink/components/AlternateScreen.tsx\\n  • ui-tui/packages/hermes-ink/src/ink/dom.ts\\n  • ui-tui/packages/hermes-ink/src/ink/screen.ts\\n  • ui-tui/packages/hermes-ink/src/ink/selection.ts\\n  • ui-tui/packages/hermes-ink/src/ink/termio/osc.test.ts\\n  • ui-tui/src/__tests__/createGatewayEventHandler.test.ts\\n  • ui-tui/src/__tests__/createSlashHandler.test.ts\\n  • ui-tui/src/__tests__/details.test.ts\\n  • ui-tui/src/__tests__/platform.test.ts\\n  • ui-tui/src/app.tsx\\n  • ui-tui/src/app/interfaces.ts\\n  • ui-tui/src/app/slash/commands/core.ts\\n  • ui-tui/src/app/slash/commands/session.ts\\n  • ui-tui/src/app/slash/commands/setup.ts\\n  • ui-tui/src/app/turnController.ts\\n  • ui-tui/src/app/uiStore.ts\\n  • ui-tui/src/app/useComposerState.ts\\n  • ui-tui/src/app/useInputHandlers.ts\\n  • ui-tui/src/app/useMainApp.ts\\n  • ui-tui/src/components/appChrome.tsx\\n  • ui-tui/src/components/appOverlays.tsx\\n  • ui-tui/src/components/messageLine.tsx\\n  • ui-tui/src/components/modelPicker.tsx\\n  • ui-tui/src/components/sessionPicker.tsx\\n  • ui-tui/src/components/skillsHub.tsx\\n  • ui-tui/src/components/thinking.tsx\\n  • ui-tui/src/content/hotkeys.ts\\n  • ui-tui/src/gatewayTypes.ts\\n  • ui-tui/src/lib/platform.ts\\n  • web/src/pages/AnalyticsPage.tsx\\n  • web/src/pages/ChatPage.tsx\\n  • web/src/pages/ConfigPage.tsx\\n  • web/src/pages/CronPage.tsx\\n  • web/src/pages/DocsPage.tsx\\n  • web/src/pages/EnvPage.tsx\\n  • web/src/pages/LogsPage.tsx\\n  • web/src/pages/SessionsPage.tsx\\n  • web/src/pages/SkillsPage.tsx\\n  • web/src/plugins/slots.ts\\n  • website/docs/developer-guide/session-storage.md\\n  • website/docs/guides/build-a-hermes-plugin.md\\n  • website/docs/reference/cli-commands.md\\n  • website/docs/reference/environment-variables.md\\n  • website/docs/user-guide/configuration.md\\n  • website/docs/user-guide/features/dashboard-plugins.md\\n  • website/docs/user-guide/features/fallback-providers.md\\n  • website/docs/user-guide/features/hooks.md\\n  • website/docs/user-guide/features/web-dashboard.md\\n  • website/docs/user-guide/messaging/webhooks.md\\n  • website/sidebars.ts\\n\\nYour stashed changes are preserved — nothing is lost.\\n  Stash ref: 2265a552af9eceb984eb3f47c21b021f45a767cb\\nWorking tree reset to clean state.\\nRestore your changes later with: git stash apply 2265a552af9eceb984eb3f47c21b021f45a767cb\\n→ Updating Python dependencies...\\n\\n[Command timed out after 60s]\", \"exit_code\": 124, \"error\": null, \"approval\": \"Command required approval (hermes update (restarts gateway, kills running agents)) and was approved by the user.\"}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Network is back up and the 111 commits were pulled successfully. However:\n\n1. **111 merge conflicts** across Python, TypeScript, and test files\n2. **Dependency update timed out** (60s limit)\n\nThe repo is at `origin/main` now (clean state with conflicts unmerged). Let me check the current state and what needs resolving:"
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_97htsx0hitty_1",
+              "name": "terminal",
+              "input": {
+                "command": "cd /app/hermes-agent && git log --oneline -3 && echo \"---\" && git status --short | grep \"^UU\" | wc -l"
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_97htsx0hitty_2",
+              "name": "terminal",
+              "input": {
+                "command": "cd /app/hermes-agent && git diff --stat HEAD | tail -5"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_97htsx0hitty_1",
+              "content": "{\"output\": \"59b56d44 feat(hooks): add duration_ms to post_tool_call + transform_tool_result (#15429)\\neb28145f feat(approval): hardline blocklist for unrecoverable commands (#15878)\\na55de5bc feat(setup): auto-reconfigure on existing installs (#15879)\\n---\\n0\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_97htsx0hitty_2",
+              "content": "{\"output\": \"\", \"exit_code\": 0, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_ni5qpwurcb4n_1",
+              "name": "terminal",
+              "input": {
+                "command": "cd /app/hermes-agent && git stash list && git status --short | head -20"
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_ni5qpwurcb4n_2",
+              "name": "terminal",
+              "input": {
+                "command": "cd /app/hermes-agent && pip install -e . -q 2>&1 | tail -5",
+                "timeout": 120
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_ni5qpwurcb4n_1",
+              "content": "{\"output\": \"stash@{0}: On main: hermes-update-autostash-20260426-110515\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_ni5qpwurcb4n_2",
+              "content": "{\"output\": \"WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\\n\\n[notice] A new release of pip is available: 24.0 -> 26.0.1\\n[notice] To update, run: pip install --upgrade pip\", \"exit_code\": 0, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "**Update status:**\n\n- New commits pulled successfully (v0.11.0 → latest `59b56d44`)\n- Dependencies installed OK\n- Your local changes are preserved in stash `hermes-update-autostash-20260426-110515`\n\n**The problem:** 111 merge conflicts exist between the upstream changes and your local modifications. The `hermes update` script couldn't auto-merge them.\n\n**Your local changes are safe in the stash.** You have two options:\n\n1. **Apply the stash and resolve conflicts manually** — I'll walk you through it file by file\n2. **Drop the stash and take pure upstream** — discard your local changes, start clean\n\nWhich would you prefer?"
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": "[SYSTEM: MCP servers have been reloaded. Reconnected servers: crawler-coordinator, db-query, external-search. 24 MCP tool(s) now available. The tool list for this conversation has been updated accordingly.]\ninstall https://github.com/lightpanda-io/browser"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_me3wztm1hbsr_1",
+              "name": "web_search",
+              "input": {
+                "query": "lightpanda browser install github"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_me3wztm1hbsr_1",
+              "content": "{\"error\": \"Error searching web: 'NoneType' object has no attribute 'status_code'\"}"
+            },
+            {
+              "type": "text",
+              "text": "安装 https://github.com/lightpanda-io/browser，作为 CDP 的默认浏览器"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_h56wvux1tm98_1",
+              "name": "web_search",
+              "input": {
+                "query": "lightpanda browser install github lightpanda-io"
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_h56wvux1tm98_2",
+              "name": "terminal",
+              "input": {
+                "command": "which lightpanda 2>/dev/null; ls /usr/local/bin/lightpanda* 2>/dev/null; ls /usr/bin/lightpanda* 2>/dev/null; echo \"---\"; uname -m"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_h56wvux1tm98_1",
+              "content": "{\"error\": \"Error searching web: 'NoneType' object has no attribute 'status_code'\"}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_h56wvux1tm98_2",
+              "content": "{\"output\": \"---\\nx86_64\", \"exit_code\": 0, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_4b4mcrk5mwsi_1",
+              "name": "web_extract",
+              "input": {
+                "urls": [
+                  "https://github.com/lightpanda-io/browser"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4b4mcrk5mwsi_1",
+              "content": "{\n  \"results\": [\n    {\n      \"url\": \"https://github.com/lightpanda-io/browser\",\n      \"title\": \"\",\n      \"content\": \"\",\n      \"error\": \"Blocked: URL targets a private or internal network address\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_7tecet0ihcop_1",
+              "name": "terminal",
+              "input": {
+                "command": "curl -s https://api.github.com/repos/lightpanda-io/browser/releases/latest 2>&1 | head -30",
+                "timeout": 15
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_7tecet0ihcop_2",
+              "name": "terminal",
+              "input": {
+                "command": "curl -s https://raw.githubusercontent.com/lightpanda-io/browser/main/README.md 2>&1 | head -50",
+                "timeout": 15
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_7tecet0ihcop_1",
+              "content": "{\"output\": \"\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_7tecet0ihcop_2",
+              "content": "{\"output\": \"\", \"exit_code\": 0, \"error\": null}"
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "call_function_4zy2mspu0vk8_1",
+              "name": "terminal",
+              "input": {
+                "command": "curl -sIL https://github.com/lightpanda-io/browser/releases/latest 2>&1 | grep -i \"location\\|content-length\\|HTTP\" | head -10",
+                "timeout": 15
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "call_function_4zy2mspu0vk8_2",
+              "name": "terminal",
+              "input": {
+                "command": "curl -s https://api.github.com/repos/lightpanda-io/browser/releases 2>&1 | python3 -c \"import sys,json; d=json.load(sys.stdin); [print(r['tag_name'], [a['name'] for a in r.get('assets',[])]) for r in d]\" 2>&1 | head -20",
+                "timeout": 15
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4zy2mspu0vk8_1",
+              "content": "{\"output\": \"\", \"exit_code\": 0, \"error\": null}"
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "call_function_4zy2mspu0vk8_2",
+              "content": "{\"output\": \"\", \"exit_code\": -1, \"error\": \"BLOCKED: User denied. Do NOT retry.\", \"status\": \"blocked\"}"
+            }
+          ]
+        }
+      ],
+      "max_tokens": 131072,
+      "system": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\nYou have persistent memory across sessions. Save durable facts using the memory tool: user preferences, environment details, tool quirks, and stable conventions. Memory is injected into every turn, so keep it compact and focused on facts that will still matter later.\nPrioritize what reduces future user steering — the most valuable memory is one that prevents the user from having to correct or remind you again. User preferences and recurring corrections matter more than procedural task details.\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts. If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\nWrite memories as declarative facts, not instructions to yourself. 'User prefers concise responses' ✓ — 'Always respond concisely' ✗. 'Project uses pytest with xdist' ✓ — 'Run tests with pytest -n 4' ✗. Imperative phrasing gets re-read as a directive in later sessions and can cause repeated work or override the user's current request. Procedures and workflows belong in skills, not memory. When the user references something from a past conversation or you suspect relevant cross-session context exists, use session_search to recall it before asking them to repeat themselves. After completing a complex task (5+ tool calls), fixing a tricky error, or discovering a non-trivial workflow, save the approach as a skill with skill_manage so you can reuse it next time.\nWhen using a skill and finding it outdated, incomplete, or wrong, patch it immediately with skill_manage(action='patch') — don't wait to be asked. Skills that aren't maintained become liabilities.\n\n## Skills (mandatory)\nBefore replying, scan the skills below. If a skill matches or is even partially relevant to your task, you MUST load it with skill_view(name) and follow its instructions. Err on the side of loading — it is always better to have context you don't need than to miss critical steps, pitfalls, or established workflows. Skills contain specialized knowledge — API endpoints, tool-specific commands, and proven workflows that outperform general-purpose approaches. Load the skill even if you think you could handle the task with basic tools like web_search or terminal. Skills also encode the user's preferred approach, conventions, and quality standards for tasks like code review, planning, and testing — load them even for tasks you already know how to do, because the skill defines how it should be done here.\nIf a skill has issues, fix it with skill_manage(action='patch').\nAfter difficult/iterative tasks, offer to save as a skill. If a skill you loaded was missing steps, had wrong commands, or needed pitfalls you discovered, update it before finishing.\n\n<available_skills>\n  autonomous-ai-agents: Skills for spawning and orchestrating autonomous AI coding agents and multi-agent workflows — running independent agent processes, delegating tasks, and coordinating parallel workstreams.\n    - claude-code: Delegate coding tasks to Claude Code (Anthropic's CLI age...\n    - codex: Delegate coding tasks to OpenAI Codex CLI agent. Use for ...\n    - hermes-agent: Complete guide to using and extending Hermes Agent — CLI ...\n    - opencode: Delegate coding tasks to OpenCode CLI agent for feature i...\n  business-analyst:\n    - business-analyst: Product discovery and requirements analysis specialist. C...\n  content-research-writer:\n    - content-research-writer: Assists in writing high-quality content by conducting res...\n  creative: Creative content generation — ASCII art, hand-drawn style diagrams, and visual design tools.\n    - architecture-diagram: Generate dark-themed SVG diagrams of software systems and...\n    - ascii-art: Generate ASCII art using pyfiglet (571 fonts), cowsay, bo...\n    - ascii-video: Production pipeline for ASCII art video — any format. Con...\n    - baoyu-comic: Knowledge comic creator supporting multiple art styles an...\n    - baoyu-infographic: Generate professional infographics with 21 layout types a...\n    - design-md: Author, validate, diff, and export DESIGN.md files — Goog...\n    - excalidraw: Create hand-drawn style diagrams using Excalidraw JSON fo...\n    - ideation: Generate project ideas through creative constraints. Use ...\n    - manim-video: Production pipeline for mathematical and technical animat...\n    - p5js: Production pipeline for interactive and generative visual...\n    - pixel-art: Convert images into retro pixel art with hardware-accurat...\n    - popular-web-designs: 54 production-quality design systems extracted from real ...\n    - songwriting-and-ai-music: Songwriting craft, AI music generation prompts (Suno focu...\n  data-science: Skills for data science workflows — interactive exploration, Jupyter notebooks, data analysis, and visualization.\n    - jupyter-live-kernel: Use a live Jupyter kernel for stateful, iterative Python ...\n  devops:\n    - webhook-subscriptions: Create and manage webhook subscriptions for event-driven ...\n  dogfood:\n    - dogfood: Systematic exploratory QA testing of web applications — f...\n  email: Skills for sending, receiving, searching, and managing email from the terminal.\n    - himalaya: CLI to manage emails via IMAP/SMTP. Use himalaya to list,...\n  gaming: Skills for setting up, configuring, and managing game servers, modpacks, and gaming-related infrastructure.\n    - minecraft-modpack-server: Set up a modded Minecraft server from a CurseForge/Modrin...\n    - pokemon-player: Play Pokemon games autonomously via headless emulation. S...\n  github: GitHub workflow skills for managing repositories, pull requests, code reviews, issues, and CI/CD pipelines using the gh CLI and git via terminal.\n    - codebase-inspection: Inspect and analyze codebases using pygount for LOC count...\n    - github-auth: Set up GitHub authentication for the agent using git (uni...\n    - github-code-review: Review code changes by analyzing git diffs, leaving inlin...\n    - github-issues: Create, manage, triage, and close GitHub issues. Search e...\n    - github-pr-workflow: Full pull request lifecycle — create branches, commit cha...\n    - github-repo-management: Clone, create, fork, configure, and manage GitHub reposit...\n  keyword-research:\n    - keyword-research: Use when the user asks to \"find keywords\", \"keyword resea...\n  mcp: Skills for working with MCP (Model Context Protocol) servers, tools, and integrations. Documents the built-in native MCP client — configure servers in config.yaml for automatic tool discovery.\n    - native-mcp: Built-in MCP (Model Context Protocol) client that connect...\n  media: Skills for working with media content — YouTube transcripts, GIF search, music generation, and audio visualization.\n    - gif-search: Search and download GIFs from Tenor using curl. No depend...\n    - heartmula: Set up and run HeartMuLa, the open-source music generatio...\n    - songsee: Generate spectrograms and audio feature visualizations (m...\n    - spotify: Control Spotify — play music, search the catalog, manage ...\n    - youtube-content: Fetch YouTube video transcripts and transform them into s...\n  mlops: Knowledge and Tools for Machine Learning Operations - tools and frameworks for training, fine-tuning, deploying, and optimizing ML/AI models\n    - huggingface-hub: Hugging Face Hub CLI (hf) — search, download, and upload ...\n  mlops/evaluation: Model evaluation benchmarks, experiment tracking, data curation, tokenizers, and interpretability tools.\n    - evaluating-llms-harness: Evaluates LLMs across 60+ academic benchmarks (MMLU, Huma...\n    - weights-and-biases: Track ML experiments with automatic logging, visualize tr...\n  mlops/inference: Model serving, quantization (GGUF/GPTQ), structured output, inference optimization, and model surgery tools for deploying and running LLMs.\n    - llama-cpp: llama.cpp local GGUF inference + HF Hub model discovery.\n    - obliteratus: Remove refusal behaviors from open-weight LLMs using OBLI...\n    - outlines: Guarantee valid JSON/XML/code structure during generation...\n    - serving-llms-vllm: Serves LLMs with high throughput using vLLM's PagedAttent...\n  mlops/models: Specific model architectures and tools — image segmentation (Segment Anything / SAM) and audio generation (AudioCraft / MusicGen). Additional model skills (CLIP, Stable Diffusion, Whisper, LLaVA) are available as optional skills.\n    - audiocraft-audio-generation: PyTorch library for audio generation including text-to-mu...\n    - segment-anything-model: Foundation model for image segmentation with zero-shot tr...\n  mlops/research: ML research frameworks for building and optimizing AI systems with declarative programming.\n    - dspy: Build complex AI systems with declarative programming, op...\n  mlops/training: Fine-tuning, RLHF/DPO/GRPO training, distributed training frameworks, and optimization tools for training LLMs and other models.\n    - axolotl: Expert guidance for fine-tuning LLMs with Axolotl - YAML ...\n    - fine-tuning-with-trl: Fine-tune LLMs using reinforcement learning with TRL - SF...\n    - unsloth: Expert guidance for fast fine-tuning with Unsloth - 2-5x ...\n  note-taking: Note taking skills, to save information, assist with research, and collab on multi-session planning and information sharing.\n    - obsidian: Read, search, and create notes in the Obsidian vault.\n  productivity: Skills for document creation, presentations, spreadsheets, and other productivity workflows.\n    - google-workspace: Gmail, Calendar, Drive, Contacts, Sheets, and Docs integr...\n    - linear: Manage Linear issues, projects, and teams via the GraphQL...\n    - maps: Location intelligence — geocode a place, reverse-geocode ...\n    - nano-pdf: Edit PDFs with natural-language instructions using the na...\n    - notion: Notion API for creating and managing pages, databases, an...\n    - ocr-and-documents: Extract text from PDFs and scanned documents. Use web_ext...\n    - powerpoint: Use this skill any time a .pptx file is involved in any w...\n  radar-forum:\n    - radar-forum: 论坛调度引擎 - 协调多个引擎完成复杂舆情分析任务。作为主持人角色调度 radar-query、radar-ins...\n  radar-insight:\n    - radar-insight: 深度洞察引擎 - 对舆情数据进行深度分析，挖掘趋势、情感和洞察。用于深度分析报告、趋势研判和决策支持。\n  radar-media:\n    - radar-media: 多模态媒体分析引擎 - 分析包含图片、视频、音频的多模态舆情内容。用于社媒内容分析、多媒体趋势发现。\n  radar-query:\n    - radar-query: 舆情查询引擎 - 从本地 PostgreSQL 数据库搜索和分析舆情数据。用于关键词搜索、热点分析和趋势追踪。\n  radar-report:\n    - radar-report: 报告生成引擎 - 将舆情分析结果生成为结构化报告。支持 Markdown、HTML、PDF 格式输出。\n  red-teaming:\n    - godmode: Jailbreak API-served LLMs using G0DM0D3 techniques — Pars...\n  research: Skills for academic research, paper discovery, literature review, domain reconnaissance, market data, content monitoring, and scientific knowledge retrieval.\n    - arxiv: Search and retrieve academic papers from arXiv using thei...\n    - blogwatcher: Monitor blogs and RSS/Atom feeds for updates using the bl...\n    - llm-wiki: Karpathy's LLM Wiki — build and maintain a persistent, in...\n    - polymarket: Query Polymarket prediction market data — search markets,...\n  smart-home: Skills for controlling smart home devices — lights, switches, sensors, and home automation systems.\n    - openhue: Control Philips Hue lights, rooms, and scenes via the Ope...\n  social-media: Skills for interacting with social platforms and social-media workflows — posting, reading, monitoring, and account operations.\n    - xurl: Interact with X/Twitter via xurl, the official X API CLI....\n  software-development:\n    - plan: Plan mode for Hermes — inspect context, write a markdown ...\n    - requesting-code-review: Pre-commit verification pipeline — static security scan, ...\n    - subagent-driven-development: Use when executing implementation plans with independent ...\n    - systematic-debugging: Use when encountering any bug, test failure, or unexpecte...\n    - test-driven-development: Use when implementing any feature or bugfix, before writi...\n    - writing-plans: Use when you have a spec or requirements for a multi-step...\n  web-access:\n    - web-access: 完整联网能力 Skill。处理所有联网操作：搜索、网页抓取、登录后操作、网络交互、浏览器自动化。\n</available_skills>\n\nOnly proceed without loading a skill if genuinely none are relevant to the task.\n\nConversation started: Sunday, April 26, 2026 11:00 AM\nModel: MiniMax-M2.7\nProvider: minimax-cn\n\nYou are running inside WSL (Windows Subsystem for Linux). The Windows host filesystem is mounted under /mnt/ — /mnt/c/ is the C: drive, /mnt/d/ is D:, etc. The user's Windows files are typically at /mnt/c/Users/<username>/Desktop/, Documents/, Downloads/, etc. When the user references Windows paths or desktop files, translate to the /mnt/c/ equivalent. You can list /mnt/c/Users/ to discover the Windows username if needed.\n\nYou are a CLI AI Agent. Try not to use markdown but simple text renderable inside a terminal. File delivery: there is no attachment channel — the user reads your response directly in their terminal. Do NOT emit MEDIA:/path tags (those are only intercepted on messaging platforms like Telegram, Discord, Slack, etc.; on the CLI they render as literal text). When referring to a file you created or changed, just state its absolute path in plain text; the user can open it from there.",
+      "tools": [
+        {
+          "name": "clarify",
+          "description": "Ask the user a question when you need clarification, feedback, or a decision before proceeding. Supports two modes:\n\n1. **Multiple choice** — provide up to 4 choices. The user picks one or types their own answer via a 5th 'Other' option.\n2. **Open-ended** — omit choices entirely. The user types a free-form response.\n\nUse this tool when:\n- The task is ambiguous and you need the user to choose an approach\n- You want post-task feedback ('How did that work out?')\n- You want to offer to save a skill or update memory\n- A decision has meaningful trade-offs the user should weigh in on\n\nDo NOT use this tool for simple yes/no confirmation of dangerous commands (the terminal tool handles that). Prefer making a reasonable default choice yourself when the decision is low-stakes.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "description": "The question to present to the user."
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "description": "Up to 4 answer choices. Omit this parameter entirely to ask an open-ended question. When provided, the UI automatically appends an 'Other (type your answer)' option."
+              }
+            },
+            "required": [
+              "question"
+            ]
+          }
+        },
+        {
+          "name": "cronjob",
+          "description": "Manage scheduled cron jobs with a single compressed tool.\n\nUse action='create' to schedule a new job from a prompt or one or more skills.\nUse action='list' to inspect jobs.\nUse action='update', 'pause', 'resume', 'remove', or 'run' to manage an existing job.\n\nTo stop a job the user no longer wants: first action='list' to find the job_id, then action='remove' with that job_id. Never guess job IDs — always list first.\n\nJobs run in a fresh session with no current-chat context, so prompts must be self-contained.\nIf skills are provided on create, the future cron run loads those skills in order, then follows the prompt as the task instruction.\nOn update, passing skills=[] clears attached skills.\n\nNOTE: The agent's final response is auto-delivered to the target. Put the primary\nuser-facing content in the final response. Cron jobs run autonomously with no user\npresent — they cannot ask questions or request clarification.\n\nImportant safety rule: cron-run sessions should not recursively schedule more cron jobs.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "One of: create, list, update, pause, resume, remove, run"
+              },
+              "job_id": {
+                "type": "string",
+                "description": "Required for update/pause/resume/remove/run"
+              },
+              "prompt": {
+                "type": "string",
+                "description": "For create: the full self-contained prompt. If skills are also provided, this becomes the task instruction paired with those skills."
+              },
+              "schedule": {
+                "type": "string",
+                "description": "For create/update: '30m', 'every 2h', '0 9 * * *', or ISO timestamp"
+              },
+              "name": {
+                "type": "string",
+                "description": "Optional human-friendly name"
+              },
+              "repeat": {
+                "type": "integer",
+                "description": "Optional repeat count. Omit for defaults (once for one-shot, forever for recurring)."
+              },
+              "deliver": {
+                "type": "string",
+                "description": "Omit this parameter to auto-deliver back to the current chat and topic (recommended). Auto-detection preserves thread/topic context. Only set explicitly when the user asks to deliver somewhere OTHER than the current conversation. Values: 'origin' (same as omitting), 'local' (no delivery, save only), or platform:chat_id:thread_id for a specific destination. Examples: 'telegram:-1001234567890:17585', 'discord:#engineering', 'sms:+15551234567'. WARNING: 'platform:chat_id' without :thread_id loses topic targeting."
+              },
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional ordered list of skill names to load before executing the cron prompt. On update, pass an empty array to clear attached skills."
+              },
+              "model": {
+                "type": "object",
+                "description": "Optional per-job model override. If provider is omitted, the current main provider is pinned at creation time so the job stays stable.",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Provider name (e.g. 'openrouter', 'anthropic'). Omit to use and pin the current provider."
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "Model name (e.g. 'anthropic/claude-sonnet-4', 'claude-sonnet-4')"
+                  }
+                },
+                "required": [
+                  "model"
+                ]
+              },
+              "script": {
+                "type": "string",
+                "description": "Optional path to a Python script that runs before each cron job execution. Its stdout is injected into the prompt as context. Use for data collection and change detection. Relative paths resolve under /app/.hermes/scripts/. On update, pass empty string to clear."
+              },
+              "enabled_toolsets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of toolset names to restrict the job's agent to (e.g. [\"web\", \"terminal\", \"file\", \"delegation\"]). When set, only tools from these toolsets are loaded, significantly reducing input token overhead. When omitted, all default tools are loaded. Infer from the job's prompt — e.g. use \"web\" if it calls web_search, \"terminal\" if it runs scripts, \"file\" if it reads files, \"delegation\" if it calls delegate_task. On update, pass an empty array to clear."
+              },
+              "workdir": {
+                "type": "string",
+                "description": "Optional absolute path to run the job from. When set, AGENTS.md / CLAUDE.md / .cursorrules from that directory are injected into the system prompt, and the terminal/file/code_exec tools use it as their working directory — useful for running a job inside a specific project repo. Must be an absolute path that exists. When unset (default), preserves the original behaviour: no project context files, tools use the scheduler's cwd. On update, pass an empty string to clear. Jobs with workdir run sequentially (not parallel) to keep per-job directories isolated."
+              }
+            },
+            "required": [
+              "action"
+            ]
+          }
+        },
+        {
+          "name": "delegate_task",
+          "description": "Spawn one or more subagents to work on tasks in isolated contexts. Each subagent gets its own conversation, terminal session, and toolset. Only the final summary is returned -- intermediate tool results never enter your context window.\n\nTWO MODES (one of 'goal' or 'tasks' is required):\n1. Single task: provide 'goal' (+ optional context, toolsets)\n2. Batch (parallel): provide 'tasks' array with up to delegation.max_concurrent_children items (default 3, configurable via config.yaml, no hard ceiling). All run concurrently and results are returned together. Nested delegation requires role='orchestrator' and delegation.max_spawn_depth >= 2.\n\nWHEN TO USE delegate_task:\n- Reasoning-heavy subtasks (debugging, code review, research synthesis)\n- Tasks that would flood your context with intermediate data\n- Parallel independent workstreams (research A and B simultaneously)\n\nWHEN NOT TO USE (use these instead):\n- Mechanical multi-step work with no reasoning needed -> use execute_code\n- Single tool call -> just call the tool directly\n- Tasks needing user interaction -> subagents cannot use clarify\n\nIMPORTANT:\n- Subagents have NO memory of your conversation. Pass all relevant info (file paths, error messages, constraints) via the 'context' field.\n- Leaf subagents (role='leaf', the default) CANNOT call: delegate_task, clarify, memory, send_message, execute_code.\n- Orchestrator subagents (role='orchestrator') retain delegate_task so they can spawn their own workers, but still cannot use clarify, memory, send_message, or execute_code. Orchestrators are bounded by delegation.max_spawn_depth (default 2) and can be disabled globally via delegation.orchestrator_enabled=false.\n- Each subagent gets its own terminal session (separate working directory and state).\n- Results are always returned as an array, one entry per task.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "goal": {
+                "type": "string",
+                "description": "What the subagent should accomplish. Be specific and self-contained -- the subagent knows nothing about your conversation history."
+              },
+              "context": {
+                "type": "string",
+                "description": "Background information the subagent needs: file paths, error messages, project structure, constraints. The more specific you are, the better the subagent performs."
+              },
+              "toolsets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Toolsets to enable for this subagent. Default: inherits your enabled toolsets. Available toolsets: 'browser', 'cronjob', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Common patterns: ['terminal', 'file'] for code work, ['web'] for research, ['browser'] for web interaction, ['terminal', 'file', 'web'] for full-stack tasks."
+              },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "goal": {
+                      "type": "string",
+                      "description": "Task goal"
+                    },
+                    "context": {
+                      "type": "string",
+                      "description": "Task-specific context"
+                    },
+                    "toolsets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Toolsets for this specific task. Available: 'browser', 'cronjob', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Use 'web' for network access, 'terminal' for shell, 'browser' for web interaction."
+                    },
+                    "acp_command": {
+                      "type": "string",
+                      "description": "Per-task ACP command override (e.g. 'claude'). Overrides the top-level acp_command for this task only."
+                    },
+                    "acp_args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Per-task ACP args override."
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "leaf",
+                        "orchestrator"
+                      ],
+                      "description": "Per-task role override. See top-level 'role' for semantics."
+                    }
+                  },
+                  "required": [
+                    "goal"
+                  ]
+                },
+                "description": "Batch mode: tasks to run in parallel (limit configurable via delegation.max_concurrent_children, default 3). Each gets its own subagent with isolated context and terminal session. When provided, top-level goal/context/toolsets are ignored."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "leaf",
+                  "orchestrator"
+                ],
+                "description": "Role of the child agent. 'leaf' (default) = focused worker, cannot delegate further. 'orchestrator' = can use delegate_task to spawn its own workers. Requires delegation.max_spawn_depth >= 2 in config; ignored (treated as 'leaf') when the child would exceed max_spawn_depth or when delegation.orchestrator_enabled=false."
+              },
+              "acp_command": {
+                "type": "string",
+                "description": "Override ACP command for child agents (e.g. 'claude', 'copilot'). When set, children use ACP subprocess transport instead of inheriting the parent's transport. Enables spawning Claude Code (claude --acp --stdio) or other ACP-capable agents from any parent, including Discord/Telegram/CLI."
+              },
+              "acp_args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Arguments for the ACP command (default: ['--acp', '--stdio']). Only used when acp_command is set. Example: ['--acp', '--stdio', '--model', 'claude-opus-4-6']"
+              }
+            }
+          }
+        },
+        {
+          "name": "execute_code",
+          "description": "Run a Python script that can call Hermes tools programmatically. Use this when you need 3+ tool calls with processing logic between them, need to filter/reduce large tool outputs before they enter your context, need conditional branching (if X then Y else Z), or need to loop (fetch N pages, process N files, retry on failure).\n\nUse normal tool calls instead when: single tool call with no processing, you need to see the full result and apply complex reasoning, or the task requires interactive user input.\n\nAvailable via `from hermes_tools import ...`:\n\n  web_search(query: str, limit: int = 5) -> dict\n    Returns {\"data\": {\"web\": [{\"url\", \"title\", \"description\"}, ...]}}\n  web_extract(urls: list[str]) -> dict\n    Returns {\"results\": [{\"url\", \"title\", \"content\", \"error\"}, ...]} where content is markdown\n  read_file(path: str, offset: int = 1, limit: int = 500) -> dict\n    Lines are 1-indexed. Returns {\"content\": \"...\", \"total_lines\": N}\n  write_file(path: str, content: str) -> dict\n    Always overwrites the entire file.\n  search_files(pattern: str, target=\"content\", path=\".\", file_glob=None, limit=50) -> dict\n    target: \"content\" (search inside files) or \"files\" (find files by name). Returns {\"matches\": [...]}\n  patch(path: str, old_string: str, new_string: str, replace_all: bool = False) -> dict\n    Replaces old_string with new_string in the file.\n  terminal(command: str, timeout=None, workdir=None) -> dict\n    Foreground only (no background/pty). Returns {\"output\": \"...\", \"exit_code\": N}\n\nLimits: 5-minute timeout, 50KB stdout cap, max 50 tool calls per script. terminal() is foreground-only (no background or pty).\n\nScripts run in the session's working directory with the active venv's python, so project deps (pandas, etc.) and relative paths work like in terminal().\n\nPrint your final result to stdout. Use Python stdlib (json, re, math, csv, datetime, collections, etc.) for processing between tool calls.\n\nAlso available (no import needed — built into hermes_tools):\n  json_parse(text: str) — json.loads with strict=False; use for terminal() output with control chars\n  shell_quote(s: str) — shlex.quote(); use when interpolating dynamic strings into shell commands\n  retry(fn, max_attempts=3, delay=2) — retry with exponential backoff for transient failures",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Python code to execute. Import tools with `from hermes_tools import web_search, terminal, ...` and print your final result to stdout."
+              }
+            },
+            "required": [
+              "code"
+            ]
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_crawl_deep",
+          "description": "\n    深度舆情采集 - 调用 MindSpider\n\n    Args:\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+          "input_schema": {
+            "properties": {
+              "keyword": {
+                "title": "Keyword",
+                "type": "string"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "title": "crawl_deepArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_crawl_keyword",
+          "description": "\n    关键词采集 - 通过 DataCollector 采集外部 API 数据\n\n    Args:\n        keyword: 搜索关键词\n        platforms: 平台列表 (anspire/bocha/tavily/firecrawl，默认 all)\n\n    Returns:\n        采集结果\n    ",
+          "input_schema": {
+            "properties": {
+              "keyword": {
+                "title": "Keyword",
+                "type": "string"
+              },
+              "platforms": {
+                "default": null,
+                "items": {
+                  "type": "string"
+                },
+                "title": "Platforms",
+                "type": "array"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "title": "crawl_keywordArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_crawl_media",
+          "description": "\n    社媒平台采集 - 调用 MediaCrawler\n\n    Args:\n        platform: 平台 (xhs/douyin/weibo/bilibili/zhihu)\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+          "input_schema": {
+            "properties": {
+              "platform": {
+                "title": "Platform",
+                "type": "string"
+              },
+              "keyword": {
+                "title": "Keyword",
+                "type": "string"
+              }
+            },
+            "required": [
+              "platform",
+              "keyword"
+            ],
+            "title": "crawl_mediaArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_get_crawler_status",
+          "description": "\n    获取爬虫运行状态\n\n    Returns:\n        状态信息\n    ",
+          "input_schema": {
+            "properties": {},
+            "title": "get_crawler_statusArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_get_prompt",
+          "description": "Get a prompt by name from MCP server 'crawler-coordinator'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the prompt to retrieve"
+              },
+              "arguments": {
+                "type": "object",
+                "description": "Optional arguments to pass to the prompt",
+                "properties": {},
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_list_prompts",
+          "description": "List available prompts from MCP server 'crawler-coordinator'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_list_resources",
+          "description": "List available resources from MCP server 'crawler-coordinator'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_crawler_coordinator_read_resource",
+          "description": "Read a resource by URI from MCP server 'crawler-coordinator'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "description": "URI of the resource to read"
+              }
+            },
+            "required": [
+              "uri"
+            ]
+          }
+        },
+        {
+          "name": "mcp_db_query_get_prompt",
+          "description": "Get a prompt by name from MCP server 'db-query'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the prompt to retrieve"
+              },
+              "arguments": {
+                "type": "object",
+                "description": "Optional arguments to pass to the prompt",
+                "properties": {},
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "mcp_db_query_get_recent_data",
+          "description": "\n    获取最近 N 小时的数据\n\n    Args:\n        platform: 平台筛选 (空字符串表示所有平台)\n        hours: 小时数 (默认 24)\n\n    Returns:\n        包含最近数据的字典\n    ",
+          "input_schema": {
+            "properties": {
+              "platform": {
+                "default": "",
+                "title": "Platform",
+                "type": "string"
+              },
+              "hours": {
+                "default": 24,
+                "title": "Hours",
+                "type": "integer"
+              }
+            },
+            "title": "get_recent_dataArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_db_query_get_stats",
+          "description": "\n    获取数据库统计信息\n\n    Returns:\n        统计信息字典\n    ",
+          "input_schema": {
+            "properties": {},
+            "title": "get_statsArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_db_query_keyword_search",
+          "description": "\n    关键词搜索 crawled_data 表\n\n    Args:\n        keyword: 搜索关键词\n        limit: 返回结果数量限制 (默认 10)\n\n    Returns:\n        包含搜索结果的字典\n    ",
+          "input_schema": {
+            "properties": {
+              "keyword": {
+                "title": "Keyword",
+                "type": "string"
+              },
+              "limit": {
+                "default": 10,
+                "title": "Limit",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "title": "keyword_searchArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_db_query_list_prompts",
+          "description": "List available prompts from MCP server 'db-query'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_db_query_list_resources",
+          "description": "List available resources from MCP server 'db-query'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_db_query_read_resource",
+          "description": "Read a resource by URI from MCP server 'db-query'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "description": "URI of the resource to read"
+              }
+            },
+            "required": [
+              "uri"
+            ]
+          }
+        },
+        {
+          "name": "mcp_db_query_vector_search",
+          "description": "\n    pgvector 语义检索\n\n    Args:\n        query_embedding: 查询向量 (浮点数数组)\n        limit: 返回结果数量限制 (默认 10)\n\n    Returns:\n        包含相似结果的字典\n    ",
+          "input_schema": {
+            "properties": {
+              "query_embedding": {
+                "items": {
+                  "type": "number"
+                },
+                "title": "Query Embedding",
+                "type": "array"
+              },
+              "limit": {
+                "default": 10,
+                "title": "Limit",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "query_embedding"
+            ],
+            "title": "vector_searchArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_external_search_anspire_search",
+          "description": "\n    Anspire 深度搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+          "input_schema": {
+            "properties": {
+              "query": {
+                "title": "Query",
+                "type": "string"
+              },
+              "limit": {
+                "default": 10,
+                "title": "Limit",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "title": "anspire_searchArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_external_search_bocha_search",
+          "description": "\n    Bocha 多模态搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+          "input_schema": {
+            "properties": {
+              "query": {
+                "title": "Query",
+                "type": "string"
+              },
+              "limit": {
+                "default": 10,
+                "title": "Limit",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "title": "bocha_searchArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_external_search_firecrawl_scrape",
+          "description": "\n    Firecrawl 网页抓取\n\n    Args:\n        url: 要抓取的 URL\n\n    Returns:\n        页面内容\n    ",
+          "input_schema": {
+            "properties": {
+              "url": {
+                "title": "Url",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "title": "firecrawl_scrapeArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "mcp_external_search_get_prompt",
+          "description": "Get a prompt by name from MCP server 'external-search'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the prompt to retrieve"
+              },
+              "arguments": {
+                "type": "object",
+                "description": "Optional arguments to pass to the prompt",
+                "properties": {},
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "mcp_external_search_list_prompts",
+          "description": "List available prompts from MCP server 'external-search'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_external_search_list_resources",
+          "description": "List available resources from MCP server 'external-search'",
+          "input_schema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "mcp_external_search_read_resource",
+          "description": "Read a resource by URI from MCP server 'external-search'",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "description": "URI of the resource to read"
+              }
+            },
+            "required": [
+              "uri"
+            ]
+          }
+        },
+        {
+          "name": "mcp_external_search_tavily_search",
+          "description": "\n    Tavily 新闻搜索\n\n    Args:\n        query: 搜索查询\n        depth: 搜索深度 \"basic\" 或 \"advanced\" (默认 \"basic\")\n\n    Returns:\n        搜索结果\n    ",
+          "input_schema": {
+            "properties": {
+              "query": {
+                "title": "Query",
+                "type": "string"
+              },
+              "depth": {
+                "default": "basic",
+                "title": "Depth",
+                "type": "string"
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "title": "tavily_searchArguments",
+            "type": "object"
+          }
+        },
+        {
+          "name": "memory",
+          "description": "Save durable information to persistent memory that survives across sessions. Memory is injected into future turns, so keep it compact and focused on facts that will still matter later.\n\nWHEN TO SAVE (do this proactively, don't wait to be asked):\n- User corrects you or says 'remember this' / 'don't do that again'\n- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n- You discover something about the environment (OS, installed tools, project structure)\n- You learn a convention, API quirk, or workflow specific to this user's setup\n- You identify a stable fact that will be useful again in future sessions\n\nPRIORITY: User preferences and corrections > environment facts > procedural knowledge. The most valuable memory prevents the user from having to repeat themselves.\n\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts.\nIf you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\n\nTWO TARGETS:\n- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n- 'memory': your notes -- environment facts, project conventions, tool quirks, lessons learned\n\nACTIONS: add (new entry), replace (update existing -- old_text identifies it), remove (delete -- old_text identifies it).\n\nSKIP: trivial/obvious info, things easily re-discovered, raw data dumps, and temporary task state.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "add",
+                  "replace",
+                  "remove"
+                ],
+                "description": "The action to perform."
+              },
+              "target": {
+                "type": "string",
+                "enum": [
+                  "memory",
+                  "user"
+                ],
+                "description": "Which memory store: 'memory' for personal notes, 'user' for user profile."
+              },
+              "content": {
+                "type": "string",
+                "description": "The entry content. Required for 'add' and 'replace'."
+              },
+              "old_text": {
+                "type": "string",
+                "description": "Short unique substring identifying the entry to replace or remove."
+              }
+            },
+            "required": [
+              "action",
+              "target"
+            ]
+          }
+        },
+        {
+          "name": "patch",
+          "description": "Targeted find-and-replace edits in files. Use this instead of sed/awk in terminal. Uses fuzzy matching (9 strategies) so minor whitespace/indentation differences won't break it. Returns a unified diff. Auto-runs syntax checks after editing.\n\nReplace mode (default): find a unique string and replace it.\nPatch mode: apply V4A multi-file patches for bulk changes.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "replace",
+                  "patch"
+                ],
+                "description": "Edit mode: 'replace' for targeted find-and-replace, 'patch' for V4A multi-file patches",
+                "default": "replace"
+              },
+              "path": {
+                "type": "string",
+                "description": "File path to edit (required for 'replace' mode)"
+              },
+              "old_string": {
+                "type": "string",
+                "description": "Text to find in the file (required for 'replace' mode). Must be unique in the file unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+              },
+              "new_string": {
+                "type": "string",
+                "description": "Replacement text (required for 'replace' mode). Can be empty string to delete the matched text."
+              },
+              "replace_all": {
+                "type": "boolean",
+                "description": "Replace all occurrences instead of requiring a unique match (default: false)",
+                "default": false
+              },
+              "patch": {
+                "type": "string",
+                "description": "V4A format patch content (required for 'patch' mode). Format:\n*** Begin Patch\n*** Update File: path/to/file\n@@ context hint @@\n context line\n-removed line\n+added line\n*** End Patch"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        },
+        {
+          "name": "process",
+          "description": "Manage background processes started with terminal(background=true). Actions: 'list' (show all), 'poll' (check status + new output), 'log' (full output with pagination), 'wait' (block until done or timeout), 'kill' (terminate), 'write' (send raw stdin data without newline), 'submit' (send data + Enter, for answering prompts), 'close' (close stdin/send EOF).",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "list",
+                  "poll",
+                  "log",
+                  "wait",
+                  "kill",
+                  "write",
+                  "submit",
+                  "close"
+                ],
+                "description": "Action to perform on background processes"
+              },
+              "session_id": {
+                "type": "string",
+                "description": "Process session ID (from terminal background output). Required for all actions except 'list'."
+              },
+              "data": {
+                "type": "string",
+                "description": "Text to send to process stdin (for 'write' and 'submit' actions)"
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Max seconds to block for 'wait' action. Returns partial output on timeout.",
+                "minimum": 1
+              },
+              "offset": {
+                "type": "integer",
+                "description": "Line offset for 'log' action (default: last 200 lines)"
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Max lines to return for 'log' action",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "action"
+            ]
+          }
+        },
+        {
+          "name": "read_file",
+          "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files — use vision_analyze for images.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the file to read (absolute, relative, or ~/path)"
+              },
+              "offset": {
+                "type": "integer",
+                "description": "Line number to start reading from (1-indexed, default: 1)",
+                "default": 1,
+                "minimum": 1
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of lines to read (default: 500, max: 2000)",
+                "default": 500,
+                "maximum": 2000
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "search_files",
+          "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls — results sorted by modification time.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "pattern": {
+                "type": "string",
+                "description": "Regex pattern for content search, or glob pattern (e.g., '*.py') for file search"
+              },
+              "target": {
+                "type": "string",
+                "enum": [
+                  "content",
+                  "files"
+                ],
+                "description": "'content' searches inside file contents, 'files' searches for files by name",
+                "default": "content"
+              },
+              "path": {
+                "type": "string",
+                "description": "Directory or file to search in (default: current working directory)",
+                "default": "."
+              },
+              "file_glob": {
+                "type": "string",
+                "description": "Filter files by pattern in grep mode (e.g., '*.py' to only search Python files)"
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Maximum number of results to return (default: 50)",
+                "default": 50
+              },
+              "offset": {
+                "type": "integer",
+                "description": "Skip first N results for pagination (default: 0)",
+                "default": 0
+              },
+              "output_mode": {
+                "type": "string",
+                "enum": [
+                  "content",
+                  "files_only",
+                  "count"
+                ],
+                "description": "Output format for grep mode: 'content' shows matching lines with line numbers, 'files_only' lists file paths, 'count' shows match counts per file",
+                "default": "content"
+              },
+              "context": {
+                "type": "integer",
+                "description": "Number of context lines before and after each match (grep mode only)",
+                "default": 0
+              }
+            },
+            "required": [
+              "pattern"
+            ]
+          }
+        },
+        {
+          "name": "send_message",
+          "description": "Send a message to a connected messaging platform, or list available targets.\n\nIMPORTANT: When the user asks to send to a specific channel or person (not just a bare platform name), call send_message(action='list') FIRST to see available targets, then send to the correct one.\nIf the user just says a platform name like 'send to telegram', send directly to the home channel without listing first.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "send",
+                  "list"
+                ],
+                "description": "Action to perform. 'send' (default) sends a message. 'list' returns all available channels/contacts across connected platforms."
+              },
+              "target": {
+                "type": "string",
+                "description": "Delivery target. Format: 'platform' (uses home channel), 'platform:#channel-name', 'platform:chat_id', or 'platform:chat_id:thread_id' for Telegram topics and Discord threads. Examples: 'telegram', 'telegram:-1001234567890:17585', 'discord:999888777:555444333', 'discord:#bot-home', 'slack:#engineering', 'signal:+155****4567', 'matrix:!roomid:server.org', 'matrix:@user:server.org'"
+              },
+              "message": {
+                "type": "string",
+                "description": "The message text to send"
+              }
+            }
+          }
+        },
+        {
+          "name": "session_search",
+          "description": "Search your long-term memory of past conversations, or browse recent sessions. This is your recall -- every past session is searchable, and this tool summarizes what happened.\n\nTWO MODES:\n1. Recent sessions (no query): Call with no arguments to see what was worked on recently. Returns titles, previews, and timestamps. Zero LLM cost, instant. Start here when the user asks what were we working on or what did we do recently.\n2. Keyword search (with query): Search for specific topics across all past sessions. Returns LLM-generated summaries of matching sessions.\n\nUSE THIS PROACTIVELY when:\n- The user says 'we did this before', 'remember when', 'last time', 'as I mentioned'\n- The user asks about a topic you worked on before but don't have in current context\n- The user references a project, person, or concept that seems familiar but isn't in memory\n- You want to check if you've solved a similar problem before\n- The user asks 'what did we do about X?' or 'how did we fix Y?'\n\nDon't hesitate to search when it is actually cross-session -- it's fast and cheap. Better to search and confirm than to guess or ask the user to repeat themselves.\n\nSearch syntax: keywords joined with OR for broad recall (elevenlabs OR baseten OR funding), phrases for exact match (\"docker networking\"), boolean (python NOT java), prefix (deploy*). IMPORTANT: Use OR between keywords for best results — FTS5 defaults to AND which misses sessions that only mention some terms. If a broad OR query returns nothing, try individual keyword searches in parallel. Returns summaries of the top matching sessions.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query — keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost)."
+              },
+              "role_filter": {
+                "type": "string",
+                "description": "Optional: only search messages from specific roles (comma-separated). E.g. 'user,assistant' to skip tool outputs."
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Max sessions to summarize (default: 3, max: 5).",
+                "default": 3
+              }
+            }
+          }
+        },
+        {
+          "name": "skill_manage",
+          "description": "Manage skills (create, update, delete). Skills are your procedural memory — reusable approaches for recurring task types. New skills go to /app/.hermes/skills/; existing skills can be modified wherever they live.\n\nActions: create (full SKILL.md + optional category), patch (old_string/new_string — preferred for fixes), edit (full SKILL.md rewrite — major overhauls only), delete, write_file, remove_file.\n\nCreate when: complex task succeeded (5+ calls), errors overcome, user-corrected approach worked, non-trivial workflow discovered, or user asks you to remember a procedure.\nUpdate when: instructions stale/wrong, OS-specific failures, missing steps or pitfalls found during use. If you used a skill and hit issues not covered by it, patch it immediately.\n\nAfter difficult/iterative tasks, offer to save as a skill. Skip for simple one-offs. Confirm with user before creating/deleting.\n\nGood skills: trigger conditions, numbered steps with exact commands, pitfalls section, verification steps. Use skill_view() to see format examples.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "patch",
+                  "edit",
+                  "delete",
+                  "write_file",
+                  "remove_file"
+                ],
+                "description": "The action to perform."
+              },
+              "name": {
+                "type": "string",
+                "description": "Skill name (lowercase, hyphens/underscores, max 64 chars). Must match an existing skill for patch/edit/delete/write_file/remove_file."
+              },
+              "content": {
+                "type": "string",
+                "description": "Full SKILL.md content (YAML frontmatter + markdown body). Required for 'create' and 'edit'. For 'edit', read the skill first with skill_view() and provide the complete updated text."
+              },
+              "old_string": {
+                "type": "string",
+                "description": "Text to find in the file (required for 'patch'). Must be unique unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+              },
+              "new_string": {
+                "type": "string",
+                "description": "Replacement text (required for 'patch'). Can be empty string to delete the matched text."
+              },
+              "replace_all": {
+                "type": "boolean",
+                "description": "For 'patch': replace all occurrences instead of requiring a unique match (default: false)."
+              },
+              "category": {
+                "type": "string",
+                "description": "Optional category/domain for organizing the skill (e.g., 'devops', 'data-science', 'mlops'). Creates a subdirectory grouping. Only used with 'create'."
+              },
+              "file_path": {
+                "type": "string",
+                "description": "Path to a supporting file within the skill directory. For 'write_file'/'remove_file': required, must be under references/, templates/, scripts/, or assets/. For 'patch': optional, defaults to SKILL.md if omitted."
+              },
+              "file_content": {
+                "type": "string",
+                "description": "Content for the file. Required for 'write_file'."
+              }
+            },
+            "required": [
+              "action",
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "skill_view",
+          "description": "Skills allow for loading information about specific tasks and workflows, as well as scripts and templates. Load a skill's full content or access its linked files (references, templates, scripts). First call returns SKILL.md content plus a 'linked_files' dict showing available references/templates/scripts. To access those, call again with file_path parameter.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The skill name (use skills_list to see available skills). For plugin-provided skills, use the qualified form 'plugin:skill' (e.g. 'superpowers:writing-plans')."
+              },
+              "file_path": {
+                "type": "string",
+                "description": "OPTIONAL: Path to a linked file within the skill (e.g., 'references/api.md', 'templates/config.yaml', 'scripts/validate.py'). Omit to get the main SKILL.md content."
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "name": "skills_list",
+          "description": "List available skills (name + description). Use skill_view(name) to load full content.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "description": "Optional category filter to narrow results"
+              }
+            }
+          }
+        },
+        {
+          "name": "terminal",
+          "description": "Execute shell commands on a Linux environment. Filesystem usually persists between calls.\n\nDo NOT use cat/head/tail to read files — use read_file instead.\nDo NOT use grep/rg/find to search — use search_files instead.\nDo NOT use ls to list directories — use search_files(target='files') instead.\nDo NOT use sed/awk to edit files — use patch instead.\nDo NOT use echo/cat heredoc to create files — use write_file instead.\nReserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.\n\nForeground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts — you'll still get the result in seconds if it's fast. Prefer foreground for short commands.\nBackground: Set background=true to get a session_id. Two patterns:\n  (1) Long-lived processes that never exit (servers, watchers).\n  (2) Long-running tasks with notify_on_complete=true — you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.\nFor servers/watchers, do NOT use shell-level background wrappers (nohup/disown/setsid/trailing '&') in foreground mode. Use background=true so Hermes can track lifecycle and output.\nAfter starting a server, verify readiness with a health check or log signal, then run tests in a separate terminal() call. Avoid blind sleep loops.\nUse process(action=\"poll\") for progress checks, process(action=\"wait\") to block until done.\nWorking directory: Use 'workdir' for per-command cwd.\nPTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).\n\nDo NOT use vim/nano/interactive tools without pty=true — they hang without a pseudo-terminal. Pipe git output to cat if it might page.\n",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "The command to execute on the VM"
+              },
+              "background": {
+                "type": "boolean",
+                "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true — you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
+                "default": false
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Max seconds to wait (default: 180, foreground max: 600). Returns INSTANTLY when command finishes — set high for long tasks, you won't wait unnecessarily. Foreground timeout above 600s is rejected; use background=true for longer commands.",
+                "minimum": 1
+              },
+              "workdir": {
+                "type": "string",
+                "description": "Working directory for this command (absolute path). Defaults to the session working directory."
+              },
+              "pty": {
+                "type": "boolean",
+                "description": "Run in pseudo-terminal (PTY) mode for interactive CLI tools like Codex, Claude Code, or Python REPL. Only works with local and SSH backends. Default: false.",
+                "default": false
+              },
+              "notify_on_complete": {
+                "type": "boolean",
+                "description": "When true (and background=true), you'll be automatically notified when the process finishes — no polling needed. Use this for tasks that take a while (tests, builds, deployments) so you can keep working on other things in the meantime.",
+                "default": false
+              },
+              "watch_patterns": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Strings to watch for in background process output. Fires a notification the first time each pattern matches a line of output. **Use ONLY for mid-process signals** you want to react to before the process exits — errors, readiness markers, intermediate step markers (e.g. [\"ERROR\", \"Traceback\", \"listening on port\"]). Do NOT use for end-of-run markers (summary headers, 'DONE', 'PASS' printed right before exit) — use `notify_on_complete` for that instead. Stacking end-of-run patterns on top of `notify_on_complete` produces duplicate, delayed notifications that arrive after you've already moved on, since delivery is asynchronous and continues after the process exits."
+              }
+            },
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "name": "text_to_speech",
+          "description": "Convert text to speech audio. Returns a MEDIA: path that the platform delivers as a voice message. On Telegram it plays as a voice bubble, on Discord/WhatsApp as an audio attachment. In CLI mode, saves to ~/voice-memos/. Voice and provider are user-configured, not model-selected.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "The text to convert to speech. Provider-specific character caps apply and are enforced automatically (OpenAI 4096, xAI 15000, MiniMax 10000, ElevenLabs 5k-40k depending on model); over-long input is truncated."
+              },
+              "output_path": {
+                "type": "string",
+                "description": "Optional custom file path to save the audio. Defaults to /app/.hermes/audio_cache/<timestamp>.mp3"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "todo",
+          "description": "Manage your task list for the current session. Use for complex tasks with 3+ steps or when the user provides multiple tasks. Call with no parameters to read the current list.\n\nWriting:\n- Provide 'todos' array to create/update items\n- merge=false (default): replace the entire list with a fresh plan\n- merge=true: update existing items by id, add any new ones\n\nEach item: {id: string, content: string, status: pending|in_progress|completed|cancelled}\nList order is priority. Only ONE item in_progress at a time.\nMark items completed immediately when done. If something fails, cancel it and add a revised item.\n\nAlways returns the full current list.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "todos": {
+                "type": "array",
+                "description": "Task items to write. Omit to read current list.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique item identifier"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "Task description"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "in_progress",
+                        "completed",
+                        "cancelled"
+                      ],
+                      "description": "Current status"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "content",
+                    "status"
+                  ]
+                }
+              },
+              "merge": {
+                "type": "boolean",
+                "description": "true: update existing items by id, add new ones. false (default): replace the entire list.",
+                "default": false
+              }
+            }
+          }
+        },
+        {
+          "name": "web_extract",
+          "description": "Extract content from web page URLs. Returns page content in markdown format. Also works with PDF URLs (arxiv papers, documents, etc.) — pass the PDF link directly and it converts to markdown text. Pages under 5000 chars return full markdown; larger pages are LLM-summarized and capped at ~5000 chars per page. Pages over 2M chars are refused. If a URL fails or times out, use the browser tool to access it instead.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of URLs to extract content from (max 5 URLs per call)",
+                "maxItems": 5
+              }
+            },
+            "required": [
+              "urls"
+            ]
+          }
+        },
+        {
+          "name": "web_search",
+          "description": "Search the web for information on any topic. Returns up to 5 relevant results with titles, URLs, and descriptions.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "The search query to look up on the web"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        },
+        {
+          "name": "write_file",
+          "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file — use 'patch' for targeted edits.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the file to write (will be created if it doesn't exist, overwritten if it does)"
+              },
+              "content": {
+                "type": "string",
+                "description": "Complete content to write to the file"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ]
+          }
+        }
+      ],
+      "tool_choice": {
+        "type": "auto"
+      }
+    }
+  },
+  "error": {
+    "type": "APIConnectionError",
+    "message": "Connection error."
+  }
+}

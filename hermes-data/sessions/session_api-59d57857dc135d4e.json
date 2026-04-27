@@ -1,0 +1,1243 @@
+{
+  "session_id": "api-59d57857dc135d4e",
+  "model": "",
+  "base_url": "https://api.minimaxi.com/anthropic",
+  "platform": "api_server",
+  "session_start": "2026-04-26T12:22:36.730482",
+  "last_updated": "2026-04-26T12:22:58.437723",
+  "system_prompt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\nYou have persistent memory across sessions. Save durable facts using the memory tool: user preferences, environment details, tool quirks, and stable conventions. Memory is injected into every turn, so keep it compact and focused on facts that will still matter later.\nPrioritize what reduces future user steering — the most valuable memory is one that prevents the user from having to correct or remind you again. User preferences and recurring corrections matter more than procedural task details.\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts. If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\nWrite memories as declarative facts, not instructions to yourself. 'User prefers concise responses' ✓ — 'Always respond concisely' ✗. 'Project uses pytest with xdist' ✓ — 'Run tests with pytest -n 4' ✗. Imperative phrasing gets re-read as a directive in later sessions and can cause repeated work or override the user's current request. Procedures and workflows belong in skills, not memory. When the user references something from a past conversation or you suspect relevant cross-session context exists, use session_search to recall it before asking them to repeat themselves. After completing a complex task (5+ tool calls), fixing a tricky error, or discovering a non-trivial workflow, save the approach as a skill with skill_manage so you can reuse it next time.\nWhen using a skill and finding it outdated, incomplete, or wrong, patch it immediately with skill_manage(action='patch') — don't wait to be asked. Skills that aren't maintained become liabilities.\n\n## Skills (mandatory)\nBefore replying, scan the skills below. If a skill matches or is even partially relevant to your task, you MUST load it with skill_view(name) and follow its instructions. Err on the side of loading — it is always better to have context you don't need than to miss critical steps, pitfalls, or established workflows. Skills contain specialized knowledge — API endpoints, tool-specific commands, and proven workflows that outperform general-purpose approaches. Load the skill even if you think you could handle the task with basic tools like web_search or terminal. Skills also encode the user's preferred approach, conventions, and quality standards for tasks like code review, planning, and testing — load them even for tasks you already know how to do, because the skill defines how it should be done here.\nIf a skill has issues, fix it with skill_manage(action='patch').\nAfter difficult/iterative tasks, offer to save as a skill. If a skill you loaded was missing steps, had wrong commands, or needed pitfalls you discovered, update it before finishing.\n\n<available_skills>\n  analysis-engine:\n    - analysis-engine: 分析引擎 - 整合深度洞察、媒体分析、报告生成能力。用于舆情数据分析、趋势研判、情感分析、多媒体内容分析、报告生成。\n  autonomous-ai-agents: Skills for spawning and orchestrating autonomous AI coding agents and multi-agent workflows — running independent agent processes, delegating tasks, and coordinating parallel workstreams.\n    - claude-code: Delegate coding tasks to Claude Code (Anthropic's CLI age...\n    - codex: Delegate coding tasks to OpenAI Codex CLI agent. Use for ...\n    - hermes-agent: Complete guide to using and extending Hermes Agent — CLI ...\n    - opencode: Delegate coding tasks to OpenCode CLI agent for feature i...\n  business-analyst:\n    - business-analyst: Product discovery and requirements analysis specialist. C...\n  content-research-writer:\n    - content-research-writer: Assists in writing high-quality content by conducting res...\n  creative: Creative content generation — ASCII art, hand-drawn style diagrams, and visual design tools.\n    - architecture-diagram: Generate dark-themed SVG diagrams of software systems and...\n    - ascii-art: Generate ASCII art using pyfiglet (571 fonts), cowsay, bo...\n    - ascii-video: Production pipeline for ASCII art video — any format. Con...\n    - baoyu-comic: Knowledge comic creator supporting multiple art styles an...\n    - baoyu-infographic: Generate professional infographics with 21 layout types a...\n    - design-md: Author, validate, diff, and export DESIGN.md files — Goog...\n    - excalidraw: Create hand-drawn style diagrams using Excalidraw JSON fo...\n    - ideation: Generate project ideas through creative constraints. Use ...\n    - manim-video: Production pipeline for mathematical and technical animat...\n    - p5js: Production pipeline for interactive and generative visual...\n    - pixel-art: Convert images into retro pixel art with hardware-accurat...\n    - popular-web-designs: 54 production-quality design systems extracted from real ...\n    - songwriting-and-ai-music: Songwriting craft, AI music generation prompts (Suno focu...\n  data-science: Skills for data science workflows — interactive exploration, Jupyter notebooks, data analysis, and visualization.\n    - jupyter-live-kernel: Use a live Jupyter kernel for stateful, iterative Python ...\n  devops:\n    - webhook-subscriptions: Create and manage webhook subscriptions for event-driven ...\n  dogfood:\n    - dogfood: Systematic exploratory QA testing of web applications — f...\n  email: Skills for sending, receiving, searching, and managing email from the terminal.\n    - himalaya: CLI to manage emails via IMAP/SMTP. Use himalaya to list,...\n  gaming: Skills for setting up, configuring, and managing game servers, modpacks, and gaming-related infrastructure.\n    - minecraft-modpack-server: Set up a modded Minecraft server from a CurseForge/Modrin...\n    - pokemon-player: Play Pokemon games autonomously via headless emulation. S...\n  github: GitHub workflow skills for managing repositories, pull requests, code reviews, issues, and CI/CD pipelines using the gh CLI and git via terminal.\n    - codebase-inspection: Inspect and analyze codebases using pygount for LOC count...\n    - github-auth: Set up GitHub authentication for the agent using git (uni...\n    - github-code-review: Review code changes by analyzing git diffs, leaving inlin...\n    - github-issues: Create, manage, triage, and close GitHub issues. Search e...\n    - github-pr-workflow: Full pull request lifecycle — create branches, commit cha...\n    - github-repo-management: Clone, create, fork, configure, and manage GitHub reposit...\n  keyword-research:\n    - keyword-research: Use when the user asks to \"find keywords\", \"keyword resea...\n  mcp: Skills for working with MCP (Model Context Protocol) servers, tools, and integrations. Documents the built-in native MCP client — configure servers in config.yaml for automatic tool discovery.\n    - native-mcp: Built-in MCP (Model Context Protocol) client that connect...\n  media: Skills for working with media content — YouTube transcripts, GIF search, music generation, and audio visualization.\n    - gif-search: Search and download GIFs from Tenor using curl. No depend...\n    - heartmula: Set up and run HeartMuLa, the open-source music generatio...\n    - songsee: Generate spectrograms and audio feature visualizations (m...\n    - spotify: Control Spotify — play music, search the catalog, manage ...\n    - youtube-content: Fetch YouTube video transcripts and transform them into s...\n  mlops: Knowledge and Tools for Machine Learning Operations - tools and frameworks for training, fine-tuning, deploying, and optimizing ML/AI models\n    - huggingface-hub: Hugging Face Hub CLI (hf) — search, download, and upload ...\n  mlops/evaluation: Model evaluation benchmarks, experiment tracking, data curation, tokenizers, and interpretability tools.\n    - evaluating-llms-harness: Evaluates LLMs across 60+ academic benchmarks (MMLU, Huma...\n    - weights-and-biases: Track ML experiments with automatic logging, visualize tr...\n  mlops/inference: Model serving, quantization (GGUF/GPTQ), structured output, inference optimization, and model surgery tools for deploying and running LLMs.\n    - llama-cpp: llama.cpp local GGUF inference + HF Hub model discovery.\n    - obliteratus: Remove refusal behaviors from open-weight LLMs using OBLI...\n    - outlines: Guarantee valid JSON/XML/code structure during generation...\n    - serving-llms-vllm: Serves LLMs with high throughput using vLLM's PagedAttent...\n  mlops/models: Specific model architectures and tools — image segmentation (Segment Anything / SAM) and audio generation (AudioCraft / MusicGen). Additional model skills (CLIP, Stable Diffusion, Whisper, LLaVA) are available as optional skills.\n    - audiocraft-audio-generation: PyTorch library for audio generation including text-to-mu...\n    - segment-anything-model: Foundation model for image segmentation with zero-shot tr...\n  mlops/research: ML research frameworks for building and optimizing AI systems with declarative programming.\n    - dspy: Build complex AI systems with declarative programming, op...\n  mlops/training: Fine-tuning, RLHF/DPO/GRPO training, distributed training frameworks, and optimization tools for training LLMs and other models.\n    - axolotl: Expert guidance for fine-tuning LLMs with Axolotl - YAML ...\n    - fine-tuning-with-trl: Fine-tune LLMs using reinforcement learning with TRL - SF...\n    - unsloth: Expert guidance for fast fine-tuning with Unsloth - 2-5x ...\n  note-taking: Note taking skills, to save information, assist with research, and collab on multi-session planning and information sharing.\n    - obsidian: Read, search, and create notes in the Obsidian vault.\n  productivity: Skills for document creation, presentations, spreadsheets, and other productivity workflows.\n    - google-workspace: Gmail, Calendar, Drive, Contacts, Sheets, and Docs integr...\n    - linear: Manage Linear issues, projects, and teams via the GraphQL...\n    - maps: Location intelligence — geocode a place, reverse-geocode ...\n    - nano-pdf: Edit PDFs with natural-language instructions using the na...\n    - notion: Notion API for creating and managing pages, databases, an...\n    - ocr-and-documents: Extract text from PDFs and scanned documents. Use web_ext...\n    - powerpoint: Use this skill any time a .pptx file is involved in any w...\n  radar-forum:\n    - radar-forum: 论坛调度引擎 - 协调多个引擎完成复杂舆情分析任务。作为主持人角色调度 radar-query、radar-ins...\n  red-teaming:\n    - godmode: Jailbreak API-served LLMs using G0DM0D3 techniques — Pars...\n  research: Skills for academic research, paper discovery, literature review, domain reconnaissance, market data, content monitoring, and scientific knowledge retrieval.\n    - arxiv: Search and retrieve academic papers from arXiv using thei...\n    - blogwatcher: Monitor blogs and RSS/Atom feeds for updates using the bl...\n    - llm-wiki: Karpathy's LLM Wiki — build and maintain a persistent, in...\n    - polymarket: Query Polymarket prediction market data — search markets,...\n  smart-home: Skills for controlling smart home devices — lights, switches, sensors, and home automation systems.\n    - openhue: Control Philips Hue lights, rooms, and scenes via the Ope...\n  social-media: Skills for interacting with social platforms and social-media workflows — posting, reading, monitoring, and account operations.\n    - xurl: Interact with X/Twitter via xurl, the official X API CLI....\n  software-development:\n    - plan: Plan mode for Hermes — inspect context, write a markdown ...\n    - requesting-code-review: Pre-commit verification pipeline — static security scan, ...\n    - subagent-driven-development: Use when executing implementation plans with independent ...\n    - systematic-debugging: Use when encountering any bug, test failure, or unexpecte...\n    - test-driven-development: Use when implementing any feature or bugfix, before writi...\n    - writing-plans: Use when you have a spec or requirements for a multi-step...\n  web-access:\n    - web-access: 完整联网能力 Skill。处理所有联网操作：搜索、网页抓取、登录后操作、网络交互、浏览器自动化。\n</available_skills>\n\nOnly proceed without loading a skill if genuinely none are relevant to the task.\n\nConversation started: Sunday, April 26, 2026 12:22 PM\nProvider: minimax-cn\n\nYou are running inside WSL (Windows Subsystem for Linux). The Windows host filesystem is mounted under /mnt/ — /mnt/c/ is the C: drive, /mnt/d/ is D:, etc. The user's Windows files are typically at /mnt/c/Users/<username>/Desktop/, Documents/, Downloads/, etc. When the user references Windows paths or desktop files, translate to the /mnt/c/ equivalent. You can list /mnt/c/Users/ to discover the Windows username if needed.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "cronjob",
+        "description": "Manage scheduled cron jobs with a single compressed tool.\n\nUse action='create' to schedule a new job from a prompt or one or more skills.\nUse action='list' to inspect jobs.\nUse action='update', 'pause', 'resume', 'remove', or 'run' to manage an existing job.\n\nTo stop a job the user no longer wants: first action='list' to find the job_id, then action='remove' with that job_id. Never guess job IDs — always list first.\n\nJobs run in a fresh session with no current-chat context, so prompts must be self-contained.\nIf skills are provided on create, the future cron run loads those skills in order, then follows the prompt as the task instruction.\nOn update, passing skills=[] clears attached skills.\n\nNOTE: The agent's final response is auto-delivered to the target. Put the primary\nuser-facing content in the final response. Cron jobs run autonomously with no user\npresent — they cannot ask questions or request clarification.\n\nImportant safety rule: cron-run sessions should not recursively schedule more cron jobs.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "One of: create, list, update, pause, resume, remove, run"
+            },
+            "job_id": {
+              "type": "string",
+              "description": "Required for update/pause/resume/remove/run"
+            },
+            "prompt": {
+              "type": "string",
+              "description": "For create: the full self-contained prompt. If skills are also provided, this becomes the task instruction paired with those skills."
+            },
+            "schedule": {
+              "type": "string",
+              "description": "For create/update: '30m', 'every 2h', '0 9 * * *', or ISO timestamp"
+            },
+            "name": {
+              "type": "string",
+              "description": "Optional human-friendly name"
+            },
+            "repeat": {
+              "type": "integer",
+              "description": "Optional repeat count. Omit for defaults (once for one-shot, forever for recurring)."
+            },
+            "deliver": {
+              "type": "string",
+              "description": "Omit this parameter to auto-deliver back to the current chat and topic (recommended). Auto-detection preserves thread/topic context. Only set explicitly when the user asks to deliver somewhere OTHER than the current conversation. Values: 'origin' (same as omitting), 'local' (no delivery, save only), or platform:chat_id:thread_id for a specific destination. Examples: 'telegram:-1001234567890:17585', 'discord:#engineering', 'sms:+15551234567'. WARNING: 'platform:chat_id' without :thread_id loses topic targeting."
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional ordered list of skill names to load before executing the cron prompt. On update, pass an empty array to clear attached skills."
+            },
+            "model": {
+              "type": "object",
+              "description": "Optional per-job model override. If provider is omitted, the current main provider is pinned at creation time so the job stays stable.",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "Provider name (e.g. 'openrouter', 'anthropic'). Omit to use and pin the current provider."
+                },
+                "model": {
+                  "type": "string",
+                  "description": "Model name (e.g. 'anthropic/claude-sonnet-4', 'claude-sonnet-4')"
+                }
+              },
+              "required": [
+                "model"
+              ]
+            },
+            "script": {
+              "type": "string",
+              "description": "Optional path to a Python script that runs before each cron job execution. Its stdout is injected into the prompt as context. Use for data collection and change detection. Relative paths resolve under /app/.hermes/scripts/. On update, pass empty string to clear."
+            },
+            "context_from": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional job ID or list of job IDs whose most recent completed output is injected into the prompt as context before each run. Use this to chain cron jobs: job A collects data, job B processes it. Each entry must be a valid job ID (from cronjob action='list'). Note: injects the most recent completed output — does not wait for upstream jobs running in the same tick. On update, pass an empty array to clear."
+            },
+            "enabled_toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional list of toolset names to restrict the job's agent to (e.g. [\"web\", \"terminal\", \"file\", \"delegation\"]). When set, only tools from these toolsets are loaded, significantly reducing input token overhead. When omitted, all default tools are loaded. Infer from the job's prompt — e.g. use \"web\" if it calls web_search, \"terminal\" if it runs scripts, \"file\" if it reads files, \"delegation\" if it calls delegate_task. On update, pass an empty array to clear."
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Optional absolute path to run the job from. When set, AGENTS.md / CLAUDE.md / .cursorrules from that directory are injected into the system prompt, and the terminal/file/code_exec tools use it as their working directory — useful for running a job inside a specific project repo. Must be an absolute path that exists. When unset (default), preserves the original behaviour: no project context files, tools use the scheduler's cwd. On update, pass an empty string to clear. Jobs with workdir run sequentially (not parallel) to keep per-job directories isolated."
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "delegate_task",
+        "description": "Spawn one or more subagents to work on tasks in isolated contexts. Each subagent gets its own conversation, terminal session, and toolset. Only the final summary is returned -- intermediate tool results never enter your context window.\n\nTWO MODES (one of 'goal' or 'tasks' is required):\n1. Single task: provide 'goal' (+ optional context, toolsets)\n2. Batch (parallel): provide 'tasks' array with up to delegation.max_concurrent_children items (default 3, configurable via config.yaml, no hard ceiling). All run concurrently and results are returned together. Nested delegation requires role='orchestrator' and delegation.max_spawn_depth >= 2.\n\nWHEN TO USE delegate_task:\n- Reasoning-heavy subtasks (debugging, code review, research synthesis)\n- Tasks that would flood your context with intermediate data\n- Parallel independent workstreams (research A and B simultaneously)\n\nWHEN NOT TO USE (use these instead):\n- Mechanical multi-step work with no reasoning needed -> use execute_code\n- Single tool call -> just call the tool directly\n- Tasks needing user interaction -> subagents cannot use clarify\n\nIMPORTANT:\n- Subagents have NO memory of your conversation. Pass all relevant info (file paths, error messages, constraints) via the 'context' field.\n- Leaf subagents (role='leaf', the default) CANNOT call: delegate_task, clarify, memory, send_message, execute_code.\n- Orchestrator subagents (role='orchestrator') retain delegate_task so they can spawn their own workers, but still cannot use clarify, memory, send_message, or execute_code. Orchestrators are bounded by delegation.max_spawn_depth (default 2) and can be disabled globally via delegation.orchestrator_enabled=false.\n- Each subagent gets its own terminal session (separate working directory and state).\n- Results are always returned as an array, one entry per task.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "goal": {
+              "type": "string",
+              "description": "What the subagent should accomplish. Be specific and self-contained -- the subagent knows nothing about your conversation history."
+            },
+            "context": {
+              "type": "string",
+              "description": "Background information the subagent needs: file paths, error messages, project structure, constraints. The more specific you are, the better the subagent performs."
+            },
+            "toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Toolsets to enable for this subagent. Default: inherits your enabled toolsets. Available toolsets: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Common patterns: ['terminal', 'file'] for code work, ['web'] for research, ['browser'] for web interaction, ['terminal', 'file', 'web'] for full-stack tasks."
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "description": "Task goal"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Task-specific context"
+                  },
+                  "toolsets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Toolsets for this specific task. Available: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Use 'web' for network access, 'terminal' for shell, 'browser' for web interaction."
+                  },
+                  "acp_command": {
+                    "type": "string",
+                    "description": "Per-task ACP command override (e.g. 'claude'). Overrides the top-level acp_command for this task only."
+                  },
+                  "acp_args": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Per-task ACP args override."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "leaf",
+                      "orchestrator"
+                    ],
+                    "description": "Per-task role override. See top-level 'role' for semantics."
+                  }
+                },
+                "required": [
+                  "goal"
+                ]
+              },
+              "description": "Batch mode: tasks to run in parallel (limit configurable via delegation.max_concurrent_children, default 3). Each gets its own subagent with isolated context and terminal session. When provided, top-level goal/context/toolsets are ignored."
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "leaf",
+                "orchestrator"
+              ],
+              "description": "Role of the child agent. 'leaf' (default) = focused worker, cannot delegate further. 'orchestrator' = can use delegate_task to spawn its own workers. Requires delegation.max_spawn_depth >= 2 in config; ignored (treated as 'leaf') when the child would exceed max_spawn_depth or when delegation.orchestrator_enabled=false."
+            },
+            "acp_command": {
+              "type": "string",
+              "description": "Override ACP command for child agents (e.g. 'claude', 'copilot'). When set, children use ACP subprocess transport instead of inheriting the parent's transport. Enables spawning Claude Code (claude --acp --stdio) or other ACP-capable agents from any parent, including Discord/Telegram/CLI."
+            },
+            "acp_args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Arguments for the ACP command (default: ['--acp', '--stdio']). Only used when acp_command is set. Example: ['--acp', '--stdio', '--model', 'claude-opus-4-6']"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "execute_code",
+        "description": "Run a Python script that can call Hermes tools programmatically. Use this when you need 3+ tool calls with processing logic between them, need to filter/reduce large tool outputs before they enter your context, need conditional branching (if X then Y else Z), or need to loop (fetch N pages, process N files, retry on failure).\n\nUse normal tool calls instead when: single tool call with no processing, you need to see the full result and apply complex reasoning, or the task requires interactive user input.\n\nAvailable via `from hermes_tools import ...`:\n\n  web_search(query: str, limit: int = 5) -> dict\n    Returns {\"data\": {\"web\": [{\"url\", \"title\", \"description\"}, ...]}}\n  web_extract(urls: list[str]) -> dict\n    Returns {\"results\": [{\"url\", \"title\", \"content\", \"error\"}, ...]} where content is markdown\n  read_file(path: str, offset: int = 1, limit: int = 500) -> dict\n    Lines are 1-indexed. Returns {\"content\": \"...\", \"total_lines\": N}\n  write_file(path: str, content: str) -> dict\n    Always overwrites the entire file.\n  search_files(pattern: str, target=\"content\", path=\".\", file_glob=None, limit=50) -> dict\n    target: \"content\" (search inside files) or \"files\" (find files by name). Returns {\"matches\": [...]}\n  patch(path: str, old_string: str, new_string: str, replace_all: bool = False) -> dict\n    Replaces old_string with new_string in the file.\n  terminal(command: str, timeout=None, workdir=None) -> dict\n    Foreground only (no background/pty). Returns {\"output\": \"...\", \"exit_code\": N}\n\nLimits: 5-minute timeout, 50KB stdout cap, max 50 tool calls per script. terminal() is foreground-only (no background or pty).\n\nScripts run in the session's working directory with the active venv's python, so project deps (pandas, etc.) and relative paths work like in terminal().\n\nPrint your final result to stdout. Use Python stdlib (json, re, math, csv, datetime, collections, etc.) for processing between tool calls.\n\nAlso available (no import needed — built into hermes_tools):\n  json_parse(text: str) — json.loads with strict=False; use for terminal() output with control chars\n  shell_quote(s: str) — shlex.quote(); use when interpolating dynamic strings into shell commands\n  retry(fn, max_attempts=3, delay=2) — retry with exponential backoff for transient failures",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Python code to execute. Import tools with `from hermes_tools import web_search, terminal, ...` and print your final result to stdout."
+            }
+          },
+          "required": [
+            "code"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_anspire_search",
+        "description": "\n    Anspire 深度搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "anspire_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_bocha_search",
+        "description": "\n    Bocha 多模态搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "bocha_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_deep",
+        "description": "\n    深度舆情采集 - 调用 MindSpider\n\n    Args:\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "crawl_deepArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_keyword",
+        "description": "\n    关键词采集 - 通过 DataCollector 采集外部 API 数据\n\n    Args:\n        keyword: 搜索关键词\n        platforms: 平台列表 (anspire/bocha/tavily/firecrawl，默认 all)\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            },
+            "platforms": {
+              "default": null,
+              "items": {
+                "type": "string"
+              },
+              "title": "Platforms",
+              "type": "array"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "crawl_keywordArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_media",
+        "description": "\n    社媒平台采集 - 调用 MediaCrawler\n\n    Args:\n        platform: 平台 (xhs/douyin/weibo/bilibili/zhihu)\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "title": "Platform",
+              "type": "string"
+            },
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            }
+          },
+          "required": [
+            "platform",
+            "keyword"
+          ],
+          "title": "crawl_mediaArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_firecrawl_scrape",
+        "description": "\n    Firecrawl 网页抓取 - 获取指定 URL 的完整内容\n\n    Args:\n        url: 要抓取的 URL\n\n    Returns:\n        页面内容 (title, content, markdown, metadata 等)\n    ",
+        "parameters": {
+          "properties": {
+            "url": {
+              "title": "Url",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "title": "firecrawl_scrapeArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_get_prompt",
+        "description": "Get a prompt by name from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the prompt to retrieve"
+            },
+            "arguments": {
+              "type": "object",
+              "description": "Optional arguments to pass to the prompt",
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_list_prompts",
+        "description": "List available prompts from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_list_resources",
+        "description": "List available resources from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_read_resource",
+        "description": "Read a resource by URI from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "URI of the resource to read"
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_tavily_search",
+        "description": "\n    Tavily 新闻搜索\n\n    Args:\n        query: 搜索查询\n        depth: 搜索深度 \"basic\" 或 \"advanced\" (默认 \"basic\")\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "depth": {
+              "default": "basic",
+              "title": "Depth",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "tavily_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_prompt",
+        "description": "Get a prompt by name from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the prompt to retrieve"
+            },
+            "arguments": {
+              "type": "object",
+              "description": "Optional arguments to pass to the prompt",
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_recent_data",
+        "description": "\n    获取最近数据\n\n    Args:\n        platform: 平台筛选 (可选，如 tavily/bocha 等)\n        hours: 时间范围 (小时，默认 24)\n        limit: 返回结果数量 (默认 100)\n\n    Returns:\n        最近的数据记录\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "default": null,
+              "title": "Platform",
+              "type": "string"
+            },
+            "hours": {
+              "default": 24,
+              "title": "Hours",
+              "type": "integer"
+            },
+            "limit": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "get_recent_dataArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_stats",
+        "description": "\n    获取数据库统计信息\n\n    Returns:\n        统计信息 (总记录数、按平台统计、按内容类型统计)\n    ",
+        "parameters": {
+          "properties": {},
+          "title": "get_statsArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_keyword_search",
+        "description": "\n    关键词搜索 - 在 crawled_data 表中搜索关键词\n\n    Args:\n        keyword: 搜索关键词\n        limit: 返回结果数量 (默认 50)\n\n    Returns:\n        匹配的记录列表\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "keyword_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_list_prompts",
+        "description": "List available prompts from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_list_resources",
+        "description": "List available resources from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_read_resource",
+        "description": "Read a resource by URI from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "URI of the resource to read"
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_save_crawled_data",
+        "description": "\n    保存爬取的数据到数据库\n\n    Args:\n        platform: 平台标识\n        content_type: 内容类型 (text/article/image/video)\n        content: 正文内容\n        source_url: 来源链接\n        source_keyword: 采集关键词\n        nickname: 作者/昵称\n        liked_count: 点赞数\n        collected_count: 收藏数\n        comment_count: 评论数\n        share_count: 分享数\n        metadata: 额外元数据\n\n    Returns:\n        保存结果\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "title": "Platform",
+              "type": "string"
+            },
+            "content_type": {
+              "title": "Content Type",
+              "type": "string"
+            },
+            "content": {
+              "title": "Content",
+              "type": "string"
+            },
+            "source_url": {
+              "default": "",
+              "title": "Source Url",
+              "type": "string"
+            },
+            "source_keyword": {
+              "default": "",
+              "title": "Source Keyword",
+              "type": "string"
+            },
+            "nickname": {
+              "default": "",
+              "title": "Nickname",
+              "type": "string"
+            },
+            "liked_count": {
+              "default": 0,
+              "title": "Liked Count",
+              "type": "integer"
+            },
+            "collected_count": {
+              "default": 0,
+              "title": "Collected Count",
+              "type": "integer"
+            },
+            "comment_count": {
+              "default": 0,
+              "title": "Comment Count",
+              "type": "integer"
+            },
+            "share_count": {
+              "default": 0,
+              "title": "Share Count",
+              "type": "integer"
+            },
+            "metadata": {
+              "additionalProperties": true,
+              "default": null,
+              "title": "Metadata",
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "required": [
+            "platform",
+            "content_type",
+            "content"
+          ],
+          "title": "save_crawled_dataArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_vector_search",
+        "description": "\n    向量搜索 - 使用 pgvector 进行语义相似度搜索\n\n    Args:\n        query_embedding: 查询向量 (embedding)\n        limit: 返回结果数量 (默认 50)\n\n    Returns:\n        相似度最高的记录列表\n    ",
+        "parameters": {
+          "properties": {
+            "query_embedding": {
+              "items": {},
+              "title": "Query Embedding",
+              "type": "array"
+            },
+            "limit": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query_embedding"
+          ],
+          "title": "vector_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "memory",
+        "description": "Save durable information to persistent memory that survives across sessions. Memory is injected into future turns, so keep it compact and focused on facts that will still matter later.\n\nWHEN TO SAVE (do this proactively, don't wait to be asked):\n- User corrects you or says 'remember this' / 'don't do that again'\n- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n- You discover something about the environment (OS, installed tools, project structure)\n- You learn a convention, API quirk, or workflow specific to this user's setup\n- You identify a stable fact that will be useful again in future sessions\n\nPRIORITY: User preferences and corrections > environment facts > procedural knowledge. The most valuable memory prevents the user from having to repeat themselves.\n\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts.\nIf you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\n\nTWO TARGETS:\n- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n- 'memory': your notes -- environment facts, project conventions, tool quirks, lessons learned\n\nACTIONS: add (new entry), replace (update existing -- old_text identifies it), remove (delete -- old_text identifies it).\n\nSKIP: trivial/obvious info, things easily re-discovered, raw data dumps, and temporary task state.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "add",
+                "replace",
+                "remove"
+              ],
+              "description": "The action to perform."
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "user"
+              ],
+              "description": "Which memory store: 'memory' for personal notes, 'user' for user profile."
+            },
+            "content": {
+              "type": "string",
+              "description": "The entry content. Required for 'add' and 'replace'."
+            },
+            "old_text": {
+              "type": "string",
+              "description": "Short unique substring identifying the entry to replace or remove."
+            }
+          },
+          "required": [
+            "action",
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "patch",
+        "description": "Targeted find-and-replace edits in files. Use this instead of sed/awk in terminal. Uses fuzzy matching (9 strategies) so minor whitespace/indentation differences won't break it. Returns a unified diff. Auto-runs syntax checks after editing.\n\nReplace mode (default): find a unique string and replace it.\nPatch mode: apply V4A multi-file patches for bulk changes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "replace",
+                "patch"
+              ],
+              "description": "Edit mode: 'replace' for targeted find-and-replace, 'patch' for V4A multi-file patches",
+              "default": "replace"
+            },
+            "path": {
+              "type": "string",
+              "description": "File path to edit (required for 'replace' mode)"
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'replace' mode). Must be unique in the file unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'replace' mode). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "Replace all occurrences instead of requiring a unique match (default: false)",
+              "default": false
+            },
+            "patch": {
+              "type": "string",
+              "description": "V4A format patch content (required for 'patch' mode). Format:\n*** Begin Patch\n*** Update File: path/to/file\n@@ context hint @@\n context line\n-removed line\n+added line\n*** End Patch"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "process",
+        "description": "Manage background processes started with terminal(background=true). Actions: 'list' (show all), 'poll' (check status + new output), 'log' (full output with pagination), 'wait' (block until done or timeout), 'kill' (terminate), 'write' (send raw stdin data without newline), 'submit' (send data + Enter, for answering prompts), 'close' (close stdin/send EOF).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "list",
+                "poll",
+                "log",
+                "wait",
+                "kill",
+                "write",
+                "submit",
+                "close"
+              ],
+              "description": "Action to perform on background processes"
+            },
+            "session_id": {
+              "type": "string",
+              "description": "Process session ID (from terminal background output). Required for all actions except 'list'."
+            },
+            "data": {
+              "type": "string",
+              "description": "Text to send to process stdin (for 'write' and 'submit' actions)"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to block for 'wait' action. Returns partial output on timeout.",
+              "minimum": 1
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line offset for 'log' action (default: last 200 lines)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max lines to return for 'log' action",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_file",
+        "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files — use vision_analyze for images.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to read (absolute, relative, or ~/path)"
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line number to start reading from (1-indexed, default: 1)",
+              "default": 1,
+              "minimum": 1
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of lines to read (default: 500, max: 2000)",
+              "default": 500,
+              "maximum": 2000
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_files",
+        "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls — results sorted by modification time.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regex pattern for content search, or glob pattern (e.g., '*.py') for file search"
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files"
+              ],
+              "description": "'content' searches inside file contents, 'files' searches for files by name",
+              "default": "content"
+            },
+            "path": {
+              "type": "string",
+              "description": "Directory or file to search in (default: current working directory)",
+              "default": "."
+            },
+            "file_glob": {
+              "type": "string",
+              "description": "Filter files by pattern in grep mode (e.g., '*.py' to only search Python files)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of results to return (default: 50)",
+              "default": 50
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Skip first N results for pagination (default: 0)",
+              "default": 0
+            },
+            "output_mode": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files_only",
+                "count"
+              ],
+              "description": "Output format for grep mode: 'content' shows matching lines with line numbers, 'files_only' lists file paths, 'count' shows match counts per file",
+              "default": "content"
+            },
+            "context": {
+              "type": "integer",
+              "description": "Number of context lines before and after each match (grep mode only)",
+              "default": 0
+            }
+          },
+          "required": [
+            "pattern"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "session_search",
+        "description": "Search your long-term memory of past conversations, or browse recent sessions. This is your recall -- every past session is searchable, and this tool summarizes what happened.\n\nTWO MODES:\n1. Recent sessions (no query): Call with no arguments to see what was worked on recently. Returns titles, previews, and timestamps. Zero LLM cost, instant. Start here when the user asks what were we working on or what did we do recently.\n2. Keyword search (with query): Search for specific topics across all past sessions. Returns LLM-generated summaries of matching sessions.\n\nUSE THIS PROACTIVELY when:\n- The user says 'we did this before', 'remember when', 'last time', 'as I mentioned'\n- The user asks about a topic you worked on before but don't have in current context\n- The user references a project, person, or concept that seems familiar but isn't in memory\n- You want to check if you've solved a similar problem before\n- The user asks 'what did we do about X?' or 'how did we fix Y?'\n\nDon't hesitate to search when it is actually cross-session -- it's fast and cheap. Better to search and confirm than to guess or ask the user to repeat themselves.\n\nSearch syntax: keywords joined with OR for broad recall (elevenlabs OR baseten OR funding), phrases for exact match (\"docker networking\"), boolean (python NOT java), prefix (deploy*). IMPORTANT: Use OR between keywords for best results — FTS5 defaults to AND which misses sessions that only mention some terms. If a broad OR query returns nothing, try individual keyword searches in parallel. Returns summaries of the top matching sessions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query — keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost)."
+            },
+            "role_filter": {
+              "type": "string",
+              "description": "Optional: only search messages from specific roles (comma-separated). E.g. 'user,assistant' to skip tool outputs."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max sessions to summarize (default: 3, max: 5).",
+              "default": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_manage",
+        "description": "Manage skills (create, update, delete). Skills are your procedural memory — reusable approaches for recurring task types. New skills go to /app/.hermes/skills/; existing skills can be modified wherever they live.\n\nActions: create (full SKILL.md + optional category), patch (old_string/new_string — preferred for fixes), edit (full SKILL.md rewrite — major overhauls only), delete, write_file, remove_file.\n\nCreate when: complex task succeeded (5+ calls), errors overcome, user-corrected approach worked, non-trivial workflow discovered, or user asks you to remember a procedure.\nUpdate when: instructions stale/wrong, OS-specific failures, missing steps or pitfalls found during use. If you used a skill and hit issues not covered by it, patch it immediately.\n\nAfter difficult/iterative tasks, offer to save as a skill. Skip for simple one-offs. Confirm with user before creating/deleting.\n\nGood skills: trigger conditions, numbered steps with exact commands, pitfalls section, verification steps. Use skill_view() to see format examples.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "create",
+                "patch",
+                "edit",
+                "delete",
+                "write_file",
+                "remove_file"
+              ],
+              "description": "The action to perform."
+            },
+            "name": {
+              "type": "string",
+              "description": "Skill name (lowercase, hyphens/underscores, max 64 chars). Must match an existing skill for patch/edit/delete/write_file/remove_file."
+            },
+            "content": {
+              "type": "string",
+              "description": "Full SKILL.md content (YAML frontmatter + markdown body). Required for 'create' and 'edit'. For 'edit', read the skill first with skill_view() and provide the complete updated text."
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'patch'). Must be unique unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'patch'). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "For 'patch': replace all occurrences instead of requiring a unique match (default: false)."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category/domain for organizing the skill (e.g., 'devops', 'data-science', 'mlops'). Creates a subdirectory grouping. Only used with 'create'."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Path to a supporting file within the skill directory. For 'write_file'/'remove_file': required, must be under references/, templates/, scripts/, or assets/. For 'patch': optional, defaults to SKILL.md if omitted."
+            },
+            "file_content": {
+              "type": "string",
+              "description": "Content for the file. Required for 'write_file'."
+            }
+          },
+          "required": [
+            "action",
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_view",
+        "description": "Skills allow for loading information about specific tasks and workflows, as well as scripts and templates. Load a skill's full content or access its linked files (references, templates, scripts). First call returns SKILL.md content plus a 'linked_files' dict showing available references/templates/scripts. To access those, call again with file_path parameter.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The skill name (use skills_list to see available skills). For plugin-provided skills, use the qualified form 'plugin:skill' (e.g. 'superpowers:writing-plans')."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "OPTIONAL: Path to a linked file within the skill (e.g., 'references/api.md', 'templates/config.yaml', 'scripts/validate.py'). Omit to get the main SKILL.md content."
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skills_list",
+        "description": "List available skills (name + description). Use skill_view(name) to load full content.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Optional category filter to narrow results"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "terminal",
+        "description": "Execute shell commands on a Linux environment. Filesystem usually persists between calls.\n\nDo NOT use cat/head/tail to read files — use read_file instead.\nDo NOT use grep/rg/find to search — use search_files instead.\nDo NOT use ls to list directories — use search_files(target='files') instead.\nDo NOT use sed/awk to edit files — use patch instead.\nDo NOT use echo/cat heredoc to create files — use write_file instead.\nReserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.\n\nForeground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts — you'll still get the result in seconds if it's fast. Prefer foreground for short commands.\nBackground: Set background=true to get a session_id. Two patterns:\n  (1) Long-lived processes that never exit (servers, watchers).\n  (2) Long-running tasks with notify_on_complete=true — you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.\nFor servers/watchers, do NOT use shell-level background wrappers (nohup/disown/setsid/trailing '&') in foreground mode. Use background=true so Hermes can track lifecycle and output.\nAfter starting a server, verify readiness with a health check or log signal, then run tests in a separate terminal() call. Avoid blind sleep loops.\nUse process(action=\"poll\") for progress checks, process(action=\"wait\") to block until done.\nWorking directory: Use 'workdir' for per-command cwd.\nPTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).\n\nDo NOT use vim/nano/interactive tools without pty=true — they hang without a pseudo-terminal. Pipe git output to cat if it might page.\n",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "The command to execute on the VM"
+            },
+            "background": {
+              "type": "boolean",
+              "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true — you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
+              "default": false
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to wait (default: 180, foreground max: 600). Returns INSTANTLY when command finishes — set high for long tasks, you won't wait unnecessarily. Foreground timeout above 600s is rejected; use background=true for longer commands.",
+              "minimum": 1
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Working directory for this command (absolute path). Defaults to the session working directory."
+            },
+            "pty": {
+              "type": "boolean",
+              "description": "Run in pseudo-terminal (PTY) mode for interactive CLI tools like Codex, Claude Code, or Python REPL. Only works with local and SSH backends. Default: false.",
+              "default": false
+            },
+            "notify_on_complete": {
+              "type": "boolean",
+              "description": "When true (and background=true), you'll be automatically notified exactly once when the process finishes. **This is the right choice for almost every long-running task** — tests, builds, deployments, multi-item batch jobs, anything that takes over a minute and has a defined end. Use this and keep working on other things; the system notifies you on exit. MUTUALLY EXCLUSIVE with watch_patterns — when both are set, watch_patterns is dropped.",
+              "default": false
+            },
+            "watch_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Strings to watch for in background process output. HARD RATE LIMIT: at most 1 notification per 15 seconds per process — matches arriving inside the cooldown are dropped. After 3 consecutive 15-second windows with dropped matches, watch_patterns is automatically disabled for that process and promoted to notify_on_complete behavior (one notification on exit, no more mid-process spam). USE ONLY for truly rare, one-shot mid-process signals on LONG-LIVED processes that will never exit on their own — e.g. ['Application startup complete'] on a server so you know when to hit its endpoint, or ['migration done'] on a daemon. DO NOT use for: (1) end-of-run markers like 'DONE'/'PASS' — use notify_on_complete instead; (2) error patterns like 'ERROR'/'Traceback' in loops or multi-item batch jobs — they fire on every iteration and you'll hit the strike limit fast; (3) anything you'd ever combine with notify_on_complete. When in doubt, choose notify_on_complete. MUTUALLY EXCLUSIVE with notify_on_complete — set one, not both."
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "todo",
+        "description": "Manage your task list for the current session. Use for complex tasks with 3+ steps or when the user provides multiple tasks. Call with no parameters to read the current list.\n\nWriting:\n- Provide 'todos' array to create/update items\n- merge=false (default): replace the entire list with a fresh plan\n- merge=true: update existing items by id, add any new ones\n\nEach item: {id: string, content: string, status: pending|in_progress|completed|cancelled}\nList order is priority. Only ONE item in_progress at a time.\nMark items completed immediately when done. If something fails, cancel it and add a revised item.\n\nAlways returns the full current list.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "todos": {
+              "type": "array",
+              "description": "Task items to write. Omit to read current list.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Unique item identifier"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Task description"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed",
+                      "cancelled"
+                    ],
+                    "description": "Current status"
+                  }
+                },
+                "required": [
+                  "id",
+                  "content",
+                  "status"
+                ]
+              }
+            },
+            "merge": {
+              "type": "boolean",
+              "description": "true: update existing items by id, add new ones. false (default): replace the entire list.",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_extract",
+        "description": "Extract content from web page URLs. Returns page content in markdown format. Also works with PDF URLs (arxiv papers, documents, etc.) — pass the PDF link directly and it converts to markdown text. Pages under 5000 chars return full markdown; larger pages are LLM-summarized and capped at ~5000 chars per page. Pages over 2M chars are refused. If a URL fails or times out, use the browser tool to access it instead.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of URLs to extract content from (max 5 URLs per call)",
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "urls"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Search the web for information on any topic. Returns up to 5 relevant results with titles, URLs, and descriptions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The search query to look up on the web"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "write_file",
+        "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file — use 'patch' for targeted edits.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to write (will be created if it doesn't exist, overwritten if it does)"
+            },
+            "content": {
+              "type": "string",
+              "description": "Complete content to write to the file"
+            }
+          },
+          "required": [
+            "path",
+            "content"
+          ]
+        }
+      }
+    }
+  ],
+  "message_count": 4,
+  "messages": [
+    {
+      "role": "user",
+      "content": "test anspire_search for: AI"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "The user wants to test the anspire_search MCP tool with the query \"AI\". Let me call it directly.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "4944ad88aaee2b4a63326bebdca796ae6d44fbf7c40e12e8fee1148e94b8a92a",
+          "thinking": "The user wants to test the anspire_search MCP tool with the query \"AI\". Let me call it directly.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_bi3foilwmd2w_1",
+          "call_id": "call_function_bi3foilwmd2w_1",
+          "response_item_id": "fc_function_bi3foilwmd2w_1",
+          "type": "function",
+          "function": {
+            "name": "mcp_data_collection_anspire_search",
+            "arguments": "{\"query\": \"AI\", \"limit\": 10}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"result\": \"{\\n  \\\"count\\\": 10,\\n  \\\"results\\\": [\\n    {\\n      \\\"title\\\": \\\"最新研究:AI智能体不会抢软件工程师饭碗\\\",\\n      \\\"content\\\": \\\" IT之家消息,据科技媒体 The Decoder 今天报道,查尔姆斯理工大学、沃尔沃集团研究团队最近在一篇论文指出,AI 智能体并不会让软件工程师失业。反而还可以通过'半可信执行栈'扩展工作范围。 据报道,研究团队首先提出了一个由六环组成的'半可信执行栈'(semi-executable stack)模型,将传统代码向外延伸,触达欧盟 AI 法案等社会因素。 论文中的'半可信执行栈'由六个环组成:经典代码、提示词和自然语言规范、智能体工作流编排、控制系统、运营组织逻辑、社会与制度适配。 目前,软件工程师主要在经典代码(IT之家注:第一环)、提示词(第二环)工作;而智能体工作流(第三环)、安全围栏(第四环)和决策流程(第五环)正在成为高优先级工程对象;社会制度适配(第六环)则决定 AI 的实际执行。 研究者认为,目前 AI 智能体最大的漏洞集中在第五环和第六环,人们已经写了几十年代码,但 AI 决策、制度适配等宏观流程仍然缺失,大多数研究仍然集中在修复错误、测试 AI 等。 学者表示,AI 不需要拥有顶尖人类学者的水平,只需要够用就行。大量部署 AI 带来的价值高于部分顶级专家。 此外,研究人员并没有忽视 AI 的'幻觉'问题,他们认为这更凸显了测试、监控的必要。人类在未来仍存在价值。\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863525327288824469&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.9046505093574524,\\n      \\\"date\\\": \\\"2026-04-26 17:37:22\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"AI硬件引爆市场!继续抱团还是撤退?基金经理分歧加大\\\",\\n      \\\"content\\\": \\\"AI硬件引爆市场!继续抱团还是撤退?基金经理分歧加大 在A股市场因业绩不及预期引发AI赛道震荡之际,美股市场正迎来新一轮轰轰烈烈的科技大反弹。 近期,A股部分'光'主题概念股表现乏力,拖累整个AI板块表现,部分公司一季度业绩不及预期以及关于极致抱团的质疑引发AI板块股价高位震荡,让A股投资者对AI的投资信仰中多了一分理性。 而美股市场中,一场由AI硬件主导的反弹,并不输A股,AI领域的硬件投资逻辑仍处于阶段性巅峰。 面对分化的市场格局,基金经理们对AI赛道的配置思路,分歧明显加大。 AI硬件主导中美股市反弹 当前,无论是A股还是美股,AI投资已从此前流动性驱动的普涨行情,全面转向'盈利兑现优先、硬件占优'的新阶段。 美股周五(4月24日)收盘,费城半导体指数单日大涨4.32%,其中英特尔股价单日飙升23.6%,ARM、Rambus、超威半导体涨幅均达14%左右。 作为囊括全球30家半导体头部企业、硬件属性突出的核心指数,费城半导体指数自3月底以来反弹幅度高达47.21%,近一年涨幅接近1.5倍。指数成份股中,英特尔、泰瑞达、ARM今年以来股价均实现翻倍,美光科技、泰瑞达、Coherent(COHR)近一年股价涨幅更是分别达到5.24倍、4.44倍和4.21倍。 这些公司股价暴涨的核心催化剂,无一例外指向AI产业的持续爆发。AI算力需求持续升温,带动数据中心CPU需求强劲增长,直接推动英特尔一季度业绩大超预期;即便仍处于亏损状态,英特尔也凭借AI的宏大叙事与需求支撑,重新获得资金青睐。 更值得关注的是,在AI投资中,中美市场情绪正形成共振,对于AI硬件投资的共识趋于一致。 在A股市场,今年以来,存储、光通信、PCB、算力租赁等AI硬件公司股价大幅上涨。一些公司受AI发展前景预期影响实现股价翻倍。美股市场也有大批企业借AI东风崛起,如涉及光模块业务的Lumentum(LITE)、应用光电(AAOI)、Coherent(COHR)近一年股价分别大涨13.7倍、11.91倍和4.21倍。存储板块中的闪迪、西部数据、希捷科技近一年股价分别大涨29.13倍、8.95倍和6.18倍。 在主题投资上,A股、美股甚至也有共同偏好。如因市场预期磷化铟在光模块领域的核心作用,美股公司AXT与A股公司云南锗业均受到资金追捧,两家公司近一年股价分别上涨52.6倍和2.9倍。 AI硬件成为此轮中美股市反弹的重要力量,并带动整个AI板块情绪回升。即便是因高额资本支出,市场担忧现金流影响的科技板块'美股七巨头'近期也摆脱市场担忧,股价迎来大幅反弹。如亚马逊、谷歌、英伟达、脸书近20个交易日反弹幅度均超20%,其中亚马逊最新股价刷新历史最高纪录,\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863525258834948765&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.730289876461029,\\n      \\\"date\\\": \\\"2026-04-26 17:22:01\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"滴滴以AI重构出行安全\\\",\\n      \\\"content\\\": \\\"滴滴以AI重构出行安全 4月25日,滴滴顺风车安全治理开放日在上海举行,活动首次公开安全AI模型等技术创新应用,以科技创新强化风险防控,凝聚多方共识,稳步推进顺风车行业安全长效治理。 目前,滴滴安全AI模型已全面落地应用于安全专家工作台。借助多模态风险研判大模型,融合自然语言处理、订单异常分析、行程动态识别等能力,高效完成安全风险初筛,辅助安全专家开展隐患核实、场景研判。针对排查确认的高危行程,平台及时启动远程外呼、安全警示、紧急报警等处置措施,筑牢出行安全防线。 数据显示,AI能力升级后,行程风险研判效率提升21%,平台整体风险识别率达93.2%。据安全专家介绍,AI主要承接重复性基础筛查工作,实行AI智能研判+专家人工复核人机协同模式,让专业力量聚焦处置复杂隐患与极端场景,构建精细化、智能化的现代安全治理体系。 图说:滴滴安全专家活动现场分享环节 同时,平台客观正视治理短板与现实挑战。线下私下交易、乘客信息填报不实、行程录音缺失、人员身份难以精准核验等问题,仍对AI识别与风险研判形成制约。平台也呼吁家长正确使用代叫车功能,不要让未成年人独自乘车,多向其科普风险常识和求助技巧;呼吁乘客拒绝线下交易,不要泄露隐私和私加联系方式、留下安全和纠纷隐患。多项治理成果的背后,仍是顺风车安全治理的长期性与复杂性,出行安全没有止境,行业治理任重道远。 未来,依托技术能力沉淀,滴滴将持续加码安全技术研发,完善全链路安全治理体系,以科技赋能安全、以长效治理护航出行,全面提升安全风险识别精度与干预效率,助力顺风车行业平稳健康发展。\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863522930497760773&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.7170118689537048,\\n      \\\"date\\\": \\\"2026-04-26 16:56:51\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"AI图片以假乱真,我们如何自处?\\\",\\n      \\\"content\\\": \\\" 据中国青年报报道,近日,美国人工智能公司OpenAI对外正式推出ChatGPT Images 2.0模型,由于其生成的图片真假难辨,相关话题迅速冲上热搜,引发网友热议。 其强大的图像生成能力更是引得网友评论'有图有真相的时代马上就要过去了'。甚至部分设计行业从业者认为,这对设计行业也造成了不小的冲击。在如今AI高速发展的时代,我们又要用怎样的心态,去应对接踵而来的巨变? 据了解,与以往的AI生成图片不同,该大模型解决了以往AI细节粗糙、文字乱码扭曲的问题。有网友测试用该模型生成全篇《出师表》,内容工整规范,几乎零错漏。它解决了文字乱码问题,海报、UI界面等复杂排版的准确率也有所提高,甚至可以再现指纹痕迹等物理细节。还能生成各种科普插画,甚至是ccd风格的怀旧照片。这提升了相关环节的工作效率。 但同时,飞跃的技术也带来了麻烦。这意味着,图片与视频可能不再成为对事实有力的证据,有网民利用模型伪造'库克出任小米汽车CEO'官宣图,逼真的微博蓝V认证页面和IP属地导致小米高管紧急辟谣;有人恶意生成'西山居解散公告'影响股价,甚至伪造转账记录、处方单等挑战法律证据效力。AI在便利了人们生产生活的同时,也助长了有些人挑战法律红线的'底气'。 当图片不能被辨别真假的时候,人们自然而然产生了'恐怖谷效应'与'认知焦虑'。图片足够逼真,所以那些微小的破绽,如眼神的空洞,灯光的冷硬便会引发本能的不适。而且因为真假难以判断,面对真正的照片时,普通人也会产生无端猜疑,人与人之间的信任,社会信用体系也将受到挑战。但我们就应该因此对AI的进步抱有抵制态度吗? 面对AI带来的问题与挑战,逃避不是唯一出路,严格意义上来讲,'逃避'都不能算出路之一。我们最应该做的,不是对AI的进步抱有恐惧与抵制的心态,而是基于现有条件下进行反思与总结。如果有人因为AI的进步挑战了法律红线,应该做的是继续完善现有法律体系,更加严厉打击这种行为,惩罚有关人员;如果有行业因为AI的进步产生了岗位冲击,应该做的是如何更加合理的在工作中运用AI,如何明确工作中AI的使用界限与规范,同时让各个行业意识到人工岗位的可贵——AI也需要人去运用才能发挥最大效果。 未来总有其他AI技术的问世,对人们的生活造成或多或少的变化,一味排斥抵制、过度焦虑恐慌,或是片面放大技术冲击、感慨行业变局与信任危机,都无法阻挡技术发展的大势。正视AI的双面属性,完善监管规则、厘清使用边界、提升辨别能力,在拥抱技术效率的同时守住法律与伦理底线,以理性包容的姿态主动适应变化,\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863533226202929635&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.7106282711029053,\\n      \\\"date\\\": \\\"2026-04-26 19:41:24\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"悬疑作家蔡骏:AI扩充了文学的边界|夜光杯市民读书会\\\",\\n      \\\"content\\\": \\\" '目前,AI取代不了人类写作。'作为第一代互联网文学的参与者,亦是传统文学领域的深耕者,著名悬疑作家、上海市作家协会主席团委员蔡骏态度鲜明:文字本身是一种不受技术束缚的自由表达,文学创作的核心始终是'人',但与此同时,AI确实扩充了文学的边界,成为文学爱好者一次难得的机会。 新民制图 著名悬疑作家、上海市作家协会主席团委员蔡骏 新民晚报记者 刘歆 摄 'AI有非常理性的思维,记忆力、逻辑思维、理性思考等各个层面肯定比人类强。但它缺乏个人体验,缺少一种‘触发’机制,所有体验都是间接的,缺乏源于生命经验的、不可复制的情感涌动。'蔡骏以'作家'的身份,现场讲述了一个脑洞大开的故事,回应了'作家会不会被AI取代'的焦虑。'假如我们回到古希腊时代。一个盲诗人流浪在荒野与海洋上,目睹过特洛伊战争,在脑中生成了《伊利亚特》和《奥德赛》。此后,他来到地中海边的亚历山大图书馆,馆长拥有一种超能力,能在一秒内读完馆中所有藏书,包括盲诗人的两部作品,还能瞬间分析、理解、吸收。这两人进行创作比赛,你觉得谁会赢?' '盲诗人有一些东西是馆长永远不知道的。比如,他在古希腊的荒原上,夜晚听到一头狼在身边嚎叫时内心的恐惧;又比如他喜欢上一个牧羊女,为她流下的一滴眼泪,是从左眼还是右眼流下来的。这些细微的个体生命体验,无法被输入数据库,也无法被AI模拟。'这些情感的细节,正是蔡骏眼中人类写作的'最后堡垒':每一个人的生命体验都是独一无二的,这恰恰是AI的短板。 但是,蔡骏表示,他并不排斥技术。在日常写作中,他已经把AI纳入工具箱,替代搜索引擎查资料,做校对和文本分析,虽然有时候'结论不一定正确',AI也经常会'犯错',特别是在分析评论时,常常片面、断章取义,没理解全部上下文,艺术鉴赏力、观察力也还达不到人类编辑水准。 '从识字率的普及到互联网的诞生,每一次技术进步都是一次文学的机会。古代女性99%不识字,被排除在文学体系之外;30年前写长篇小说仍是一件奢侈的事,需要一辈子的阅读积累和时间投入。网络文学让普通人有机会把创意变成文字,以极低成本传递到读者眼前。今天,AI正在实现又一次巨大的机遇,让每个人都有机会进入文学领域。'蔡骏说,普通人没有时间,缺乏海量阅读和知识储备,但借助AI这个工具,就能把自己'0到1'的构想变成一部文学作品。 与此同时,蔡骏认为,不必对人们反感的'AI味'过度焦虑,就像当年佛经翻译和西方文学翻译进入中国形成了所谓的'翻译腔\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863525553445451660&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.703345775604248,\\n      \\\"date\\\": \\\"2026-04-26 17:39:08\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"科学与健康丨专利量质齐升 中国AI跑出“加速度”\\\",\\n      \\\"content\\\": \\\"科学与健康丨专利量质齐升 中国AI跑出'加速度' 4月26日是世界知识产权日。记者从国家知识产权局获悉,最新数据显示,当前我国拥有全球约60%的人工智能专利、约三分之二的机器人相关专利。 从DeepSeek等通用模型实现性能全球领先,到自主导航机器人超越人类男子半程马拉松世界纪录,人工智能蓬勃发展的背后,知识产权正筑牢核心支撑。 人工智能专利量质齐升—— 随着人工智能产业发展,高价值专利日益成为关键要素。国家知识产权局数据显示,截至2025年底,我国国内高价值发明专利拥有量达到229.2万件,其中七成属于战略性新兴产业。 保护知识产权就是保护创新,越来越多的人工智能企业和科研院所聚焦核心技术知识产权深耕细作。 4月19日,2026北京亦庄半程马拉松暨人形机器人半程马拉松比赛现场。新华社记者 雒圆 摄 百度人工智能专利布局覆盖从芯片、深度学习框架到基础模型,再到上层应用的全栈技术;华为聚焦算力根基,GPU相关专利申请量五年增长十倍;中国科学院在世界知识产权组织生成式人工智能专利排名中位居第四,成为唯一进入前十的科研机构…… '我国在新一轮科技革命和产业变革中已由‘跟跑者’快速跃升为重要的‘并跑者’乃至部分领域的‘领跑者’。'中国科学院大学知识产权学院院长马一德说,下一步,要继续聚焦大模型、具身智能、脑机接口等前沿领域,加大基础研究投入,培育高价值核心专利,同时,畅通转化运用链条,打通从实验室到生产线的'最后一公里'。 全周期保护为产业护航—— 面对人工智能的迅速迭代和企业'快速确权'抢占市场的需求,提高相关专利审查速度势在必行。 '我们针对快保护需求‘加急审’,聚焦新一代信息技术、高端装备制造等重点产业,开展优先审查或快速审查,助力企业在更短时间内获得专利权,有效保护前沿技术。'国家知识产权局新闻发言人、知识产权保护司司长郭雯介绍,'十四五'时期已开展优先审查72.7万件,平均周期约7个月。 4月22日,在北京市海淀区中关村大街的一座大厦内便利店,机器人为顾客抓取饮料。新华社记者 任超 摄 创新能够得到保护,才能让更多人敢创新、能创新。 当前,我国已建成国家级知识产权公共服务机构519家,实现省级层面全覆盖;与世界知识产权组织合作共建技术与创新支持中心(TISC)达202家,成为全球数量最大、覆盖范围最广、服务内容最多的TISC网络。 '我国深化专利审查高速路(PPH)合作,助力中国企业海外专利布局。'国家知识产权局副局长芮文彪介绍,同时强化海外知识产权纠纷应对指导,围绕信息技术、生物医药\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863525414431414004&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.7000752091407776,\\n      \\\"date\\\": \\\"2026-04-26 17:38:27\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"探路“一人公司”|OPC创业者盛叶:以“黑客松”实验验证AI项目商业化落地路径\\\",\\n      \\\"content\\\": \\\"探路'一人公司'|OPC创业者盛叶:以'黑客松'实验验证AI项目商业化落地路径 中经记者 陈茂利 杭州报道 4月18日上午,50余人陆续来到杭州良渚数栖湾会议中心签到、落座。十几支队伍'摩拳擦掌',要在一天之内把模糊的AI想法打磨成能形成'谁来买单、如何赚钱'的闭环项目。 站在杭州良渚数栖湾会议中心的场地中央,盛叶指尖上还沾着刚贴完的分组标识。研究生毕业于英国埃克塞特大学金融与投资专业的盛叶,回国后没有选择按部就班的职场就业路径,而是用一场'黑客松'(编码马拉松)开启了自己的OPC(One Person Company,即'一人公司')创业实践。 作为CLab发起人,从对接场地、邀请评委到运营社群,整场活动由她独立推进完成。盛叶告诉《中国经营报》记者:'我并不是单纯想办一场活动,而是想做一次MVP(Minimum Viable Product,最小可行产品)验证,看AI应用商业化是否存在真实的社区需求。' (OPC创业者、CLab发起人盛叶。陈茂利/摄影) 从参加'黑客松'到发起CLab 在就业之初,盛叶可谓'按部就班':用七年时间,从基础会计岗位做到主管,职称一路上升,薪水不断上涨。身边人都觉得她站稳了脚跟,只有她自己清楚——'每天重复一样的工作,没有挑战,一眼就能看到十年后的样子。这不是安心,而是可怕。' '在国外,四五十岁还继续深造的人有很多。'朋友随口说的一句话让盛叶深受触动,并选择备考颇具挑战性的英国金融与投资硕士,在压线通过后一个人飞向了英格兰西南部。 硕士毕业后,盛叶在英国待了两年。彼时,恰逢AI爆发,她一头扎进了伦敦的科技圈。'在伦敦那段时间,我在观摩了一场‘黑客松’后发现,并没有想象中那么遥不可及,非技术出身的人也能参与。'盛叶告诉记者。 '黑客松'是一种限时、高强度的协作式创新竞赛,参与者需在短时间内(通常24—72小时)将一个创意快速转化为可演示的原型或产品。 从那以后,盛叶接连挑战了十余场国际'黑客松'比赛,并参与了40余场AI/Web3科技活动,拿到了众多奖项。盛叶表示:'以前觉得参加‘黑客松’必须要会写代码,但现在有了AI技术和各种大模型加持,用自然语言就能让AI做出产品,门槛降低了很多。关键不是会不会编程,而是有没有创意,会不会跟AI对话,能不能想清楚商业路径。' 在探索从Demo(用于演示功能或验证概念的初步版本)到真实用户验证的AI产品创新与商业实验后,盛叶开始反复思考一个问题:为什么很多项目能快速做出Demo,但很难走向真实用户和商业验证? 在盛叶看来,技术原型往往只是'从0到1',更难的是'从1到10'——找到用\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863519218402811140&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.6095241904258728,\\n      \\\"date\\\": \\\"2026-04-26 13:59:41\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"Openness, cooperation serve AI development: China Daily editorial\\\",\\n      \\\"content\\\": \\\" In an era where technological advancements are reshaping our world, the release of DeepSeek-V4, a cutting-edge large language model developed by the Chinese AI company DeepSeek, highlights not only the rapid maturation of China's technological ecosystem but also underscores the importance of openness and collaboration in driving innovation. DeepSeek-V4 is a testament to open-source innovation. It has made waves in the AI community by achieving top-tier positions on open-source leaderboards across math, STEM and competitive coding challenges, closely trailing Google's closed-source Gemini 3.1 Pro and outperforming other models. This success shows the model's capabilities and reflects China's growing influence in the global AI landscape. By leveraging open-source platforms, DeepSeek-V4 proves that collaboration and transparency can lead to remarkable advancements. The model's achievements also highlight a broader trend: Chinese AI developers are no longer just catching up with Western pioneers but are actively helping to redefine the boundaries of innovation. This shift is driven by a commitment to open-source development, which has allowed for the rapid sharing and improvement of technologies globally. Despite the impressive advancements that Chinese companies have made, the country's AI industry faces challenges, not the least in the form of misconceptions and accusations from some in the West. Some critics have falsely accused Chinese companies of intellectual property theft, misrepresenting routine engineering methods such as knowledge distillation as evidence of wrongdoing. Such baseless and irresponsible accusations undermine the spirit of collaboration and overlook the significant contributions by Chinese companies to open-source innovation. Moreover, there is a tendency to trivialize Chinese advancements in embodied robotics, dismissing them as mere entertainment. However, the reality is far more impressive. Recent developments, such as the humanoid robots pa\\\",\\n      \\\"url\\\": \\\"http://www.chinadaily.com.cn/a/202604/26/WS69edfdb7a310d6866eb4597e.html\\\",\\n      \\\"score\\\": 0.5879430770874023,\\n      \\\"date\\\": \\\"2026-04-26 19:57:00\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"元戎启行周光:从城市NOA到物理AI,自动驾驶进入新战场\\\",\\n      \\\"content\\\": \\\" '元戎启行的目标,是成为物理世界的AI基础设施。'在2026年北京国际车展期间,元戎启行CEO周光给出的这一判断,将公司叙事从辅助驾驶方案,推向了更大的物理AI命题。 这不是一次普通的车展技术发布。按照周光的设想,元戎启行未来要像通信、电力一样,成为支撑现实世界运行的基础能力之一。当一家自动驾驶公司不再只谈城市NOA、量产车型和功能体验,而是把自身放入'物理世界基础设施'的框架中,其战略指向已经发生变化:自动驾驶不只是汽车上的一个功能,而可能成为AI理解、判断并参与现实世界运行的入口。 支撑这一判断的,是元戎启行已经披露的一组量产和运行数据。公司信息显示,搭载元戎启行城市NOA辅助驾驶方案的量产车辆已突破30万辆;过去一年,搭载元戎启行主动安全系统的车辆累计真实道路运行里程超过13亿公里,累计陪伴用户驾驶时长达4480万小时。到2026年,元戎启行计划推动辅助驾驶系统量产交付规模突破100万辆,并将MPCI指标提升至1000公里以上,推动用户高频使用率提升至50%以上。 从30万辆到100万辆,从城市NOA到物理AI基础设施,元戎启行此次释放出的核心信号是:自动驾驶公司的竞争重心,正在从功能交付转向规模、安全、数据闭环和底层模型能力。 元戎启行CEO周光演讲 从辅助驾驶到物理AI 周光对自动驾驶的理解,起点仍然是安全。 在发布会现场,他回忆了创业初期一场让他印象深刻的交通事故。'当时我就在想,能否用AI技术去解救更多的生命。'周光表示,自动驾驶当前并不完美,城市中的MPCI仍只有几十公里,但按照其判断,目前自动驾驶安全性已经是纯人类驾驶的数倍。他进一步提出,随着大模型理解能力持续增强,未来2到3年内,行业有机会实现真正安全的自动驾驶。 这一表述将元戎启行此次发布会的重心拉回到自动驾驶最基础的问题:系统能否在真实道路中持续提升安全性。对元戎启行而言,量产规模不只是商业数据,也是模型能力持续进化的前提。 公司披露的信息显示,搭载元戎启行城市NOA辅助驾驶方案的量产车辆已经突破30万辆。过去一年,搭载元戎启行主动安全系统的车辆累计真实道路运行里程超过13亿公里,累计陪伴用户驾驶时长达4480万小时。这些数据意味着,元戎启行已经拥有较大规模的真实道路运行样本。对自动驾驶系统而言,真实道路数据越多,面对复杂场景、长尾风险和用户高频使用的机会也越多。 周光在媒体沟通会上谈到,目前搭载元戎启行系统的车辆已超过30万台,新增100万台'没什么大问题'。这一说法仍属于企业目标和判断,但从企业战略看,百万辆量产目标对应的\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863534513470489629&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.351311057806015,\\n      \\\"date\\\": \\\"2026-04-26 20:03:23\\\"\\n    },\\n    {\\n      \\\"title\\\": \\\"用AI让女司机与保安“和好”,别把“二次伤害”当玩笑\\\",\\n      \\\"content\\\": \\\"用AI让女司机与保安'和好',别把'二次伤害'当玩笑 □徐春鹤(黑龙江大学) 近日,福建三明永安市一女名司机与保安发生冲突的事件在网络上引发了广泛的关注。事后,永安市公安局相关工作人员表示,涉事双方均有过错,案件仍在进一步调查中。然而,就在公众等待警方处理时,部分网民却开启了'二次创作',他们利用AI技术,将冲突双方的脸进行合成,炮制出'和好''接吻''求婚'等低俗趣味的短视频,引发不少网友反感。 首先,用AI生成视频恶搞当事人不仅在道德上很难说得过去,而且也触犯了法律的红线。或许在AI恶搞视频制作者的眼中,这不过是一个无伤大雅的玩笑。一开始的握手、拥抱或许还可以一笑了之,后面接连不断的'求婚'等恶搞视频就带有了一些侮辱的意味。试想如果你是当事人,陷入纠纷本就足够苦恼,结果在网络上还被任人摆布,你作何感想?这种行为是对当事人的二次伤害,完全无视了当事人所承受的愤怒与伤害。 从法律上看,这种行为也是不被允许的。未经同意AI合成当事人形象足以使人误认,即侵犯肖像权,如果生成内容带有侮辱丑化性质,则侵犯名誉权。 更值得警惕的是,这种恶搞行为正在消解事情的严肃性,侵蚀公共讨论的理性空间。这件事情本质上是一件公共纠纷,进入了公共视野,公众之所以关注,核心在于推动真相的查明,期待一个公正的处理结果。但是在恶搞视频广泛传播后,公众的注意力就被吸引到对低俗猎奇内容的关注,而对于事件的原委、责任划分等相关问题的讨论被完全掩盖。不仅如此,这种恶搞视频的广泛传播形成的娱乐化氛围,让'玩梗'的声音被放大,让那些想要认真讨论、不想'玩梗'的人不敢开口,否则便是'上纲上线''太过严肃'。 可事实上,有些事情本就不应该拿来消遣,我们应该捍卫这些事情的严肃性。互联网的快速发展,让很多事情都进入到公众视野,网民通过大规模谈论、建言献策、推动问题的解决越来越成为一件平常事。与此同时,AI技术的发展也让造谣的成本越来越低。2025年,安徽发生过这样一起闹剧,一女子用AI工具生成流浪汉在餐厅吃饭的图片发给丈夫,丈夫信以为真并报警,这看似是一个无伤大雅的整蛊,实际上是娱乐化的一个典型缩影。 这种用娱乐消解严肃的案例,足以让我们形成一个共识,那就是公共讨论应该保持应有的严肃性,一旦娱乐化的内容成为主流,看似无害的'玩梗'将影响整个公共讨论的空间。它让恶搞者在群体哄笑中变本加厉,让想严肃讨论的人不敢开口。因此只有捍卫事件本身的严肃性,公共理性和公平正义才会有一个可伸张的空间。 总之,这场闹\\\",\\n      \\\"url\\\": \\\"https://baijiahao.baidu.com/s?id=1863527910474104448&wfr=spider&for=pc\\\",\\n      \\\"score\\\": 0.23651622235774994,\\n      \\\"date\\\": \\\"2026-04-26 18:13:06\\\"\\n    }\\n  ]\\n}\", \"structuredContent\": {\"count\": 10, \"results\": [{\"title\": \"最新研究:AI智能体不会抢软件工程师饭碗\", \"content\": \" IT之家消息,据科技媒体 The Decoder 今天报道,查尔姆斯理工大学、沃尔沃集团研究团队最近在一篇论文指出,AI 智能体并不会让软件工程师失业。反而还可以通过'半可信执行栈'扩展工作范围。 据报道,研究团队首先提出了一个由六环组成的'半可信执行栈'(semi-executable stack)模型,将传统代码向外延伸,触达欧盟 AI 法案等社会因素。 论文中的'半可信执行栈'由六个环组成:经典代码、提示词和自然语言规范、智能体工作流编排、控制系统、运营组织逻辑、社会与制度适配。 目前,软件工程师主要在经典代码(IT之家注:第一环)、提示词(第二环)工作;而智能体工作流(第三环)、安全围栏(第四环)和决策流程(第五环)正在成为高优先级工程对象;社会制度适配(第六环)则决定 AI 的实际执行。 研究者认为,目前 AI 智能体最大的漏洞集中在第五环和第六环,人们已经写了几十年代码,但 AI 决策、制度适配等宏观流程仍然缺失,大多数研究仍然集中在修复错误、测试 AI 等。 学者表示,AI 不需要拥有顶尖人类学者的水平,只需要够用就行。大量部署 AI 带来的价值高于部分顶级专家。 此外,研究人员并没有忽视 AI 的'幻觉'问题,他们认为这更凸显了测试、监控的必要。人类在未来仍存在价值。\", \"url\": \"https://baijiahao.baidu.com/s?id=1863525327288824469&wfr=spider&for=pc\", \"score\": 0.9046505093574524, \"date\": \"2026-04-26 17:37:22\"}, {\"title\": \"AI硬件引爆市场!继续抱团还是撤退?基金经理分歧加大\", \"content\": \"AI硬件引爆市场!继续抱团还是撤退?基金经理分歧加大 在A股市场因业绩不及预期引发AI赛道震荡之际,美股市场正迎来新一轮轰轰烈烈的科技大反弹。 近期,A股部分'光'主题概念股表现乏力,拖累整个AI板块表现,部分公司一季度业绩不及预期以及关于极致抱团的质疑引发AI板块股价高位震荡,让A股投资者对AI的投资信仰中多了一分理性。 而美股市场中,一场由AI硬件主导的反弹,并不输A股,AI领域的硬件投资逻辑仍处于阶段性巅峰。 面对分化的市场格局,基金经理们对AI赛道的配置思路,分歧明显加大。 AI硬件主导中美股市反弹 当前,无论是A股还是美股,AI投资已从此前流动性驱动的普涨行情,全面转向'盈利兑现优先、硬件占优'的新阶段。 美股周五(4月24日)收盘,费城半导体指数单日大涨4.32%,其中英特尔股价单日飙升23.6%,ARM、Rambus、超威半导体涨幅均达14%左右。 作为囊括全球30家半导体头部企业、硬件属性突出的核心指数,费城半导体指数自3月底以来反弹幅度高达47.21%,近一年涨幅接近1.5倍。指数成份股中,英特尔、泰瑞达、ARM今年以来股价均实现翻倍,美光科技、泰瑞达、Coherent(COHR)近一年股价涨幅更是分别达到5.24倍、4.44倍和4.21倍。 这些公司股价暴涨的核心催化剂,无一例外指向AI产业的持续爆发。AI算力需求持续升温,带动数据中心CPU需求强劲增长,直接推动英特尔一季度业绩大超预期;即便仍处于亏损状态,英特尔也凭借AI的宏大叙事与需求支撑,重新获得资金青睐。 更值得关注的是,在AI投资中,中美市场情绪正形成共振,对于AI硬件投资的共识趋于一致。 在A股市场,今年以来,存储、光通信、PCB、算力租赁等AI硬件公司股价大幅上涨。一些公司受AI发展前景预期影响实现股价翻倍。美股市场也有大批企业借AI东风崛起,如涉及光模块业务的Lumentum(LITE)、应用光电(AAOI)、Coherent(COHR)近一年股价分别大涨13.7倍、11.91倍和4.21倍。存储板块中的闪迪、西部数据、希捷科技近一年股价分别大涨29.13倍、8.95倍和6.18倍。 在主题投资上,A股、美股甚至也有共同偏好。如因市场预期磷化铟在光模块领域的核心作用,美股公司AXT与A股公司云南锗业均受到资金追捧,两家公司近一年股价分别上涨52.6倍和2.9倍。 AI硬件成为此轮中美股市反弹的重要力量,并带动整个AI板块情绪回升。即便是因高额资本支出,市场担忧现金流影响的科技板块'美股七巨头'近期也摆脱市场担忧,股价迎来大幅反弹。如亚马逊、谷歌、英伟达、脸书近20个交易日反弹幅度均超20%,其中亚马逊最新股价刷新历史最高纪录,\", \"url\": \"https://baijiahao.baidu.com/s?id=1863525258834948765&wfr=spider&for=pc\", \"score\": 0.730289876461029, \"date\": \"2026-04-26 17:22:01\"}, {\"title\": \"滴滴以AI重构出行安全\", \"content\": \"滴滴以AI重构出行安全 4月25日,滴滴顺风车安全治理开放日在上海举行,活动首次公开安全AI模型等技术创新应用,以科技创新强化风险防控,凝聚多方共识,稳步推进顺风车行业安全长效治理。 目前,滴滴安全AI模型已全面落地应用于安全专家工作台。借助多模态风险研判大模型,融合自然语言处理、订单异常分析、行程动态识别等能力,高效完成安全风险初筛,辅助安全专家开展隐患核实、场景研判。针对排查确认的高危行程,平台及时启动远程外呼、安全警示、紧急报警等处置措施,筑牢出行安全防线。 数据显示,AI能力升级后,行程风险研判效率提升21%,平台整体风险识别率达93.2%。据安全专家介绍,AI主要承接重复性基础筛查工作,实行AI智能研判+专家人工复核人机协同模式,让专业力量聚焦处置复杂隐患与极端场景,构建精细化、智能化的现代安全治理体系。 图说:滴滴安全专家活动现场分享环节 同时,平台客观正视治理短板与现实挑战。线下私下交易、乘客信息填报不实、行程录音缺失、人员身份难以精准核验等问题,仍对AI识别与风险研判形成制约。平台也呼吁家长正确使用代叫车功能,不要让未成年人独自乘车,多向其科普风险常识和求助技巧;呼吁乘客拒绝线下交易,不要泄露隐私和私加联系方式、留下安全和纠纷隐患。多项治理成果的背后,仍是顺风车安全治理的长期性与复杂性,出行安全没有止境,行业治理任重道远。 未来,依托技术能力沉淀,滴滴将持续加码安全技术研发,完善全链路安全治理体系,以科技赋能安全、以长效治理护航出行,全面提升安全风险识别精度与干预效率,助力顺风车行业平稳健康发展。\", \"url\": \"https://baijiahao.baidu.com/s?id=1863522930497760773&wfr=spider&for=pc\", \"score\": 0.7170118689537048, \"date\": \"2026-04-26 16:56:51\"}, {\"title\": \"AI图片以假乱真,我们如何自处?\", \"content\": \" 据中国青年报报道,近日,美国人工智能公司OpenAI对外正式推出ChatGPT Images 2.0模型,由于其生成的图片真假难辨,相关话题迅速冲上热搜,引发网友热议。 其强大的图像生成能力更是引得网友评论'有图有真相的时代马上就要过去了'。甚至部分设计行业从业者认为,这对设计行业也造成了不小的冲击。在如今AI高速发展的时代,我们又要用怎样的心态,去应对接踵而来的巨变? 据了解,与以往的AI生成图片不同,该大模型解决了以往AI细节粗糙、文字乱码扭曲的问题。有网友测试用该模型生成全篇《出师表》,内容工整规范,几乎零错漏。它解决了文字乱码问题,海报、UI界面等复杂排版的准确率也有所提高,甚至可以再现指纹痕迹等物理细节。还能生成各种科普插画,甚至是ccd风格的怀旧照片。这提升了相关环节的工作效率。 但同时,飞跃的技术也带来了麻烦。这意味着,图片与视频可能不再成为对事实有力的证据,有网民利用模型伪造'库克出任小米汽车CEO'官宣图,逼真的微博蓝V认证页面和IP属地导致小米高管紧急辟谣;有人恶意生成'西山居解散公告'影响股价,甚至伪造转账记录、处方单等挑战法律证据效力。AI在便利了人们生产生活的同时,也助长了有些人挑战法律红线的'底气'。 当图片不能被辨别真假的时候,人们自然而然产生了'恐怖谷效应'与'认知焦虑'。图片足够逼真,所以那些微小的破绽,如眼神的空洞,灯光的冷硬便会引发本能的不适。而且因为真假难以判断,面对真正的照片时,普通人也会产生无端猜疑,人与人之间的信任,社会信用体系也将受到挑战。但我们就应该因此对AI的进步抱有抵制态度吗? 面对AI带来的问题与挑战,逃避不是唯一出路,严格意义上来讲,'逃避'都不能算出路之一。我们最应该做的,不是对AI的进步抱有恐惧与抵制的心态,而是基于现有条件下进行反思与总结。如果有人因为AI的进步挑战了法律红线,应该做的是继续完善现有法律体系,更加严厉打击这种行为,惩罚有关人员;如果有行业因为AI的进步产生了岗位冲击,应该做的是如何更加合理的在工作中运用AI,如何明确工作中AI的使用界限与规范,同时让各个行业意识到人工岗位的可贵——AI也需要人去运用才能发挥最大效果。 未来总有其他AI技术的问世,对人们的生活造成或多或少的变化,一味排斥抵制、过度焦虑恐慌,或是片面放大技术冲击、感慨行业变局与信任危机,都无法阻挡技术发展的大势。正视AI的双面属性,完善监管规则、厘清使用边界、提升辨别能力,在拥抱技术效率的同时守住法律与伦理底线,以理性包容的姿态主动适应变化,\", \"url\": \"https://baijiahao.baidu.com/s?id=1863533226202929635&wfr=spider&for=pc\", \"score\": 0.7106282711029053, \"date\": \"2026-04-26 19:41:24\"}, {\"title\": \"悬疑作家蔡骏:AI扩充了文学的边界|夜光杯市民读书会\", \"content\": \" '目前,AI取代不了人类写作。'作为第一代互联网文学的参与者,亦是传统文学领域的深耕者,著名悬疑作家、上海市作家协会主席团委员蔡骏态度鲜明:文字本身是一种不受技术束缚的自由表达,文学创作的核心始终是'人',但与此同时,AI确实扩充了文学的边界,成为文学爱好者一次难得的机会。 新民制图 著名悬疑作家、上海市作家协会主席团委员蔡骏 新民晚报记者 刘歆 摄 'AI有非常理性的思维,记忆力、逻辑思维、理性思考等各个层面肯定比人类强。但它缺乏个人体验,缺少一种‘触发’机制,所有体验都是间接的,缺乏源于生命经验的、不可复制的情感涌动。'蔡骏以'作家'的身份,现场讲述了一个脑洞大开的故事,回应了'作家会不会被AI取代'的焦虑。'假如我们回到古希腊时代。一个盲诗人流浪在荒野与海洋上,目睹过特洛伊战争,在脑中生成了《伊利亚特》和《奥德赛》。此后,他来到地中海边的亚历山大图书馆,馆长拥有一种超能力,能在一秒内读完馆中所有藏书,包括盲诗人的两部作品,还能瞬间分析、理解、吸收。这两人进行创作比赛,你觉得谁会赢?' '盲诗人有一些东西是馆长永远不知道的。比如,他在古希腊的荒原上,夜晚听到一头狼在身边嚎叫时内心的恐惧;又比如他喜欢上一个牧羊女,为她流下的一滴眼泪,是从左眼还是右眼流下来的。这些细微的个体生命体验,无法被输入数据库,也无法被AI模拟。'这些情感的细节,正是蔡骏眼中人类写作的'最后堡垒':每一个人的生命体验都是独一无二的,这恰恰是AI的短板。 但是,蔡骏表示,他并不排斥技术。在日常写作中,他已经把AI纳入工具箱,替代搜索引擎查资料,做校对和文本分析,虽然有时候'结论不一定正确',AI也经常会'犯错',特别是在分析评论时,常常片面、断章取义,没理解全部上下文,艺术鉴赏力、观察力也还达不到人类编辑水准。 '从识字率的普及到互联网的诞生,每一次技术进步都是一次文学的机会。古代女性99%不识字,被排除在文学体系之外;30年前写长篇小说仍是一件奢侈的事,需要一辈子的阅读积累和时间投入。网络文学让普通人有机会把创意变成文字,以极低成本传递到读者眼前。今天,AI正在实现又一次巨大的机遇,让每个人都有机会进入文学领域。'蔡骏说,普通人没有时间,缺乏海量阅读和知识储备,但借助AI这个工具,就能把自己'0到1'的构想变成一部文学作品。 与此同时,蔡骏认为,不必对人们反感的'AI味'过度焦虑,就像当年佛经翻译和西方文学翻译进入中国形成了所谓的'翻译腔\", \"url\": \"https://baijiahao.baidu.com/s?id=1863525553445451660&wfr=spider&for=pc\", \"score\": 0.703345775604248, \"date\": \"2026-04-26 17:39:08\"}, {\"title\": \"科学与健康丨专利量质齐升 中国AI跑出“加速度”\", \"content\": \"科学与健康丨专利量质齐升 中国AI跑出'加速度' 4月26日是世界知识产权日。记者从国家知识产权局获悉,最新数据显示,当前我国拥有全球约60%的人工智能专利、约三分之二的机器人相关专利。 从DeepSeek等通用模型实现性能全球领先,到自主导航机器人超越人类男子半程马拉松世界纪录,人工智能蓬勃发展的背后,知识产权正筑牢核心支撑。 人工智能专利量质齐升—— 随着人工智能产业发展,高价值专利日益成为关键要素。国家知识产权局数据显示,截至2025年底,我国国内高价值发明专利拥有量达到229.2万件,其中七成属于战略性新兴产业。 保护知识产权就是保护创新,越来越多的人工智能企业和科研院所聚焦核心技术知识产权深耕细作。 4月19日,2026北京亦庄半程马拉松暨人形机器人半程马拉松比赛现场。新华社记者 雒圆 摄 百度人工智能专利布局覆盖从芯片、深度学习框架到基础模型,再到上层应用的全栈技术;华为聚焦算力根基,GPU相关专利申请量五年增长十倍;中国科学院在世界知识产权组织生成式人工智能专利排名中位居第四,成为唯一进入前十的科研机构…… '我国在新一轮科技革命和产业变革中已由‘跟跑者’快速跃升为重要的‘并跑者’乃至部分领域的‘领跑者’。'中国科学院大学知识产权学院院长马一德说,下一步,要继续聚焦大模型、具身智能、脑机接口等前沿领域,加大基础研究投入,培育高价值核心专利,同时,畅通转化运用链条,打通从实验室到生产线的'最后一公里'。 全周期保护为产业护航—— 面对人工智能的迅速迭代和企业'快速确权'抢占市场的需求,提高相关专利审查速度势在必行。 '我们针对快保护需求‘加急审’,聚焦新一代信息技术、高端装备制造等重点产业,开展优先审查或快速审查,助力企业在更短时间内获得专利权,有效保护前沿技术。'国家知识产权局新闻发言人、知识产权保护司司长郭雯介绍,'十四五'时期已开展优先审查72.7万件,平均周期约7个月。 4月22日,在北京市海淀区中关村大街的一座大厦内便利店,机器人为顾客抓取饮料。新华社记者 任超 摄 创新能够得到保护,才能让更多人敢创新、能创新。 当前,我国已建成国家级知识产权公共服务机构519家,实现省级层面全覆盖;与世界知识产权组织合作共建技术与创新支持中心(TISC)达202家,成为全球数量最大、覆盖范围最广、服务内容最多的TISC网络。 '我国深化专利审查高速路(PPH)合作,助力中国企业海外专利布局。'国家知识产权局副局长芮文彪介绍,同时强化海外知识产权纠纷应对指导,围绕信息技术、生物医药\", \"url\": \"https://baijiahao.baidu.com/s?id=1863525414431414004&wfr=spider&for=pc\", \"score\": 0.7000752091407776, \"date\": \"2026-04-26 17:38:27\"}, {\"title\": \"探路“一人公司”|OPC创业者盛叶:以“黑客松”实验验证AI项目商业化落地路径\", \"content\": \"探路'一人公司'|OPC创业者盛叶:以'黑客松'实验验证AI项目商业化落地路径 中经记者 陈茂利 杭州报道 4月18日上午,50余人陆续来到杭州良渚数栖湾会议中心签到、落座。十几支队伍'摩拳擦掌',要在一天之内把模糊的AI想法打磨成能形成'谁来买单、如何赚钱'的闭环项目。 站在杭州良渚数栖湾会议中心的场地中央,盛叶指尖上还沾着刚贴完的分组标识。研究生毕业于英国埃克塞特大学金融与投资专业的盛叶,回国后没有选择按部就班的职场就业路径,而是用一场'黑客松'(编码马拉松)开启了自己的OPC(One Person Company,即'一人公司')创业实践。 作为CLab发起人,从对接场地、邀请评委到运营社群,整场活动由她独立推进完成。盛叶告诉《中国经营报》记者:'我并不是单纯想办一场活动,而是想做一次MVP(Minimum Viable Product,最小可行产品)验证,看AI应用商业化是否存在真实的社区需求。' (OPC创业者、CLab发起人盛叶。陈茂利/摄影) 从参加'黑客松'到发起CLab 在就业之初,盛叶可谓'按部就班':用七年时间,从基础会计岗位做到主管,职称一路上升,薪水不断上涨。身边人都觉得她站稳了脚跟,只有她自己清楚——'每天重复一样的工作,没有挑战,一眼就能看到十年后的样子。这不是安心,而是可怕。' '在国外,四五十岁还继续深造的人有很多。'朋友随口说的一句话让盛叶深受触动,并选择备考颇具挑战性的英国金融与投资硕士,在压线通过后一个人飞向了英格兰西南部。 硕士毕业后,盛叶在英国待了两年。彼时,恰逢AI爆发,她一头扎进了伦敦的科技圈。'在伦敦那段时间,我在观摩了一场‘黑客松’后发现,并没有想象中那么遥不可及,非技术出身的人也能参与。'盛叶告诉记者。 '黑客松'是一种限时、高强度的协作式创新竞赛,参与者需在短时间内(通常24—72小时)将一个创意快速转化为可演示的原型或产品。 从那以后,盛叶接连挑战了十余场国际'黑客松'比赛,并参与了40余场AI/Web3科技活动,拿到了众多奖项。盛叶表示:'以前觉得参加‘黑客松’必须要会写代码,但现在有了AI技术和各种大模型加持,用自然语言就能让AI做出产品,门槛降低了很多。关键不是会不会编程,而是有没有创意,会不会跟AI对话,能不能想清楚商业路径。' 在探索从Demo(用于演示功能或验证概念的初步版本)到真实用户验证的AI产品创新与商业实验后,盛叶开始反复思考一个问题:为什么很多项目能快速做出Demo,但很难走向真实用户和商业验证? 在盛叶看来,技术原型往往只是'从0到1',更难的是'从1到10'——找到用\", \"url\": \"https://baijiahao.baidu.com/s?id=1863519218402811140&wfr=spider&for=pc\", \"score\": 0.6095241904258728, \"date\": \"2026-04-26 13:59:41\"}, {\"title\": \"Openness, cooperation serve AI development: China Daily editorial\", \"content\": \" In an era where technological advancements are reshaping our world, the release of DeepSeek-V4, a cutting-edge large language model developed by the Chinese AI company DeepSeek, highlights not only the rapid maturation of China's technological ecosystem but also underscores the importance of openness and collaboration in driving innovation. DeepSeek-V4 is a testament to open-source innovation. It has made waves in the AI community by achieving top-tier positions on open-source leaderboards across math, STEM and competitive coding challenges, closely trailing Google's closed-source Gemini 3.1 Pro and outperforming other models. This success shows the model's capabilities and reflects China's growing influence in the global AI landscape. By leveraging open-source platforms, DeepSeek-V4 proves that collaboration and transparency can lead to remarkable advancements. The model's achievements also highlight a broader trend: Chinese AI developers are no longer just catching up with Western pioneers but are actively helping to redefine the boundaries of innovation. This shift is driven by a commitment to open-source development, which has allowed for the rapid sharing and improvement of technologies globally. Despite the impressive advancements that Chinese companies have made, the country's AI industry faces challenges, not the least in the form of misconceptions and accusations from some in the West. Some critics have falsely accused Chinese companies of intellectual property theft, misrepresenting routine engineering methods such as knowledge distillation as evidence of wrongdoing. Such baseless and irresponsible accusations undermine the spirit of collaboration and overlook the significant contributions by Chinese companies to open-source innovation. Moreover, there is a tendency to trivialize Chinese advancements in embodied robotics, dismissing them as mere entertainment. However, the reality is far more impressive. Recent developments, such as the humanoid robots pa\", \"url\": \"http://www.chinadaily.com.cn/a/202604/26/WS69edfdb7a310d6866eb4597e.html\", \"score\": 0.5879430770874023, \"date\": \"2026-04-26 19:57:00\"}, {\"title\": \"元戎启行周光:从城市NOA到物理AI,自动驾驶进入新战场\", \"content\": \" '元戎启行的目标,是成为物理世界的AI基础设施。'在2026年北京国际车展期间,元戎启行CEO周光给出的这一判断,将公司叙事从辅助驾驶方案,推向了更大的物理AI命题。 这不是一次普通的车展技术发布。按照周光的设想,元戎启行未来要像通信、电力一样,成为支撑现实世界运行的基础能力之一。当一家自动驾驶公司不再只谈城市NOA、量产车型和功能体验,而是把自身放入'物理世界基础设施'的框架中,其战略指向已经发生变化:自动驾驶不只是汽车上的一个功能,而可能成为AI理解、判断并参与现实世界运行的入口。 支撑这一判断的,是元戎启行已经披露的一组量产和运行数据。公司信息显示,搭载元戎启行城市NOA辅助驾驶方案的量产车辆已突破30万辆;过去一年,搭载元戎启行主动安全系统的车辆累计真实道路运行里程超过13亿公里,累计陪伴用户驾驶时长达4480万小时。到2026年,元戎启行计划推动辅助驾驶系统量产交付规模突破100万辆,并将MPCI指标提升至1000公里以上,推动用户高频使用率提升至50%以上。 从30万辆到100万辆,从城市NOA到物理AI基础设施,元戎启行此次释放出的核心信号是:自动驾驶公司的竞争重心,正在从功能交付转向规模、安全、数据闭环和底层模型能力。 元戎启行CEO周光演讲 从辅助驾驶到物理AI 周光对自动驾驶的理解,起点仍然是安全。 在发布会现场,他回忆了创业初期一场让他印象深刻的交通事故。'当时我就在想,能否用AI技术去解救更多的生命。'周光表示,自动驾驶当前并不完美,城市中的MPCI仍只有几十公里,但按照其判断,目前自动驾驶安全性已经是纯人类驾驶的数倍。他进一步提出,随着大模型理解能力持续增强,未来2到3年内,行业有机会实现真正安全的自动驾驶。 这一表述将元戎启行此次发布会的重心拉回到自动驾驶最基础的问题:系统能否在真实道路中持续提升安全性。对元戎启行而言,量产规模不只是商业数据,也是模型能力持续进化的前提。 公司披露的信息显示,搭载元戎启行城市NOA辅助驾驶方案的量产车辆已经突破30万辆。过去一年,搭载元戎启行主动安全系统的车辆累计真实道路运行里程超过13亿公里,累计陪伴用户驾驶时长达4480万小时。这些数据意味着,元戎启行已经拥有较大规模的真实道路运行样本。对自动驾驶系统而言,真实道路数据越多,面对复杂场景、长尾风险和用户高频使用的机会也越多。 周光在媒体沟通会上谈到,目前搭载元戎启行系统的车辆已超过30万台,新增100万台'没什么大问题'。这一说法仍属于企业目标和判断,但从企业战略看,百万辆量产目标对应的\", \"url\": \"https://baijiahao.baidu.com/s?id=1863534513470489629&wfr=spider&for=pc\", \"score\": 0.351311057806015, \"date\": \"2026-04-26 20:03:23\"}, {\"title\": \"用AI让女司机与保安“和好”,别把“二次伤害”当玩笑\", \"content\": \"用AI让女司机与保安'和好',别把'二次伤害'当玩笑 □徐春鹤(黑龙江大学) 近日,福建三明永安市一女名司机与保安发生冲突的事件在网络上引发了广泛的关注。事后,永安市公安局相关工作人员表示,涉事双方均有过错,案件仍在进一步调查中。然而,就在公众等待警方处理时,部分网民却开启了'二次创作',他们利用AI技术,将冲突双方的脸进行合成,炮制出'和好''接吻''求婚'等低俗趣味的短视频,引发不少网友反感。 首先,用AI生成视频恶搞当事人不仅在道德上很难说得过去,而且也触犯了法律的红线。或许在AI恶搞视频制作者的眼中,这不过是一个无伤大雅的玩笑。一开始的握手、拥抱或许还可以一笑了之,后面接连不断的'求婚'等恶搞视频就带有了一些侮辱的意味。试想如果你是当事人,陷入纠纷本就足够苦恼,结果在网络上还被任人摆布,你作何感想?这种行为是对当事人的二次伤害,完全无视了当事人所承受的愤怒与伤害。 从法律上看,这种行为也是不被允许的。未经同意AI合成当事人形象足以使人误认,即侵犯肖像权,如果生成内容带有侮辱丑化性质,则侵犯名誉权。 更值得警惕的是,这种恶搞行为正在消解事情的严肃性,侵蚀公共讨论的理性空间。这件事情本质上是一件公共纠纷,进入了公共视野,公众之所以关注,核心在于推动真相的查明,期待一个公正的处理结果。但是在恶搞视频广泛传播后,公众的注意力就被吸引到对低俗猎奇内容的关注,而对于事件的原委、责任划分等相关问题的讨论被完全掩盖。不仅如此,这种恶搞视频的广泛传播形成的娱乐化氛围,让'玩梗'的声音被放大,让那些想要认真讨论、不想'玩梗'的人不敢开口,否则便是'上纲上线''太过严肃'。 可事实上,有些事情本就不应该拿来消遣,我们应该捍卫这些事情的严肃性。互联网的快速发展,让很多事情都进入到公众视野,网民通过大规模谈论、建言献策、推动问题的解决越来越成为一件平常事。与此同时,AI技术的发展也让造谣的成本越来越低。2025年,安徽发生过这样一起闹剧,一女子用AI工具生成流浪汉在餐厅吃饭的图片发给丈夫,丈夫信以为真并报警,这看似是一个无伤大雅的整蛊,实际上是娱乐化的一个典型缩影。 这种用娱乐消解严肃的案例,足以让我们形成一个共识,那就是公共讨论应该保持应有的严肃性,一旦娱乐化的内容成为主流,看似无害的'玩梗'将影响整个公共讨论的空间。它让恶搞者在群体哄笑中变本加厉,让想严肃讨论的人不敢开口。因此只有捍卫事件本身的严肃性,公共理性和公平正义才会有一个可伸张的空间。 总之,这场闹\", \"url\": \"https://baijiahao.baidu.com/s?id=1863527910474104448&wfr=spider&for=pc\", \"score\": 0.23651622235774994, \"date\": \"2026-04-26 18:13:06\"}]}}",
+      "tool_call_id": "call_function_bi3foilwmd2w_1"
+    },
+    {
+      "role": "assistant",
+      "content": "**Test Results: `anspire_search` ✅**\n\nSuccessfully returned **10 results** for query \"AI\" with relevance scores:\n\n| # | Title | Score | Date |\n|---|-------|-------|------|\n| 1 | 最新研究:AI智能体不会抢软件工程师饭碗 | 0.905 | 2026-04-26 |\n| 2 | AI硬件引爆市场!继续抱团还是撤退?基金经理分歧加大 | 0.730 | 2026-04-26 |\n| 3 | 滴滴以AI重构出行安全 | 0.717 | 2026-04-26 |\n| 4 | AI图片以假乱真,我们如何自处? | 0.711 | 2026-04-26 |\n| 5 | 悬疑作家蔡骏:AI扩充了文学的边界 | 0.703 | 2026-04-26 |\n| 6 | 科学与健康丨专利量质齐升 中国AI跑出\"加速度\" | 0.700 | 2026-04-26 |\n| 7 | 探路\"一人公司\"\\|OPC创业者盛叶:以\"黑客松\"实验验证AI项目商业化落地路径 | 0.610 | 2026-04-26 |\n| 8 | Openness, cooperation serve AI development (China Daily) | 0.588 | 2026-04-26 |\n| 9 | 元戎启行周光:从城市NOA到物理AI,自动驾驶进入新战场 | 0.351 | 2026-04-26 |\n| 10 | 用AI让女司机与保安\"和好\",别把\"二次伤害\"当玩笑 | 0.237 | 2026-04-26 |\n\n**Summary:**\n- ✅ Function works correctly\n- ✅ Returns relevant, recent Chinese AI news (all from today 2026-04-26)\n- ✅ Relevance scoring is working (scores range 0.24-0.90)\n- ✅ Each result includes title, content snippet, URL, score, and date\n- ✅ Mix of topics: research, market/investment, applications, literature, IP, autonomous driving, ethics",
+      "reasoning": "The user asked me to test the anspire_search function for the query \"AI\". The results came back successfully with 10 results. Let me summarize the test results for the user.",
+      "finish_reason": "stop",
+      "reasoning_details": [
+        {
+          "signature": "ac1239e827c87f0eb91dedbb6f9ed0b87095f5f782786f4a9ebea738159516bc",
+          "thinking": "The user asked me to test the anspire_search function for the query \"AI\". The results came back successfully with 10 results. Let me summarize the test results for the user.",
+          "type": "thinking"
+        }
+      ]
+    }
+  ]
+}

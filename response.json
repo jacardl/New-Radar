@@ -1,0 +1,24 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "你好！很高兴见到你～😊 有什么问题、想法，或者需要帮忙的地方吗？无论是学习、工作、生活中的小困惑，还是想聊点有趣的，我都很乐意陪你一起探讨！✨",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1777182251,
+  "id": "chatcmpl-2a518eb0-3821-9cae-ac5d-d6192d83bd14",
+  "model": "qwen-plus",
+  "object": "chat.completion",
+  "usage": {
+    "completion_tokens": 43,
+    "prompt_tokens": 9,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 52
+  }
+}

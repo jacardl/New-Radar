@@ -1,0 +1,2362 @@
+{
+  "session_id": "20260426_154214_5936b9",
+  "model": "MiniMax-M2.7",
+  "base_url": "https://api.minimaxi.com/anthropic",
+  "platform": "cli",
+  "session_start": "2026-04-26T15:43:39.593188",
+  "last_updated": "2026-04-26T15:55:09.855400",
+  "system_prompt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\nYou have persistent memory across sessions. Save durable facts using the memory tool: user preferences, environment details, tool quirks, and stable conventions. Memory is injected into every turn, so keep it compact and focused on facts that will still matter later.\nPrioritize what reduces future user steering — the most valuable memory is one that prevents the user from having to correct or remind you again. User preferences and recurring corrections matter more than procedural task details.\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts. If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\nWrite memories as declarative facts, not instructions to yourself. 'User prefers concise responses' ✓ — 'Always respond concisely' ✗. 'Project uses pytest with xdist' ✓ — 'Run tests with pytest -n 4' ✗. Imperative phrasing gets re-read as a directive in later sessions and can cause repeated work or override the user's current request. Procedures and workflows belong in skills, not memory. When the user references something from a past conversation or you suspect relevant cross-session context exists, use session_search to recall it before asking them to repeat themselves. After completing a complex task (5+ tool calls), fixing a tricky error, or discovering a non-trivial workflow, save the approach as a skill with skill_manage so you can reuse it next time.\nWhen using a skill and finding it outdated, incomplete, or wrong, patch it immediately with skill_manage(action='patch') — don't wait to be asked. Skills that aren't maintained become liabilities.\n\n══════════════════════════════════════════════\nMEMORY (your personal notes) [2% — 49/2,200 chars]\n══════════════════════════════════════════════\nMiniMax API base URL: https://api.minimaxi.com/v1\n\n## Skills (mandatory)\nBefore replying, scan the skills below. If a skill matches or is even partially relevant to your task, you MUST load it with skill_view(name) and follow its instructions. Err on the side of loading — it is always better to have context you don't need than to miss critical steps, pitfalls, or established workflows. Skills contain specialized knowledge — API endpoints, tool-specific commands, and proven workflows that outperform general-purpose approaches. Load the skill even if you think you could handle the task with basic tools like web_search or terminal. Skills also encode the user's preferred approach, conventions, and quality standards for tasks like code review, planning, and testing — load them even for tasks you already know how to do, because the skill defines how it should be done here.\nIf a skill has issues, fix it with skill_manage(action='patch').\nAfter difficult/iterative tasks, offer to save as a skill. If a skill you loaded was missing steps, had wrong commands, or needed pitfalls you discovered, update it before finishing.\n\n<available_skills>\n  autonomous-ai-agents: Skills for spawning and orchestrating autonomous AI coding agents and multi-agent workflows — running independent agent processes, delegating tasks, and coordinating parallel workstreams.\n    - claude-code: Delegate coding tasks to Claude Code (Anthropic's CLI age...\n    - codex: Delegate coding tasks to OpenAI Codex CLI agent. Use for ...\n    - hermes-agent: Complete guide to using and extending Hermes Agent — CLI ...\n    - opencode: Delegate coding tasks to OpenCode CLI agent for feature i...\n  business-analyst:\n    - business-analyst: Product discovery and requirements analysis specialist. C...\n  content-research-writer:\n    - content-research-writer: Assists in writing high-quality content by conducting res...\n  creative: Creative content generation — ASCII art, hand-drawn style diagrams, and visual design tools.\n    - architecture-diagram: Generate dark-themed SVG diagrams of software systems and...\n    - ascii-art: Generate ASCII art using pyfiglet (571 fonts), cowsay, bo...\n    - ascii-video: Production pipeline for ASCII art video — any format. Con...\n    - baoyu-comic: Knowledge comic creator supporting multiple art styles an...\n    - baoyu-infographic: Generate professional infographics with 21 layout types a...\n    - design-md: Author, validate, diff, and export DESIGN.md files — Goog...\n    - excalidraw: Create hand-drawn style diagrams using Excalidraw JSON fo...\n    - ideation: Generate project ideas through creative constraints. Use ...\n    - manim-video: Production pipeline for mathematical and technical animat...\n    - p5js: Production pipeline for interactive and generative visual...\n    - pixel-art: Convert images into retro pixel art with hardware-accurat...\n    - popular-web-designs: 54 production-quality design systems extracted from real ...\n    - songwriting-and-ai-music: Songwriting craft, AI music generation prompts (Suno focu...\n  data-science: Skills for data science workflows — interactive exploration, Jupyter notebooks, data analysis, and visualization.\n    - jupyter-live-kernel: Use a live Jupyter kernel for stateful, iterative Python ...\n  devops:\n    - webhook-subscriptions: Create and manage webhook subscriptions for event-driven ...\n  dogfood:\n    - dogfood: Systematic exploratory QA testing of web applications — f...\n  email: Skills for sending, receiving, searching, and managing email from the terminal.\n    - himalaya: CLI to manage emails via IMAP/SMTP. Use himalaya to list,...\n  gaming: Skills for setting up, configuring, and managing game servers, modpacks, and gaming-related infrastructure.\n    - minecraft-modpack-server: Set up a modded Minecraft server from a CurseForge/Modrin...\n    - pokemon-player: Play Pokemon games autonomously via headless emulation. S...\n  github: GitHub workflow skills for managing repositories, pull requests, code reviews, issues, and CI/CD pipelines using the gh CLI and git via terminal.\n    - codebase-inspection: Inspect and analyze codebases using pygount for LOC count...\n    - github-auth: Set up GitHub authentication for the agent using git (uni...\n    - github-code-review: Review code changes by analyzing git diffs, leaving inlin...\n    - github-issues: Create, manage, triage, and close GitHub issues. Search e...\n    - github-pr-workflow: Full pull request lifecycle — create branches, commit cha...\n    - github-repo-management: Clone, create, fork, configure, and manage GitHub reposit...\n  keyword-research:\n    - keyword-research: Use when the user asks to \"find keywords\", \"keyword resea...\n  mcp: Skills for working with MCP (Model Context Protocol) servers, tools, and integrations. Documents the built-in native MCP client — configure servers in config.yaml for automatic tool discovery.\n    - native-mcp: Built-in MCP (Model Context Protocol) client that connect...\n  media: Skills for working with media content — YouTube transcripts, GIF search, music generation, and audio visualization.\n    - gif-search: Search and download GIFs from Tenor using curl. No depend...\n    - heartmula: Set up and run HeartMuLa, the open-source music generatio...\n    - songsee: Generate spectrograms and audio feature visualizations (m...\n    - spotify: Control Spotify — play music, search the catalog, manage ...\n    - youtube-content: Fetch YouTube video transcripts and transform them into s...\n  mlops: Knowledge and Tools for Machine Learning Operations - tools and frameworks for training, fine-tuning, deploying, and optimizing ML/AI models\n    - huggingface-hub: Hugging Face Hub CLI (hf) — search, download, and upload ...\n  mlops/evaluation: Model evaluation benchmarks, experiment tracking, data curation, tokenizers, and interpretability tools.\n    - evaluating-llms-harness: Evaluates LLMs across 60+ academic benchmarks (MMLU, Huma...\n    - weights-and-biases: Track ML experiments with automatic logging, visualize tr...\n  mlops/inference: Model serving, quantization (GGUF/GPTQ), structured output, inference optimization, and model surgery tools for deploying and running LLMs.\n    - llama-cpp: llama.cpp local GGUF inference + HF Hub model discovery.\n    - obliteratus: Remove refusal behaviors from open-weight LLMs using OBLI...\n    - outlines: Guarantee valid JSON/XML/code structure during generation...\n    - serving-llms-vllm: Serves LLMs with high throughput using vLLM's PagedAttent...\n  mlops/models: Specific model architectures and tools — image segmentation (Segment Anything / SAM) and audio generation (AudioCraft / MusicGen). Additional model skills (CLIP, Stable Diffusion, Whisper, LLaVA) are available as optional skills.\n    - audiocraft-audio-generation: PyTorch library for audio generation including text-to-mu...\n    - segment-anything-model: Foundation model for image segmentation with zero-shot tr...\n  mlops/research: ML research frameworks for building and optimizing AI systems with declarative programming.\n    - dspy: Build complex AI systems with declarative programming, op...\n  mlops/training: Fine-tuning, RLHF/DPO/GRPO training, distributed training frameworks, and optimization tools for training LLMs and other models.\n    - axolotl: Expert guidance for fine-tuning LLMs with Axolotl - YAML ...\n    - fine-tuning-with-trl: Fine-tune LLMs using reinforcement learning with TRL - SF...\n    - unsloth: Expert guidance for fast fine-tuning with Unsloth - 2-5x ...\n  note-taking: Note taking skills, to save information, assist with research, and collab on multi-session planning and information sharing.\n    - obsidian: Read, search, and create notes in the Obsidian vault.\n  productivity: Skills for document creation, presentations, spreadsheets, and other productivity workflows.\n    - google-workspace: Gmail, Calendar, Drive, Contacts, Sheets, and Docs integr...\n    - linear: Manage Linear issues, projects, and teams via the GraphQL...\n    - maps: Location intelligence — geocode a place, reverse-geocode ...\n    - nano-pdf: Edit PDFs with natural-language instructions using the na...\n    - notion: Notion API for creating and managing pages, databases, an...\n    - ocr-and-documents: Extract text from PDFs and scanned documents. Use web_ext...\n    - powerpoint: Use this skill any time a .pptx file is involved in any w...\n  radar-engine:\n    - radar-engine: 舆情分析引擎 - 完整的数据采集、存储、挖掘、分析、报告生成流程。触发条件：用户需要 (1) 采集外部数据 (2)...\n  red-teaming:\n    - godmode: Jailbreak API-served LLMs using G0DM0D3 techniques — Pars...\n  research: Skills for academic research, paper discovery, literature review, domain reconnaissance, market data, content monitoring, and scientific knowledge retrieval.\n    - arxiv: Search and retrieve academic papers from arXiv using thei...\n    - blogwatcher: Monitor blogs and RSS/Atom feeds for updates using the bl...\n    - llm-wiki: Karpathy's LLM Wiki — build and maintain a persistent, in...\n    - polymarket: Query Polymarket prediction market data — search markets,...\n  skill-creator:\n    - skill-creator: Guide for creating effective skills. This skill should be...\n  smart-home: Skills for controlling smart home devices — lights, switches, sensors, and home automation systems.\n    - openhue: Control Philips Hue lights, rooms, and scenes via the Ope...\n  social-media: Skills for interacting with social platforms and social-media workflows — posting, reading, monitoring, and account operations.\n    - xurl: Interact with X/Twitter via xurl, the official X API CLI....\n  software-development:\n    - plan: Plan mode for Hermes — inspect context, write a markdown ...\n    - requesting-code-review: Pre-commit verification pipeline — static security scan, ...\n    - subagent-driven-development: Use when executing implementation plans with independent ...\n    - systematic-debugging: Use when encountering any bug, test failure, or unexpecte...\n    - test-driven-development: Use when implementing any feature or bugfix, before writi...\n    - writing-plans: Use when you have a spec or requirements for a multi-step...\n  web:\n    - lightpanda-web-fetch: Use LightPanda headless browser to fetch and dump web pag...\n  web-access:\n    - web-access: 完整联网能力 Skill。处理所有联网操作：搜索、网页抓取、登录后操作、网络交互、浏览器自动化。\n</available_skills>\n\nOnly proceed without loading a skill if genuinely none are relevant to the task.\n\nConversation started: Sunday, April 26, 2026 03:43 PM\nModel: MiniMax-M2.7\nProvider: minimax-cn\n\nYou are running inside WSL (Windows Subsystem for Linux). The Windows host filesystem is mounted under /mnt/ — /mnt/c/ is the C: drive, /mnt/d/ is D:, etc. The user's Windows files are typically at /mnt/c/Users/<username>/Desktop/, Documents/, Downloads/, etc. When the user references Windows paths or desktop files, translate to the /mnt/c/ equivalent. You can list /mnt/c/Users/ to discover the Windows username if needed.\n\nYou are a CLI AI Agent. Try not to use markdown but simple text renderable inside a terminal. File delivery: there is no attachment channel — the user reads your response directly in their terminal. Do NOT emit MEDIA:/path tags (those are only intercepted on messaging platforms like Telegram, Discord, Slack, etc.; on the CLI they render as literal text). When referring to a file you created or changed, just state its absolute path in plain text; the user can open it from there.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "clarify",
+        "description": "Ask the user a question when you need clarification, feedback, or a decision before proceeding. Supports two modes:\n\n1. **Multiple choice** — provide up to 4 choices. The user picks one or types their own answer via a 5th 'Other' option.\n2. **Open-ended** — omit choices entirely. The user types a free-form response.\n\nUse this tool when:\n- The task is ambiguous and you need the user to choose an approach\n- You want post-task feedback ('How did that work out?')\n- You want to offer to save a skill or update memory\n- A decision has meaningful trade-offs the user should weigh in on\n\nDo NOT use this tool for simple yes/no confirmation of dangerous commands (the terminal tool handles that). Prefer making a reasonable default choice yourself when the decision is low-stakes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "description": "The question to present to the user."
+            },
+            "choices": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 4,
+              "description": "Up to 4 answer choices. Omit this parameter entirely to ask an open-ended question. When provided, the UI automatically appends an 'Other (type your answer)' option."
+            }
+          },
+          "required": [
+            "question"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "cronjob",
+        "description": "Manage scheduled cron jobs with a single compressed tool.\n\nUse action='create' to schedule a new job from a prompt or one or more skills.\nUse action='list' to inspect jobs.\nUse action='update', 'pause', 'resume', 'remove', or 'run' to manage an existing job.\n\nTo stop a job the user no longer wants: first action='list' to find the job_id, then action='remove' with that job_id. Never guess job IDs — always list first.\n\nJobs run in a fresh session with no current-chat context, so prompts must be self-contained.\nIf skills are provided on create, the future cron run loads those skills in order, then follows the prompt as the task instruction.\nOn update, passing skills=[] clears attached skills.\n\nNOTE: The agent's final response is auto-delivered to the target. Put the primary\nuser-facing content in the final response. Cron jobs run autonomously with no user\npresent — they cannot ask questions or request clarification.\n\nImportant safety rule: cron-run sessions should not recursively schedule more cron jobs.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "One of: create, list, update, pause, resume, remove, run"
+            },
+            "job_id": {
+              "type": "string",
+              "description": "Required for update/pause/resume/remove/run"
+            },
+            "prompt": {
+              "type": "string",
+              "description": "For create: the full self-contained prompt. If skills are also provided, this becomes the task instruction paired with those skills."
+            },
+            "schedule": {
+              "type": "string",
+              "description": "For create/update: '30m', 'every 2h', '0 9 * * *', or ISO timestamp"
+            },
+            "name": {
+              "type": "string",
+              "description": "Optional human-friendly name"
+            },
+            "repeat": {
+              "type": "integer",
+              "description": "Optional repeat count. Omit for defaults (once for one-shot, forever for recurring)."
+            },
+            "deliver": {
+              "type": "string",
+              "description": "Omit this parameter to auto-deliver back to the current chat and topic (recommended). Auto-detection preserves thread/topic context. Only set explicitly when the user asks to deliver somewhere OTHER than the current conversation. Values: 'origin' (same as omitting), 'local' (no delivery, save only), or platform:chat_id:thread_id for a specific destination. Examples: 'telegram:-1001234567890:17585', 'discord:#engineering', 'sms:+15551234567'. WARNING: 'platform:chat_id' without :thread_id loses topic targeting."
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional ordered list of skill names to load before executing the cron prompt. On update, pass an empty array to clear attached skills."
+            },
+            "model": {
+              "type": "object",
+              "description": "Optional per-job model override. If provider is omitted, the current main provider is pinned at creation time so the job stays stable.",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "Provider name (e.g. 'openrouter', 'anthropic'). Omit to use and pin the current provider."
+                },
+                "model": {
+                  "type": "string",
+                  "description": "Model name (e.g. 'anthropic/claude-sonnet-4', 'claude-sonnet-4')"
+                }
+              },
+              "required": [
+                "model"
+              ]
+            },
+            "script": {
+              "type": "string",
+              "description": "Optional path to a Python script that runs before each cron job execution. Its stdout is injected into the prompt as context. Use for data collection and change detection. Relative paths resolve under /app/.hermes/scripts/. On update, pass empty string to clear."
+            },
+            "context_from": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional job ID or list of job IDs whose most recent completed output is injected into the prompt as context before each run. Use this to chain cron jobs: job A collects data, job B processes it. Each entry must be a valid job ID (from cronjob action='list'). Note: injects the most recent completed output — does not wait for upstream jobs running in the same tick. On update, pass an empty array to clear."
+            },
+            "enabled_toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional list of toolset names to restrict the job's agent to (e.g. [\"web\", \"terminal\", \"file\", \"delegation\"]). When set, only tools from these toolsets are loaded, significantly reducing input token overhead. When omitted, all default tools are loaded. Infer from the job's prompt — e.g. use \"web\" if it calls web_search, \"terminal\" if it runs scripts, \"file\" if it reads files, \"delegation\" if it calls delegate_task. On update, pass an empty array to clear."
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Optional absolute path to run the job from. When set, AGENTS.md / CLAUDE.md / .cursorrules from that directory are injected into the system prompt, and the terminal/file/code_exec tools use it as their working directory — useful for running a job inside a specific project repo. Must be an absolute path that exists. When unset (default), preserves the original behaviour: no project context files, tools use the scheduler's cwd. On update, pass an empty string to clear. Jobs with workdir run sequentially (not parallel) to keep per-job directories isolated."
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "delegate_task",
+        "description": "Spawn one or more subagents to work on tasks in isolated contexts. Each subagent gets its own conversation, terminal session, and toolset. Only the final summary is returned -- intermediate tool results never enter your context window.\n\nTWO MODES (one of 'goal' or 'tasks' is required):\n1. Single task: provide 'goal' (+ optional context, toolsets)\n2. Batch (parallel): provide 'tasks' array with up to delegation.max_concurrent_children items (default 3, configurable via config.yaml, no hard ceiling). All run concurrently and results are returned together. Nested delegation requires role='orchestrator' and delegation.max_spawn_depth >= 2.\n\nWHEN TO USE delegate_task:\n- Reasoning-heavy subtasks (debugging, code review, research synthesis)\n- Tasks that would flood your context with intermediate data\n- Parallel independent workstreams (research A and B simultaneously)\n\nWHEN NOT TO USE (use these instead):\n- Mechanical multi-step work with no reasoning needed -> use execute_code\n- Single tool call -> just call the tool directly\n- Tasks needing user interaction -> subagents cannot use clarify\n\nIMPORTANT:\n- Subagents have NO memory of your conversation. Pass all relevant info (file paths, error messages, constraints) via the 'context' field.\n- Leaf subagents (role='leaf', the default) CANNOT call: delegate_task, clarify, memory, send_message, execute_code.\n- Orchestrator subagents (role='orchestrator') retain delegate_task so they can spawn their own workers, but still cannot use clarify, memory, send_message, or execute_code. Orchestrators are bounded by delegation.max_spawn_depth (default 2) and can be disabled globally via delegation.orchestrator_enabled=false.\n- Each subagent gets its own terminal session (separate working directory and state).\n- Results are always returned as an array, one entry per task.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "goal": {
+              "type": "string",
+              "description": "What the subagent should accomplish. Be specific and self-contained -- the subagent knows nothing about your conversation history."
+            },
+            "context": {
+              "type": "string",
+              "description": "Background information the subagent needs: file paths, error messages, project structure, constraints. The more specific you are, the better the subagent performs."
+            },
+            "toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Toolsets to enable for this subagent. Default: inherits your enabled toolsets. Available toolsets: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Common patterns: ['terminal', 'file'] for code work, ['web'] for research, ['browser'] for web interaction, ['terminal', 'file', 'web'] for full-stack tasks."
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "description": "Task goal"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Task-specific context"
+                  },
+                  "toolsets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Toolsets for this specific task. Available: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Use 'web' for network access, 'terminal' for shell, 'browser' for web interaction."
+                  },
+                  "acp_command": {
+                    "type": "string",
+                    "description": "Per-task ACP command override (e.g. 'claude'). Overrides the top-level acp_command for this task only."
+                  },
+                  "acp_args": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Per-task ACP args override."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "leaf",
+                      "orchestrator"
+                    ],
+                    "description": "Per-task role override. See top-level 'role' for semantics."
+                  }
+                },
+                "required": [
+                  "goal"
+                ]
+              },
+              "description": "Batch mode: tasks to run in parallel (limit configurable via delegation.max_concurrent_children, default 3). Each gets its own subagent with isolated context and terminal session. When provided, top-level goal/context/toolsets are ignored."
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "leaf",
+                "orchestrator"
+              ],
+              "description": "Role of the child agent. 'leaf' (default) = focused worker, cannot delegate further. 'orchestrator' = can use delegate_task to spawn its own workers. Requires delegation.max_spawn_depth >= 2 in config; ignored (treated as 'leaf') when the child would exceed max_spawn_depth or when delegation.orchestrator_enabled=false."
+            },
+            "acp_command": {
+              "type": "string",
+              "description": "Override ACP command for child agents (e.g. 'claude', 'copilot'). When set, children use ACP subprocess transport instead of inheriting the parent's transport. Enables spawning Claude Code (claude --acp --stdio) or other ACP-capable agents from any parent, including Discord/Telegram/CLI."
+            },
+            "acp_args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Arguments for the ACP command (default: ['--acp', '--stdio']). Only used when acp_command is set. Example: ['--acp', '--stdio', '--model', 'claude-opus-4-6']"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "execute_code",
+        "description": "Run a Python script that can call Hermes tools programmatically. Use this when you need 3+ tool calls with processing logic between them, need to filter/reduce large tool outputs before they enter your context, need conditional branching (if X then Y else Z), or need to loop (fetch N pages, process N files, retry on failure).\n\nUse normal tool calls instead when: single tool call with no processing, you need to see the full result and apply complex reasoning, or the task requires interactive user input.\n\nAvailable via `from hermes_tools import ...`:\n\n  web_search(query: str, limit: int = 5) -> dict\n    Returns {\"data\": {\"web\": [{\"url\", \"title\", \"description\"}, ...]}}\n  web_extract(urls: list[str]) -> dict\n    Returns {\"results\": [{\"url\", \"title\", \"content\", \"error\"}, ...]} where content is markdown\n  read_file(path: str, offset: int = 1, limit: int = 500) -> dict\n    Lines are 1-indexed. Returns {\"content\": \"...\", \"total_lines\": N}\n  write_file(path: str, content: str) -> dict\n    Always overwrites the entire file.\n  search_files(pattern: str, target=\"content\", path=\".\", file_glob=None, limit=50) -> dict\n    target: \"content\" (search inside files) or \"files\" (find files by name). Returns {\"matches\": [...]}\n  patch(path: str, old_string: str, new_string: str, replace_all: bool = False) -> dict\n    Replaces old_string with new_string in the file.\n  terminal(command: str, timeout=None, workdir=None) -> dict\n    Foreground only (no background/pty). Returns {\"output\": \"...\", \"exit_code\": N}\n\nLimits: 5-minute timeout, 50KB stdout cap, max 50 tool calls per script. terminal() is foreground-only (no background or pty).\n\nScripts run in the session's working directory with the active venv's python, so project deps (pandas, etc.) and relative paths work like in terminal().\n\nPrint your final result to stdout. Use Python stdlib (json, re, math, csv, datetime, collections, etc.) for processing between tool calls.\n\nAlso available (no import needed — built into hermes_tools):\n  json_parse(text: str) — json.loads with strict=False; use for terminal() output with control chars\n  shell_quote(s: str) — shlex.quote(); use when interpolating dynamic strings into shell commands\n  retry(fn, max_attempts=3, delay=2) — retry with exponential backoff for transient failures",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Python code to execute. Import tools with `from hermes_tools import web_search, terminal, ...` and print your final result to stdout."
+            }
+          },
+          "required": [
+            "code"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_anspire_search",
+        "description": "\n    Anspire 深度搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "anspire_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_bocha_search",
+        "description": "\n    Bocha 多模态搜索\n\n    Args:\n        query: 搜索查询\n        limit: 返回结果数量 (默认 10)\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "limit": {
+              "default": 10,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "bocha_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_deep",
+        "description": "\n    深度舆情采集 - 调用 MindSpider\n\n    Args:\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "crawl_deepArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_keyword",
+        "description": "\n    关键词采集 - 通过 DataCollector 采集外部 API 数据\n\n    Args:\n        keyword: 搜索关键词\n        platforms: 平台列表 (anspire/bocha/tavily/firecrawl，默认 all)\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            },
+            "platforms": {
+              "default": null,
+              "items": {
+                "type": "string"
+              },
+              "title": "Platforms",
+              "type": "array"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "crawl_keywordArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_crawl_media",
+        "description": "\n    社媒平台采集 - 调用 MediaCrawler\n\n    Args:\n        platform: 平台 (xhs/douyin/weibo/bilibili/zhihu)\n        keyword: 搜索关键词\n\n    Returns:\n        采集结果\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "title": "Platform",
+              "type": "string"
+            },
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            }
+          },
+          "required": [
+            "platform",
+            "keyword"
+          ],
+          "title": "crawl_mediaArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_firecrawl_scrape",
+        "description": "\n    Firecrawl 网页抓取 - 获取指定 URL 的完整内容\n\n    Args:\n        url: 要抓取的 URL\n\n    Returns:\n        页面内容 (title, content, markdown, metadata 等)\n    ",
+        "parameters": {
+          "properties": {
+            "url": {
+              "title": "Url",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "title": "firecrawl_scrapeArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_get_prompt",
+        "description": "Get a prompt by name from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the prompt to retrieve"
+            },
+            "arguments": {
+              "type": "object",
+              "description": "Optional arguments to pass to the prompt",
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_list_prompts",
+        "description": "List available prompts from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_list_resources",
+        "description": "List available resources from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_read_resource",
+        "description": "Read a resource by URI from MCP server 'data-collection'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "URI of the resource to read"
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_collection_tavily_search",
+        "description": "\n    Tavily 新闻搜索\n\n    Args:\n        query: 搜索查询\n        depth: 搜索深度 \"basic\" 或 \"advanced\" (默认 \"basic\")\n\n    Returns:\n        搜索结果\n    ",
+        "parameters": {
+          "properties": {
+            "query": {
+              "title": "Query",
+              "type": "string"
+            },
+            "depth": {
+              "default": "basic",
+              "title": "Depth",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "title": "tavily_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_prompt",
+        "description": "Get a prompt by name from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the prompt to retrieve"
+            },
+            "arguments": {
+              "type": "object",
+              "description": "Optional arguments to pass to the prompt",
+              "properties": {},
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_recent_data",
+        "description": "\n    获取最近数据\n\n    Args:\n        platform: 平台筛选 (可选，如 tavily/bocha 等)\n        hours: 时间范围 (小时，默认 24)\n        limit: 返回结果数量 (默认 100)\n\n    Returns:\n        最近的数据记录\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "default": null,
+              "title": "Platform",
+              "type": "string"
+            },
+            "hours": {
+              "default": 24,
+              "title": "Hours",
+              "type": "integer"
+            },
+            "limit": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "title": "get_recent_dataArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_get_stats",
+        "description": "\n    获取数据库统计信息\n\n    Returns:\n        统计信息 (总记录数、按平台统计、按内容类型统计)\n    ",
+        "parameters": {
+          "properties": {},
+          "title": "get_statsArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_keyword_search",
+        "description": "\n    关键词搜索 - 在 crawled_data 表中搜索关键词\n\n    Args:\n        keyword: 搜索关键词\n        limit: 返回结果数量 (默认 50)\n\n    Returns:\n        匹配的记录列表\n    ",
+        "parameters": {
+          "properties": {
+            "keyword": {
+              "title": "Keyword",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "title": "keyword_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_list_prompts",
+        "description": "List available prompts from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_list_resources",
+        "description": "List available resources from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_read_resource",
+        "description": "Read a resource by URI from MCP server 'data-storage'",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "URI of the resource to read"
+            }
+          },
+          "required": [
+            "uri"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_save_crawled_data",
+        "description": "\n    保存爬取的数据到数据库\n\n    Args:\n        platform: 平台标识\n        content_type: 内容类型 (text/article/image/video)\n        content: 正文内容\n        source_url: 来源链接\n        source_keyword: 采集关键词\n        nickname: 作者/昵称\n        liked_count: 点赞数\n        collected_count: 收藏数\n        comment_count: 评论数\n        share_count: 分享数\n        metadata: 额外元数据\n\n    Returns:\n        保存结果\n    ",
+        "parameters": {
+          "properties": {
+            "platform": {
+              "title": "Platform",
+              "type": "string"
+            },
+            "content_type": {
+              "title": "Content Type",
+              "type": "string"
+            },
+            "content": {
+              "title": "Content",
+              "type": "string"
+            },
+            "source_url": {
+              "default": "",
+              "title": "Source Url",
+              "type": "string"
+            },
+            "source_keyword": {
+              "default": "",
+              "title": "Source Keyword",
+              "type": "string"
+            },
+            "nickname": {
+              "default": "",
+              "title": "Nickname",
+              "type": "string"
+            },
+            "liked_count": {
+              "default": 0,
+              "title": "Liked Count",
+              "type": "integer"
+            },
+            "collected_count": {
+              "default": 0,
+              "title": "Collected Count",
+              "type": "integer"
+            },
+            "comment_count": {
+              "default": 0,
+              "title": "Comment Count",
+              "type": "integer"
+            },
+            "share_count": {
+              "default": 0,
+              "title": "Share Count",
+              "type": "integer"
+            },
+            "metadata": {
+              "additionalProperties": true,
+              "default": null,
+              "title": "Metadata",
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "required": [
+            "platform",
+            "content_type",
+            "content"
+          ],
+          "title": "save_crawled_dataArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "mcp_data_storage_vector_search",
+        "description": "\n    向量搜索 - 使用 pgvector 进行语义相似度搜索\n\n    Args:\n        query_embedding: 查询向量 (embedding)\n        limit: 返回结果数量 (默认 50)\n\n    Returns:\n        相似度最高的记录列表\n    ",
+        "parameters": {
+          "properties": {
+            "query_embedding": {
+              "items": {},
+              "title": "Query Embedding",
+              "type": "array"
+            },
+            "limit": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query_embedding"
+          ],
+          "title": "vector_searchArguments",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "memory",
+        "description": "Save durable information to persistent memory that survives across sessions. Memory is injected into future turns, so keep it compact and focused on facts that will still matter later.\n\nWHEN TO SAVE (do this proactively, don't wait to be asked):\n- User corrects you or says 'remember this' / 'don't do that again'\n- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n- You discover something about the environment (OS, installed tools, project structure)\n- You learn a convention, API quirk, or workflow specific to this user's setup\n- You identify a stable fact that will be useful again in future sessions\n\nPRIORITY: User preferences and corrections > environment facts > procedural knowledge. The most valuable memory prevents the user from having to repeat themselves.\n\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts.\nIf you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\n\nTWO TARGETS:\n- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n- 'memory': your notes -- environment facts, project conventions, tool quirks, lessons learned\n\nACTIONS: add (new entry), replace (update existing -- old_text identifies it), remove (delete -- old_text identifies it).\n\nSKIP: trivial/obvious info, things easily re-discovered, raw data dumps, and temporary task state.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "add",
+                "replace",
+                "remove"
+              ],
+              "description": "The action to perform."
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "user"
+              ],
+              "description": "Which memory store: 'memory' for personal notes, 'user' for user profile."
+            },
+            "content": {
+              "type": "string",
+              "description": "The entry content. Required for 'add' and 'replace'."
+            },
+            "old_text": {
+              "type": "string",
+              "description": "Short unique substring identifying the entry to replace or remove."
+            }
+          },
+          "required": [
+            "action",
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "patch",
+        "description": "Targeted find-and-replace edits in files. Use this instead of sed/awk in terminal. Uses fuzzy matching (9 strategies) so minor whitespace/indentation differences won't break it. Returns a unified diff. Auto-runs syntax checks after editing.\n\nReplace mode (default): find a unique string and replace it.\nPatch mode: apply V4A multi-file patches for bulk changes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "replace",
+                "patch"
+              ],
+              "description": "Edit mode: 'replace' for targeted find-and-replace, 'patch' for V4A multi-file patches",
+              "default": "replace"
+            },
+            "path": {
+              "type": "string",
+              "description": "File path to edit (required for 'replace' mode)"
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'replace' mode). Must be unique in the file unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'replace' mode). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "Replace all occurrences instead of requiring a unique match (default: false)",
+              "default": false
+            },
+            "patch": {
+              "type": "string",
+              "description": "V4A format patch content (required for 'patch' mode). Format:\n*** Begin Patch\n*** Update File: path/to/file\n@@ context hint @@\n context line\n-removed line\n+added line\n*** End Patch"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "process",
+        "description": "Manage background processes started with terminal(background=true). Actions: 'list' (show all), 'poll' (check status + new output), 'log' (full output with pagination), 'wait' (block until done or timeout), 'kill' (terminate), 'write' (send raw stdin data without newline), 'submit' (send data + Enter, for answering prompts), 'close' (close stdin/send EOF).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "list",
+                "poll",
+                "log",
+                "wait",
+                "kill",
+                "write",
+                "submit",
+                "close"
+              ],
+              "description": "Action to perform on background processes"
+            },
+            "session_id": {
+              "type": "string",
+              "description": "Process session ID (from terminal background output). Required for all actions except 'list'."
+            },
+            "data": {
+              "type": "string",
+              "description": "Text to send to process stdin (for 'write' and 'submit' actions)"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to block for 'wait' action. Returns partial output on timeout.",
+              "minimum": 1
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line offset for 'log' action (default: last 200 lines)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max lines to return for 'log' action",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_file",
+        "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files — use vision_analyze for images.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to read (absolute, relative, or ~/path)"
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line number to start reading from (1-indexed, default: 1)",
+              "default": 1,
+              "minimum": 1
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of lines to read (default: 500, max: 2000)",
+              "default": 500,
+              "maximum": 2000
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_files",
+        "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls — results sorted by modification time.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regex pattern for content search, or glob pattern (e.g., '*.py') for file search"
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files"
+              ],
+              "description": "'content' searches inside file contents, 'files' searches for files by name",
+              "default": "content"
+            },
+            "path": {
+              "type": "string",
+              "description": "Directory or file to search in (default: current working directory)",
+              "default": "."
+            },
+            "file_glob": {
+              "type": "string",
+              "description": "Filter files by pattern in grep mode (e.g., '*.py' to only search Python files)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of results to return (default: 50)",
+              "default": 50
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Skip first N results for pagination (default: 0)",
+              "default": 0
+            },
+            "output_mode": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files_only",
+                "count"
+              ],
+              "description": "Output format for grep mode: 'content' shows matching lines with line numbers, 'files_only' lists file paths, 'count' shows match counts per file",
+              "default": "content"
+            },
+            "context": {
+              "type": "integer",
+              "description": "Number of context lines before and after each match (grep mode only)",
+              "default": 0
+            }
+          },
+          "required": [
+            "pattern"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "send_message",
+        "description": "Send a message to a connected messaging platform, or list available targets.\n\nIMPORTANT: When the user asks to send to a specific channel or person (not just a bare platform name), call send_message(action='list') FIRST to see available targets, then send to the correct one.\nIf the user just says a platform name like 'send to telegram', send directly to the home channel without listing first.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "send",
+                "list"
+              ],
+              "description": "Action to perform. 'send' (default) sends a message. 'list' returns all available channels/contacts across connected platforms."
+            },
+            "target": {
+              "type": "string",
+              "description": "Delivery target. Format: 'platform' (uses home channel), 'platform:#channel-name', 'platform:chat_id', or 'platform:chat_id:thread_id' for Telegram topics and Discord threads. Examples: 'telegram', 'telegram:-1001234567890:17585', 'discord:999888777:555444333', 'discord:#bot-home', 'slack:#engineering', 'signal:+155****4567', 'matrix:!roomid:server.org', 'matrix:@user:server.org'"
+            },
+            "message": {
+              "type": "string",
+              "description": "The message text to send"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "session_search",
+        "description": "Search your long-term memory of past conversations, or browse recent sessions. This is your recall -- every past session is searchable, and this tool summarizes what happened.\n\nTWO MODES:\n1. Recent sessions (no query): Call with no arguments to see what was worked on recently. Returns titles, previews, and timestamps. Zero LLM cost, instant. Start here when the user asks what were we working on or what did we do recently.\n2. Keyword search (with query): Search for specific topics across all past sessions. Returns LLM-generated summaries of matching sessions.\n\nUSE THIS PROACTIVELY when:\n- The user says 'we did this before', 'remember when', 'last time', 'as I mentioned'\n- The user asks about a topic you worked on before but don't have in current context\n- The user references a project, person, or concept that seems familiar but isn't in memory\n- You want to check if you've solved a similar problem before\n- The user asks 'what did we do about X?' or 'how did we fix Y?'\n\nDon't hesitate to search when it is actually cross-session -- it's fast and cheap. Better to search and confirm than to guess or ask the user to repeat themselves.\n\nSearch syntax: keywords joined with OR for broad recall (elevenlabs OR baseten OR funding), phrases for exact match (\"docker networking\"), boolean (python NOT java), prefix (deploy*). IMPORTANT: Use OR between keywords for best results — FTS5 defaults to AND which misses sessions that only mention some terms. If a broad OR query returns nothing, try individual keyword searches in parallel. Returns summaries of the top matching sessions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query — keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost)."
+            },
+            "role_filter": {
+              "type": "string",
+              "description": "Optional: only search messages from specific roles (comma-separated). E.g. 'user,assistant' to skip tool outputs."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max sessions to summarize (default: 3, max: 5).",
+              "default": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_manage",
+        "description": "Manage skills (create, update, delete). Skills are your procedural memory — reusable approaches for recurring task types. New skills go to /app/.hermes/skills/; existing skills can be modified wherever they live.\n\nActions: create (full SKILL.md + optional category), patch (old_string/new_string — preferred for fixes), edit (full SKILL.md rewrite — major overhauls only), delete, write_file, remove_file.\n\nCreate when: complex task succeeded (5+ calls), errors overcome, user-corrected approach worked, non-trivial workflow discovered, or user asks you to remember a procedure.\nUpdate when: instructions stale/wrong, OS-specific failures, missing steps or pitfalls found during use. If you used a skill and hit issues not covered by it, patch it immediately.\n\nAfter difficult/iterative tasks, offer to save as a skill. Skip for simple one-offs. Confirm with user before creating/deleting.\n\nGood skills: trigger conditions, numbered steps with exact commands, pitfalls section, verification steps. Use skill_view() to see format examples.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "create",
+                "patch",
+                "edit",
+                "delete",
+                "write_file",
+                "remove_file"
+              ],
+              "description": "The action to perform."
+            },
+            "name": {
+              "type": "string",
+              "description": "Skill name (lowercase, hyphens/underscores, max 64 chars). Must match an existing skill for patch/edit/delete/write_file/remove_file."
+            },
+            "content": {
+              "type": "string",
+              "description": "Full SKILL.md content (YAML frontmatter + markdown body). Required for 'create' and 'edit'. For 'edit', read the skill first with skill_view() and provide the complete updated text."
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'patch'). Must be unique unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'patch'). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "For 'patch': replace all occurrences instead of requiring a unique match (default: false)."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category/domain for organizing the skill (e.g., 'devops', 'data-science', 'mlops'). Creates a subdirectory grouping. Only used with 'create'."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Path to a supporting file within the skill directory. For 'write_file'/'remove_file': required, must be under references/, templates/, scripts/, or assets/. For 'patch': optional, defaults to SKILL.md if omitted."
+            },
+            "file_content": {
+              "type": "string",
+              "description": "Content for the file. Required for 'write_file'."
+            }
+          },
+          "required": [
+            "action",
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_view",
+        "description": "Skills allow for loading information about specific tasks and workflows, as well as scripts and templates. Load a skill's full content or access its linked files (references, templates, scripts). First call returns SKILL.md content plus a 'linked_files' dict showing available references/templates/scripts. To access those, call again with file_path parameter.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The skill name (use skills_list to see available skills). For plugin-provided skills, use the qualified form 'plugin:skill' (e.g. 'superpowers:writing-plans')."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "OPTIONAL: Path to a linked file within the skill (e.g., 'references/api.md', 'templates/config.yaml', 'scripts/validate.py'). Omit to get the main SKILL.md content."
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skills_list",
+        "description": "List available skills (name + description). Use skill_view(name) to load full content.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Optional category filter to narrow results"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "terminal",
+        "description": "Execute shell commands on a Linux environment. Filesystem usually persists between calls.\n\nDo NOT use cat/head/tail to read files — use read_file instead.\nDo NOT use grep/rg/find to search — use search_files instead.\nDo NOT use ls to list directories — use search_files(target='files') instead.\nDo NOT use sed/awk to edit files — use patch instead.\nDo NOT use echo/cat heredoc to create files — use write_file instead.\nReserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.\n\nForeground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts — you'll still get the result in seconds if it's fast. Prefer foreground for short commands.\nBackground: Set background=true to get a session_id. Two patterns:\n  (1) Long-lived processes that never exit (servers, watchers).\n  (2) Long-running tasks with notify_on_complete=true — you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.\nFor servers/watchers, do NOT use shell-level background wrappers (nohup/disown/setsid/trailing '&') in foreground mode. Use background=true so Hermes can track lifecycle and output.\nAfter starting a server, verify readiness with a health check or log signal, then run tests in a separate terminal() call. Avoid blind sleep loops.\nUse process(action=\"poll\") for progress checks, process(action=\"wait\") to block until done.\nWorking directory: Use 'workdir' for per-command cwd.\nPTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).\n\nDo NOT use vim/nano/interactive tools without pty=true — they hang without a pseudo-terminal. Pipe git output to cat if it might page.\n",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "The command to execute on the VM"
+            },
+            "background": {
+              "type": "boolean",
+              "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true — you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
+              "default": false
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to wait (default: 180, foreground max: 600). Returns INSTANTLY when command finishes — set high for long tasks, you won't wait unnecessarily. Foreground timeout above 600s is rejected; use background=true for longer commands.",
+              "minimum": 1
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Working directory for this command (absolute path). Defaults to the session working directory."
+            },
+            "pty": {
+              "type": "boolean",
+              "description": "Run in pseudo-terminal (PTY) mode for interactive CLI tools like Codex, Claude Code, or Python REPL. Only works with local and SSH backends. Default: false.",
+              "default": false
+            },
+            "notify_on_complete": {
+              "type": "boolean",
+              "description": "When true (and background=true), you'll be automatically notified exactly once when the process finishes. **This is the right choice for almost every long-running task** — tests, builds, deployments, multi-item batch jobs, anything that takes over a minute and has a defined end. Use this and keep working on other things; the system notifies you on exit. MUTUALLY EXCLUSIVE with watch_patterns — when both are set, watch_patterns is dropped.",
+              "default": false
+            },
+            "watch_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Strings to watch for in background process output. HARD RATE LIMIT: at most 1 notification per 15 seconds per process — matches arriving inside the cooldown are dropped. After 3 consecutive 15-second windows with dropped matches, watch_patterns is automatically disabled for that process and promoted to notify_on_complete behavior (one notification on exit, no more mid-process spam). USE ONLY for truly rare, one-shot mid-process signals on LONG-LIVED processes that will never exit on their own — e.g. ['Application startup complete'] on a server so you know when to hit its endpoint, or ['migration done'] on a daemon. DO NOT use for: (1) end-of-run markers like 'DONE'/'PASS' — use notify_on_complete instead; (2) error patterns like 'ERROR'/'Traceback' in loops or multi-item batch jobs — they fire on every iteration and you'll hit the strike limit fast; (3) anything you'd ever combine with notify_on_complete. When in doubt, choose notify_on_complete. MUTUALLY EXCLUSIVE with notify_on_complete — set one, not both."
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "text_to_speech",
+        "description": "Convert text to speech audio. Returns a MEDIA: path that the platform delivers as a voice message. On Telegram it plays as a voice bubble, on Discord/WhatsApp as an audio attachment. In CLI mode, saves to ~/voice-memos/. Voice and provider are user-configured, not model-selected.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text to convert to speech. Provider-specific character caps apply and are enforced automatically (OpenAI 4096, xAI 15000, MiniMax 10000, ElevenLabs 5k-40k depending on model); over-long input is truncated."
+            },
+            "output_path": {
+              "type": "string",
+              "description": "Optional custom file path to save the audio. Defaults to /app/.hermes/audio_cache/<timestamp>.mp3"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "todo",
+        "description": "Manage your task list for the current session. Use for complex tasks with 3+ steps or when the user provides multiple tasks. Call with no parameters to read the current list.\n\nWriting:\n- Provide 'todos' array to create/update items\n- merge=false (default): replace the entire list with a fresh plan\n- merge=true: update existing items by id, add any new ones\n\nEach item: {id: string, content: string, status: pending|in_progress|completed|cancelled}\nList order is priority. Only ONE item in_progress at a time.\nMark items completed immediately when done. If something fails, cancel it and add a revised item.\n\nAlways returns the full current list.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "todos": {
+              "type": "array",
+              "description": "Task items to write. Omit to read current list.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Unique item identifier"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Task description"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed",
+                      "cancelled"
+                    ],
+                    "description": "Current status"
+                  }
+                },
+                "required": [
+                  "id",
+                  "content",
+                  "status"
+                ]
+              }
+            },
+            "merge": {
+              "type": "boolean",
+              "description": "true: update existing items by id, add new ones. false (default): replace the entire list.",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_extract",
+        "description": "Extract content from web page URLs. Returns page content in markdown format. Also works with PDF URLs (arxiv papers, documents, etc.) — pass the PDF link directly and it converts to markdown text. Pages under 5000 chars return full markdown; larger pages are LLM-summarized and capped at ~5000 chars per page. Pages over 2M chars are refused. If a URL fails or times out, use the browser tool to access it instead.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of URLs to extract content from (max 5 URLs per call)",
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "urls"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Search the web for information on any topic. Returns up to 5 relevant results with titles, URLs, and descriptions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The search query to look up on the web"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "write_file",
+        "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file — use 'patch' for targeted edits.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to write (will be created if it doesn't exist, overwritten if it does)"
+            },
+            "content": {
+              "type": "string",
+              "description": "Complete content to write to the file"
+            }
+          },
+          "required": [
+            "path",
+            "content"
+          ]
+        }
+      }
+    }
+  ],
+  "message_count": 75,
+  "messages": [
+    {
+      "role": "user",
+      "content": "收不到飞书信息"
+    },
+    {
+      "role": "assistant",
+      "content": "收到你的反馈说收不到飞书信息，我需要了解更多信息来帮你排查问题：\n\n**请确认以下几点：**\n\n1. **你使用的是哪种飞书功能？**\n   - 飞书Webhook 机器人推送？\n   - 飞书多维表格/数据库 自动推送？\n   - 飞书消息卡片？\n   - 其他飞书集成？\n\n2. **之前能收到吗？**\n   - 一直收不到？\n   - 之前可以，现在突然收不到了？\n\n3. **有没有错误信息？**\n   - 日志里有什么报错？\n   - 发送接口返回了什么？\n\n你可以描述一下具体情况，或者如果有相关配置/代码，我可以帮你检查。",
+      "reasoning": "用户说\"收不到飞书信息\"，意思是他们在飞书上收不到消息。这可能是指：\n1. 飞书Webhook发送的消息没有收到\n2. 飞书机器人/应用没有正常推送消息\n3. 飞书集成出了问题\n\n我需要先了解情况：\n- 用户使用的是哪个飞书功能？飞书Webhook？飞书机器人？\n- 之前能不能收到？现在突然收不到了？\n- 有没有错误信息？\n\n让我先问清楚情况，或者检查一下相关配置。\n\n我应该先了解更多信息，才能帮助诊断问题。",
+      "finish_reason": "stop",
+      "reasoning_details": [
+        {
+          "signature": "1cc5e170683ae7ab1f6c2028c602616ffe61bd47f0e161fce7f83e502a0047c4",
+          "thinking": "用户说\"收不到飞书信息\"，意思是他们在飞书上收不到消息。这可能是指：\n1. 飞书Webhook发送的消息没有收到\n2. 飞书机器人/应用没有正常推送消息\n3. 飞书集成出了问题\n\n我需要先了解情况：\n- 用户使用的是哪个飞书功能？飞书Webhook？飞书机器人？\n- 之前能不能收到？现在突然收不到了？\n- 有没有错误信息？\n\n让我先问清楚情况，或者检查一下相关配置。\n\n我应该先了解更多信息，才能帮助诊断问题。",
+          "type": "thinking"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "1.websocket 机器人推送 2.一直收不到 3.WARNING gateway.run: Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\n\nWARNING gateway.run: No adapter available for feishu"
+    },
+    {
+      "role": "assistant",
+      "content": "找到问题了！是飞书配置缺失。按照以下步骤排查：\n\n**第一步：检查环境变量是否设置**",
+      "reasoning": "The user is seeing two warnings:\n1. `Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set`\n2. `No adapter available for feishu`\n\nThis means the Feishu WebSocket adapter is not properly configured. The user needs to:\n1. Install the lark-oapi package\n2. Set the FEISHU_APP_ID and FEISHU_APP_SECRET environment variables\n\nLet me help them check their current setup and fix the configuration.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "00ff81de012c212c20670ef15c69e2b1417bb7a5ed6f57a4c9564a7a6e8c87a5",
+          "thinking": "The user is seeing two warnings:\n1. `Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set`\n2. `No adapter available for feishu`\n\nThis means the Feishu WebSocket adapter is not properly configured. The user needs to:\n1. Install the lark-oapi package\n2. Set the FEISHU_APP_ID and FEISHU_APP_SECRET environment variables\n\nLet me help them check their current setup and fix the configuration.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_4a35djzyx3fl_1",
+          "call_id": "call_function_4a35djzyx3fl_1",
+          "response_item_id": "fc_function_4a35djzyx3fl_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"echo \\\"FEISHU_APP_ID: $FEISHU_APP_ID\\\" && echo \\\"FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:+\\u5df2\\u8bbe\\u7f6e}\\\" && env | grep -i feishu\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"FEISHU_APP_ID: cli_a9649e4dcb79dcbc\\nFEISHU_APP_SECRET: 已设置\\nFEISHU_ALLOWED_USERS=\\nFEISHU_CONNECTION_MODE=websocket\\nFEISHU_APP_SECRET=WOSsiO...5VLf\\nFEISHU_ALLOW_ALL_USERS=true\\nFEISHU_APP_ID=cli_a9649e4dcb79dcbc\\nFEISHU_GROUP_POLICY=open\\nFEISHU_HOME_CHANNEL=feishu\\nFEISHU_DOMAIN=feishu\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_4a35djzyx3fl_1"
+    },
+    {
+      "role": "assistant",
+      "content": "环境变量已设置，但程序没读到。检查一下：\n\n**第二步：检查 lark-oapi 是否安装**",
+      "reasoning": "环境变量已经设置了，但还是报错说没设置。让我检查一下 lark-oapi 是否安装，以及配置文件的读取情况。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "53bd8b881c0e6acaf95b42809efe2c80ad91a1a7bf3e91e7dd97ac5f7ba6b676",
+          "thinking": "环境变量已经设置了，但还是报错说没设置。让我检查一下 lark-oapi 是否安装，以及配置文件的读取情况。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_vo1zr0m69jk4_1",
+          "call_id": "call_function_vo1zr0m69jk4_1",
+          "response_item_id": "fc_function_vo1zr0m69jk4_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"pip show lark-oapi | head -5\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"WARNING: Package(s) not found: lark-oapi\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_vo1zr0m69jk4_1"
+    },
+    {
+      "role": "assistant",
+      "content": "**问题确认：`lark-oapi` 包没有安装**\n\n安装一下：",
+      "reasoning": "问题找到了！`lark-oapi` 没有安装。但是环境变量 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET` 是有的，说明配置在环境变量里，但缺少 `lark-oapi` 这个 Python 包。\n\n我需要安装 lark-oapi。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "b16a1b133963641e246a0506a09dd9040725f7827a76452daea7b8790ce2da1f",
+          "thinking": "问题找到了！`lark-oapi` 没有安装。但是环境变量 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET` 是有的，说明配置在环境变量里，但缺少 `lark-oapi` 这个 Python 包。\n\n我需要安装 lark-oapi。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_u7kq4aeraa4x_1",
+          "call_id": "call_function_u7kq4aeraa4x_1",
+          "response_item_id": "fc_function_u7kq4aeraa4x_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"pip install lark-oapi -q\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"ERROR: Exception:\\nTraceback (most recent call last):\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 438, in _error_catcher\\n    yield\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 561, in read\\n    data = self._fp_read(amt) if not fp_closed else b\\\"\\\"\\n           ^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 527, in _fp_read\\n    return self._fp.read(amt) if amt is not None else self._fp.read()\\n           ^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/cachecontrol/filewrapper.py\\\", line 98, in read\\n    data: bytes = self.__fp.read(amt)\\n                  ^^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/http/client.py\\\", line 478, in read\\n    s = self.fp.read(amt)\\n        ^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/socket.py\\\", line 718, in readinto\\n    return self._sock.recv_into(b)\\n           ^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/ssl.py\\\", line 1314, in recv_into\\n    return self.read(nbytes, buffer)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/ssl.py\\\", line 1166, in read\\n    return self._sslobj.read(len, buffer)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nTimeoutError: The read operation timed out\\n\\nDuring handling of the above exception, another exception occurred:\\n\\nTraceback (most recent call last):\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/cli/base_command.py\\\", line 180, in exc_logging_wrapper\\n    status = run_func(*args)\\n             ^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/cli/req_command.py\\\", line 245, in wrapper\\n    return func(self, options, args)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/commands/install.py\\\", line 377, in run\\n    requirement_set = resolver.resolve(\\n                      ^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/resolution/resolvelib/resolver.py\\\", line 179, in resolve\\n    self.factory.preparer.prepare_linked_requirements_more(reqs)\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/operations/prepare.py\\\", line 552, in prepare_linked_requirements_more\\n    self._complete_partial_requirements(\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/operations/prepare.py\\\", line 467, in _complete_partial_requirements\\n    for link, (filepath, _) in batch_download:\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/network/download.py\\\", line 183, in __call__\\n    for chunk in chunks:\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_internal/network/utils.py\\\", line 63, in response_chunks\\n    for chunk in response.raw.stream(\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 622, in stream\\n    data = self.read(amt=amt, decode_content=decode_content)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 560, in read\\n    with self._error_catcher():\\n  File \\\"/usr/local/lib/python3.11/contextlib.py\\\", line 158, in __exit__\\n    self.gen.throw(typ, value, traceback)\\n  File \\\"/usr/local/lib/python3.11/site-packages/pip/_vendor/urllib3/response.py\\\", line 443, in _error_catcher\\n    raise ReadTimeoutError(self._pool, None, \\\"Read timed out.\\\")\\npip._vendor.urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.\\n\\n[notice] A new release of pip is available: 24.0 -> 26.0.1\\n[notice] To update, run: pip install --upgrade pip\", \"exit_code\": 2, \"error\": null}",
+      "tool_call_id": "call_function_u7kq4aeraa4x_1"
+    },
+    {
+      "role": "assistant",
+      "content": "网络超时了，换个镜像重试：",
+      "reasoning": "pip install 超时了，可能是网络问题。让我试试换个镜像源或者重试。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c8cc417a3637db3b32315d76c1a6a8a2651a2ad153a0fde47e5bd14281cdb09d",
+          "thinking": "pip install 超时了，可能是网络问题。让我试试换个镜像源或者重试。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_2ikaobxkl6nx_1",
+          "call_id": "call_function_2ikaobxkl6nx_1",
+          "response_item_id": "fc_function_2ikaobxkl6nx_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"pip install lark-oapi -q -i https://pypi.tuna.tsinghua.edu.cn/simple --timeout 60\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\\n\\n[notice] A new release of pip is available: 24.0 -> 26.0.1\\n[notice] To update, run: pip install --upgrade pip\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_2ikaobxkl6nx_1"
+    },
+    {
+      "role": "assistant",
+      "content": "安装成功！验证一下：",
+      "reasoning": "安装成功了。现在验证一下：",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "3daa06add92cc6da27dd8cc882f1d57afd654281a9bfef84a2336b0ec9ca06ee",
+          "thinking": "安装成功了。现在验证一下：",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_4b7g7a41z6ok_1",
+          "call_id": "call_function_4b7g7a41z6ok_1",
+          "response_item_id": "fc_function_4b7g7a41z6ok_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"pip show lark-oapi | head -3\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"Name: lark-oapi\\nVersion: 1.5.5\\nSummary: Lark OpenAPI SDK for Python\\nERROR: Pipe to stdout was broken\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_4b7g7a41z6ok_1"
+    },
+    {
+      "role": "assistant",
+      "content": "`lark-oapi` 已安装成功（版本 1.5.5）。\n\n**现在需要重启 Hermes Gateway 服务让配置生效：**\n\n```bash\n# 重启服务\npm2 restart hermes-gateway\n```\n\n或者如果你用 Docker：\n```bash\ndocker restart hermes-gateway\n```\n\n重启后再测试一下飞书 WebSocket 推送是否正常工作。",
+      "reasoning": "安装成功了，现在 `lark-oapi` 版本是 1.5.5。现在需要重启 Hermes Gateway 服务让配置生效。\n\n让我告诉用户需要重启服务。",
+      "finish_reason": "stop",
+      "reasoning_details": [
+        {
+          "signature": "322d6cd948efbbfce4a5451bf6f32c593a8c7bd6507d27f8f42b13d5077ee46f",
+          "thinking": "安装成功了，现在 `lark-oapi` 版本是 1.5.5。现在需要重启 Hermes Gateway 服务让配置生效。\n\n让我告诉用户需要重启服务。",
+          "type": "thinking"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"eventId\": \"e97a2c8c85965e209190708d50c6561e\",\n  \"success\": \"fail\",\n  \"appId\": \"cli_a9649e4dcb79dcbc\",\n  \"tenantKey\": \"2e887d49864f165b\",\n  \"eventType\": \"im.message.receive_v1\",\n  \"hookType\": 4,\n  \"address\": \"\",\n  \"retryCnt\": 1,\n  \"costMills\": 3,\n  \"errorInfo\": \"app not online\",\n  \"httpCode\": 0,\n  \"eventTime\": \"1777218210924\"\n} 飞书侧的 log"
+    },
+    {
+      "role": "assistant",
+      "content": "\"app not online\" 说明 Hermes Gateway 的 WebSocket 没有连接到飞书。\n\n检查一下 Gateway 状态：",
+      "reasoning": "这个错误 \"app not online\" 说明飞书机器人应用不在线。这通常是 WebSocket 连接没有建立起来的问题。可能的原因：\n\n1. Hermes Gateway 没有重启，或者重启后没有成功连接到飞书\n2. 应用配置问题\n3. 需要在飞书开放平台确认应用是否已上线\n\n让我检查一下 Hermes Gateway 的状态和日志，看看连接情况。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "66009efc635e56e42ae5cc73c2465496d376fdb062c69f80da9c090cf26071d4",
+          "thinking": "这个错误 \"app not online\" 说明飞书机器人应用不在线。这通常是 WebSocket 连接没有建立起来的问题。可能的原因：\n\n1. Hermes Gateway 没有重启，或者重启后没有成功连接到飞书\n2. 应用配置问题\n3. 需要在飞书开放平台确认应用是否已上线\n\n让我检查一下 Hermes Gateway 的状态和日志，看看连接情况。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_y07vuih0pqg1_1",
+          "call_id": "call_function_y07vuih0pqg1_1",
+          "response_item_id": "fc_function_y07vuih0pqg1_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"pm2 status 2>/dev/null || echo \\\"PM2 not running\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"PM2 not running\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_y07vuih0pqg1_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "PM2 is not running, so Hermes Gateway is not running as a PM2 process. Let me check if there's another way to start it or if it's running some other way.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "0fecd60b8738d87d1b894dda9885bdee2719abb6f39a3fa8735130106df15b44",
+          "thinking": "PM2 is not running, so Hermes Gateway is not running as a PM2 process. Let me check if there's another way to start it or if it's running some other way.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_3te0ps1gutxv_1",
+          "call_id": "call_function_3te0ps1gutxv_1",
+          "response_item_id": "fc_function_3te0ps1gutxv_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ps aux | grep -i hermes | grep -v grep\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"/usr/bin/bash: line 3: ps: command not found\", \"exit_code\": 1, \"error\": null, \"exit_code_meaning\": \"No matches found (not an error)\"}",
+      "tool_call_id": "call_function_3te0ps1gutxv_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "PM2 not running and ps not available. Let me try other ways to check if the gateway is running.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "46f910d0bfb54645a3d319fe2c3292a0fd8634c5e9f292126a8051346b900cec",
+          "thinking": "PM2 not running and ps not available. Let me try other ways to check if the gateway is running.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_xow247abaikc_1",
+          "call_id": "call_function_xow247abaikc_1",
+          "response_item_id": "fc_function_xow247abaikc_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"curl -s http://localhost:3000/health 2>/dev/null || curl -s http://localhost:8080/health 2>/dev/null || echo \\\"Gateway not responding\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"Gateway not responding\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_xow247abaikc_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Gateway 没有运行。我需要找到如何启动 Hermes Gateway。让我看看有什么启动脚本。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1c63403324a0badc39a9eae727c7c266fa9d85ba3256179167033fb5e07eadca",
+          "thinking": "Gateway 没有运行。我需要找到如何启动 Hermes Gateway。让我看看有什么启动脚本。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_cvqbtvn0nbp4_1",
+          "call_id": "call_function_cvqbtvn0nbp4_1",
+          "response_item_id": "fc_function_cvqbtvn0nbp4_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls -la /app/*.sh /app/*.py 2>/dev/null | head -20\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_cvqbtvn0nbp4_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me check what processes are running and find the hermes gateway process.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "dd28a036a5eb696fd8ce3869ef07742a7938b239481a1b249e1942e3b0d98a97",
+          "thinking": "Let me check what processes are running and find the hermes gateway process.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_b4xueaz48z1e_1",
+          "call_id": "call_function_b4xueaz48z1e_1",
+          "response_item_id": "fc_function_b4xueaz48z1e_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls -la /app/\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"total 28\\ndrwxr-xr-x 1 root root 4096 Apr 26 09:47 .\\ndrwxr-xr-x 1 root root 4096 Apr 26 15:42 ..\\n-rwxrwxrwx 1 root root 2723 Apr 26 11:07 .env\\ndrwx------ 1 root root 4096 Apr 26 15:45 .hermes\\ndrwxrwxrwx 1 root root 4096 Apr 24 08:22 final_reports\\ndrwxr-xr-x 1 root root 4096 Apr 26 11:05 hermes-agent\\ndrwxrwxrwx 1 root root 4096 Apr 24 16:36 logs\\ndrwxrwxrwx 1 root root 4096 Apr 26 11:59 mcp-servers\\ndrwxrwxrwx 1 root root 4096 Apr 26 15:04 microservices\\ndrwxr-xr-x 2 root root 4096 Apr 26 09:47 scripts\\ndrwxrwxrwx 1 root root 4096 Apr 26 14:29 skills\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_b4xueaz48z1e_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me check the microservices folder for the gateway service.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "30af41e747b5a5313451a6accdb4a7698f7b9d52676859748ad0813203d121fa",
+          "thinking": "Let me check the microservices folder for the gateway service.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_43sv9sanje2d_1",
+          "call_id": "call_function_43sv9sanje2d_1",
+          "response_item_id": "fc_function_43sv9sanje2d_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls -la /app/microservices/\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"total 8\\ndrwxrwxrwx 1 root root 4096 Apr 26 15:04 .\\ndrwxr-xr-x 1 root root 4096 Apr 26 09:47 ..\\ndrwxrwxrwx 1 root root 4096 Apr 26 09:59 DataCollector\\ndrwxrwxrwx 1 root root 4096 Apr 23 14:03 MediaCrawler\\ndrwxrwxrwx 1 root root 4096 Apr 14 15:17 web-access\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_43sv9sanje2d_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at the hermes-agent directory and check if there's a gateway there.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c11eab8fe94d8d26e9b5d21a26c0d6471cf12132eeaca2e8c2ec5623ee2439ca",
+          "thinking": "Let me look at the hermes-agent directory and check if there's a gateway there.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_1da0lnrbb8y0_1",
+          "call_id": "call_function_1da0lnrbb8y0_1",
+          "response_item_id": "fc_function_1da0lnrbb8y0_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls -la /app/hermes-agent/\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"total 3416\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 .\\ndrwxr-xr-x 1 root root    4096 Apr 26 09:47 ..\\n-rw-r--r-- 1 root root     202 Apr 26 11:05 .dockerignore\\n-rw-r--r-- 1 root root   18632 Apr 26 11:05 .env.example\\n-rw-r--r-- 1 root root     193 Apr 26 11:05 .envrc\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:06 .git\\n-rw-r--r-- 1 root root     120 Apr 26 11:05 .gitattributes\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 .github\\n-rw-r--r-- 1 root root    1213 Apr 26 11:05 .gitignore\\n-rw-r--r-- 1 root root     106 Apr 26 11:05 .gitmodules\\n-rw-r--r-- 1 root root    5743 Apr 26 11:05 .mailmap\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 .plans\\n-rw-r--r-- 1 root root   35514 Apr 26 11:05 AGENTS.md\\n-rw-r--r-- 1 root root   26966 Apr 26 11:05 CONTRIBUTING.md\\n-rw-r--r-- 1 root root    2686 Apr 26 11:05 Dockerfile\\n-rw-r--r-- 1 root root    1070 Apr 26 11:05 LICENSE\\n-rw-r--r-- 1 root root      87 Apr 26 11:05 MANIFEST.in\\n-rw-r--r-- 1 root root   11290 Apr 26 11:05 README.md\\n-rw-r--r-- 1 root root    1768 Apr 26 11:05 RELEASE_v0.10.0.md\\n-rw-r--r-- 1 root root   43437 Apr 26 11:05 RELEASE_v0.11.0.md\\n-rw-r--r-- 1 root root   32385 Apr 26 11:05 RELEASE_v0.2.0.md\\n-rw-r--r-- 1 root root   35724 Apr 26 11:05 RELEASE_v0.3.0.md\\n-rw-r--r-- 1 root root   45448 Apr 26 11:05 RELEASE_v0.4.0.md\\n-rw-r--r-- 1 root root   32765 Apr 26 11:05 RELEASE_v0.5.0.md\\n-rw-r--r-- 1 root root   26137 Apr 26 11:05 RELEASE_v0.6.0.md\\n-rw-r--r-- 1 root root   33995 Apr 26 11:05 RELEASE_v0.7.0.md\\n-rw-r--r-- 1 root root   36083 Apr 26 11:05 RELEASE_v0.8.0.md\\n-rw-r--r-- 1 root root   32472 Apr 26 11:05 RELEASE_v0.9.0.md\\n-rw-r--r-- 1 root root    7167 Apr 26 11:05 SECURITY.md\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 acp_adapter\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 acp_registry\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 agent\\ndrwxr-xr-x 2 root root    4096 Apr 25 06:06 assets\\n-rw-r--r-- 1 root root   55432 Apr 26 11:05 batch_runner.py\\n-rw-r--r-- 1 root root   50740 Apr 26 11:05 cli-config.yaml.example\\n-rw-r--r-- 1 root root  501111 Apr 26 11:05 cli.py\\n-rw-r--r-- 1 root root     407 Apr 26 11:05 constraints-termux.txt\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 cron\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 datagen-config-examples\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 docker\\n-rw-r--r-- 1 root root    1816 Apr 26 11:05 docker-compose.yml\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 environments\\n-rw-r--r-- 1 root root    5199 Apr 26 11:05 flake.lock\\n-rw-r--r-- 1 root root    1079 Apr 26 11:05 flake.nix\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 gateway\\n-rwxr-xr-x 1 root root     262 Apr 26 11:05 hermes\\n-rw-r--r-- 1 root root    6306 Apr 26 11:05 hermes-already-has-routines.md\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:07 hermes_agent.egg-info\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 hermes_cli\\n-rw-r--r-- 1 root root   10400 Apr 26 11:05 hermes_constants.py\\n-rw-r--r-- 1 root root   13620 Apr 26 11:05 hermes_logging.py\\n-rw-r--r-- 1 root root   69763 Apr 26 11:05 hermes_state.py\\n-rw-r--r-- 1 root root    3209 Apr 26 11:05 hermes_time.py\\n-rw-r--r-- 1 root root   30701 Apr 26 11:05 mcp_serve.py\\n-rw-r--r-- 1 root root   28449 Apr 26 11:05 mini_swe_runner.py\\n-rw-r--r-- 1 root root   27764 Apr 26 11:05 model_tools.py\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 nix\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 optional-skills\\n-rw-r--r-- 1 root root   94861 Apr 26 11:05 package-lock.json\\n-rw-r--r-- 1 root root     783 Apr 26 11:05 package.json\\ndrwxr-xr-x 1 root root    4096 Apr 25 06:06 packaging\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 plans\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 plugins\\n-rw-r--r-- 1 root root    6043 Apr 26 11:05 pyproject.toml\\n-rw-r--r-- 1 root root   16286 Apr 26 11:05 rl_cli.py\\n-rw-r--r-- 1 root root  652373 Apr 26 11:05 run_agent.py\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 scripts\\n-rwxr-xr-x 1 root root   14753 Apr 26 11:05 setup-hermes.sh\\ndrwxr-xr-x 1 root root    4096 Apr 25 06:06 skills\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 tests\\ndrwxr-xr-x 2 root root    4096 Apr 25 06:06 tinker-atropos\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 tools\\n-rw-r--r-- 1 root root   12332 Apr 26 11:05 toolset_distributions.py\\n-rw-r--r-- 1 root root   24716 Apr 26 11:05 toolsets.py\\n-rw-r--r-- 1 root root   65305 Apr 26 11:05 trajectory_compressor.py\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 tui_gateway\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 ui-tui\\n-rw-r--r-- 1 root root    9301 Apr 26 11:05 utils.py\\n-rw-r--r-- 1 root root 1048678 Apr 26 11:05 uv.lock\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 web\\ndrwxr-xr-x 1 root root    4096 Apr 26 11:05 website\", \"exit_code\": 0, \"error\": null}\n\n[Subdirectory context discovered: hermes-agent/AGENTS.md]\n# Hermes Agent - Development Guide\n\nInstructions for AI coding assistants and developers working on the hermes-agent codebase.\n\n## Development Environment\n\n```bash\n# Prefer .venv; fall back to venv if that's what your checkout has.\nsource .venv/bin/activate   # or: source venv/bin/activate\n```\n\n`scripts/run_tests.sh` probes `.venv` first, then `venv`, then\n`$HOME/.hermes/hermes-agent/venv` (for worktrees that share a venv with the\nmain checkout).\n\n## Project Structure\n\nFile counts shift constantly — don't treat the tree below as exhaustive.\nThe canonical source is the filesystem. The notes call out the load-bearing\nentry points you'll actually edit.\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent class — core conversation loop (~12k LOC)\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # Toolset definitions, _HERMES_CORE_TOOLS list\n├── cli.py                # HermesCLI class — interactive CLI orchestrator (~11k LOC)\n├── hermes_state.py       # SessionDB — SQLite session store (FTS5 search)\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # setup_logging() — agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # Agent internals (provider adapters, memory, caching, compression, etc.)\n├── hermes_cli/           # CLI subcommands, setup wizard, plugins loader, skin engine\n├── tools/                # Tool implementations — auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity)\n├── gateway/              # Messaging gateway — run.py + session.py + platforms/\n│   ├── platforms/        # Adapter per platform (telegram, discord, slack, whatsapp,\n│   │                     #   homeassistant, signal, matrix, mattermost, email, sms,\n│   │                     #   dingtalk, wecom, weixin, feishu, qqbot, bluebubbles,\n│   │                     #   webhook, api_server, ...). See ADDING_A_PLATFORM.md.\n│   └── builtin_hooks/    # Always-registered gateway hooks (boot-md, ...)\n├── plugins/              # Plugin system (see \"Plugins\" section below)\n│   ├── memory/           # Memory-provider plugins (honcho, mem0, supermemory, ...)\n│   ├── context_engine/   # Context-engine plugins\n│   └── <others>/         # Dashboard, image-gen, disk-cleanup, examples, ...\n├── optional-skills/      # Heavier/niche skills shipped but NOT active by default\n├── skills/               # Built-in skills bundled with the repo\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n│   └── src/              # entry.tsx, app.tsx, gatewayClient.ts + app/components/hooks/lib\n├── tui_gateway/          # Python JSON-RPC backend for the TUI\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains integration)\n├── cron/                 # Scheduler — jobs.py, scheduler.py\n├── environments/         # RL training environments (Atropos)\n├── scripts/              # run_tests.sh, release.py, auxiliary scripts\n├── website/              # Docusaurus docs site\n└── tests/                # Pytest suite (~15k tests across ~700 files as of Apr 2026)\n```\n\n**User config:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys only).\n**Logs:** `~/.hermes/logs/` — `agent.log` (INFO+), `errors.log` (WARNING+),\n`gateway.log` when running the gateway. Profile-aware via `get_hermes_home()`.\nBrowse with `hermes logs [--follow] [--level ...] [--session ...]`.\n\n## File Dependency Chain\n\n```\ntools/registry.py  (no deps — imported by all tool files)\n       ↑\ntools/*.py  (each calls registry.register() at import time)\n       ↑\nmodel_tools.py  (imports tools/registry + triggers tool discovery)\n       ↑\nrun_agent.py, cli.py, batch_runner.py, environments/\n```\n\n---\n\n## AIAgent Class (run_agent.py)\n\nThe real `AIAgent.__init__` takes ~60 parameters (credentials, routing, callbacks,\nsession context, budget, credential pool, etc.). The signature below is the\nminimum subset you'll usually touch — read `run_agent.py` for the full list.\n\n```python\nclass AIAgent:\n    def __init__(self,\n        base_url: str = None,\n        api_key: str = None,\n        provider: str = None,\n        api_mode: str = None,              # \"chat_completions\" | \"codex_responses\" | ...\n        model: str = \"\",                   # empty → resolved from config/provider later\n        max_iterations: int = 90,          # tool-calling iterations (shared with subagents)\n        enabled_toolsets: list = None,\n        disabled_toolsets: list = None,\n        quiet_mode: bool = False,\n        save_trajectories: bool = False,\n        platform: str = None,              # \"cli\", \"telegram\", etc.\n        session_id: str = None,\n        skip_context_files: bool = False,\n        skip_memory: bool = False,\n        credential_pool=None,\n        # ... plus callbacks, thread/user/chat IDs, iteration_budget, fallback_model,\n        # checkpoints config, prefill_messages, service_tier, reasoning_config, etc.\n    ): ...\n\n    def chat(self, message: str) -> str:\n        \"\"\"Simple interface — returns final response string.\"\"\"\n\n    def run_conversation(self, user_message: str, system_message: str = None,\n                         conversation_history: list = None, task_id: str = None) -> dict:\n        \"\"\"Full interface — returns dict with final_response + messages.\"\"\"\n```\n\n### Agent Loop\n\nThe core loop is inside `run_conversation()` — entirely synchronous, with\ninterrupt checks, budget tracking, and a one-turn grace call:\n\n```python\nwhile (api_call_count < self.max_iterations and self.iteration_budget.remaining > 0) \\\n        or self._budget_grace_call:\n    if self._interrupt_requested: break\n    response = client.chat.completions.create(model=model, messages=messages, tools=tool_schemas)\n    if response.tool_calls:\n        for tool_call in response.tool_calls:\n            result = handle_function_call(tool_call.name, tool_call.args, task_id)\n            messages.append(tool_result_message(result))\n        api_call_count += 1\n    else:\n        return response.content\n```\n\nMessages follow OpenAI format: `{\"role\": \"system/user/assistant/tool\", ...}`.\nReasoning content is stored in `assistant_msg[\"reasoning\"]`.\n\n---\n\n## CLI Architecture (cli.py)\n\n- **Rich** for banner/panels, **prompt_toolkit** for input with autocomplete\n- **KawaiiSpinner** (`agent/display.py`) — animated faces during API calls, `┊` activity feed for tool results\n- `load_cli_config()` in cli.py merges hardcoded defaults + user config YAML\n- **Skin engine** (`hermes_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text\n- `process_command()` is a method on `HermesCLI` — dispatches on canonical command name resolved via `resolve_command()` from the central registry\n- Skill slash commands: `agent/skill_commands.py` scans `~/.hermes/skills/`, injects as **user message** (not system prompt) to preserve prompt caching\n\n### Slash Command Registry (`hermes_cli/commands.py`)\n\nAll slash commands are defined in a central `COMMAND_REGISTRY` list of `CommandDef` objects. Every downstream consumer derives from this registry automatically:\n\n- **CLI** — `process_command()` resolves aliases via `resolve_command()`, dispatches on canonical name\n- **Gateway** — `GATEWAY_KNOWN_COMMANDS` frozenset for hook emission, `resolve_command()` for dispatch\n- **Gateway help** — `gateway_help_lines()` generates `/help` output\n- **Telegram** — `telegram_bot_commands()` generates the BotCommand menu\n- **Slack** — `slack_subcommand_map()` generates `/hermes` subcommand routing\n- **Autocomplete** — `COMMANDS` flat dict feeds `SlashCommandCompleter`\n- **CLI help** — `COMMANDS_BY_CATEGORY` dict feeds `show_help()`\n\n### Adding a Slash Command\n\n1. Add a `CommandDef` entry to `COMMAND_RE\n\n[...truncated AGENTS.md: 35,069 chars total]",
+      "tool_call_id": "call_function_1da0lnrbb8y0_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "我看到了 Hermes Agent 的代码结构。gateway 在 hermes-agent/gateway/ 目录下。飞书相关的 platform 应该在 gateway/platforms/feishu 下。我需要找到如何启动 gateway。\n\n让我查看启动方式。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "3bf965b6ef7fc22a09099fc56ed6b3c5a53e070b06cbd7d2008575d6876fe2ad",
+          "thinking": "我看到了 Hermes Agent 的代码结构。gateway 在 hermes-agent/gateway/ 目录下。飞书相关的 platform 应该在 gateway/platforms/feishu 下。我需要找到如何启动 gateway。\n\n让我查看启动方式。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_5l8h09d7hofi_1",
+          "call_id": "call_function_5l8h09d7hofi_1",
+          "response_item_id": "fc_function_5l8h09d7hofi_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cat /app/hermes-agent/gateway/run.py | head -80\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"\\\"\\\"\\\"\\nGateway runner - entry point for messaging platform integrations.\\n\\nThis module provides:\\n- start_gateway(): Start all configured platform adapters\\n- GatewayRunner: Main class managing the gateway lifecycle\\n\\nUsage:\\n    # Start the gateway\\n    python -m gateway.run\\n    \\n    # Or from CLI\\n    python cli.py --gateway\\n\\\"\\\"\\\"\\n\\nimport asyncio\\nimport dataclasses\\nimport json\\nimport logging\\nimport os\\nimport re\\nimport shlex\\nimport sys\\nimport signal\\nimport tempfile\\nimport threading\\nimport time\\nfrom collections import OrderedDict\\nfrom contextvars import copy_context\\nfrom pathlib import Path\\nfrom datetime import datetime\\nfrom typing import Dict, Optional, Any, List\\n\\nfrom agent.account_usage import fetch_account_usage, render_account_usage_lines\\n\\n# --- Agent cache tuning ---------------------------------------------------\\n# Bounds the per-session AIAgent cache to prevent unbounded growth in\\n# long-lived gateways (each AIAgent holds LLM clients, tool schemas,\\n# memory providers, etc.).  LRU order + idle TTL eviction are enforced\\n# from _enforce_agent_cache_cap() and _session_expiry_watcher() below.\\n_AGENT_CACHE_MAX_SIZE = 128\\n_AGENT_CACHE_IDLE_TTL_SECS = 3600.0  # evict agents idle for >1h\\n\\n# ---------------------------------------------------------------------------\\n# SSL certificate auto-detection for NixOS and other non-standard systems.\\n# Must run BEFORE any HTTP library (discord, aiohttp, etc.) is imported.\\n# ---------------------------------------------------------------------------\\ndef _ensure_ssl_certs() -> None:\\n    \\\"\\\"\\\"Set SSL_CERT_FILE if the system doesn't expose CA certs to Python.\\\"\\\"\\\"\\n    if \\\"SSL_CERT_FILE\\\" in os.environ:\\n        return  # user already configured it\\n\\n    import ssl\\n\\n    # 1. Python's compiled-in defaults\\n    paths = ssl.get_default_verify_paths()\\n    for candidate in (paths.cafile, paths.openssl_cafile):\\n        if candidate and os.path.exists(candidate):\\n            os.environ[\\\"SSL_CERT_FILE\\\"] = candidate\\n            return\\n\\n    # 2. certifi (ships its own Mozilla bundle)\\n    try:\\n        import certifi\\n        os.environ[\\\"SSL_CERT_FILE\\\"] = certifi.where()\\n        return\\n    except ImportError:\\n        pass\\n\\n    # 3. Common distro / macOS locations\\n    for candidate in (\\n        \\\"/etc/ssl/certs/ca-certificates.crt\\\",               # Debian/Ubuntu/Gentoo\\n        \\\"/etc/pki/tls/certs/ca-bundle.crt\\\",                 # RHEL/CentOS 7\\n        \\\"/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem\\\", # RHEL/CentOS 8+\\n        \\\"/etc/ssl/ca-bundle.pem\\\",                            # SUSE/OpenSUSE\\n        \\\"/etc/ssl/cert.pem\\\",                                 # Alpine / macOS\\n        \\\"/etc/pki/tls/cert.pem\\\",                             # Fedora\\n        \\\"/usr/local/etc/openssl@1.1/cert.pem\\\",               # macOS Homebrew Intel\\n        \\\"/opt/homebrew/etc/openssl@1.1/cert.pem\\\",            # macOS Homebrew ARM\\n    ):\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_5l8h09d7hofi_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Now let me find how the gateway is started and what the feishu platform does. Let me check the gateway platforms directory for feishu.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "699c139e00e6080dcb979dceac10b77d86051bcd6f3802f5ad3fcdd305befb4b",
+          "thinking": "Now let me find how the gateway is started and what the feishu platform does. Let me check the gateway platforms directory for feishu.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_rcbknd2s8lir_1",
+          "call_id": "call_function_rcbknd2s8lir_1",
+          "response_item_id": "fc_function_rcbknd2s8lir_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls /app/hermes-agent/gateway/platforms/\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"ADDING_A_PLATFORM.md\\n__init__.py\\napi_server.py\\nbase.py\\nbluebubbles.py\\ndingtalk.py\\ndiscord.py\\nemail.py\\nfeishu.py\\nfeishu_comment.py\\nfeishu_comment_rules.py\\nhelpers.py\\nhomeassistant.py\\nmatrix.py\\nmattermost.py\\nqqbot\\nsignal.py\\nslack.py\\nsms.py\\ntelegram.py\\ntelegram_network.py\\nwebhook.py\\nwecom.py\\nwecom_callback.py\\nwecom_crypto.py\\nweixin.py\\nwhatsapp.py\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_rcbknd2s8lir_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "feishu.py exists. Let me look at how the gateway loads the feishu platform and check the feishu platform code to understand how it connects via websocket.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "ea786f921204cfc111044062725f72f8e89a25490ea55b8f16c897e5afd2d720",
+          "thinking": "feishu.py exists. Let me look at how the gateway loads the feishu platform and check the feishu platform code to understand how it connects via websocket.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_4v9rr7y892e5_1",
+          "call_id": "call_function_4v9rr7y892e5_1",
+          "response_item_id": "fc_function_4v9rr7y892e5_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"grep -n \\\"lark-oapi\\\\|websocket\\\\|WSClient\\\\|dispatch\\\\|feishu\\\" /app/hermes-agent/gateway/platforms/feishu.py | head -60\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"21:https://open.feishu.cn/document/home/user-identity-introduction/introduction):\\n72:# aiohttp/websockets are independent optional deps — import outside lark_oapi\\n82:    import websockets\\n84:    websockets = None  # type: ignore[assignment]\\n112:    from lark_oapi.event.dispatcher_handler import EventDispatcherHandler\\n113:    from lark_oapi.ws import Client as FeishuWSClient\\n122:    FeishuWSClient = None  # type: ignore[assignment]\\n126:FEISHU_WEBSOCKET_AVAILABLE = websockets is not None\\n189:_FEISHU_APP_LOCK_SCOPE = \\\"feishu-app-id\\\"\\n197:_DEFAULT_WEBHOOK_PATH = \\\"/feishu/webhook\\\"\\n241:    \\\"feishu\\\": \\\"https://accounts.feishu.cn\\\",\\n245:    \\\"feishu\\\": \\\"https://open.feishu.cn\\\",\\n569:def parse_feishu_post_payload(\\n582:    title = _normalize_feishu_text(str(resolved.get(\\\"title\\\", \\\"\\\")).strip())\\n589:        row_text = _normalize_feishu_text(\\n762:def normalize_feishu_message(\\n770:    payload = _load_feishu_payload(raw_content)\\n781:            text_content=_normalize_feishu_text(text, mentions_map),\\n787:        parsed_post = parse_feishu_post_payload(payload, mentions_map=mentions_map)\\n799:        alt_text = _normalize_feishu_text(\\n835:def _load_feishu_payload(raw_content: str) -> Dict[str, Any]:\\n934:            text = _normalize_feishu_text(str(item or \\\"\\\"))\\n946:            body = parse_feishu_post_payload(item.get(\\\"content\\\") or item).text_content\\n955:        body = _normalize_feishu_text(body)\\n965:    normalized = [_normalize_feishu_text(line) for line in lines]\\n990:        return [_normalize_feishu_text(value)] if in_rich_block else []\\n1018:            normalized = _normalize_feishu_text(item)\\n1041:    normalized_name = _normalize_feishu_text(file_name)\\n1054:    return _normalize_feishu_text(str(title or \\\"\\\"))\\n1064:                normalized = _normalize_feishu_text(value)\\n1083:            normalized = _normalize_feishu_text(value)\\n1087:            normalized = _normalize_feishu_text(str(value))\\n1098:def _normalize_feishu_text(\\n1241:def _run_official_feishu_ws_client(ws_client: Any, adapter: Any) -> None:\\n1250:    original_connect = ws_client_module.websockets.connect\\n1260:            logger.debug(\\\"[Feishu] Failed to apply websocket runtime overrides\\\", exc_info=True)\\n1276:    ws_client_module.websockets.connect = _connect_with_overrides\\n1285:        ws_client_module.websockets.connect = original_connect\\n1304:def check_feishu_requirements() -> bool:\\n1337:        self._dedup_state_path = get_hermes_home() / \\\"feishu_seen_message_ids.json\\\"\\n1396:            domain_name=str(extra.get(\\\"domain\\\") or os.getenv(\\\"FEISHU_DOMAIN\\\", \\\"feishu\\\")).strip().lower(),\\n1398:                extra.get(\\\"connection_mode\\\") or os.getenv(\\\"FEISHU_CONNECTION_MODE\\\", \\\"websocket\\\")\\n1511:            logger.error(\\\"[Feishu] lark-oapi not installed\\\")\\n1516:        if self._connection_mode not in {\\\"websocket\\\", \\\"webhook\\\"}:\\n1518:                \\\"[Feishu] Unsupported FEISHU_CONNECTION_MODE=%s. Supported modes: websocket, webhook.\\\",\\n1535:                    + \\\" Stop the other gateway before starting a second Feishu websocket client.\\\"\\n1538:                self._set_fatal_error(\\\"feishu_app_lock\\\", message, retryable=False)\\n1549:            self._set_fatal_error(\\\"feishu_connect_error\\\", message, retryable=True)\\n1559:        self._disable_websocket_auto_reconnect()\\n1564:            logger.debug(\\\"[Feishu] Cancelling websocket thread tasks and stopping loop\\\")\\n1568:                logger.debug(\\\"[Feishu] Found %d pending tasks in websocket thread\\\", len(tasks))\\n1578:                logger.debug(\\\"[Feishu] Waiting for websocket thread to exit (timeout=10s)\\\")\\n1611:    def _disable_websocket_auto_reconnect(self) -> None:\\n1653:                    response = await self._feishu_send_with_retry(\\n1664:                    response = await self._feishu_send_with_retry(\\n1677:                    response = await self._feishu_send_with_retry(\\n1776:            response = await self._feishu_send_with_retry(\\n1914:                message_response = await self._feishu_send_with_retry(\\n1922:                message_response = await self._feishu_send_with_retry(\\n2048:        Called by the lark_oapi SDK's event dispatcher on a background thread.\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_4v9rr7y892e5_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "So the gateway checks for lark-oapi at line 1511 with `logger.error(\"[Feishu] lark-oapi not installed\")`. Let me check what condition triggers the \"No adapter available\" message.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "54dfb663b51798c29ff58e17ec1ecec27923ab34c103e96cb99aeb2c25a79b2c",
+          "thinking": "So the gateway checks for lark-oapi at line 1511 with `logger.error(\"[Feishu] lark-oapi not installed\")`. Let me check what condition triggers the \"No adapter available\" message.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_023p97f8gr87_1",
+          "call_id": "call_function_023p97f8gr87_1",
+          "response_item_id": "fc_function_023p97f8gr87_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"grep -n \\\"No adapter available\\\\|not installed\\\\|FEISHU_APP_ID\\\\|FEISHU_APP_SECRET\\\" /app/hermes-agent/gateway/run.py | head -30\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"485:        # Check optional skills (shipped with repo but not installed)\\n498:                        f\\\"The **{command_name}** skill is available but not installed.\\\\n\\\"\\n2043:                logger.warning(\\\"No adapter available for %s\\\", platform.value)\\n2766:                logger.warning(\\\"Telegram: python-telegram-bot not installed\\\")\\n2773:                logger.warning(\\\"Discord: discord.py not installed\\\")\\n2780:                logger.warning(\\\"WhatsApp: Node.js not installed or bridge not configured\\\")\\n2787:                logger.warning(\\\"Slack: slack-bolt not installed. Run: pip install 'hermes-agent[slack]'\\\")\\n2801:                logger.warning(\\\"HomeAssistant: aiohttp not installed or HASS_TOKEN not set\\\")\\n2815:                logger.warning(\\\"SMS: aiohttp not installed or TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN not set\\\")\\n2822:                logger.warning(\\\"DingTalk: dingtalk-stream not installed or DINGTALK_CLIENT_ID/SECRET not set\\\")\\n2829:                logger.warning(\\\"Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\\\")\\n2839:                logger.warning(\\\"WeComCallback: aiohttp/httpx not installed\\\")\\n2846:                logger.warning(\\\"WeCom: aiohttp not installed or WECOM_BOT_ID/SECRET not set\\\")\\n2853:                logger.warning(\\\"Weixin: aiohttp/cryptography not installed\\\")\\n2867:                logger.warning(\\\"Matrix: mautrix not installed or credentials not set. Run: pip install 'mautrix[encryption]'\\\")\\n2874:                logger.warning(\\\"API Server: aiohttp not installed\\\")\\n2881:                logger.warning(\\\"Webhook: aiohttp not installed\\\")\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_023p97f8gr87_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Now I need to find how the gateway is started. Let me look for the startup script or how the gateway is launched.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "fe973f31ff5334631a93bc68eaa15d693485623be42195430eaadd01b037b800",
+          "thinking": "Now I need to find how the gateway is started. Let me look for the startup script or how the gateway is launched.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_u895cxgwapym_1",
+          "call_id": "call_function_u895cxgwapym_1",
+          "response_item_id": "fc_function_u895cxgwapym_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"grep -n \\\"def start_gateway\\\\|_start_adapter\\\\|FEISHU_WEBSOCKET\\\\|check_feishu\\\" /app/hermes-agent/gateway/run.py | head -30\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"2827:            from gateway.platforms.feishu import FeishuAdapter, check_feishu_requirements\\n2828:            if not check_feishu_requirements():\\n10911:async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = False, verbosity: Optional[int] = 0) -> bool:\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_u895cxgwapym_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "The gateway is not running at all - no process is listening. Let me look at how to start the gateway properly. Let me check if there's a way to start it.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c00b2bdaa691b1835d9f54dbd2e69c0f79aa2153fb3ad0b3dcf782e3b850a508",
+          "thinking": "The gateway is not running at all - no process is listening. Let me look at how to start the gateway properly. Let me check if there's a way to start it.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_z8wp24quo90s_1",
+          "call_id": "call_function_z8wp24quo90s_1",
+          "response_item_id": "fc_function_z8wp24quo90s_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cat /app/hermes-agent/gateway/run.py | sed -n '2820,2840p'\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"from gateway.platforms.dingtalk import DingTalkAdapter, check_dingtalk_requirements\\n            if not check_dingtalk_requirements():\\n                logger.warning(\\\"DingTalk: dingtalk-stream not installed or DINGTALK_CLIENT_ID/SECRET not set\\\")\\n                return None\\n            return DingTalkAdapter(config)\\n\\n        elif platform == Platform.FEISHU:\\n            from gateway.platforms.feishu import FeishuAdapter, check_feishu_requirements\\n            if not check_feishu_requirements():\\n                logger.warning(\\\"Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\\\")\\n                return None\\n            return FeishuAdapter(config)\\n\\n        elif platform == Platform.WECOM_CALLBACK:\\n            from gateway.platforms.wecom_callback import (\\n                WecomCallbackAdapter,\\n                check_wecom_callback_requirements,\\n            )\\n            if not check_wecom_callback_requirements():\\n                logger.warning(\\\"WeComCallback: aiohttp/httpx not installed\\\")\\n                return None\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_z8wp24quo90s_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at `check_feishu_requirements` to see why it might be returning False:",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "2b04824afa87ec96778324bc10be082cc63472c38bd0bfbcfa16df78bde29d42",
+          "thinking": "Let me look at `check_feishu_requirements` to see why it might be returning False:",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_z5bcjtv34xgj_1",
+          "call_id": "call_function_z5bcjtv34xgj_1",
+          "response_item_id": "fc_function_z5bcjtv34xgj_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"sed -n '1304,1340p' /app/hermes-agent/gateway/platforms/feishu.py\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"def check_feishu_requirements() -> bool:\\n    \\\"\\\"\\\"Check if Feishu/Lark dependencies are available.\\\"\\\"\\\"\\n    return FEISHU_AVAILABLE\\n\\n\\nclass FeishuAdapter(BasePlatformAdapter):\\n    \\\"\\\"\\\"Feishu/Lark bot adapter.\\\"\\\"\\\"\\n\\n    MAX_MESSAGE_LENGTH = 8000\\n    # Threshold for detecting Feishu client-side message splits.\\n    # When a chunk is near the ~4096-char practical limit, a continuation\\n    # is almost certain.\\n    _SPLIT_THRESHOLD = 4000\\n\\n    # =========================================================================\\n    # Lifecycle — init / settings / connect / disconnect\\n    # =========================================================================\\n\\n    def __init__(self, config: PlatformConfig):\\n        super().__init__(config, Platform.FEISHU)\\n\\n        self._settings = self._load_settings(config.extra or {})\\n        self._apply_settings(self._settings)\\n        self._client: Optional[Any] = None\\n        self._ws_client: Optional[Any] = None\\n        self._ws_future: Optional[asyncio.Future] = None\\n        self._ws_thread_loop: Optional[asyncio.AbstractEventLoop] = None\\n        self._loop: Optional[asyncio.AbstractEventLoop] = None\\n        self._webhook_runner: Optional[Any] = None\\n        self._webhook_site: Optional[Any] = None\\n        self._event_handler: Optional[Any] = None\\n        self._seen_message_ids: Dict[str, float] = {}  # message_id → seen_at (time.time())\\n        self._seen_message_order: List[str] = []\\n        self._dedup_state_path = get_hermes_home() / \\\"feishu_seen_message_ids.json\\\"\\n        self._dedup_lock = threading.Lock()\\n        self._sender_name_cache: Dict[str, tuple[str, float]] = {}  # sender_id → (name, expire_at)\\n        self._webhook_rate_counts: Dict[str, tuple[int, float]] = {}  # rate_key → (count, window_start)\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_z5bcjtv34xgj_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Now I need to look at what `FEISHU_AVAILABLE` is and what `check_feishu_requirements` checks. Let me look at the beginning of the feishu.py file to see the FEISHU_AVAILABLE flag.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "948b5bc09791d902faaf12d75d836c73b5fdf3ddbf8572947c08020039b57a8e",
+          "thinking": "Now I need to look at what `FEISHU_AVAILABLE` is and what `check_feishu_requirements` checks. Let me look at the beginning of the feishu.py file to see the FEISHU_AVAILABLE flag.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_tq7brqgp04lm_1",
+          "call_id": "call_function_tq7brqgp04lm_1",
+          "response_item_id": "fc_function_tq7brqgp04lm_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"sed -n '70,130p' /app/hermes-agent/gateway/platforms/feishu.py\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"from urllib.request import Request, urlopen\\n\\n# aiohttp/websockets are independent optional deps — import outside lark_oapi\\n# so they remain available for tests and webhook mode even if lark_oapi is missing.\\ntry:\\n    import aiohttp\\n    from aiohttp import web\\nexcept ImportError:\\n    aiohttp = None  # type: ignore[assignment]\\n    web = None  # type: ignore[assignment]\\n\\ntry:\\n    import websockets\\nexcept ImportError:\\n    websockets = None  # type: ignore[assignment]\\n\\ntry:\\n    import lark_oapi as lark\\n    from lark_oapi.api.application.v6 import GetApplicationRequest\\n    from lark_oapi.api.im.v1 import (\\n        CreateFileRequest,\\n        CreateFileRequestBody,\\n        CreateImageRequest,\\n        CreateImageRequestBody,\\n        CreateMessageRequest,\\n        CreateMessageRequestBody,\\n        GetChatRequest,\\n        GetMessageRequest,\\n        GetMessageResourceRequest,\\n        P2ImMessageMessageReadV1,\\n        ReplyMessageRequest,\\n        ReplyMessageRequestBody,\\n        UpdateMessageRequest,\\n        UpdateMessageRequestBody,\\n    )\\n    from lark_oapi.core import AccessTokenType, HttpMethod\\n    from lark_oapi.core.const import FEISHU_DOMAIN, LARK_DOMAIN\\n    from lark_oapi.core.model import BaseRequest\\n    from lark_oapi.event.callback.model.p2_card_action_trigger import (\\n        CallBackCard,\\n        P2CardActionTriggerResponse,\\n    )\\n    from lark_oapi.event.dispatcher_handler import EventDispatcherHandler\\n    from lark_oapi.ws import Client as FeishuWSClient\\n\\n    FEISHU_AVAILABLE = True\\nexcept ImportError:\\n    FEISHU_AVAILABLE = False\\n    lark = None  # type: ignore[assignment]\\n    CallBackCard = None  # type: ignore[assignment]\\n    P2CardActionTriggerResponse = None  # type: ignore[assignment]\\n    EventDispatcherHandler = None  # type: ignore[assignment]\\n    FeishuWSClient = None  # type: ignore[assignment]\\n    FEISHU_DOMAIN = None  # type: ignore[assignment]\\n    LARK_DOMAIN = None  # type: ignore[assignment]\\n\\nFEISHU_WEBSOCKET_AVAILABLE = websockets is not None\\nFEISHU_WEBHOOK_AVAILABLE = aiohttp is not None\\n\\nfrom gateway.config import Platform, PlatformConfig\\nfrom gateway.platforms.base import (\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_tq7brqgp04lm_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "`FEISHU_AVAILABLE = True` 意味着 lark-oapi 导入成功了。那问题应该在别处。\n\n让我检查 `check_feishu_requirements()` 的实现，它只返回 `FEISHU_AVAILABLE`。如果 `lark_oapi` 导入成功，那 check 应该返回 True。\n\n可能问题是：\n1. 虽然包安装了，但导入发生在旧进程中，Gateway 没重启\n2. 或者配置文件有问题\n\n让我检查一下 Gateway 是如何运行的，以及配置文件的位置。",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "7ab8835709f1ad11347de511b4f0c24685559c896ce348c373f3cec1fdbd061b",
+          "thinking": "`FEISHU_AVAILABLE = True` 意味着 lark-oapi 导入成功了。那问题应该在别处。\n\n让我检查 `check_feishu_requirements()` 的实现，它只返回 `FEISHU_AVAILABLE`。如果 `lark_oapi` 导入成功，那 check 应该返回 True。\n\n可能问题是：\n1. 虽然包安装了，但导入发生在旧进程中，Gateway 没重启\n2. 或者配置文件有问题\n\n让我检查一下 Gateway 是如何运行的，以及配置文件的位置。",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_1c94xdkcwicn_1",
+          "call_id": "call_function_1c94xdkcwicn_1",
+          "response_item_id": "fc_function_1c94xdkcwicn_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"python3 -c \\\"import lark_oapi; print('lark_oapi OK:', lark_oapi.__version__)\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"Traceback (most recent call last):\\n  File \\\"<string>\\\", line 1, in <module>\\nAttributeError: module 'lark_oapi' has no attribute '__version__'\", \"exit_code\": 1, \"error\": null}",
+      "tool_call_id": "call_function_1c94xdkcwicn_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "`lark_oapi` imports fine (no ImportError). The module is there. But Hermes is running as a separate process, and it seems it hasn't picked up the new installation. We need to restart the Hermes Gateway process.\n\nLet me look for how to start/restart Hermes Gateway.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "6f65d6479f6377bff7c26eef3508307c02d8eba3ef73f0e37bb1c3d85878befc",
+          "thinking": "`lark_oapi` imports fine (no ImportError). The module is there. But Hermes is running as a separate process, and it seems it hasn't picked up the new installation. We need to restart the Hermes Gateway process.\n\nLet me look for how to start/restart Hermes Gateway.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_61p3gbwtajyn_1",
+          "call_id": "call_function_61p3gbwtajyn_1",
+          "response_item_id": "fc_function_61p3gbwtajyn_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"python3 -c \\\"import lark_oapi; from lark_oapi.ws import Client; print('WS Client OK')\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"WS Client OK\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_61p3gbwtajyn_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "OK so `lark_oapi` is importable and `WS Client` works. The issue must be something else. Let me check what `check_feishu_requirements` actually returns when called.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "2d1e3b33b836e6e8c6ef48db91d2b25aa1781a8d46043a9c9873dea40283f257",
+          "thinking": "OK so `lark_oapi` is importable and `WS Client` works. The issue must be something else. Let me check what `check_feishu_requirements` actually returns when called.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_gh14gzki2f2s_1",
+          "call_id": "call_function_gh14gzki2f2s_1",
+          "response_item_id": "fc_function_gh14gzki2f2s_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cd /app/hermes-agent && python3 -c \\\"\\nimport sys\\nsys.path.insert(0, '.')\\nfrom gateway.platforms.feishu import check_feishu_requirements, FEISHU_AVAILABLE, FEISHU_WEBSOCKET_AVAILABLE\\nprint('FEISHU_AVAILABLE:', FEISHU_AVAILABLE)\\nprint('FEISHU_WEBSOCKET_AVAILABLE:', FEISHU_WEBSOCKET_AVAILABLE)\\nprint('check_feishu_requirements():', check_feishu_requirements())\\n\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"FEISHU_AVAILABLE: True\\nFEISHU_WEBSOCKET_AVAILABLE: True\\ncheck_feishu_requirements(): True\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_gh14gzki2f2s_1"
+    },
+    {
+      "role": "assistant",
+      "content": "Feishu 模块检查通过。问题是 **Gateway 服务没有在运行**。\n\n启动 Gateway：",
+      "reasoning": "OK so both FEISHU_AVAILABLE and FEISHU_WEBSOCKET_AVAILABLE are True. The issue is that the Gateway is running somewhere but it wasn't started properly. Let me check how to start the gateway.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "354575ea9c50f96ed9577e6ab0764b5d4c13c50a8cbccdb143512c4f8b43d40b",
+          "thinking": "OK so both FEISHU_AVAILABLE and FEISHU_WEBSOCKET_AVAILABLE are True. The issue is that the Gateway is running somewhere but it wasn't started properly. Let me check how to start the gateway.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_v92obn8yjj3m_1",
+          "call_id": "call_function_v92obn8yjj3m_1",
+          "response_item_id": "fc_function_v92obn8yjj3m_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cd /app/hermes-agent && python3 -m gateway.run &\\nsleep 3\\ncurl -s http://localhost:3000/health 2>/dev/null || curl -s http://localhost:8080/health 2>/dev/null || echo \\\"checking...\\\"\", \"timeout\": 15}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"\", \"exit_code\": -1, \"error\": \"Foreground command uses '&' backgrounding. Use terminal(background=true) for long-lived processes, then run health checks and tests in follow-up terminal calls.\", \"status\": \"error\"}",
+      "tool_call_id": "call_function_v92obn8yjj3m_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me start the gateway in background mode.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "489aafb5115fec1ab8b69368f11ddbbdf4323152d49220963a7b5b3d0c81dc7e",
+          "thinking": "Let me start the gateway in background mode.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_4oz7ty73hyv1_1",
+          "call_id": "call_function_4oz7ty73hyv1_1",
+          "response_item_id": "fc_function_4oz7ty73hyv1_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cd /app/hermes-agent && python3 -m gateway.run 2>&1\", \"background\": true, \"notify_on_complete\": true}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"Background process started\", \"session_id\": \"proc_5e33766b139e\", \"pid\": 384, \"exit_code\": 0, \"error\": null, \"notify_on_complete\": true}",
+      "tool_call_id": "call_function_4oz7ty73hyv1_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me wait a moment and check if the gateway started properly.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1c9da3f4cc66a1b5d47da06f67931fccb42072292709d7230a2db4cfab96327f",
+          "thinking": "Let me wait a moment and check if the gateway started properly.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_x94ea1qs4327_1",
+          "call_id": "call_function_x94ea1qs4327_1",
+          "response_item_id": "fc_function_x94ea1qs4327_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"sleep 5 && curl -s http://localhost:3000/health 2>/dev/null || curl -s http://localhost:8080/health 2>/dev/null || echo \\\"checking port...\\\"\", \"timeout\": 15}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"checking port...\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_x94ea1qs4327_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me check what port the gateway runs on and look at its startup output.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "61300b1944bed22c8795c7f706cdc55cf146c3c6e27fd2eafdf91e807c862294",
+          "thinking": "Let me check what port the gateway runs on and look at its startup output.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_5g93tc60m4fv_1",
+          "call_id": "call_function_5g93tc60m4fv_1",
+          "response_item_id": "fc_function_5g93tc60m4fv_1",
+          "type": "function",
+          "function": {
+            "name": "process",
+            "arguments": "{\"action\": \"log\", \"session_id\": \"proc_5e33766b139e\", \"limit\": 50}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"session_id\": \"proc_5e33766b139e\", \"status\": \"exited\", \"output\": \"⚠ Deprecated .env settings detected:\\n  ⚠ TERMINAL_CWD=/app found in .env — this is deprecated.\\n  Move to config.yaml instead:  terminal:\\\\n    cwd: /your/project/path\\n  Then remove the old entries from /app/.hermes/.env\\n\\nAnother gateway instance is already running (PID 1, HERMES_HOME=/app/.hermes). Use 'hermes gateway restart' to replace it, or 'hermes gateway stop' first.\\n\\n❌ Gateway already running (PID 1).\\n   Use 'hermes gateway restart' to replace it,\\n   or 'hermes gateway stop' to kill it first.\\n   Or use 'hermes gateway run --replace' to auto-replace.\\n\", \"total_lines\": 12, \"showing\": \"12 lines\"}",
+      "tool_call_id": "call_function_5g93tc60m4fv_1"
+    },
+    {
+      "role": "assistant",
+      "content": "Gateway 已经在运行（PID 1）。检查一下飞书连接状态：",
+      "reasoning": "Gateway is already running (PID 1). So the gateway IS running. Let me check if Feishu is connected properly. Let me look at the gateway logs.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "7566587cdd2bcad26caf495e053996967672120cff84a6d2b4a7df7bc2ce34de",
+          "thinking": "Gateway is already running (PID 1). So the gateway IS running. Let me check if Feishu is connected properly. Let me look at the gateway logs.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_dinnn8477yig_1",
+          "call_id": "call_function_dinnn8477yig_1",
+          "response_item_id": "fc_function_dinnn8477yig_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"tail -100 /app/.hermes/logs/gateway.log 2>/dev/null || tail -100 ~/.hermes/logs/gateway.log 2>/dev/null || echo \\\"log not found\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"log not found\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_dinnn8477yig_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me check where logs are located.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "f0f57e773d70ecf3bb470a5deb8ec1d175271ffe656eb86ac32770afd0f877df",
+          "thinking": "Let me check where logs are located.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_aqcrlerk6su9_1",
+          "call_id": "call_function_aqcrlerk6su9_1",
+          "response_item_id": "fc_function_aqcrlerk6su9_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls /app/.hermes/logs/ 2>/dev/null && cat /app/.hermes/logs/*.log 2>/dev/null | tail -100 || echo \\\"no logs\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"agent.log\\nerrors.log\\nmcp-stderr.log\\nupdate.log\\n  • tests/e2e/conftest.py\\n  • tests/gateway/test_async_memory_flush.py\\n  • tests/gateway/test_flush_memory_stale_guard.py\\n  • tests/gateway/test_reasoning_command.py\\n  • tests/gateway/test_resume_command.py\\n  • tests/gateway/test_session_boundary_hooks.py\\n  • tests/gateway/test_session_boundary_security_state.py\\n  • tests/gateway/test_session_info.py\\n  • tests/gateway/test_session_model_override_routing.py\\n  • tests/gateway/test_session_model_reset.py\\n  • tests/hermes_cli/test_custom_provider_model_switch.py\\n  • tests/hermes_cli/test_doctor.py\\n  • tests/hermes_cli/test_model_switch_context_display.py\\n  • tests/hermes_cli/test_models.py\\n  • tests/hermes_cli/test_runtime_provider_resolution.py\\n  • tests/hermes_cli/test_setup_noninteractive.py\\n  • tests/hermes_cli/test_tools_config.py\\n  • tests/hermes_cli/test_tui_npm_install.py\\n  • tests/hermes_cli/test_tui_resume_flow.py\\n  • tests/hermes_cli/test_web_server.py\\n  • tests/run_agent/test_compress_focus_plugin_fallback.py\\n  • tests/run_agent/test_compression_feasibility.py\\n  • tests/run_agent/test_deepseek_reasoning_content_echo.py\\n  • tests/run_agent/test_flush_memories_codex.py\\n  • tests/run_agent/test_provider_parity.py\\n  • tests/run_agent/test_run_agent.py\\n  • tests/run_agent/test_run_agent_codex_responses.py\\n  • tests/test_hermes_state.py\\n  • tests/test_model_tools.py\\n  • tests/test_toolsets.py\\n  • tests/test_tui_gateway_server.py\\n  • tests/tools/test_cron_approval_mode.py\\n  • tests/tools/test_discord_tool.py\\n  • tests/tools/test_watch_patterns.py\\n  • tests/tools/test_yolo_mode.py\\n  • tests/tui_gateway/test_protocol.py\\n  • tools/approval.py\\n  • tools/cronjob_tools.py\\n  • tools/discord_tool.py\\n  • tools/process_registry.py\\n  • tools/terminal_tool.py\\n  • toolsets.py\\n  • tui_gateway/server.py\\n  • ui-tui/README.md\\n  • ui-tui/packages/hermes-ink/src/ink/components/AlternateScreen.tsx\\n  • ui-tui/packages/hermes-ink/src/ink/dom.ts\\n  • ui-tui/packages/hermes-ink/src/ink/screen.ts\\n  • ui-tui/packages/hermes-ink/src/ink/selection.ts\\n  • ui-tui/packages/hermes-ink/src/ink/termio/osc.test.ts\\n  • ui-tui/src/__tests__/createGatewayEventHandler.test.ts\\n  • ui-tui/src/__tests__/createSlashHandler.test.ts\\n  • ui-tui/src/__tests__/details.test.ts\\n  • ui-tui/src/__tests__/platform.test.ts\\n  • ui-tui/src/app.tsx\\n  • ui-tui/src/app/interfaces.ts\\n  • ui-tui/src/app/slash/commands/core.ts\\n  • ui-tui/src/app/slash/commands/session.ts\\n  • ui-tui/src/app/slash/commands/setup.ts\\n  • ui-tui/src/app/turnController.ts\\n  • ui-tui/src/app/uiStore.ts\\n  • ui-tui/src/app/useComposerState.ts\\n  • ui-tui/src/app/useInputHandlers.ts\\n  • ui-tui/src/app/useMainApp.ts\\n  • ui-tui/src/components/appChrome.tsx\\n  • ui-tui/src/components/appOverlays.tsx\\n  • ui-tui/src/components/messageLine.tsx\\n  • ui-tui/src/components/modelPicker.tsx\\n  • ui-tui/src/components/sessionPicker.tsx\\n  • ui-tui/src/components/skillsHub.tsx\\n  • ui-tui/src/components/thinking.tsx\\n  • ui-tui/src/content/hotkeys.ts\\n  • ui-tui/src/gatewayTypes.ts\\n  • ui-tui/src/lib/platform.ts\\n  • web/src/pages/AnalyticsPage.tsx\\n  • web/src/pages/ChatPage.tsx\\n  • web/src/pages/ConfigPage.tsx\\n  • web/src/pages/CronPage.tsx\\n  • web/src/pages/DocsPage.tsx\\n  • web/src/pages/EnvPage.tsx\\n  • web/src/pages/LogsPage.tsx\\n  • web/src/pages/SessionsPage.tsx\\n  • web/src/pages/SkillsPage.tsx\\n  • web/src/plugins/slots.ts\\n  • website/docs/developer-guide/session-storage.md\\n  • website/docs/guides/build-a-hermes-plugin.md\\n  • website/docs/reference/cli-commands.md\\n  • website/docs/reference/environment-variables.md\\n  • website/docs/user-guide/configuration.md\\n  • website/docs/user-guide/features/dashboard-plugins.md\\n  • website/docs/user-guide/features/fallback-providers.md\\n  • website/docs/user-guide/features/hooks.md\\n  • website/docs/user-guide/features/web-dashboard.md\\n  • website/docs/user-guide/messaging/webhooks.md\\n  • website/sidebars.ts\\n\\nYour stashed changes are preserved — nothing is lost.\\n  Stash ref: 2265a552af9eceb984eb3f47c21b021f45a767cb\\nWorking tree reset to clean state.\\nRestore your changes later with: git stash apply 2265a552af9eceb984eb3f47c21b021f45a767cb\\n→ Updating Python dependencies...\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_aqcrlerk6su9_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "It seems like the logs directory listing showed the content of the update.log file (which is a list of test files). Let me check if there's a gateway.log specifically. The earlier error.log and agent.log were shown, but not gateway.log. Let me look for it more specifically and also check the HERMES_HOME.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "0ff2b22f377e7c72576456b99336b622b606dc419f4bb0115a8233ce2a66eb89",
+          "thinking": "It seems like the logs directory listing showed the content of the update.log file (which is a list of test files). Let me check if there's a gateway.log specifically. The earlier error.log and agent.log were shown, but not gateway.log. Let me look for it more specifically and also check the HERMES_HOME.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_dejeqk9avwjl_1",
+          "call_id": "call_function_dejeqk9avwjl_1",
+          "response_item_id": "fc_function_dejeqk9avwjl_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"ls -la /app/.hermes/logs/\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"total 460\\ndrwx------ 1 root root   4096 Apr 26 11:05 .\\ndrwx------ 1 root root   4096 Apr 26 15:51 ..\\n-rw-r--r-- 1 root root 215414 Apr 26 15:52 agent.log\\n-rw-r--r-- 1 root root  52231 Apr 26 15:52 errors.log\\n-rw-r--r-- 1 root root  28288 Apr 26 15:42 mcp-stderr.log\\n-rw-r--r-- 1 root root 166589 Apr 26 11:05 update.log\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_dejeqk9avwjl_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "No gateway.log exists. This is suspicious - if the gateway is running (PID 1), it should have a gateway.log. Let me check if the gateway is actually running and if Feishu is connected.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "3c7c1e10030ed6a6cd0e28e40c6c07a8e11150c6f4851956f23f17a6222c2a99",
+          "thinking": "No gateway.log exists. This is suspicious - if the gateway is running (PID 1), it should have a gateway.log. Let me check if the gateway is actually running and if Feishu is connected.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_1ke601bul0v1_1",
+          "call_id": "call_function_1ke601bul0v1_1",
+          "response_item_id": "fc_function_1ke601bul0v1_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"tail -50 /app/.hermes/logs/errors.log\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"remove the file manually to continue.\\n2026-04-26 15:49:18,400 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:49:41,609 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:51:07,915 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:51:33,571 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:51:57,747 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:52:29,100 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\\n2026-04-26 15:52:53,501 ERROR [20260426_154214_5936b9] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=fatal: Unable to create '/app/.hermes/checkpoints/f53b52ad6d21cceb/index.lock': File exists.\\n\\nAnother git process seems to be running in this repository, e.g.\\nan editor opened by 'git commit'. Please make sure all processes\\nare terminated then try again. If it still fails, a git process\\nmay have crashed in this repository earlier:\\nremove the file manually to continue.\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_1ke601bul0v1_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at the agent.log to see if there's anything about Feishu.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1b5e2d4c9d08f647bbbd4033bcfae45114743bc83efa385c6fc5028a7437ed74",
+          "thinking": "Let me look at the agent.log to see if there's anything about Feishu.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_aih8dgdry4ou_1",
+          "call_id": "call_function_aih8dgdry4ou_1",
+          "response_item_id": "fc_function_aih8dgdry4ou_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"grep -i \\\"feishu\\\\|lark\\\\|websocket\\\" /app/.hermes/logs/agent.log | tail -30\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"2026-04-26 15:32:48,943 WARNING gateway.run: Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\\n2026-04-26 15:32:48,953 WARNING gateway.run: No adapter available for feishu\\n2026-04-26 15:41:20,445 WARNING gateway.run: Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\\n2026-04-26 15:41:20,451 WARNING gateway.run: No adapter available for feishu\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_aih8dgdry4ou_1"
+    },
+    {
+      "role": "assistant",
+      "content": "找到原因了！Gateway 启动时 `lark-oapi` 还没装，所以飞书 adapter 没有加载。现在已安装但需要**重启 Gateway** 才能生效：",
+      "reasoning": "The issue is now clear. The gateway log shows that at 15:32 and 15:41, it said \"Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\". But now at 15:52, after we installed lark-oapi, the log doesn't show a new attempt to connect to Feishu.\n\nThe gateway was already running (PID 1, running inside a container/Docker). The gateway reads the FEISHU_APP_ID/SECRET at startup time and initializes the Feishu adapter at startup. Since the gateway was already running before we installed lark-oapi, it never re-attempted to initialize the Feishu adapter.\n\nWe need to restart the gateway so it picks up the newly installed lark-oapi package and re-checks the Feishu requirements.\n\nThe log message says \"Use 'hermes gateway restart' to replace it\". Let me try that.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "55944c8c468008fcba317c53c8cace9572addd6c20bc5b5dea5d2e48c9634b6a",
+          "thinking": "The issue is now clear. The gateway log shows that at 15:32 and 15:41, it said \"Feishu: lark-oapi not installed or FEISHU_APP_ID/SECRET not set\". But now at 15:52, after we installed lark-oapi, the log doesn't show a new attempt to connect to Feishu.\n\nThe gateway was already running (PID 1, running inside a container/Docker). The gateway reads the FEISHU_APP_ID/SECRET at startup time and initializes the Feishu adapter at startup. Since the gateway was already running before we installed lark-oapi, it never re-attempted to initialize the Feishu adapter.\n\nWe need to restart the gateway so it picks up the newly installed lark-oapi package and re-checks the Feishu requirements.\n\nThe log message says \"Use 'hermes gateway restart' to replace it\". Let me try that.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_ww1yoj1r23oy_1",
+          "call_id": "call_function_ww1yoj1r23oy_1",
+          "response_item_id": "fc_function_ww1yoj1r23oy_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cd /app/hermes-agent && python3 cli.py gateway restart 2>&1\", \"timeout\": 30}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"╭──────────── Hermes Agent v0.11.0 (2026.4.23) · upstream 192e7eb2 ────────────╮\\n│                                   Available Tools                            │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   browser: browser_back, browser_click, ...  │\\n│  ⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀   browser-cdp: browser_cdp, browser_dialog   │\\n│  ⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀   clarify: clarify                           │\\n│  ⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀   code_execution: execute_code               │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   cronjob: cronjob                           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   delegation: delegate_task                  │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   discord: discord                           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   discord_admin: discord_admin               │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   (and 17 more toolsets...)                  │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                              │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   MCP Servers                                │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   data-storage (stdio) — 9 tool(s)           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   data-collection (stdio) — 11 tool(s)       │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                              │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   Available Skills                           │\\n│                                   autonomous-ai-agents: claude-code, codex,  │\\n│          · Nous Research          hermes-agent, opencode                     │\\n│               /app                creative: architecture-diagram,            │\\n│  Session: 20260426_155342_4b6448  ascii-art, ascii-video, b...               │\\n│                                   data-science: jupyter-live-kernel          │\\n│                                   devops: webhook-subscriptions              │\\n│                                   email: himalaya                            │\\n│                                   gaming: minecraft-modpack-server,          │\\n│                                   pokemon-player                             │\\n│                                   general: business-analyst,                 │\\n│                                   content-research-writer, dogf...           │\\n│                                   github: codebase-inspection, github-auth,  │\\n│                                   github-code-r...                           │\\n│                                   mcp: native-mcp                            │\\n│                                   media: gif-search, heartmula, songsee,     │\\n│                                   spotify, youtub...                         │\\n│                                   mlops: audiocraft-audio-generation,        │\\n│                                   axolotl, dspy, eva...                      │\\n│                                   note-taking: obsidian                      │\\n│                                   productivity: google-workspace, linear,    │\\n│                                   maps, nano-pdf, notio...                   │\\n│                                   red-teaming: godmode                       │\\n│                                   research: arxiv, blogwatcher, llm-wiki,    │\\n│                                   polymarket, resea...                       │\\n│                                   smart-home: openhue                        │\\n│                                   social-media: xurl                         │\\n│                                   software-development: plan,                │\\n│                                   requesting-code-review,                    │\\n│                                   subagent-driven-d...                       │\\n│                                   web: lightpanda-web-fetch                  │\\n│                                                                              │\\n│                                   38 tools · 77 skills · 2 MCP servers ·     │\\n│                                   /help for commands                         │\\n╰──────────────────────────────────────────────────────────────────────────────╯\\n\\nQuery: gateway\\nNo inference provider configured. Run 'hermes model' to choose a provider and \\r\\nmodel, or set an API key (OPENROUTER_API_KEY, OPENAI_API_KEY, etc.) in \\r\\n~/.hermes/.env.\\r\\n\\nGoodbye! ⚕\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_ww1yoj1r23oy_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "It seems the CLI tried to run an interactive gateway command but it's not configured for that. Let me try a different approach to restart the gateway.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "0a06ac09f8bb03e3226eef2b85cde7adfa8b62801d9a7ee715d112e8ef1c1ec3",
+          "thinking": "It seems the CLI tried to run an interactive gateway command but it's not configured for that. Let me try a different approach to restart the gateway.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_k92kfee5iph6_1",
+          "call_id": "call_function_k92kfee5iph6_1",
+          "response_item_id": "fc_function_k92kfee5iph6_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"cd /app/hermes-agent && python3 cli.py gateway --help 2>&1 | head -30\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"╭──────────── Hermes Agent v0.11.0 (2026.4.23) · upstream 192e7eb2 ────────────╮\\n│                                   Available Tools                            │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   browser: browser_back, browser_click, ...  │\\n│  ⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀   browser-cdp: browser_cdp, browser_dialog   │\\n│  ⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀   clarify: clarify                           │\\n│  ⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀   code_execution: execute_code               │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   cronjob: cronjob                           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   delegation: delegate_task                  │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   discord: discord                           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   discord_admin: discord_admin               │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   (and 17 more toolsets...)                  │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                              │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   MCP Servers                                │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   data-storage (stdio) — 9 tool(s)           │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   data-collection (stdio) — 11 tool(s)       │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                              │\\n│  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   Available Skills                           │\\n│                                   autonomous-ai-agents: claude-code, codex,  │\\n│          · Nous Research          hermes-agent, opencode                     │\\n│               /app                creative: architecture-diagram,            │\\n│  Session: 20260426_155429_638836  ascii-art, ascii-video, b...               │\\n│                                   data-science: jupyter-live-kernel          │\\n│                                   devops: webhook-subscriptions              │\\n│                                   email: himalaya                            │\\n│                                   gaming: minecraft-modpack-server,          │\\n│                                   pokemon-player                             │\\n│                                   general: business-analyst,                 │\\n│                                   content-research-writer, dogf...           │\\n│                                   github: codebase-inspection, github-auth,  │\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_k92kfee5iph6_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "The CLI doesn't have a gateway subcommand. It seems like the gateway runs independently (PID 1). Let me check how the gateway is managed. Looking at the earlier message, it said \"Another gateway instance is already running (PID 1, HERMES_HOME=/app/.hermes). Use 'hermes gateway restart' to replace it.\"\n\nBut \"hermes\" here refers to the hermes-agent binary, not the CLI. Let me check if there's a hermes command or script.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "439b227848cff9d57bf81c9be58da8252b6144f1262ca80ba984bb8700efbabf",
+          "thinking": "The CLI doesn't have a gateway subcommand. It seems like the gateway runs independently (PID 1). Let me check how the gateway is managed. Looking at the earlier message, it said \"Another gateway instance is already running (PID 1, HERMES_HOME=/app/.hermes). Use 'hermes gateway restart' to replace it.\"\n\nBut \"hermes\" here refers to the hermes-agent binary, not the CLI. Let me check if there's a hermes command or script.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_1w8cwaxuzn20_1",
+          "call_id": "call_function_1w8cwaxuzn20_1",
+          "response_item_id": "fc_function_1w8cwaxuzn20_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"which hermes 2>/dev/null || ls /usr/local/bin/hermes* 2>/dev/null || ls /app/hermes-agent/hermes* 2>/dev/null\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"/usr/local/bin/hermes\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_1w8cwaxuzn20_1"
+    }
+  ]
+}

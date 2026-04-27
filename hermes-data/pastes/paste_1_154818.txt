@@ -1,0 +1,14 @@
+{
+  "eventId": "e97a2c8c85965e209190708d50c6561e",
+  "success": "fail",
+  "appId": "cli_a9649e4dcb79dcbc",
+  "tenantKey": "2e887d49864f165b",
+  "eventType": "im.message.receive_v1",
+  "hookType": 4,
+  "address": "",
+  "retryCnt": 1,
+  "costMills": 3,
+  "errorInfo": "app not online",
+  "httpCode": 0,
+  "eventTime": "1777218210924"
+}

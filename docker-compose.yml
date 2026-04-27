@@ -1,30 +1,60 @@
+# =============================================================================
+# New Radar - Hermes Agent API Server
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # Hermes Agent API Server (OpenAI-compatible)
+  # ---------------------------------------------------------------------------
   radar:
-    #image: ghcr.io/666ghj/bettafish:latest
     build:
       context: .
-    # Speed up mirror
-    # image: ghcr.nju.edu.cn/666ghj/bettafish:latest
+      dockerfile: Dockerfile
     container_name: radar
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
-      - STREAMLIT_SERVER_ENABLE_FILE_WATCHER=false
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - HERMES_HOME=/app/.hermes
+      - PYTHONPATH=/app/hermes-agent:/app
       - HF_ENDPOINT=https://hf-mirror.com
+      # Hermes API Server
+      - API_SERVER_ENABLED=true
+      - API_SERVER_KEY=${API_SERVER_KEY:-hermes-secret-key-2026}
+      - API_SERVER_PORT=8642
+      - API_SERVER_HOST=0.0.0.0
+      # Database connection
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-radar}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-radar}
+      - DB_NAME=${POSTGRES_DB:-radar}
     env_file:
       - .env
     ports:
-      - "5000:5000"
+      - "8642:8642"  # Hermes API Server
     volumes:
       - ./logs:/app/logs
       - ./final_reports:/app/final_reports
-      - ./.env:/app/.env  
-      - ./MindSpider/DeepSentimentCrawling/MediaCrawler/browser_data:/app/MindSpider/DeepSentimentCrawling/MediaCrawler/browser_data
+      - ./.env:/app/.env
+      - ./mcp-servers:/app/mcp-servers
+      - ./skills:/app/skills
+      - ./microservices:/app/microservices
+      - ./hermes-data:/app/.hermes
     depends_on:
       db:
         condition: service_healthy
-    command: python backend/app.py
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8642/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
+  # ---------------------------------------------------------------------------
+  # PostgreSQL + pgvector Database
+  # ---------------------------------------------------------------------------
   db:
     image: pgvector/pgvector:pg15
     container_name: radar-db
@@ -38,11 +68,14 @@ services:
     volumes:
       - radar_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-radar} -d ${POSTGRES_DB:-radar}"]
       interval: 5s
       timeout: 5s
       retries: 20
 
+  # ---------------------------------------------------------------------------
+  # Adminer Database Management UI
+  # ---------------------------------------------------------------------------
   adminer:
     image: adminer:4
     container_name: radar-adminer
@@ -55,21 +88,28 @@ services:
       db:
         condition: service_healthy
 
+  # ---------------------------------------------------------------------------
+  # Open WebUI (OpenAI-compatible Chat Interface)
+  # ---------------------------------------------------------------------------
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: radar-open-webui
     restart: unless-stopped
     ports:
-      - "3000:8080"
+      - "3010:8080"
     environment:
-      - OAI_API_BASE=http://radar:5000/v1
-      - WEBUI_SECRET_KEY=${OPEN_WEBUI_SECRET:-your-secret-key}
+      - OAI_API_BASE=http://radar:8642/v1
+      - OPENAI_API_KEY=${API_SERVER_KEY:-hermes-secret-key-2026}
+      - WEBUI_SECRET_KEY=${OPEN_WEBUI_SECRET:-new-radar-secret-key-2026}
+      - WEBUI_URL=http://localhost:3010
+      - OLLAMA_BASE_URL=http://localhost:11434
     volumes:
       - open_webui_data:/app/backend/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      - radar
+      radar:
+        condition: service_healthy
 
 volumes:
   radar_db_data:

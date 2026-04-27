@@ -1,0 +1,6 @@
+11:11:01 ENTER: queued interrupt msg='安装 https://github.com/lightpanda-io/browser，作为 CDP 的默认浏览器', agent_running=True
+11:11:01 interrupt fired: msg='安装 https://github.com/lightpanda-io/browser，作为 CDP 的默认浏览器', children=0, parent._interrupt=True
+11:53:47 ENTER: queued interrupt msg='继续', agent_running=True
+11:53:47 interrupt fired: msg='继续', children=0, parent._interrupt=True
+13:11:54 interrupt fired: msg='为什么 browser-cdp 无法使用？安装镜像 docker run -d -p 9222:9222 lightpa', children=0, parent._interrupt=True
+13:11:54 ENTER: queued interrupt msg='为什么 browser-cdp 无法使用？安装镜像 docker run -d -p 9222:9222 lightpa', agent_running=True

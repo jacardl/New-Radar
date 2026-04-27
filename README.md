@@ -1,198 +1,198 @@
 # New Radar — 深度舆情分析与知识挖掘引擎
 
-> 基于**多智能体架构**的实时舆情分析系统，全本地化数据流、彻底前后端分离、多 Agent 协作消除幻觉。
+> 基于 **多智能体架构** 的实时舆情分析系统，全本地化数据流、彻底前后端分离、Multi-Agent 协作消除幻觉。
 
 ## 架构概览
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        用户界面                              │
-│     Open WebUI (:3000, Docker) + REST API (:5000)         │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ /v1/chat/completions (SSE)
-┌──────────────────────▼──────────────────────────────────────┐
-│                     Backend (Python Flask :5000)             │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │     MultiEngineDispatcher (并行三引擎 + ForumAgent)   │   │
-│  └──────┬────────┬────────┬────────┬────────────────────┘   │
-│         │        │        │        │                        │
-│  ┌──────▼──┐ ┌──▼─────┐ ┌▼──────┐ │                        │
-│  │ Insight │ │ Media  │ │ Query │ │                        │
-│  │ Engine  │ │ Engine │ │ Engine│ │                        │
-│  └────┬────┘ └───┬────┘ └───┬───┘ │                        │
-│       └─────────┴──────────┴──────┘                        │
-│                          │                                  │
-│  ┌───────────────────────▼───────────────────────────────┐  │
-│  │       BaseHermesAgent + LocalDatabaseSearchTool        │  │
-│  │            (keyword_search / vector_search)             │  │
-│  └───────────────────────┬───────────────────────────────┘  │
-└──────────────────────────┼──────────────────────────────────┘
-                           │
-┌──────────────────────────▼──────────────────────────────────┐
-│           PostgreSQL + pgvector (:5432)                     │
-│              crawled_data 表 (embedding 列)                  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         用户界面层                                │
+│              Open WebUI (:3010) + REST API (:8642)              │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ OpenAI-compatible API
+┌──────────────────────────────▼──────────────────────────────────┐
+│                      Hermes Agent Gateway                         │
+│                      OpenAI-compatible API Server (:8642)          │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                   Skills Layer                           │   │
+│  │              radar-engine (主技能)                       │   │
+│  │    采集 → 存储 → Insight/Media/Query → 报告生成        │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────┬──────────────────────────────────┐   │
+│  │  data-collection    │        data-storage              │   │
+│  │       MCP           │           MCP                    │   │
+│  └─────────────────────┴──────────────────────────────────┘   │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────┐
+│                      Microservices Layer                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
+│  │DataCollector│  │MediaCrawler │  │   MindSpider        │   │
+│  │ (外部搜索)  │  │ (社媒爬虫)  │  │  (AI话题发现+深度)  │   │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              PostgreSQL + pgvector (:5432)               │   │
+│  │                   crawled_data 表 (embedding)              │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## 核心数据流
 
-所有引擎（Query / Insight / Media）**优先查询本地 PostgreSQL**，外部 API 仅作为降级备选：
-
-| 引擎 | 主数据源 | 降级策略 |
-|------|----------|----------|
-| **QueryEngine** | `LocalDatabaseSearchTool` → `crawled_data` 表 | 本地无结果时降级至 Tavily |
-| **InsightEngine** | `LocalDatabaseSearchTool` → `crawled_data` 表 | 本地结果<3条时降级至 MediaCrawlerDB（平台评论/分区数据） |
-| **MediaEngine** | `LocalDatabaseSearchTool` → `crawled_data` 表 | 本地无结果时降级至 Bocha |
-| **ForumAgent** | 调度三引擎综合分析，自身使用 Hermes 工具 | 仅在已开启外部工具开关时调用 Tavily/Bocha/Anspire 做补充搜索 |
-
-> **设计原则**：`crawled_data` 表存在有效数据时，引擎**不会**调用外部 API。外部降级仅在本地数据匮乏时触发。
+```
+用户请求 → radar-engine skill
+              │
+              ├── Phase 1: 数据采集 (data-collection MCP)
+              │       ├── anspire_search / bocha_search / tavily_search → URL列表
+              │       ├── firecrawl_scrape → 完整网页内容
+              │       └── crawl_media → 社媒平台数据
+              │
+              ├── Phase 2: 数据存储 (data-storage MCP)
+              │       └── save_crawled_data → crawled_data 表
+              │
+              ├── Phase 3: 数据分析
+              │       ├── Insight Engine → 趋势/情感/热点分析
+              │       ├── Media Engine → 视频/图片/互动分析
+              │       └── Query Engine → 数据库查询
+              │
+              └── Phase 4: 报告生成
+                      └── Markdown / HTML / PDF
+```
 
 ## 项目结构
 
 ```
 new-radar/
-├── backend/
-│   ├── app.py                          # Flask 主应用 /v1 路由注册
-│   ├── config.py                       # 全局配置（Pydantic Settings）
-│   ├── api/routes/openai_compat.py     # OpenAI 兼容端点
-│   ├── core/
-│   │   ├── base_agent.py               # BaseHermesAgent + LocalDatabaseSearchTool
-│   │   ├── external_tools.py            # 外部工具封装（Tavily/Bocha/Anspire/Firecrawl）
-│   │   └── sentiment_tool.py            # 情感分析 Tool（Hermes 工具）
-│   ├── engines/
-│   │   ├── base.py                     # MultiEngineDispatcher（三引擎并行 + ForumAgent 综合）
-│   │   ├── insight/agent.py            # InsightEngine（舆情 + 情感分析）
-│   │   ├── media/agent.py              # MediaEngine（多媒体内容分析）
-│   │   ├── query/agent.py              # QueryEngine（深度搜索）
-│   │   ├── forum/agent.py              # ForumAgent（多 Agent 协作调度）
-│   │   └── report/                     # ReportEngine（报告生成）
-│   ├── db/connection.py                # 数据库连接管理
-│   └── clients/                        # 数据源客户端
-├── microservices/                      # 爬虫微服务层
-│   ├── MediaCrawler/                   # 社媒爬虫（小红书/抖音/微博/B站/知乎）
-│   ├── MindSpider/                     # 深度舆情爬取
-│   └── last30days/                     # 近30天数据导入
-├── docs/
-│   ├── DESIGN_AND_ROADMAP.md           # 详细设计文档（阶段一到五全部完成 ✅）
-│   └── open-webui-analysis.md          # Open WebUI 集成分析
-├── .env                                # 环境变量
-├── .env.example
-├── docker-compose.yml
-├── Dockerfile
-└── requirements.txt
+├── hermes-agent/              # [SUBMODULE] Nous Research Hermes Agent
+├── hermes-data/              # Hermes 运行时数据
+│   ├── config.yaml           # Agent 配置 (MCP servers, skills)
+│   └── skills/              # 激活的 skills
+├── mcp-servers/             # MCP Server 实现
+│   ├── data-collection/     # 数据采集 MCP
+│   │   └── server.py        # anspire/bocha/tavily/firecrawl + crawl_media
+│   └── data-storage/        # 数据存储 MCP
+│       └── server.py        # keyword/vector search + save_crawled_data
+├── microservices/            # 微服务层
+│   ├── DataCollector/       # 外部搜索 API 聚合
+│   ├── MediaCrawler/      # 社媒平台爬虫 (xhs/dy/wb/bili/zhihu)
+│   └── web-access/         # CDP 浏览器自动化
+├── MindSpider/             # [SUBMODULE] AI 话题发现 + 深度舆情爬取
+├── skills/                 # 项目 Skills
+│   └── radar-engine/       # 主技能：完整采集→分析→报告流程
+├── scripts/                # 工具脚本
+│   └── db/init_db.py      # 数据库初始化
+├── docker-compose.yml      # 容器编排
+├── Dockerfile              # 应用镜像
+├── .env                   # 环境变量
+└── start.sh               # 启动脚本
 ```
+
+## MCP Servers
+
+### data-collection
+
+| 工具 | 说明 |
+|------|------|
+| `anspire_search` | Anspire 深度搜索 (中国) |
+| `bocha_search` | Bocha 多模态搜索 |
+| `tavily_search` | Tavily 新闻搜索 (海外) |
+| `firecrawl_scrape` | 网页内容抓取 |
+| `crawl_media` | 社媒平台爬虫 |
+
+### data-storage
+
+| 工具 | 说明 |
+|------|------|
+| `keyword_search` | 关键词搜索 |
+| `vector_search` | 向量相似度搜索 |
+| `get_recent_data` | 获取最近数据 |
+| `get_stats` | 统计信息 |
+| `save_crawled_data` | 保存采集数据 |
+
+## Skills
+
+| Skill | 说明 |
+|-------|------|
+| **radar-engine** | 主技能：采集→存储→Insight/Media/Query→报告 |
+| business-analyst | 业务分析 |
+| content-research-writer | 内容写作 |
+| keyword-research | 关键词研究 |
+| web-access | 浏览器自动化 |
 
 ## 快速开始
 
 ### 环境要求
 
 - Python 3.10+
-- PostgreSQL 15+ (需安装 pgvector 扩展)
 - Docker & Docker Compose
+- PostgreSQL 15+ with pgvector (Docker 内置)
 
-### 启动步骤
+### 启动
 
 ```bash
-# 1. 初始化数据库
-docker compose up -d db
-python scripts/db/init_db.py
+# 1. 启动所有服务
+docker compose up -d
 
-# 2. 启动 Flask 后端 (:5000)
-python -m backend.app
+# 2. 初始化数据库
+docker exec radar python scripts/db/init_db.py
 
-# 3. 启动 Open WebUI (:3000)
-docker run -d -p 3000:8080 \
-  --add-host=host.docker.internal:host-gateway \
-  -v open-webui:/app/backend/data \
-  --name open-webui \
-  ghcr.io/open-webui/open-webui:main
+# 3. 访问 Open WebUI
+# http://localhost:3010
 ```
 
-访问 **http://localhost:3000** → Settings → Connections → OpenAI：
+### 连接配置
+
+在 Open WebUI Settings → Connections → OpenAI：
 
 ```
-API URL: http://host.docker.internal:5000/v1
-API Key: 任意值（如 sk-local-dev）
-Model: new-radar-agent
+API URL: http://host.docker.internal:8642/v1
+API Key: hermes-secret-key-2026 (或 .env 中 API_SERVER_KEY)
+Model: qwen-plus
 ```
 
-### 核心 API
+## API 端点
 
 | 端点 | 方法 | 说明 |
 |------|------|------|
-| `/v1/chat/completions` | POST | 多引擎并行分析（SSE 流式） |
+| `/v1/chat/completions` | POST | OpenAI 兼容接口 |
 | `/v1/models` | GET | 可用模型列表 |
-| `/v1/health` | GET | 健康检查 |
-| `/v1/sentiment` | POST | 情感分析工具 |
-| `/api/v1/crawler/status` | GET | 爬虫运行状态 |
-| `/api/v1/logs/stream` | GET | 爬虫日志流（SSE） |
+| `/health` | GET | 健康检查 |
 
-## 引擎数据源详解
+## 数据库表结构
 
-### LocalDatabaseSearchTool
-
-所有引擎继承 `BaseHermesAgent`，通过 `LocalDatabaseSearchTool` 查询 `crawled_data` 表：
-
-```python
-# backend/core/base_agent.py
-class LocalDatabaseSearchTool:
-    def keyword_search(self, query: str, limit: int = 10) -> str:
-        # 返回 JSON: {"results": [...], "total": N}
-
-    def vector_search(self, query_vector: list, limit: int = 10) -> str:
-        # 使用 pgvector L2 距离进行语义检索
+```sql
+CREATE TABLE crawled_data (
+    id SERIAL PRIMARY KEY,
+    platform VARCHAR(50) NOT NULL,        -- xhs, dy, wb, bili, tavily, etc.
+    content_type VARCHAR(50) NOT NULL,  -- text, image, video, article
+    content TEXT NOT NULL,
+    source_url TEXT,
+    source_keyword VARCHAR(255),
+    create_time TIMESTAMP,
+    nickname VARCHAR(255),
+    liked_count INTEGER DEFAULT 0,
+    collected_count INTEGER DEFAULT 0,
+    comment_count INTEGER DEFAULT 0,
+    share_count INTEGER DEFAULT 0,
+    embedding JSONB,                     -- 向量 embedding
+    metadata JSONB
+);
 ```
 
-**表结构**（`crawled_data`）：
-- `platform` 平台、`content_type` 内容类型、`content` 正文
-- `source_url` 来源链接、`keyword` 关键词、`create_time` 时间戳
-- `liked_count/collected_count/comment_count/share_count` 互动数据
-- `embedding` 向量（JSON 格式，pgvector L2 距离索引）
+## 外部 API 集成
 
-### QueryEngine（查询引擎）
+| API | 用途 | 用于 |
+|-----|------|------|
+| Anspire | 深度搜索 | Insight Engine |
+| Bocha | 多模态搜索 | Media Engine |
+| Tavily | 海外搜索 | Query Engine |
+| Firecrawl | 网页抓取 | Data Collection |
+| DeepSeek | AI 话题提取 | MindSpider |
 
-**数据方法**：`execute_search_tool()` → `_search_local_crawled_data()` → `db_tool.keyword_search()`
+## 开发指南
 
-- **主路径**：keyword/vector search → crawled_data 表
-- **降级**：仅在本地无结果时调用 `_tavily_fallback()`（TavilyNewsAgency）
-- **特殊工具**（`search_images_for_news` 等）直接走 Tavily
-
-### InsightEngine（洞察引擎）
-
-**数据方法**：`execute_search_tool()` → `_search_local_crawled_data()` → `db_tool.keyword_search()`
-
-- **主路径**：keyword search → crawled_data 表
-- **降级**：本地结果<3条时调用 `_media_crawler_fallback()`（MediaCrawlerDB 平台专用查询）
-- **情感分析**：`multilingual_sentiment_analyzer` 本地算法（22语言，支持微博/小红书/抖音）
-
-### MediaEngine（媒体引擎）
-
-**数据方法**：`execute_search_tool()` → `_search_local_crawled_data()` → `db_tool.keyword_search()`
-
-- **主路径**：keyword search → crawled_data 表（含图片/视频/图文类型）
-- **降级**：本地无结果时调用 `_bocha_fallback()`（BochaMultimodalSearch）
-
-### ForumAgent（论坛调度引擎）
-
-**数据方法**：不直接搜索数据，而是**调度** Query / Insight / Media 三引擎并行分析
-
-- `_dispatch_to_engine()` 通过 Flask 内部路由（`/api/query/search` 等）调用各引擎
-- 自身 Hermes 工具（Tavily/Bocha/Anspire）仅在**综合分析阶段**用于补充外部信息
-- 最终通过 `_build_synthesis_prompt()` 让 LLM 做交叉验证和综合
-
-## 多引擎并行流式输出
-
-`MultiEngineDispatcher.stream_analyze()` 的执行流程：
-
-```
-1. 🔍  启动全引擎分析（主引擎: insight）
-2. 并行执行 Query / Insight / Media（ThreadPoolExecutor）
-3. 每个引擎完成 → 立即以 20 字符 chunk 流式输出
-4. 三引擎全部完成 → ForumAgent 综合分析流式输出
-5. finish_reason="stop" + "data: [DONE]\n\n"
-```
-
-## 文档
-
-- [docs/DESIGN_AND_ROADMAP.md](docs/DESIGN_AND_ROADMAP.md) — 完整设计文档（阶段一至五全部完成 ✅）
-- [rules.md](rules.md) — 开发规则
+遵循 `CLAUDE.md` 中的原则：
+- **Think Before Coding** - 先思考，明确假设
+- **Simplicity First** - 最少代码解决问题
+- **Surgical Changes** - 只改必须改的
+- **Goal-Driven Execution** - 定义成功标准，循环验证

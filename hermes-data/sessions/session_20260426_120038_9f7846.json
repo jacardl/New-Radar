@@ -1,0 +1,1355 @@
+{
+  "session_id": "20260426_120038_9f7846",
+  "model": "MiniMax-M2.7",
+  "base_url": "https://api.minimaxi.com/anthropic",
+  "platform": "cli",
+  "session_start": "2026-04-26T12:01:30.621559",
+  "last_updated": "2026-04-26T12:13:40.656507",
+  "system_prompt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\nYou have persistent memory across sessions. Save durable facts using the memory tool: user preferences, environment details, tool quirks, and stable conventions. Memory is injected into every turn, so keep it compact and focused on facts that will still matter later.\nPrioritize what reduces future user steering — the most valuable memory is one that prevents the user from having to correct or remind you again. User preferences and recurring corrections matter more than procedural task details.\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts. If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\nWrite memories as declarative facts, not instructions to yourself. 'User prefers concise responses' ✓ — 'Always respond concisely' ✗. 'Project uses pytest with xdist' ✓ — 'Run tests with pytest -n 4' ✗. Imperative phrasing gets re-read as a directive in later sessions and can cause repeated work or override the user's current request. Procedures and workflows belong in skills, not memory. When the user references something from a past conversation or you suspect relevant cross-session context exists, use session_search to recall it before asking them to repeat themselves. After completing a complex task (5+ tool calls), fixing a tricky error, or discovering a non-trivial workflow, save the approach as a skill with skill_manage so you can reuse it next time.\nWhen using a skill and finding it outdated, incomplete, or wrong, patch it immediately with skill_manage(action='patch') — don't wait to be asked. Skills that aren't maintained become liabilities.\n\n## Skills (mandatory)\nBefore replying, scan the skills below. If a skill matches or is even partially relevant to your task, you MUST load it with skill_view(name) and follow its instructions. Err on the side of loading — it is always better to have context you don't need than to miss critical steps, pitfalls, or established workflows. Skills contain specialized knowledge — API endpoints, tool-specific commands, and proven workflows that outperform general-purpose approaches. Load the skill even if you think you could handle the task with basic tools like web_search or terminal. Skills also encode the user's preferred approach, conventions, and quality standards for tasks like code review, planning, and testing — load them even for tasks you already know how to do, because the skill defines how it should be done here.\nIf a skill has issues, fix it with skill_manage(action='patch').\nAfter difficult/iterative tasks, offer to save as a skill. If a skill you loaded was missing steps, had wrong commands, or needed pitfalls you discovered, update it before finishing.\n\n<available_skills>\n  analysis-engine:\n    - analysis-engine: 分析引擎 - 整合深度洞察、媒体分析、报告生成能力。用于舆情数据分析、趋势研判、情感分析、多媒体内容分析、报告生成。\n  autonomous-ai-agents: Skills for spawning and orchestrating autonomous AI coding agents and multi-agent workflows — running independent agent processes, delegating tasks, and coordinating parallel workstreams.\n    - claude-code: Delegate coding tasks to Claude Code (Anthropic's CLI age...\n    - codex: Delegate coding tasks to OpenAI Codex CLI agent. Use for ...\n    - hermes-agent: Complete guide to using and extending Hermes Agent — CLI ...\n    - opencode: Delegate coding tasks to OpenCode CLI agent for feature i...\n  business-analyst:\n    - business-analyst: Product discovery and requirements analysis specialist. C...\n  content-research-writer:\n    - content-research-writer: Assists in writing high-quality content by conducting res...\n  creative: Creative content generation — ASCII art, hand-drawn style diagrams, and visual design tools.\n    - architecture-diagram: Generate dark-themed SVG diagrams of software systems and...\n    - ascii-art: Generate ASCII art using pyfiglet (571 fonts), cowsay, bo...\n    - ascii-video: Production pipeline for ASCII art video — any format. Con...\n    - baoyu-comic: Knowledge comic creator supporting multiple art styles an...\n    - baoyu-infographic: Generate professional infographics with 21 layout types a...\n    - design-md: Author, validate, diff, and export DESIGN.md files — Goog...\n    - excalidraw: Create hand-drawn style diagrams using Excalidraw JSON fo...\n    - ideation: Generate project ideas through creative constraints. Use ...\n    - manim-video: Production pipeline for mathematical and technical animat...\n    - p5js: Production pipeline for interactive and generative visual...\n    - pixel-art: Convert images into retro pixel art with hardware-accurat...\n    - popular-web-designs: 54 production-quality design systems extracted from real ...\n    - songwriting-and-ai-music: Songwriting craft, AI music generation prompts (Suno focu...\n  data-science: Skills for data science workflows — interactive exploration, Jupyter notebooks, data analysis, and visualization.\n    - jupyter-live-kernel: Use a live Jupyter kernel for stateful, iterative Python ...\n  devops:\n    - webhook-subscriptions: Create and manage webhook subscriptions for event-driven ...\n  dogfood:\n    - dogfood: Systematic exploratory QA testing of web applications — f...\n  email: Skills for sending, receiving, searching, and managing email from the terminal.\n    - himalaya: CLI to manage emails via IMAP/SMTP. Use himalaya to list,...\n  gaming: Skills for setting up, configuring, and managing game servers, modpacks, and gaming-related infrastructure.\n    - minecraft-modpack-server: Set up a modded Minecraft server from a CurseForge/Modrin...\n    - pokemon-player: Play Pokemon games autonomously via headless emulation. S...\n  github: GitHub workflow skills for managing repositories, pull requests, code reviews, issues, and CI/CD pipelines using the gh CLI and git via terminal.\n    - codebase-inspection: Inspect and analyze codebases using pygount for LOC count...\n    - github-auth: Set up GitHub authentication for the agent using git (uni...\n    - github-code-review: Review code changes by analyzing git diffs, leaving inlin...\n    - github-issues: Create, manage, triage, and close GitHub issues. Search e...\n    - github-pr-workflow: Full pull request lifecycle — create branches, commit cha...\n    - github-repo-management: Clone, create, fork, configure, and manage GitHub reposit...\n  keyword-research:\n    - keyword-research: Use when the user asks to \"find keywords\", \"keyword resea...\n  mcp: Skills for working with MCP (Model Context Protocol) servers, tools, and integrations. Documents the built-in native MCP client — configure servers in config.yaml for automatic tool discovery.\n    - native-mcp: Built-in MCP (Model Context Protocol) client that connect...\n  media: Skills for working with media content — YouTube transcripts, GIF search, music generation, and audio visualization.\n    - gif-search: Search and download GIFs from Tenor using curl. No depend...\n    - heartmula: Set up and run HeartMuLa, the open-source music generatio...\n    - songsee: Generate spectrograms and audio feature visualizations (m...\n    - spotify: Control Spotify — play music, search the catalog, manage ...\n    - youtube-content: Fetch YouTube video transcripts and transform them into s...\n  mlops: Knowledge and Tools for Machine Learning Operations - tools and frameworks for training, fine-tuning, deploying, and optimizing ML/AI models\n    - huggingface-hub: Hugging Face Hub CLI (hf) — search, download, and upload ...\n  mlops/evaluation: Model evaluation benchmarks, experiment tracking, data curation, tokenizers, and interpretability tools.\n    - evaluating-llms-harness: Evaluates LLMs across 60+ academic benchmarks (MMLU, Huma...\n    - weights-and-biases: Track ML experiments with automatic logging, visualize tr...\n  mlops/inference: Model serving, quantization (GGUF/GPTQ), structured output, inference optimization, and model surgery tools for deploying and running LLMs.\n    - llama-cpp: llama.cpp local GGUF inference + HF Hub model discovery.\n    - obliteratus: Remove refusal behaviors from open-weight LLMs using OBLI...\n    - outlines: Guarantee valid JSON/XML/code structure during generation...\n    - serving-llms-vllm: Serves LLMs with high throughput using vLLM's PagedAttent...\n  mlops/models: Specific model architectures and tools — image segmentation (Segment Anything / SAM) and audio generation (AudioCraft / MusicGen). Additional model skills (CLIP, Stable Diffusion, Whisper, LLaVA) are available as optional skills.\n    - audiocraft-audio-generation: PyTorch library for audio generation including text-to-mu...\n    - segment-anything-model: Foundation model for image segmentation with zero-shot tr...\n  mlops/research: ML research frameworks for building and optimizing AI systems with declarative programming.\n    - dspy: Build complex AI systems with declarative programming, op...\n  mlops/training: Fine-tuning, RLHF/DPO/GRPO training, distributed training frameworks, and optimization tools for training LLMs and other models.\n    - axolotl: Expert guidance for fine-tuning LLMs with Axolotl - YAML ...\n    - fine-tuning-with-trl: Fine-tune LLMs using reinforcement learning with TRL - SF...\n    - unsloth: Expert guidance for fast fine-tuning with Unsloth - 2-5x ...\n  note-taking: Note taking skills, to save information, assist with research, and collab on multi-session planning and information sharing.\n    - obsidian: Read, search, and create notes in the Obsidian vault.\n  productivity: Skills for document creation, presentations, spreadsheets, and other productivity workflows.\n    - google-workspace: Gmail, Calendar, Drive, Contacts, Sheets, and Docs integr...\n    - linear: Manage Linear issues, projects, and teams via the GraphQL...\n    - maps: Location intelligence — geocode a place, reverse-geocode ...\n    - nano-pdf: Edit PDFs with natural-language instructions using the na...\n    - notion: Notion API for creating and managing pages, databases, an...\n    - ocr-and-documents: Extract text from PDFs and scanned documents. Use web_ext...\n    - powerpoint: Use this skill any time a .pptx file is involved in any w...\n  radar-forum:\n    - radar-forum: 论坛调度引擎 - 协调多个引擎完成复杂舆情分析任务。作为主持人角色调度 radar-query、radar-ins...\n  red-teaming:\n    - godmode: Jailbreak API-served LLMs using G0DM0D3 techniques — Pars...\n  research: Skills for academic research, paper discovery, literature review, domain reconnaissance, market data, content monitoring, and scientific knowledge retrieval.\n    - arxiv: Search and retrieve academic papers from arXiv using thei...\n    - blogwatcher: Monitor blogs and RSS/Atom feeds for updates using the bl...\n    - llm-wiki: Karpathy's LLM Wiki — build and maintain a persistent, in...\n    - polymarket: Query Polymarket prediction market data — search markets,...\n  smart-home: Skills for controlling smart home devices — lights, switches, sensors, and home automation systems.\n    - openhue: Control Philips Hue lights, rooms, and scenes via the Ope...\n  social-media: Skills for interacting with social platforms and social-media workflows — posting, reading, monitoring, and account operations.\n    - xurl: Interact with X/Twitter via xurl, the official X API CLI....\n  software-development:\n    - plan: Plan mode for Hermes — inspect context, write a markdown ...\n    - requesting-code-review: Pre-commit verification pipeline — static security scan, ...\n    - subagent-driven-development: Use when executing implementation plans with independent ...\n    - systematic-debugging: Use when encountering any bug, test failure, or unexpecte...\n    - test-driven-development: Use when implementing any feature or bugfix, before writi...\n    - writing-plans: Use when you have a spec or requirements for a multi-step...\n  web-access:\n    - web-access: 完整联网能力 Skill。处理所有联网操作：搜索、网页抓取、登录后操作、网络交互、浏览器自动化。\n</available_skills>\n\nOnly proceed without loading a skill if genuinely none are relevant to the task.\n\nConversation started: Sunday, April 26, 2026 12:01 PM\nModel: MiniMax-M2.7\nProvider: minimax-cn\n\nYou are running inside WSL (Windows Subsystem for Linux). The Windows host filesystem is mounted under /mnt/ — /mnt/c/ is the C: drive, /mnt/d/ is D:, etc. The user's Windows files are typically at /mnt/c/Users/<username>/Desktop/, Documents/, Downloads/, etc. When the user references Windows paths or desktop files, translate to the /mnt/c/ equivalent. You can list /mnt/c/Users/ to discover the Windows username if needed.\n\nYou are a CLI AI Agent. Try not to use markdown but simple text renderable inside a terminal. File delivery: there is no attachment channel — the user reads your response directly in their terminal. Do NOT emit MEDIA:/path tags (those are only intercepted on messaging platforms like Telegram, Discord, Slack, etc.; on the CLI they render as literal text). When referring to a file you created or changed, just state its absolute path in plain text; the user can open it from there.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "clarify",
+        "description": "Ask the user a question when you need clarification, feedback, or a decision before proceeding. Supports two modes:\n\n1. **Multiple choice** — provide up to 4 choices. The user picks one or types their own answer via a 5th 'Other' option.\n2. **Open-ended** — omit choices entirely. The user types a free-form response.\n\nUse this tool when:\n- The task is ambiguous and you need the user to choose an approach\n- You want post-task feedback ('How did that work out?')\n- You want to offer to save a skill or update memory\n- A decision has meaningful trade-offs the user should weigh in on\n\nDo NOT use this tool for simple yes/no confirmation of dangerous commands (the terminal tool handles that). Prefer making a reasonable default choice yourself when the decision is low-stakes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "description": "The question to present to the user."
+            },
+            "choices": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 4,
+              "description": "Up to 4 answer choices. Omit this parameter entirely to ask an open-ended question. When provided, the UI automatically appends an 'Other (type your answer)' option."
+            }
+          },
+          "required": [
+            "question"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "cronjob",
+        "description": "Manage scheduled cron jobs with a single compressed tool.\n\nUse action='create' to schedule a new job from a prompt or one or more skills.\nUse action='list' to inspect jobs.\nUse action='update', 'pause', 'resume', 'remove', or 'run' to manage an existing job.\n\nTo stop a job the user no longer wants: first action='list' to find the job_id, then action='remove' with that job_id. Never guess job IDs — always list first.\n\nJobs run in a fresh session with no current-chat context, so prompts must be self-contained.\nIf skills are provided on create, the future cron run loads those skills in order, then follows the prompt as the task instruction.\nOn update, passing skills=[] clears attached skills.\n\nNOTE: The agent's final response is auto-delivered to the target. Put the primary\nuser-facing content in the final response. Cron jobs run autonomously with no user\npresent — they cannot ask questions or request clarification.\n\nImportant safety rule: cron-run sessions should not recursively schedule more cron jobs.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "One of: create, list, update, pause, resume, remove, run"
+            },
+            "job_id": {
+              "type": "string",
+              "description": "Required for update/pause/resume/remove/run"
+            },
+            "prompt": {
+              "type": "string",
+              "description": "For create: the full self-contained prompt. If skills are also provided, this becomes the task instruction paired with those skills."
+            },
+            "schedule": {
+              "type": "string",
+              "description": "For create/update: '30m', 'every 2h', '0 9 * * *', or ISO timestamp"
+            },
+            "name": {
+              "type": "string",
+              "description": "Optional human-friendly name"
+            },
+            "repeat": {
+              "type": "integer",
+              "description": "Optional repeat count. Omit for defaults (once for one-shot, forever for recurring)."
+            },
+            "deliver": {
+              "type": "string",
+              "description": "Omit this parameter to auto-deliver back to the current chat and topic (recommended). Auto-detection preserves thread/topic context. Only set explicitly when the user asks to deliver somewhere OTHER than the current conversation. Values: 'origin' (same as omitting), 'local' (no delivery, save only), or platform:chat_id:thread_id for a specific destination. Examples: 'telegram:-1001234567890:17585', 'discord:#engineering', 'sms:+15551234567'. WARNING: 'platform:chat_id' without :thread_id loses topic targeting."
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional ordered list of skill names to load before executing the cron prompt. On update, pass an empty array to clear attached skills."
+            },
+            "model": {
+              "type": "object",
+              "description": "Optional per-job model override. If provider is omitted, the current main provider is pinned at creation time so the job stays stable.",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "Provider name (e.g. 'openrouter', 'anthropic'). Omit to use and pin the current provider."
+                },
+                "model": {
+                  "type": "string",
+                  "description": "Model name (e.g. 'anthropic/claude-sonnet-4', 'claude-sonnet-4')"
+                }
+              },
+              "required": [
+                "model"
+              ]
+            },
+            "script": {
+              "type": "string",
+              "description": "Optional path to a Python script that runs before each cron job execution. Its stdout is injected into the prompt as context. Use for data collection and change detection. Relative paths resolve under /app/.hermes/scripts/. On update, pass empty string to clear."
+            },
+            "context_from": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional job ID or list of job IDs whose most recent completed output is injected into the prompt as context before each run. Use this to chain cron jobs: job A collects data, job B processes it. Each entry must be a valid job ID (from cronjob action='list'). Note: injects the most recent completed output — does not wait for upstream jobs running in the same tick. On update, pass an empty array to clear."
+            },
+            "enabled_toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional list of toolset names to restrict the job's agent to (e.g. [\"web\", \"terminal\", \"file\", \"delegation\"]). When set, only tools from these toolsets are loaded, significantly reducing input token overhead. When omitted, all default tools are loaded. Infer from the job's prompt — e.g. use \"web\" if it calls web_search, \"terminal\" if it runs scripts, \"file\" if it reads files, \"delegation\" if it calls delegate_task. On update, pass an empty array to clear."
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Optional absolute path to run the job from. When set, AGENTS.md / CLAUDE.md / .cursorrules from that directory are injected into the system prompt, and the terminal/file/code_exec tools use it as their working directory — useful for running a job inside a specific project repo. Must be an absolute path that exists. When unset (default), preserves the original behaviour: no project context files, tools use the scheduler's cwd. On update, pass an empty string to clear. Jobs with workdir run sequentially (not parallel) to keep per-job directories isolated."
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "delegate_task",
+        "description": "Spawn one or more subagents to work on tasks in isolated contexts. Each subagent gets its own conversation, terminal session, and toolset. Only the final summary is returned -- intermediate tool results never enter your context window.\n\nTWO MODES (one of 'goal' or 'tasks' is required):\n1. Single task: provide 'goal' (+ optional context, toolsets)\n2. Batch (parallel): provide 'tasks' array with up to delegation.max_concurrent_children items (default 3, configurable via config.yaml, no hard ceiling). All run concurrently and results are returned together. Nested delegation requires role='orchestrator' and delegation.max_spawn_depth >= 2.\n\nWHEN TO USE delegate_task:\n- Reasoning-heavy subtasks (debugging, code review, research synthesis)\n- Tasks that would flood your context with intermediate data\n- Parallel independent workstreams (research A and B simultaneously)\n\nWHEN NOT TO USE (use these instead):\n- Mechanical multi-step work with no reasoning needed -> use execute_code\n- Single tool call -> just call the tool directly\n- Tasks needing user interaction -> subagents cannot use clarify\n\nIMPORTANT:\n- Subagents have NO memory of your conversation. Pass all relevant info (file paths, error messages, constraints) via the 'context' field.\n- Leaf subagents (role='leaf', the default) CANNOT call: delegate_task, clarify, memory, send_message, execute_code.\n- Orchestrator subagents (role='orchestrator') retain delegate_task so they can spawn their own workers, but still cannot use clarify, memory, send_message, or execute_code. Orchestrators are bounded by delegation.max_spawn_depth (default 2) and can be disabled globally via delegation.orchestrator_enabled=false.\n- Each subagent gets its own terminal session (separate working directory and state).\n- Results are always returned as an array, one entry per task.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "goal": {
+              "type": "string",
+              "description": "What the subagent should accomplish. Be specific and self-contained -- the subagent knows nothing about your conversation history."
+            },
+            "context": {
+              "type": "string",
+              "description": "Background information the subagent needs: file paths, error messages, project structure, constraints. The more specific you are, the better the subagent performs."
+            },
+            "toolsets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Toolsets to enable for this subagent. Default: inherits your enabled toolsets. Available toolsets: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Common patterns: ['terminal', 'file'] for code work, ['web'] for research, ['browser'] for web interaction, ['terminal', 'file', 'web'] for full-stack tasks."
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "description": "Task goal"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Task-specific context"
+                  },
+                  "toolsets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Toolsets for this specific task. Available: 'browser', 'cronjob', 'discord', 'discord_admin', 'feishu_doc', 'feishu_drive', 'file', 'homeassistant', 'image_gen', 'search', 'session_search', 'skills', 'spotify', 'terminal', 'todo', 'tts', 'vision', 'web'. Use 'web' for network access, 'terminal' for shell, 'browser' for web interaction."
+                  },
+                  "acp_command": {
+                    "type": "string",
+                    "description": "Per-task ACP command override (e.g. 'claude'). Overrides the top-level acp_command for this task only."
+                  },
+                  "acp_args": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Per-task ACP args override."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "leaf",
+                      "orchestrator"
+                    ],
+                    "description": "Per-task role override. See top-level 'role' for semantics."
+                  }
+                },
+                "required": [
+                  "goal"
+                ]
+              },
+              "description": "Batch mode: tasks to run in parallel (limit configurable via delegation.max_concurrent_children, default 3). Each gets its own subagent with isolated context and terminal session. When provided, top-level goal/context/toolsets are ignored."
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "leaf",
+                "orchestrator"
+              ],
+              "description": "Role of the child agent. 'leaf' (default) = focused worker, cannot delegate further. 'orchestrator' = can use delegate_task to spawn its own workers. Requires delegation.max_spawn_depth >= 2 in config; ignored (treated as 'leaf') when the child would exceed max_spawn_depth or when delegation.orchestrator_enabled=false."
+            },
+            "acp_command": {
+              "type": "string",
+              "description": "Override ACP command for child agents (e.g. 'claude', 'copilot'). When set, children use ACP subprocess transport instead of inheriting the parent's transport. Enables spawning Claude Code (claude --acp --stdio) or other ACP-capable agents from any parent, including Discord/Telegram/CLI."
+            },
+            "acp_args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Arguments for the ACP command (default: ['--acp', '--stdio']). Only used when acp_command is set. Example: ['--acp', '--stdio', '--model', 'claude-opus-4-6']"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "execute_code",
+        "description": "Run a Python script that can call Hermes tools programmatically. Use this when you need 3+ tool calls with processing logic between them, need to filter/reduce large tool outputs before they enter your context, need conditional branching (if X then Y else Z), or need to loop (fetch N pages, process N files, retry on failure).\n\nUse normal tool calls instead when: single tool call with no processing, you need to see the full result and apply complex reasoning, or the task requires interactive user input.\n\nAvailable via `from hermes_tools import ...`:\n\n  web_search(query: str, limit: int = 5) -> dict\n    Returns {\"data\": {\"web\": [{\"url\", \"title\", \"description\"}, ...]}}\n  web_extract(urls: list[str]) -> dict\n    Returns {\"results\": [{\"url\", \"title\", \"content\", \"error\"}, ...]} where content is markdown\n  read_file(path: str, offset: int = 1, limit: int = 500) -> dict\n    Lines are 1-indexed. Returns {\"content\": \"...\", \"total_lines\": N}\n  write_file(path: str, content: str) -> dict\n    Always overwrites the entire file.\n  search_files(pattern: str, target=\"content\", path=\".\", file_glob=None, limit=50) -> dict\n    target: \"content\" (search inside files) or \"files\" (find files by name). Returns {\"matches\": [...]}\n  patch(path: str, old_string: str, new_string: str, replace_all: bool = False) -> dict\n    Replaces old_string with new_string in the file.\n  terminal(command: str, timeout=None, workdir=None) -> dict\n    Foreground only (no background/pty). Returns {\"output\": \"...\", \"exit_code\": N}\n\nLimits: 5-minute timeout, 50KB stdout cap, max 50 tool calls per script. terminal() is foreground-only (no background or pty).\n\nScripts run in the session's working directory with the active venv's python, so project deps (pandas, etc.) and relative paths work like in terminal().\n\nPrint your final result to stdout. Use Python stdlib (json, re, math, csv, datetime, collections, etc.) for processing between tool calls.\n\nAlso available (no import needed — built into hermes_tools):\n  json_parse(text: str) — json.loads with strict=False; use for terminal() output with control chars\n  shell_quote(s: str) — shlex.quote(); use when interpolating dynamic strings into shell commands\n  retry(fn, max_attempts=3, delay=2) — retry with exponential backoff for transient failures",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Python code to execute. Import tools with `from hermes_tools import web_search, terminal, ...` and print your final result to stdout."
+            }
+          },
+          "required": [
+            "code"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "memory",
+        "description": "Save durable information to persistent memory that survives across sessions. Memory is injected into future turns, so keep it compact and focused on facts that will still matter later.\n\nWHEN TO SAVE (do this proactively, don't wait to be asked):\n- User corrects you or says 'remember this' / 'don't do that again'\n- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n- You discover something about the environment (OS, installed tools, project structure)\n- You learn a convention, API quirk, or workflow specific to this user's setup\n- You identify a stable fact that will be useful again in future sessions\n\nPRIORITY: User preferences and corrections > environment facts > procedural knowledge. The most valuable memory prevents the user from having to repeat themselves.\n\nDo NOT save task progress, session outcomes, completed-work logs, or temporary TODO state to memory; use session_search to recall those from past transcripts.\nIf you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool.\n\nTWO TARGETS:\n- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n- 'memory': your notes -- environment facts, project conventions, tool quirks, lessons learned\n\nACTIONS: add (new entry), replace (update existing -- old_text identifies it), remove (delete -- old_text identifies it).\n\nSKIP: trivial/obvious info, things easily re-discovered, raw data dumps, and temporary task state.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "add",
+                "replace",
+                "remove"
+              ],
+              "description": "The action to perform."
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "user"
+              ],
+              "description": "Which memory store: 'memory' for personal notes, 'user' for user profile."
+            },
+            "content": {
+              "type": "string",
+              "description": "The entry content. Required for 'add' and 'replace'."
+            },
+            "old_text": {
+              "type": "string",
+              "description": "Short unique substring identifying the entry to replace or remove."
+            }
+          },
+          "required": [
+            "action",
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "patch",
+        "description": "Targeted find-and-replace edits in files. Use this instead of sed/awk in terminal. Uses fuzzy matching (9 strategies) so minor whitespace/indentation differences won't break it. Returns a unified diff. Auto-runs syntax checks after editing.\n\nReplace mode (default): find a unique string and replace it.\nPatch mode: apply V4A multi-file patches for bulk changes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "replace",
+                "patch"
+              ],
+              "description": "Edit mode: 'replace' for targeted find-and-replace, 'patch' for V4A multi-file patches",
+              "default": "replace"
+            },
+            "path": {
+              "type": "string",
+              "description": "File path to edit (required for 'replace' mode)"
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'replace' mode). Must be unique in the file unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'replace' mode). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "Replace all occurrences instead of requiring a unique match (default: false)",
+              "default": false
+            },
+            "patch": {
+              "type": "string",
+              "description": "V4A format patch content (required for 'patch' mode). Format:\n*** Begin Patch\n*** Update File: path/to/file\n@@ context hint @@\n context line\n-removed line\n+added line\n*** End Patch"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "process",
+        "description": "Manage background processes started with terminal(background=true). Actions: 'list' (show all), 'poll' (check status + new output), 'log' (full output with pagination), 'wait' (block until done or timeout), 'kill' (terminate), 'write' (send raw stdin data without newline), 'submit' (send data + Enter, for answering prompts), 'close' (close stdin/send EOF).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "list",
+                "poll",
+                "log",
+                "wait",
+                "kill",
+                "write",
+                "submit",
+                "close"
+              ],
+              "description": "Action to perform on background processes"
+            },
+            "session_id": {
+              "type": "string",
+              "description": "Process session ID (from terminal background output). Required for all actions except 'list'."
+            },
+            "data": {
+              "type": "string",
+              "description": "Text to send to process stdin (for 'write' and 'submit' actions)"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to block for 'wait' action. Returns partial output on timeout.",
+              "minimum": 1
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line offset for 'log' action (default: last 200 lines)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max lines to return for 'log' action",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "action"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_file",
+        "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. NOTE: Cannot read images or binary files — use vision_analyze for images.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to read (absolute, relative, or ~/path)"
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Line number to start reading from (1-indexed, default: 1)",
+              "default": 1,
+              "minimum": 1
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of lines to read (default: 500, max: 2000)",
+              "default": 500,
+              "maximum": 2000
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_files",
+        "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls — results sorted by modification time.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regex pattern for content search, or glob pattern (e.g., '*.py') for file search"
+            },
+            "target": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files"
+              ],
+              "description": "'content' searches inside file contents, 'files' searches for files by name",
+              "default": "content"
+            },
+            "path": {
+              "type": "string",
+              "description": "Directory or file to search in (default: current working directory)",
+              "default": "."
+            },
+            "file_glob": {
+              "type": "string",
+              "description": "Filter files by pattern in grep mode (e.g., '*.py' to only search Python files)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of results to return (default: 50)",
+              "default": 50
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Skip first N results for pagination (default: 0)",
+              "default": 0
+            },
+            "output_mode": {
+              "type": "string",
+              "enum": [
+                "content",
+                "files_only",
+                "count"
+              ],
+              "description": "Output format for grep mode: 'content' shows matching lines with line numbers, 'files_only' lists file paths, 'count' shows match counts per file",
+              "default": "content"
+            },
+            "context": {
+              "type": "integer",
+              "description": "Number of context lines before and after each match (grep mode only)",
+              "default": 0
+            }
+          },
+          "required": [
+            "pattern"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "send_message",
+        "description": "Send a message to a connected messaging platform, or list available targets.\n\nIMPORTANT: When the user asks to send to a specific channel or person (not just a bare platform name), call send_message(action='list') FIRST to see available targets, then send to the correct one.\nIf the user just says a platform name like 'send to telegram', send directly to the home channel without listing first.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "send",
+                "list"
+              ],
+              "description": "Action to perform. 'send' (default) sends a message. 'list' returns all available channels/contacts across connected platforms."
+            },
+            "target": {
+              "type": "string",
+              "description": "Delivery target. Format: 'platform' (uses home channel), 'platform:#channel-name', 'platform:chat_id', or 'platform:chat_id:thread_id' for Telegram topics and Discord threads. Examples: 'telegram', 'telegram:-1001234567890:17585', 'discord:999888777:555444333', 'discord:#bot-home', 'slack:#engineering', 'signal:+155****4567', 'matrix:!roomid:server.org', 'matrix:@user:server.org'"
+            },
+            "message": {
+              "type": "string",
+              "description": "The message text to send"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "session_search",
+        "description": "Search your long-term memory of past conversations, or browse recent sessions. This is your recall -- every past session is searchable, and this tool summarizes what happened.\n\nTWO MODES:\n1. Recent sessions (no query): Call with no arguments to see what was worked on recently. Returns titles, previews, and timestamps. Zero LLM cost, instant. Start here when the user asks what were we working on or what did we do recently.\n2. Keyword search (with query): Search for specific topics across all past sessions. Returns LLM-generated summaries of matching sessions.\n\nUSE THIS PROACTIVELY when:\n- The user says 'we did this before', 'remember when', 'last time', 'as I mentioned'\n- The user asks about a topic you worked on before but don't have in current context\n- The user references a project, person, or concept that seems familiar but isn't in memory\n- You want to check if you've solved a similar problem before\n- The user asks 'what did we do about X?' or 'how did we fix Y?'\n\nDon't hesitate to search when it is actually cross-session -- it's fast and cheap. Better to search and confirm than to guess or ask the user to repeat themselves.\n\nSearch syntax: keywords joined with OR for broad recall (elevenlabs OR baseten OR funding), phrases for exact match (\"docker networking\"), boolean (python NOT java), prefix (deploy*). IMPORTANT: Use OR between keywords for best results — FTS5 defaults to AND which misses sessions that only mention some terms. If a broad OR query returns nothing, try individual keyword searches in parallel. Returns summaries of the top matching sessions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query — keywords, phrases, or boolean expressions to find in past sessions. Omit this parameter entirely to browse recent sessions instead (returns titles, previews, timestamps with no LLM cost)."
+            },
+            "role_filter": {
+              "type": "string",
+              "description": "Optional: only search messages from specific roles (comma-separated). E.g. 'user,assistant' to skip tool outputs."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max sessions to summarize (default: 3, max: 5).",
+              "default": 3
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_manage",
+        "description": "Manage skills (create, update, delete). Skills are your procedural memory — reusable approaches for recurring task types. New skills go to /app/.hermes/skills/; existing skills can be modified wherever they live.\n\nActions: create (full SKILL.md + optional category), patch (old_string/new_string — preferred for fixes), edit (full SKILL.md rewrite — major overhauls only), delete, write_file, remove_file.\n\nCreate when: complex task succeeded (5+ calls), errors overcome, user-corrected approach worked, non-trivial workflow discovered, or user asks you to remember a procedure.\nUpdate when: instructions stale/wrong, OS-specific failures, missing steps or pitfalls found during use. If you used a skill and hit issues not covered by it, patch it immediately.\n\nAfter difficult/iterative tasks, offer to save as a skill. Skip for simple one-offs. Confirm with user before creating/deleting.\n\nGood skills: trigger conditions, numbered steps with exact commands, pitfalls section, verification steps. Use skill_view() to see format examples.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "create",
+                "patch",
+                "edit",
+                "delete",
+                "write_file",
+                "remove_file"
+              ],
+              "description": "The action to perform."
+            },
+            "name": {
+              "type": "string",
+              "description": "Skill name (lowercase, hyphens/underscores, max 64 chars). Must match an existing skill for patch/edit/delete/write_file/remove_file."
+            },
+            "content": {
+              "type": "string",
+              "description": "Full SKILL.md content (YAML frontmatter + markdown body). Required for 'create' and 'edit'. For 'edit', read the skill first with skill_view() and provide the complete updated text."
+            },
+            "old_string": {
+              "type": "string",
+              "description": "Text to find in the file (required for 'patch'). Must be unique unless replace_all=true. Include enough surrounding context to ensure uniqueness."
+            },
+            "new_string": {
+              "type": "string",
+              "description": "Replacement text (required for 'patch'). Can be empty string to delete the matched text."
+            },
+            "replace_all": {
+              "type": "boolean",
+              "description": "For 'patch': replace all occurrences instead of requiring a unique match (default: false)."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category/domain for organizing the skill (e.g., 'devops', 'data-science', 'mlops'). Creates a subdirectory grouping. Only used with 'create'."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Path to a supporting file within the skill directory. For 'write_file'/'remove_file': required, must be under references/, templates/, scripts/, or assets/. For 'patch': optional, defaults to SKILL.md if omitted."
+            },
+            "file_content": {
+              "type": "string",
+              "description": "Content for the file. Required for 'write_file'."
+            }
+          },
+          "required": [
+            "action",
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skill_view",
+        "description": "Skills allow for loading information about specific tasks and workflows, as well as scripts and templates. Load a skill's full content or access its linked files (references, templates, scripts). First call returns SKILL.md content plus a 'linked_files' dict showing available references/templates/scripts. To access those, call again with file_path parameter.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The skill name (use skills_list to see available skills). For plugin-provided skills, use the qualified form 'plugin:skill' (e.g. 'superpowers:writing-plans')."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "OPTIONAL: Path to a linked file within the skill (e.g., 'references/api.md', 'templates/config.yaml', 'scripts/validate.py'). Omit to get the main SKILL.md content."
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "skills_list",
+        "description": "List available skills (name + description). Use skill_view(name) to load full content.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Optional category filter to narrow results"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "terminal",
+        "description": "Execute shell commands on a Linux environment. Filesystem usually persists between calls.\n\nDo NOT use cat/head/tail to read files — use read_file instead.\nDo NOT use grep/rg/find to search — use search_files instead.\nDo NOT use ls to list directories — use search_files(target='files') instead.\nDo NOT use sed/awk to edit files — use patch instead.\nDo NOT use echo/cat heredoc to create files — use write_file instead.\nReserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.\n\nForeground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts — you'll still get the result in seconds if it's fast. Prefer foreground for short commands.\nBackground: Set background=true to get a session_id. Two patterns:\n  (1) Long-lived processes that never exit (servers, watchers).\n  (2) Long-running tasks with notify_on_complete=true — you can keep working on other things and the system auto-notifies you when the task finishes. Great for test suites, builds, deployments, or anything that takes more than a minute.\nFor servers/watchers, do NOT use shell-level background wrappers (nohup/disown/setsid/trailing '&') in foreground mode. Use background=true so Hermes can track lifecycle and output.\nAfter starting a server, verify readiness with a health check or log signal, then run tests in a separate terminal() call. Avoid blind sleep loops.\nUse process(action=\"poll\") for progress checks, process(action=\"wait\") to block until done.\nWorking directory: Use 'workdir' for per-command cwd.\nPTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).\n\nDo NOT use vim/nano/interactive tools without pty=true — they hang without a pseudo-terminal. Pipe git output to cat if it might page.\n",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "The command to execute on the VM"
+            },
+            "background": {
+              "type": "boolean",
+              "description": "Run the command in the background. Two patterns: (1) Long-lived processes that never exit (servers, watchers). (2) Long-running tasks paired with notify_on_complete=true — you can keep working and get notified when the task finishes. For short commands, prefer foreground with a generous timeout instead.",
+              "default": false
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Max seconds to wait (default: 180, foreground max: 600). Returns INSTANTLY when command finishes — set high for long tasks, you won't wait unnecessarily. Foreground timeout above 600s is rejected; use background=true for longer commands.",
+              "minimum": 1
+            },
+            "workdir": {
+              "type": "string",
+              "description": "Working directory for this command (absolute path). Defaults to the session working directory."
+            },
+            "pty": {
+              "type": "boolean",
+              "description": "Run in pseudo-terminal (PTY) mode for interactive CLI tools like Codex, Claude Code, or Python REPL. Only works with local and SSH backends. Default: false.",
+              "default": false
+            },
+            "notify_on_complete": {
+              "type": "boolean",
+              "description": "When true (and background=true), you'll be automatically notified exactly once when the process finishes. **This is the right choice for almost every long-running task** — tests, builds, deployments, multi-item batch jobs, anything that takes over a minute and has a defined end. Use this and keep working on other things; the system notifies you on exit. MUTUALLY EXCLUSIVE with watch_patterns — when both are set, watch_patterns is dropped.",
+              "default": false
+            },
+            "watch_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Strings to watch for in background process output. HARD RATE LIMIT: at most 1 notification per 15 seconds per process — matches arriving inside the cooldown are dropped. After 3 consecutive 15-second windows with dropped matches, watch_patterns is automatically disabled for that process and promoted to notify_on_complete behavior (one notification on exit, no more mid-process spam). USE ONLY for truly rare, one-shot mid-process signals on LONG-LIVED processes that will never exit on their own — e.g. ['Application startup complete'] on a server so you know when to hit its endpoint, or ['migration done'] on a daemon. DO NOT use for: (1) end-of-run markers like 'DONE'/'PASS' — use notify_on_complete instead; (2) error patterns like 'ERROR'/'Traceback' in loops or multi-item batch jobs — they fire on every iteration and you'll hit the strike limit fast; (3) anything you'd ever combine with notify_on_complete. When in doubt, choose notify_on_complete. MUTUALLY EXCLUSIVE with notify_on_complete — set one, not both."
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "text_to_speech",
+        "description": "Convert text to speech audio. Returns a MEDIA: path that the platform delivers as a voice message. On Telegram it plays as a voice bubble, on Discord/WhatsApp as an audio attachment. In CLI mode, saves to ~/voice-memos/. Voice and provider are user-configured, not model-selected.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text to convert to speech. Provider-specific character caps apply and are enforced automatically (OpenAI 4096, xAI 15000, MiniMax 10000, ElevenLabs 5k-40k depending on model); over-long input is truncated."
+            },
+            "output_path": {
+              "type": "string",
+              "description": "Optional custom file path to save the audio. Defaults to /app/.hermes/audio_cache/<timestamp>.mp3"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "todo",
+        "description": "Manage your task list for the current session. Use for complex tasks with 3+ steps or when the user provides multiple tasks. Call with no parameters to read the current list.\n\nWriting:\n- Provide 'todos' array to create/update items\n- merge=false (default): replace the entire list with a fresh plan\n- merge=true: update existing items by id, add any new ones\n\nEach item: {id: string, content: string, status: pending|in_progress|completed|cancelled}\nList order is priority. Only ONE item in_progress at a time.\nMark items completed immediately when done. If something fails, cancel it and add a revised item.\n\nAlways returns the full current list.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "todos": {
+              "type": "array",
+              "description": "Task items to write. Omit to read current list.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Unique item identifier"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Task description"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed",
+                      "cancelled"
+                    ],
+                    "description": "Current status"
+                  }
+                },
+                "required": [
+                  "id",
+                  "content",
+                  "status"
+                ]
+              }
+            },
+            "merge": {
+              "type": "boolean",
+              "description": "true: update existing items by id, add new ones. false (default): replace the entire list.",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_extract",
+        "description": "Extract content from web page URLs. Returns page content in markdown format. Also works with PDF URLs (arxiv papers, documents, etc.) — pass the PDF link directly and it converts to markdown text. Pages under 5000 chars return full markdown; larger pages are LLM-summarized and capped at ~5000 chars per page. Pages over 2M chars are refused. If a URL fails or times out, use the browser tool to access it instead.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of URLs to extract content from (max 5 URLs per call)",
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "urls"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Search the web for information on any topic. Returns up to 5 relevant results with titles, URLs, and descriptions.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The search query to look up on the web"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "write_file",
+        "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file — use 'patch' for targeted edits.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Path to the file to write (will be created if it doesn't exist, overwritten if it does)"
+            },
+            "content": {
+              "type": "string",
+              "description": "Complete content to write to the file"
+            }
+          },
+          "required": [
+            "path",
+            "content"
+          ]
+        }
+      }
+    }
+  ],
+  "message_count": 37,
+  "messages": [
+    {
+      "role": "user",
+      "content": "进一步配置 Lightpanda MCP 模式接入 Hermes 的 MCP 工具集"
+    },
+    {
+      "role": "assistant",
+      "content": "Let我先查看当前的 MCP 配置和 native-mcp skill，了解现状后再进行配置。",
+      "reasoning": "The user is asking to further configure Lightpanda MCP mode to connect to Hermes's MCP toolset. Let me first understand what this means.\n\nLooking at the skills available, I see there's a `mcp` skill that mentions:\n- \"native-mcp: Built-in MCP (Model Context Protocol) client that connect...\"\n\nAnd there's also a `radar-forum` skill that mentions:\n- \"雷达调度引擎 - 协调多个引擎完成复杂舆情分析任务。作为主持人角色调度 radar-query、radar-ins...\"\n\nThe user mentions \"Lightpanda MCP 模式\" and wants to connect it to Hermes's MCP toolset. Let me first check the existing MCP skill to understand the current configuration, and also search for any Lightpanda-related configuration.\n\nLet me start by loading the native-mcp skill to understand how MCP is currently configured.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c09dc66956def74443946554faadf4ff50d9e5b50075d868e2281f1addbd0f15",
+          "thinking": "The user is asking to further configure Lightpanda MCP mode to connect to Hermes's MCP toolset. Let me first understand what this means.\n\nLooking at the skills available, I see there's a `mcp` skill that mentions:\n- \"native-mcp: Built-in MCP (Model Context Protocol) client that connect...\"\n\nAnd there's also a `radar-forum` skill that mentions:\n- \"雷达调度引擎 - 协调多个引擎完成复杂舆情分析任务。作为主持人角色调度 radar-query、radar-ins...\"\n\nThe user mentions \"Lightpanda MCP 模式\" and wants to connect it to Hermes's MCP toolset. Let me first check the existing MCP skill to understand the current configuration, and also search for any Lightpanda-related configuration.\n\nLet me start by loading the native-mcp skill to understand how MCP is currently configured.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_cu3tav5qfrtp_1",
+          "call_id": "call_function_cu3tav5qfrtp_1",
+          "response_item_id": "fc_function_cu3tav5qfrtp_1",
+          "type": "function",
+          "function": {
+            "name": "skill_view",
+            "arguments": "{\"name\": \"native-mcp\"}"
+          }
+        },
+        {
+          "id": "call_function_cu3tav5qfrtp_2",
+          "call_id": "call_function_cu3tav5qfrtp_2",
+          "response_item_id": "fc_function_cu3tav5qfrtp_2",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"lightpanda\", \"target\": \"content\"}"
+          }
+        },
+        {
+          "id": "call_function_cu3tav5qfrtp_3",
+          "call_id": "call_function_cu3tav5qfrtp_3",
+          "response_item_id": "fc_function_cu3tav5qfrtp_3",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"mcp.*config\", \"target\": \"files\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"success\": true, \"name\": \"native-mcp\", \"description\": \"Built-in MCP (Model Context Protocol) client that connects to external MCP servers, discovers their tools, and registers them as native Hermes Agent tools. Supports stdio and HTTP transports with automatic reconnection, security filtering, and zero-config tool injection.\", \"tags\": [\"MCP\", \"Tools\", \"Integrations\"], \"related_skills\": [\"mcporter\"], \"content\": \"---\\nname: native-mcp\\ndescription: Built-in MCP (Model Context Protocol) client that connects to external MCP servers, discovers their tools, and registers them as native Hermes Agent tools. Supports stdio and HTTP transports with automatic reconnection, security filtering, and zero-config tool injection.\\nversion: 1.0.0\\nauthor: Hermes Agent\\nlicense: MIT\\nmetadata:\\n  hermes:\\n    tags: [MCP, Tools, Integrations]\\n    related_skills: [mcporter]\\n---\\n\\n# Native MCP Client\\n\\nHermes Agent has a built-in MCP client that connects to MCP servers at startup, discovers their tools, and makes them available as first-class tools the agent can call directly. No bridge CLI needed -- tools from MCP servers appear alongside built-in tools like `terminal`, `read_file`, etc.\\n\\n## When to Use\\n\\nUse this whenever you want to:\\n- Connect to MCP servers and use their tools from within Hermes Agent\\n- Add external capabilities (filesystem access, GitHub, databases, APIs) via MCP\\n- Run local stdio-based MCP servers (npx, uvx, or any command)\\n- Connect to remote HTTP/StreamableHTTP MCP servers\\n- Have MCP tools auto-discovered and available in every conversation\\n\\nFor ad-hoc, one-off MCP tool calls from the terminal without configuring anything, see the `mcporter` skill instead.\\n\\n## Prerequisites\\n\\n- **mcp Python package** -- optional dependency; install with `pip install mcp`. If not installed, MCP support is silently disabled.\\n- **Node.js** -- required for `npx`-based MCP servers (most community servers)\\n- **uv** -- required for `uvx`-based MCP servers (Python-based servers)\\n\\nInstall the MCP SDK:\\n\\n```bash\\npip install mcp\\n# or, if using uv:\\nuv pip install mcp\\n```\\n\\n## Quick Start\\n\\nAdd MCP servers to `~/.hermes/config.yaml` under the `mcp_servers` key:\\n\\n```yaml\\nmcp_servers:\\n  time:\\n    command: \\\"uvx\\\"\\n    args: [\\\"mcp-server-time\\\"]\\n```\\n\\nRestart Hermes Agent. On startup it will:\\n1. Connect to the server\\n2. Discover available tools\\n3. Register them with the prefix `mcp_time_*`\\n4. Inject them into all platform toolsets\\n\\nYou can then use the tools naturally -- just ask the agent to get the current time.\\n\\n## Configuration Reference\\n\\nEach entry under `mcp_servers` is a server name mapped to its config. There are two transport types: **stdio** (command-based) and **HTTP** (url-based).\\n\\n### Stdio Transport (command + args)\\n\\n```yaml\\nmcp_servers:\\n  server_name:\\n    command: \\\"npx\\\"             # (required) executable to run\\n    args: [\\\"-y\\\", \\\"pkg-name\\\"]   # (optional) command arguments, default: []\\n    env:                       # (optional) environment variables for the subprocess\\n      SOME_API_KEY: \\\"value\\\"\\n    timeout: 120               # (optional) per-tool-call timeout in seconds, default: 120\\n    connect_timeout: 60        # (optional) initial connection timeout in seconds, default: 60\\n```\\n\\n### HTTP Transport (url)\\n\\n```yaml\\nmcp_servers:\\n  server_name:\\n    url: \\\"https://my-server.example.com/mcp\\\"   # (required) server URL\\n    headers:                                     # (optional) HTTP headers\\n      Authorization: \\\"Bearer sk-...\\\"\\n    timeout: 180               # (optional) per-tool-call timeout in seconds, default: 120\\n    connect_timeout: 60        # (optional) initial connection timeout in seconds, default: 60\\n```\\n\\n### All Config Options\\n\\n| Option            | Type   | Default | Description                                       |\\n|-------------------|--------|---------|---------------------------------------------------|\\n| `command`         | string | --      | Executable to run (stdio transport, required)     |\\n| `args`            | list   | `[]`    | Arguments passed to the command                   |\\n| `env`             | dict   | `{}`    | Extra environment variables for the subprocess    |\\n| `url`             | string | --      | Server URL (HTTP transport, required)             |\\n| `headers`         | dict   | `{}`    | HTTP headers sent with every request              |\\n| `timeout`         | int    | `120`   | Per-tool-call timeout in seconds                  |\\n| `connect_timeout` | int    | `60`    | Timeout for initial connection and discovery      |\\n\\nNote: A server config must have either `command` (stdio) or `url` (HTTP), not both.\\n\\n## How It Works\\n\\n### Startup Discovery\\n\\nWhen Hermes Agent starts, `discover_mcp_tools()` is called during tool initialization:\\n\\n1. Reads `mcp_servers` from `~/.hermes/config.yaml`\\n2. For each server, spawns a connection in a dedicated background event loop\\n3. Initializes the MCP session and calls `list_tools()` to discover available tools\\n4. Registers each tool in the Hermes tool registry\\n\\n### Tool Naming Convention\\n\\nMCP tools are registered with the naming pattern:\\n\\n```\\nmcp_{server_name}_{tool_name}\\n```\\n\\nHyphens and dots in names are replaced with underscores for LLM API compatibility.\\n\\nExamples:\\n- Server `filesystem`, tool `read_file` → `mcp_filesystem_read_file`\\n- Server `github`, tool `list-issues` → `mcp_github_list_issues`\\n- Server `my-api`, tool `fetch.data` → `mcp_my_api_fetch_data`\\n\\n### Auto-Injection\\n\\nAfter discovery, MCP tools are automatically injected into all `hermes-*` platform toolsets (CLI, Discord, Telegram, etc.). This means MCP tools are available in every conversation without any additional configuration.\\n\\n### Connection Lifecycle\\n\\n- Each server runs as a long-lived asyncio Task in a background daemon thread\\n- Connections persist for the lifetime of the agent process\\n- If a connection drops, automatic reconnection with exponential backoff kicks in (up to 5 retries, max 60s backoff)\\n- On agent shutdown, all connections are gracefully closed\\n\\n### Idempotency\\n\\n`discover_mcp_tools()` is idempotent -- calling it multiple times only connects to servers that aren't already connected. Failed servers are retried on subsequent calls.\\n\\n## Transport Types\\n\\n### Stdio Transport\\n\\nThe most common transport. Hermes launches the MCP server as a subprocess and communicates over stdin/stdout.\\n\\n```yaml\\nmcp_servers:\\n  filesystem:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-filesystem\\\", \\\"/home/user/projects\\\"]\\n```\\n\\nThe subprocess inherits a **filtered** environment (see Security section below) plus any variables you specify in `env`.\\n\\n### HTTP / StreamableHTTP Transport\\n\\nFor remote or shared MCP servers. Requires the `mcp` package to include HTTP client support (`mcp.client.streamable_http`).\\n\\n```yaml\\nmcp_servers:\\n  remote_api:\\n    url: \\\"https://mcp.example.com/mcp\\\"\\n    headers:\\n      Authorization: \\\"Bearer sk-...\\\"\\n```\\n\\nIf HTTP support is not available in your installed `mcp` version, the server will fail with an ImportError and other servers will continue normally.\\n\\n## Security\\n\\n### Environment Variable Filtering\\n\\nFor stdio servers, Hermes does NOT pass your full shell environment to MCP subprocesses. Only safe baseline variables are inherited:\\n\\n- `PATH`, `HOME`, `USER`, `LANG`, `LC_ALL`, `TERM`, `SHELL`, `TMPDIR`\\n- Any `XDG_*` variables\\n\\nAll other environment variables (API keys, tokens, secrets) are excluded unless you explicitly add them via the `env` config key. This prevents accidental credential leakage to untrusted MCP servers.\\n\\n```yaml\\nmcp_servers:\\n  github:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-github\\\"]\\n    env:\\n      # Only this token is passed to the subprocess\\n      GITHUB_PERSONAL_ACCESS_TOKEN: \\\"ghp_...\\\"\\n```\\n\\n### Credential Stripping in Error Messages\\n\\nIf an MCP tool call fails, any credential-like patterns in the error message are automatically redacted before being shown to the LLM. This covers:\\n\\n- GitHub PATs (`ghp_...`)\\n- OpenAI-style keys (`sk-...`)\\n- Bearer tokens\\n- Generic `token=`, `key=`, `API_KEY=`, `password=`, `secret=` patterns\\n\\n## Troubleshooting\\n\\n### \\\"MCP SDK not available -- skipping MCP tool discovery\\\"\\n\\nThe `mcp` Python package is not installed. Install it:\\n\\n```bash\\npip install mcp\\n```\\n\\n### \\\"No MCP servers configured\\\"\\n\\nNo `mcp_servers` key in `~/.hermes/config.yaml`, or it's empty. Add at least one server.\\n\\n### \\\"Failed to connect to MCP server 'X'\\\"\\n\\nCommon causes:\\n- **Command not found**: The `command` binary isn't on PATH. Ensure `npx`, `uvx`, or the relevant command is installed.\\n- **Package not found**: For npx servers, the npm package may not exist or may need `-y` in args to auto-install.\\n- **Timeout**: The server took too long to start. Increase `connect_timeout`.\\n- **Port conflict**: For HTTP servers, the URL may be unreachable.\\n\\n### \\\"MCP server 'X' requires HTTP transport but mcp.client.streamable_http is not available\\\"\\n\\nYour `mcp` package version doesn't include HTTP client support. Upgrade:\\n\\n```bash\\npip install --upgrade mcp\\n```\\n\\n### Tools not appearing\\n\\n- Check that the server is listed under `mcp_servers` (not `mcp` or `servers`)\\n- Ensure the YAML indentation is correct\\n- Look at Hermes Agent startup logs for connection messages\\n- Tool names are prefixed with `mcp_{server}_{tool}` -- look for that pattern\\n\\n### Connection keeps dropping\\n\\nThe client retries up to 5 times with exponential backoff (1s, 2s, 4s, 8s, 16s, capped at 60s). If the server is fundamentally unreachable, it gives up after 5 attempts. Check the server process and network connectivity.\\n\\n## Examples\\n\\n### Time Server (uvx)\\n\\n```yaml\\nmcp_servers:\\n  time:\\n    command: \\\"uvx\\\"\\n    args: [\\\"mcp-server-time\\\"]\\n```\\n\\nRegisters tools like `mcp_time_get_current_time`.\\n\\n### Filesystem Server (npx)\\n\\n```yaml\\nmcp_servers:\\n  filesystem:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-filesystem\\\", \\\"/home/user/documents\\\"]\\n    timeout: 30\\n```\\n\\nRegisters tools like `mcp_filesystem_read_file`, `mcp_filesystem_write_file`, `mcp_filesystem_list_directory`.\\n\\n### GitHub Server with Authentication\\n\\n```yaml\\nmcp_servers:\\n  github:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-github\\\"]\\n    env:\\n      GITHUB_PERSONAL_ACCESS_TOKEN: \\\"ghp_xxxxxxxxxxxxxxxxxxxx\\\"\\n    timeout: 60\\n```\\n\\nRegisters tools like `mcp_github_list_issues`, `mcp_github_create_pull_request`, etc.\\n\\n### Remote HTTP Server\\n\\n```yaml\\nmcp_servers:\\n  company_api:\\n    url: \\\"https://mcp.mycompany.com/v1/mcp\\\"\\n    headers:\\n      Authorization: \\\"Bearer sk-xxxxxxxxxxxxxxxxxxxx\\\"\\n      X-Team-Id: \\\"engineering\\\"\\n    timeout: 180\\n    connect_timeout: 30\\n```\\n\\n### Multiple Servers\\n\\n```yaml\\nmcp_servers:\\n  time:\\n    command: \\\"uvx\\\"\\n    args: [\\\"mcp-server-time\\\"]\\n\\n  filesystem:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-filesystem\\\", \\\"/tmp\\\"]\\n\\n  github:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-github\\\"]\\n    env:\\n      GITHUB_PERSONAL_ACCESS_TOKEN: \\\"ghp_xxxxxxxxxxxxxxxxxxxx\\\"\\n\\n  company_api:\\n    url: \\\"https://mcp.internal.company.com/mcp\\\"\\n    headers:\\n      Authorization: \\\"Bearer sk-xxxxxxxxxxxxxxxxxxxx\\\"\\n    timeout: 300\\n```\\n\\nAll tools from all servers are registered and available simultaneously. Each server's tools are prefixed with its name to avoid collisions.\\n\\n## Sampling (Server-Initiated LLM Requests)\\n\\nHermes supports MCP's `sampling/createMessage` capability — MCP servers can request LLM completions through the agent during tool execution. This enables agent-in-the-loop workflows (data analysis, content generation, decision-making).\\n\\nSampling is **enabled by default**. Configure per server:\\n\\n```yaml\\nmcp_servers:\\n  my_server:\\n    command: \\\"npx\\\"\\n    args: [\\\"-y\\\", \\\"my-mcp-server\\\"]\\n    sampling:\\n      enabled: true           # default: true\\n      model: \\\"gemini-3-flash\\\" # model override (optional)\\n      max_tokens_cap: 4096    # max tokens per request\\n      timeout: 30             # LLM call timeout (seconds)\\n      max_rpm: 10             # max requests per minute\\n      allowed_models: []      # model whitelist (empty = all)\\n      max_tool_rounds: 5      # tool loop limit (0 = disable)\\n      log_level: \\\"info\\\"       # audit verbosity\\n```\\n\\nServers can also include `tools` in sampling requests for multi-turn tool-augmented workflows. The `max_tool_rounds` config prevents infinite tool loops. Per-server audit metrics (requests, errors, tokens, tool use count) are tracked via `get_mcp_status()`.\\n\\nDisable sampling for untrusted servers with `sampling: { enabled: false }`.\\n\\n## Notes\\n\\n- MCP tools are called synchronously from the agent's perspective but run asynchronously on a dedicated background event loop\\n- Tool results are returned as JSON with either `{\\\"result\\\": \\\"...\\\"}` or `{\\\"error\\\": \\\"...\\\"}`\\n- The native MCP client is independent of `mcporter` -- you can use both simultaneously\\n- Server connections are persistent and shared across all conversations in the same agent process\\n- Adding or removing servers requires restarting the agent (no hot-reload currently)\\n\", \"path\": \"mcp/native-mcp/SKILL.md\", \"skill_dir\": \"/app/.hermes/skills/mcp/native-mcp\", \"linked_files\": null, \"usage_hint\": null, \"required_environment_variables\": [], \"required_commands\": [], \"missing_required_environment_variables\": [], \"missing_credential_files\": [], \"missing_required_commands\": [], \"setup_needed\": false, \"setup_skipped\": false, \"readiness_status\": \"available\", \"metadata\": {\"hermes\": {\"tags\": [\"MCP\", \"Tools\", \"Integrations\"], \"related_skills\": [\"mcporter\"]}}}",
+      "tool_call_id": "call_function_cu3tav5qfrtp_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_cu3tav5qfrtp_2"
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_cu3tav5qfrtp_3"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Now let me search for the Lightpanda MCP server. It seems like Lightpanda might be a browser automation MCP server. Let me search for it.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "f88fa586155b0a362dc59eb4757f82ee748fd4e29ca6be86a4691f38302ae48d",
+          "thinking": "Now let me search for the Lightpanda MCP server. It seems like Lightpanda might be a browser automation MCP server. Let me search for it.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_n1tma0h18w8t_1",
+          "call_id": "call_function_n1tma0h18w8t_1",
+          "response_item_id": "fc_function_n1tma0h18w8t_1",
+          "type": "function",
+          "function": {
+            "name": "web_search",
+            "arguments": "{\"query\": \"Lightpanda MCP server browser\"}"
+          }
+        },
+        {
+          "id": "call_function_n1tma0h18w8t_2",
+          "call_id": "call_function_n1tma0h18w8t_2",
+          "response_item_id": "fc_function_n1tma0h18w8t_2",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"mcp_servers\", \"target\": \"content\"}"
+          }
+        },
+        {
+          "id": "call_function_n1tma0h18w8t_3",
+          "call_id": "call_function_n1tma0h18w8t_3",
+          "response_item_id": "fc_function_n1tma0h18w8t_3",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"find /root/.hermes /app/.hermes -name \\\"config.yaml\\\" 2>/dev/null | head -10\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\n  \"success\": true,\n  \"data\": {\n    \"web\": [\n      {\n        \"url\": \"https://lightpanda.io/docs/cloud-offer/tools/mcp\",\n        \"title\": \"MCP - Documentation - Lightpanda\",\n        \"description\": \"Use the Model Context Protocol (MCP) to easily control Lightpanda browser with your AI applications. ; The Lightpanda MCP service supports only SSE transport.\",\n        \"category\": null\n      },\n      {\n        \"url\": \"https://lightpanda.io/\",\n        \"title\": \"Lightpanda | The headless browser\",\n        \"description\": \"The AI-native web browser built from scratch for machines. Not a fork. Not a patch. Fast, scalable web automation with a minimal memory footprint.\",\n        \"category\": null\n      },\n      {\n        \"url\": \"https://github.com/lightpanda-io/browser\",\n        \"title\": \"Lightpanda: the headless browser designed for AI and automation\",\n        \"description\": \"The MCP server communicates via MCP JSON-RPC 2.0 over stdio. Add to your MCP configuration: { \\\"mcpServers\\\": { \\\"lightpanda\\\": { \\\"command\\\": ...\",\n        \"category\": \"github\"\n      },\n      {\n        \"url\": \"https://mcpservers.org/servers/lightpanda-io/gomcp\",\n        \"title\": \"Lightpanda Go MCP server\",\n        \"description\": \"Lightpanda Go MCP server. A Go-based MCP server for interacting with the Lightpanda Browser using the Chrome DevTools Protocol (CDP).\",\n        \"category\": null\n      },\n      {\n        \"url\": \"https://www.reddit.com/r/mcp/comments/1ksl4sk/lightpanda_hosted_mcp_demo_give_ai_access_to_the/\",\n        \"title\": \"Lightpanda hosted MCP demo: give AI access to the web with a new ...\",\n        \"description\": \"We've released a hosted demo of our MCP server running on Lightpanda, a new ultra-light headless browser we're building from scratch in Zig. Try ...\",\n        \"category\": null\n      }\n    ]\n  }\n}",
+      "tool_call_id": "call_function_n1tma0h18w8t_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_n1tma0h18w8t_2"
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"/app/.hermes/config.yaml\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_n1tma0h18w8t_3"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at the Lightpanda MCP documentation and the current config.yaml.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c5f26ef624051c483e984044a0e7574ba0abefe62699f6a4b203b3e5759fc79e",
+          "thinking": "Let me look at the Lightpanda MCP documentation and the current config.yaml.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_3grh8ashdhf3_1",
+          "call_id": "call_function_3grh8ashdhf3_1",
+          "response_item_id": "fc_function_3grh8ashdhf3_1",
+          "type": "function",
+          "function": {
+            "name": "web_extract",
+            "arguments": "{\"urls\": [\"https://lightpanda.io/docs/cloud-offer/tools/mcp\", \"https://github.com/lightpanda-io/browser\"]}"
+          }
+        },
+        {
+          "id": "call_function_3grh8ashdhf3_2",
+          "call_id": "call_function_3grh8ashdhf3_2",
+          "response_item_id": "fc_function_3grh8ashdhf3_2",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"/app/.hermes/config.yaml\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\n  \"results\": [\n    {\n      \"url\": \"https://lightpanda.io/docs/cloud-offer/tools/mcp\",\n      \"title\": \"MCP - Documentation | Lightpanda\",\n      \"content\": \"[Skip to Content](https://lightpanda.io/docs/cloud-offer/tools/mcp#nextra-skip-nav)\\n\\n[Cloud offer](https://lightpanda.io/docs/cloud-offer/getting-started \\\"Cloud offer\\\") [Tools](https://lightpanda.io/docs/cloud-offer/tools/cdp \\\"Tools\\\") MCP\\n\\n# Model Context Protocol\\n\\nUse the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) to\\neasily control Lightpanda browser with your AI applications.\\n\\n## Usage [Permalink for this section](https://lightpanda.io/docs/cloud-offer/tools/mcp\\\\#usage)\\n\\nThe Lightpanda MCP service supports only [SSE](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse) transport.\\n\\nDepending on your location, you can connect to the MCP using the url\\n`wss://euwest.cloud.lightpanda.io/mcp/sse` or `wss//uswest.cloud.lightpanda.io/mcp/sse`.\\n\\n### Authentication [Permalink for this section](https://lightpanda.io/docs/cloud-offer/tools/mcp\\\\#authentication)\\n\\nAn authentication is required, you can either pass your token with the `token` query string parameter in the url, or use the `Authorization: Bearer` HTTP header.\\n\\nExample with the query string.\\n\\n```\\n\\nhttps://euwest.cloud.lightpanda.io/mcp/sse?token=TOKEN\\n```\\n\\nExample with the Bearer HTTP header.\\n\\n```\\n\\nhttps://euwest.cloud.lightpanda.io/mcp/sse\\nAuthorization: Bearer TOKEN\\n```\\n\\n## Tools [Permalink for this section](https://lightpanda.io/docs/cloud-offer/tools/mcp\\\\#tools)\\n\\n- `search` Search a term on web search engine and get the search results.\\n- `goto` Navigate to a specified URL and load the page inmemory so it can be reused later for info extraction.\\n- `markdown` Get the page in memory content in markdown format.Run a goto before getting markdown.\\n- `links` Extract all links from the page in memory.Run a goto before getting links.\\n\\nFor more advanced use cases, you can use [CDP](https://lightpanda.io/docs/cloud-offer/tools/cdp) connection with [Playwright MCP](https://github.com/microsoft/playwright-mcp).\\n\\n[CDP](https://lightpanda.io/docs/cloud-offer/tools/cdp \\\"CDP\\\")\\n\\n* * *\",\n      \"error\": null\n    },\n    {\n      \"url\": \"https://github.com/lightpanda-io/browser\",\n      \"title\": \"GitHub - lightpanda-io/browser: Lightpanda: the headless browser designed for AI and automation · GitHub\",\n      \"content\": \"# Lightpanda Browser\\n\\n**The headless browser built from scratch for AI agents and automation.**\\n\\n> Not a Chromium fork. Not a WebKit patch. A new browser, written in Zig.\\n\\n| Stat | Value |\\n|------|-------|\\n| Stars | 29.4k |\\n| Forks | 1.3k |\\n| Contributors | 45 |\\n| Commits | 5,812 |\\n| Languages | Zig (75%), HTML (23.7%), Rust (0.8%) |\\n\\n## Benchmarks\\n\\n*Testing: 933 real web pages on AWS EC2 m5.large instance*\\n\\n| Metric | Lightpanda | Headless Chrome | Difference |\\n|--------|------------|-----------------|------------|\\n| Memory (peak, 100 pages) | 123MB | 2GB | **~16x less** |\\n| Execution time (100 pages) | 5s | 46s | **~9x faster** |\\n\\n## Installation\\n\\n### Pre-built Binaries (Nightly)\\n\\n**Linux x86_64:**\\n```bash\\ncurl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux && \\\\\\nchmod a+x ./lightpanda\\n```\\n\\n**MacOS aarch64:**\\n```bash\\ncurl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-aarch64-macos && \\\\\\nchmod a+x ./lightpanda\\n```\\n\\n**Windows:** Use WSL2 (no native Windows binary)\\n```powershell\\nwsl --install  # from admin shell\\n```\\n\\n> **Note:** Linux binaries are glibc-linked. Alpine/musl distros need glibc base image or build from source.\\n\\n### Docker\\n\\n```bash\\ndocker run -d --name lightpanda -p 127.0.0.1:9222:9222 lightpanda/browser:nightly\\n```\\n\\n## Quick Usage\\n\\n### Dump a URL to HTML/Markdown\\n```bash\\n./lightpanda fetch --obey-robots --dump html --log-format pretty --log-level info <URL>\\n./lightpanda fetch --dump markdown <URL>  # direct markdown conversion\\n```\\n\\n**Wait options:** `--wait-until`, `--wait-ms`, `--wait-selector`, `--wait-script`\\n\\n### Start CDP Server for Puppeteer/Playwright\\n```bash\\n./lightpanda serve --obey-robots --host 127.0.0.1 --port 9222\\n```\\n\\n**Puppeteer example:**\\n```javascript\\nimport puppeteer from 'puppeteer-core';\\n\\nconst browser = await puppeteer.connect({\\n  browserWSEndpoint: \\\"ws://127.0.0.1:9222\\\",\\n});\\n\\nconst context = await browser.createBrowserContext();\\nconst frame = await context.newPage();\\nawait frame.goto('https://example.com/', {waitUntil: \\\"networkidle0\\\"});\\nconst links = await frame.evaluate(() =>\\n  Array.from(document.querySelectorAll('a')).map(a => a.getAttribute('href'))\\n);\\nconsole.log(links);\\n```\\n\\n### Native MCP Integration\\n\\n```json\\n{\\n  \\\"mcpServers\\\": {\\n    \\\"lightpanda\\\": {\\n      \\\"command\\\": \\\"/path/to/lightpanda\\\",\\n      \\\"args\\\": [\\\"mcp\\\"]\\n    }\\n  }\\n}\\n```\\n\\n*Agent skill available at [lightpanda-io/agent-skill](https://github.com/lightpanda-io/agent-skill)*\\n\\n## Feature Status\\n\\n| Feature | Status |\\n|---------|--------|\\n| JavaScript support (v8) | ✅ |\\n| HTML parser (html5ever) | ✅ |\\n| DOM tree & DOM APIs | ✅ |\\n| HTTP loader (libcurl) | ✅ |\\n| Ajax (XHR + Fetch) | ✅ |\\n| CDP/websockets server | ✅ |\\n| Click, Input forms | ✅ |\\n| Cookies, Custom headers | ✅ |\\n| Proxy support | ✅ |\\n| Network interception | ✅ |\\n| `robots.txt` respect | ✅ |\\n| DOM dump | ✅ |\\n| CORS | ❌ |\\n\\n**Status:** Beta - many websites work, some errors/crashes may occur\\n\\n## Build from Source\\n\\n### Prerequisites\\n- **Zig 0.15.2** (required)\\n- **Rust** (for html5ever)\\n- **CMake** (macOS)\\n- **Libraries:** xz-utils, ca-certificates, pkg-config, libglib2.0-dev, clang, make, curl, git\\n\\n**Debian/Ubuntu:**\\n```bash\\nsudo apt install xz-utils ca-certificates pkg-config libglib2.0-dev \\\\\\n    clang make curl git\\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\\n```\\n\\n**Nix:**\\n```bash\\nnix develop\\n```\\n\\n### Build Commands\\n```bash\\nmake build          # production build\\nmake build-dev      # debug build\\nzig build run       # build and run directly\\n```\\n\\n### Embed v8 Snapshot (faster startup)\\n```bash\\n# Generate snapshot\\nzig build snapshot_creator -- src/snapshot.bin\\n\\n# Build with embedded snapshot\\nzig build -Dsnapshot_path=../../snapshot.bin\\n```\\n\\n## Testing\\n\\n| Test Type | Command |\\n|-----------|---------|\\n| Unit tests | `make test` |\\n| End-to-end | `make end2end` (requires Go >1.24, demo repo at `../demo`) |\\n| Web Platform Tests | Clone [lightpanda-io/wpt](https://github.com/lightpanda-io/wpt/tree/fork), configure `/etc/hosts`, then `./wpt serve` + `zig build run` + `cd wptrunner && go run .` |\\n\\n## Telemetry\\n\\n- Enabled by default\\n- Disable: `LIGHTPANDA_DISABLE_TELEMETRY=true`\\n- Privacy policy: https://lightpanda.io/privacy-policy\\n\\n## Why Lightpanda?\\n\\n1. **JavaScript is mandatory** - Ajax, SPAs, infinite loading, instant search, React/Vue/Angular all require JS execution\\n2. **Chrome doesn't scale** - Heavy RAM/CPU usage, hard to package and maintain at hundreds/thousands of instances\\n3. **Performance via architecture** - Not based on Chromium/Blink/WebKit; written in Zig for explicit memory control; no graphical rendering engine\\n\\n## License\\n\\nAGPL-3.0 | [Discord Community](https://discord.gg/K63XeymfB5) | [Website](https://lightpanda.io/)\",\n      \"error\": null\n    }\n  ]\n}",
+      "tool_call_id": "call_function_3grh8ashdhf3_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"content\": \"     1|model: ''\\n     2|providers: {}\\n     3|fallback_providers: []\\n     4|credential_pool_strategies: {}\\n     5|toolsets:\\n     6|- hermes-cli\\n     7|agent:\\n     8|  max_turns: 90\\n     9|  gateway_timeout: 1800\\n    10|  restart_drain_timeout: 60\\n    11|  api_max_retries: 3\\n    12|  service_tier: ''\\n    13|  tool_use_enforcement: auto\\n    14|  gateway_timeout_warning: 900\\n    15|  gateway_notify_interval: 180\\n    16|terminal:\\n    17|  backend: local\\n    18|  modal_mode: auto\\n    19|  cwd: .\\n    20|  timeout: 180\\n    21|  env_passthrough: []\\n    22|  shell_init_files: []\\n    23|  auto_source_bashrc: true\\n    24|  docker_image: nikolaik/python-nodejs:python3.11-nodejs20\\n    25|  docker_forward_env: []\\n    26|  docker_env: {}\\n    27|  singularity_image: docker://nikolaik/python-nodejs:python3.11-nodejs20\\n    28|  modal_image: nikolaik/python-nodejs:python3.11-nodejs20\\n    29|  daytona_image: nikolaik/python-nodejs:python3.11-nodejs20\\n    30|  container_cpu: 1\\n    31|  container_memory: 5120\\n    32|  container_disk: 51200\\n    33|  container_persistent: true\\n    34|  docker_volumes: []\\n    35|  docker_mount_cwd_to_workspace: false\\n    36|  persistent_shell: true\\n    37|browser:\\n    38|  inactivity_timeout: 120\\n    39|  command_timeout: 30\\n    40|  record_sessions: false\\n    41|  allow_private_urls: false\\n    42|  cdp_url: 'ws://127.0.0.1:9222'\\n    43|  dialog_policy: must_respond\\n    44|  dialog_timeout_s: 300\\n    45|  camofox:\\n    46|    managed_persistence: false\\n    47|checkpoints:\\n    48|  enabled: true\\n    49|  max_snapshots: 50\\n    50|file_read_max_chars: 100000\\n    51|tool_output:\\n    52|  max_bytes: 50000\\n    53|  max_lines: 2000\\n    54|  max_line_length: 2000\\n    55|compression:\\n    56|  enabled: true\\n    57|  threshold: 0.5\\n    58|  target_ratio: 0.2\\n    59|  protect_last_n: 20\\n    60|prompt_caching:\\n    61|  cache_ttl: 5m\\n    62|bedrock:\\n    63|  region: ''\\n    64|  discovery:\\n    65|    enabled: true\\n    66|    provider_filter: []\\n    67|    refresh_interval: 3600\\n    68|  guardrail:\\n    69|    guardrail_identifier: ''\\n    70|    guardrail_version: ''\\n    71|    stream_processing_mode: async\\n    72|    trace: disabled\\n    73|auxiliary:\\n    74|  vision:\\n    75|    provider: auto\\n    76|    model: ''\\n    77|    base_url: ''\\n    78|    api_key: ''\\n    79|    timeout: 120\\n    80|    extra_body: {}\\n    81|    download_timeout: 30\\n    82|  web_extract:\\n    83|    provider: auto\\n    84|    model: ''\\n    85|    base_url: ''\\n    86|    api_key: ''\\n    87|    timeout: 360\\n    88|    extra_body: {}\\n    89|  compression:\\n    90|    provider: auto\\n    91|    model: ''\\n    92|    base_url: ''\\n    93|    api_key: ''\\n    94|    timeout: 120\\n    95|    extra_body: {}\\n    96|  session_search:\\n    97|    provider: auto\\n    98|    model: ''\\n    99|    base_url: ''\\n   100|    api_key: ''\\n   101|    timeout: 30\\n   102|    extra_body: {}\\n   103|    max_concurrency: 3\\n   104|  skills_hub:\\n   105|    provider: auto\\n   106|    model: ''\\n   107|    base_url: ''\\n   108|    api_key: ''\\n   109|    timeout: 30\\n   110|    extra_body: {}\\n   111|  approval:\\n   112|    provider: auto\\n   113|    model: ''\\n   114|    base_url: ''\\n   115|    api_key: ''\\n   116|    timeout: 30\\n   117|    extra_body: {}\\n   118|  mcp:\\n   119|    provider: auto\\n   120|    model: ''\\n   121|    base_url: ''\\n   122|    api_key: ''\\n   123|    timeout: 30\\n   124|    extra_body: {}\\n   125|  flush_memories:\\n   126|    provider: auto\\n   127|    model: ''\\n   128|    base_url: ''\\n   129|    api_key: ''\\n   130|    timeout: 30\\n   131|    extra_body: {}\\n   132|  title_generation:\\n   133|    provider: auto\\n   134|    model: ''\\n   135|    base_url: ''\\n   136|    api_key: ''\\n   137|    timeout: 30\\n   138|    extra_body: {}\\n   139|display:\\n   140|  compact: false\\n   141|  personality: kawaii\\n   142|  resume_display: full\\n   143|  busy_input_mode: interrupt\\n   144|  bell_on_complete: false\\n   145|  show_reasoning: false\\n   146|  streaming: false\\n   147|  final_response_markdown: strip\\n   148|  inline_diffs: true\\n   149|  show_cost: false\\n   150|  skin: default\\n   151|  user_message_preview:\\n   152|    first_lines: 2\\n   153|    last_lines: 2\\n   154|  interim_assistant_messages: true\\n   155|  tool_progress_command: false\\n   156|  tool_progress_overrides: {}\\n   157|  tool_preview_length: 0\\n   158|  platforms: {}\\n   159|dashboard:\\n   160|  theme: default\\n   161|privacy:\\n   162|  redact_pii: false\\n   163|tts:\\n   164|  provider: edge\\n   165|  edge:\\n   166|    voice: en-US-AriaNeural\\n   167|  elevenlabs:\\n   168|    voice_id: pNInz6obpgDQGcFmaJgB\\n   169|    model_id: eleven_multilingual_v2\\n   170|  openai:\\n   171|    model: gpt-4o-mini-tts\\n   172|    voice: alloy\\n   173|  xai:\\n   174|    voice_id: eve\\n   175|    language: en\\n   176|    sample_rate: 24000\\n   177|    bit_rate: 128000\\n   178|  mistral:\\n   179|    model: voxtral-mini-tts-2603\\n   180|    voice_id: c69964a6-ab8b-4f8a-9465-ec0925096ec8\\n   181|  neutts:\\n   182|    ref_audio: ''\\n   183|    ref_text: ''\\n   184|    model: neuphonic/neutts-air-q4-gguf\\n   185|    device: cpu\\n   186|stt:\\n   187|  enabled: true\\n   188|  provider: local\\n   189|  local:\\n   190|    model: base\\n   191|    language: ''\\n   192|  openai:\\n   193|    model: whisper-1\\n   194|  mistral:\\n   195|    model: voxtral-mini-latest\\n   196|voice:\\n   197|  record_key: ctrl+b\\n   198|  max_recording_seconds: 120\\n   199|  auto_tts: false\\n   200|  beep_enabled: true\\n   201|  silence_threshold: 200\\n   202|  silence_duration: 3.0\\n   203|human_delay:\\n   204|  mode: 'off'\\n   205|  min_ms: 800\\n   206|  max_ms: 2500\\n   207|context:\\n   208|  engine: compressor\\n   209|memory:\\n   210|  memory_enabled: true\\n   211|  user_profile_enabled: true\\n   212|  memory_char_limit: 2200\\n   213|  user_char_limit: 1375\\n   214|  provider: ''\\n   215|delegation:\\n   216|  model: ''\\n   217|  provider: ''\\n   218|  base_url: ''\\n   219|  api_key: ''\\n   220|  inherit_mcp_toolsets: true\\n   221|  max_iterations: 50\\n   222|  child_timeout_seconds: 600\\n   223|  reasoning_effort: ''\\n   224|  max_concurrent_children: 3\\n   225|  max_spawn_depth: 1\\n   226|  orchestrator_enabled: true\\n   227|  subagent_auto_approve: false\\n   228|prefill_messages_file: ''\\n   229|skills:\\n   230|  external_dirs:\\n   231|  - /app/skills\\n   232|  template_vars: true\\n   233|  inline_shell: false\\n   234|  inline_shell_timeout: 10\\n   235|  guard_agent_created: false\\n   236|honcho: {}\\n   237|timezone: ''\\n   238|discord:\\n   239|  require_mention: true\\n   240|  free_response_channels: ''\\n   241|  allowed_channels: ''\\n   242|  auto_thread: true\\n   243|  reactions: true\\n   244|  channel_prompts: {}\\n   245|  server_actions: ''\\n   246|whatsapp: {}\\n   247|telegram:\\n   248|  channel_prompts: {}\\n   249|slack:\\n   250|  channel_prompts: {}\\n   251|mattermost:\\n   252|  channel_prompts: {}\\n   253|approvals:\\n   254|  mode: manual\\n   255|  timeout: 60\\n   256|  cron_mode: deny\\n   257|command_allowlist:\\n   258|- hermes update (restarts gateway, kills running agents)\\n   259|- script execution via -e/-c flag\\n   260|quick_commands: {}\\n   261|hooks: {}\\n   262|hooks_auto_accept: false\\n   263|personalities: {}\\n   264|security:\\n   265|  allow_private_urls: false\\n   266|  redact_secrets: true\\n   267|  tirith_enabled: true\\n   268|  tirith_path: tirith\\n   269|  tirith_timeout: 5\\n   270|  tirith_fail_open: true\\n   271|  website_blocklist:\\n   272|    enabled: false\\n   273|    domains: []\\n   274|    shared_files: []\\n   275|cron:\\n   276|  wrap_response: true\\n   277|  max_parallel_jobs: null\\n   278|code_execution:\\n   279|  mode: project\\n   280|logging:\\n   281|  level: INFO\\n   282|  max_size_mb: 5\\n   283|  backup_count: 3\\n   284|network:\\n   285|  force_ipv4: false\\n   286|sessions:\\n   287|  auto_prune: false\\n   288|  retention_days: 90\\n   289|  vacuum_after_prune: true\\n   290|  min_interval_hours: 24\\n   291|_config_version: 22\\n   292|mcp_servers:\\n   293|  db-query:\\n   294|    command: python\\n   295|    args:\\n   296|    - /app/mcp-servers/db-query/server.py\\n   297|    env:\\n   298|      DB_HOST: db\\n   299|      DB_PORT: '5432'\\n   300|      DB_USER: radar\\n   301|      DB_PASSWORD: radar\\n   302|      DB_NAME: radar\\n   303|    enabled: true\\n   304|  external-search:\\n   305|    command: python\\n   306|    args:\\n   307|    - /app/mcp-servers/external-search/server.py\\n   308|    env:\\n   309|      ANSPIRE_API_KEY: ${ANSPIRE_API_KEY}\\n   310|      ANSPIRE_PRO_BASE_URL: ${ANSPIRE_PRO_BASE_URL}\\n   311|      TAVILY_API_KEY: ${TAVILY_API_KEY}\\n   312|      BOCHA_WEB_API_KEY: ${BOCHA_WEB_API_KEY}\\n   313|      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}\\n   314|    enabled: true\\n   315|  crawler-coordinator:\\n   316|    command: python\\n   317|    args:\\n   318|    - /app/mcp-servers/crawler-coordinator/server.py\\n   319|    env:\\n   320|      PYTHONPATH: /app\\n   321|      ANSPIRE_API_KEY: ${ANSPIRE_API_KEY}\\n   322|      ANSPIRE_PRO_BASE_URL: ${ANSPIRE_PRO_BASE_URL}\\n   323|      TAVILY_API_KEY: ${TAVILY_API_KEY}\\n   324|      BOCHA_WEB_API_KEY: ${BOCHA_WEB_API_KEY}\\n   325|      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}\\n   326|    enabled: true\\n   327|\\n   328|# ── Fallback Model ────────────────────────────────────────────────────\\n   329|# Automatic provider failover when primary is unavailable.\\n   330|# Uncomment and configure to enable. Triggers on rate limits (429),\\n   331|# overload (529), service errors (503), or connection failures.\\n   332|#\\n   333|# Supported providers:\\n   334|#   openrouter   (OPENROUTER_API_KEY)  — routes to any model\\n   335|#   openai-codex (OAuth — hermes auth) — OpenAI Codex\\n   336|#   nous         (OAuth — hermes auth) — Nous Portal\\n   337|#   zai          (ZAI_API_KEY)         — Z.AI / GLM\\n   338|#   kimi-coding  (KIMI_API_KEY)        — Kimi / Moonshot\\n   339|#   kimi-coding-cn (KIMI_CN_API_KEY)   — Kimi / Moonshot (China)\\n   340|#   minimax      (MINIMAX_API_KEY)     — MiniMax\\n   341|#   minimax-cn   (MINIMAX_CN_API_KEY)  — MiniMax (China)\\n   342|#\\n   343|# For custom OpenAI-compatible endpoints, add base_url and key_env.\\n   344|#\\n   345|# fallback_model:\\n   346|#   provider: openrouter\\n   347|#   model: anthropic/claude-sonnet-4\\n   348|\", \"total_lines\": 347, \"file_size\": 7752, \"truncated\": false, \"is_binary\": false, \"is_image\": false}",
+      "tool_call_id": "call_function_3grh8ashdhf3_2"
+    },
+    {
+      "role": "assistant",
+      "content": "现在我清楚了情况。有两种 Lightpanda MCP 接入方式，让我检查一下 Hermes 的 MCP 是否支持 SSE 传输：",
+      "reasoning": "Now I have a clear picture:\n\n1. **Lightpanda MCP** has two modes:\n   - **Local binary**: `lightpanda mcp` (stdio transport) - for local installation\n   - **Cloud SSE**: `wss://euwest.cloud.lightpanda.io/mcp/sse` or `wss://uswest.cloud.lightpanda.io/mcp/sse` (SSE/HTTP transport)\n\n2. **Hermes native-mcp** supports:\n   - stdio transport (`command` + `args`)\n   - HTTP/StreamableHTTP transport (`url`)\n   - But does NOT explicitly mention SSE transport\n",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "c64ed23248f8630009903167a9787f0ff831522da957c7883f4ce1123a9158de",
+          "thinking": "Now I have a clear picture:\n\n1. **Lightpanda MCP** has two modes:\n   - **Local binary**: `lightpanda mcp` (stdio transport) - for local installation\n   - **Cloud SSE**: `wss://euwest.cloud.lightpanda.io/mcp/sse` or `wss://uswest.cloud.lightpanda.io/mcp/sse` (SSE/HTTP transport)\n\n2. **Hermes native-mcp** supports:\n   - stdio transport (`command` + `args`)\n   - HTTP/StreamableHTTP transport (`url`)\n   - But does NOT explicitly mention SSE transport\n",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_qyrymd5fvhgu_1",
+          "call_id": "call_function_qyrymd5fvhgu_1",
+          "response_item_id": "fc_function_qyrymd5fvhgu_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"sse|streamable|SSE\", \"target\": \"content\", \"path\": \"/app/.hermes\"}"
+          }
+        },
+        {
+          "id": "call_function_qyrymd5fvhgu_2",
+          "call_id": "call_function_qyrymd5fvhgu_2",
+          "response_item_id": "fc_function_qyrymd5fvhgu_2",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"python3 -c \\\"from mcp.client.streamable_http import streamablehttp_client; print('HTTP client available')\\\" 2>&1 || echo \\\"HTTP client NOT available\\\"\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_qyrymd5fvhgu_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"HTTP client available\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_qyrymd5fvhgu_2"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Good, the `mcp` package has `streamable_http` available, which should support SSE transport. Now let me check if the native MCP client code actually uses `streamablehttp_client` for HTTP transport, since Lightpanda's cloud service uses SSE.\n\nLet me search the hermes codebase to understand what HTTP client it uses.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1baa340f2e9b1b42a795bcae22b0620649b32efc77b79495678aff285be0c5b4",
+          "thinking": "Good, the `mcp` package has `streamable_http` available, which should support SSE transport. Now let me check if the native MCP client code actually uses `streamablehttp_client` for HTTP transport, since Lightpanda's cloud service uses SSE.\n\nLet me search the hermes codebase to understand what HTTP client it uses.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_1o7it20ivdwo_1",
+          "call_id": "call_function_1o7it20ivdwo_1",
+          "response_item_id": "fc_function_1o7it20ivdwo_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"path\": \"/app\", \"file_glob\": \"*.py\", \"pattern\": \"streamablehttp|http_client|mcp.*client\"}"
+          }
+        },
+        {
+          "id": "call_function_1o7it20ivdwo_2",
+          "call_id": "call_function_1o7it20ivdwo_2",
+          "response_item_id": "fc_function_1o7it20ivdwo_2",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"python3 -c \\\"import mcp; print(mcp.__version__)\\\" 2>&1; python3 -c \\\"from mcp.client.sse import sse_client; print('SSE client available')\\\" 2>&1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_1o7it20ivdwo_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"Traceback (most recent call last):\\n  File \\\"<string>\\\", line 1, in <module>\\nAttributeError: module 'mcp' has no attribute '__version__'\\nSSE client available\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_1o7it20ivdwo_2"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "MCP `sse_client` is available. But Hermes's native MCP config doesn't have a `sse_url` option - it only has `command` for stdio and `url` for HTTP. Let me check how Hermes's native MCP client actually connects - does it use `streamablehttp_client` or does it have special SSE handling?\n\nLet me look at the Hermes source code to understand what HTTP modes it supports.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "8b13f5a89c1072e7b94e54590694db6adf676ffb408d32bda899b0eb53323ca6",
+          "thinking": "MCP `sse_client` is available. But Hermes's native MCP config doesn't have a `sse_url` option - it only has `command` for stdio and `url` for HTTP. Let me check how Hermes's native MCP client actually connects - does it use `streamablehttp_client` or does it have special SSE handling?\n\nLet me look at the Hermes source code to understand what HTTP modes it supports.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_76o14t43qnbf_1",
+          "call_id": "call_function_76o14t43qnbf_1",
+          "response_item_id": "fc_function_76o14t43qnbf_1",
+          "type": "function",
+          "function": {
+            "name": "terminal",
+            "arguments": "{\"command\": \"find /app -type f -name \\\"*.py\\\" | xargs grep -l \\\"mcp_servers\\\\|sse_client\\\\|streamablehttp\\\" 2>/dev/null | head -10\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"output\": \"/app/hermes-agent/cli.py\\n/app/hermes-agent/tui_gateway/server.py\\n/app/hermes-agent/acp_adapter/session.py\\n/app/hermes-agent/acp_adapter/server.py\\n/app/hermes-agent/tests/acp/test_ping_suppression.py\\n/app/hermes-agent/tests/acp/test_session.py\\n/app/hermes-agent/tests/acp/test_mcp_e2e.py\\n/app/hermes-agent/tests/acp/test_server.py\\n/app/hermes-agent/tests/test_tui_gateway_server.py\\n/app/hermes-agent/tests/tools/test_mcp_tool.py\", \"exit_code\": 0, \"error\": null}",
+      "tool_call_id": "call_function_76o14t43qnbf_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at the MCP tool implementation to understand what transport types are supported.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1040dbcd22a67b04e91071d99ed1c029efa60f9174d65144c0a9aa5eb4598e49",
+          "thinking": "Let me look at the MCP tool implementation to understand what transport types are supported.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_b7neo7gf6ir7_1",
+          "call_id": "call_function_b7neo7gf6ir7_1",
+          "response_item_id": "fc_function_b7neo7gf6ir7_1",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"/app/hermes-agent/tests/tools/test_mcp_tool.py\"}"
+          }
+        },
+        {
+          "id": "call_function_b7neo7gf6ir7_2",
+          "call_id": "call_function_b7neo7gf6ir7_2",
+          "response_item_id": "fc_function_b7neo7gf6ir7_2",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"sse|SSE|http_client|transport\", \"path\": \"/app/hermes-agent/acp_adapter\", \"file_glob\": \"*.py\", \"output_mode\": \"content\", \"context\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"content\": \"     1|\\\"\\\"\\\"Tests for the MCP (Model Context Protocol) client support.\\n     2|\\n     3|All tests use mocks -- no real MCP servers or subprocesses are started.\\n     4|\\\"\\\"\\\"\\n     5|\\n     6|import asyncio\\n     7|import json\\n     8|import os\\n     9|import threading\\n    10|import time\\n    11|from types import SimpleNamespace\\n    12|from unittest.mock import AsyncMock, MagicMock, patch\\n    13|\\n    14|import pytest\\n    15|\\n    16|\\n    17|# ---------------------------------------------------------------------------\\n    18|# Helpers\\n    19|# ---------------------------------------------------------------------------\\n    20|\\n    21|def _make_mcp_tool(name=\\\"read_file\\\", description=\\\"Read a file\\\", input_schema=None):\\n    22|    \\\"\\\"\\\"Create a fake MCP Tool object matching the SDK interface.\\\"\\\"\\\"\\n    23|    tool = SimpleNamespace()\\n    24|    tool.name = name\\n    25|    tool.description = description\\n    26|    tool.inputSchema = input_schema or {\\n    27|        \\\"type\\\": \\\"object\\\",\\n    28|        \\\"properties\\\": {\\n    29|            \\\"path\\\": {\\\"type\\\": \\\"string\\\", \\\"description\\\": \\\"File path\\\"},\\n    30|        },\\n    31|        \\\"required\\\": [\\\"path\\\"],\\n    32|    }\\n    33|    return tool\\n    34|\\n    35|\\n    36|def _make_call_result(text=\\\"file contents here\\\", is_error=False):\\n    37|    \\\"\\\"\\\"Create a fake MCP CallToolResult.\\\"\\\"\\\"\\n    38|    block = SimpleNamespace(text=text)\\n    39|    return SimpleNamespace(content=[block], isError=is_error)\\n    40|\\n    41|\\n    42|def _make_mock_server(name, session=None, tools=None):\\n    43|    \\\"\\\"\\\"Create an MCPServerTask with mock attributes for testing.\\\"\\\"\\\"\\n    44|    from tools.mcp_tool import MCPServerTask\\n    45|    server = MCPServerTask(name)\\n    46|    server.session = session\\n    47|    server._tools = tools or []\\n    48|    return server\\n    49|\\n    50|\\n    51|# ---------------------------------------------------------------------------\\n    52|# Config loading\\n    53|# ---------------------------------------------------------------------------\\n    54|\\n    55|class TestLoadMCPConfig:\\n    56|    def test_no_config_returns_empty(self):\\n    57|        \\\"\\\"\\\"No mcp_servers key in config -> empty dict.\\\"\\\"\\\"\\n    58|        with patch(\\\"hermes_cli.config.load_config\\\", return_value={\\\"model\\\": \\\"test\\\"}):\\n    59|            from tools.mcp_tool import _load_mcp_config\\n    60|            result = _load_mcp_config()\\n    61|            assert result == {}\\n    62|\\n    63|    def test_valid_config_parsed(self):\\n    64|        \\\"\\\"\\\"Valid mcp_servers config is returned as-is.\\\"\\\"\\\"\\n    65|        servers = {\\n    66|            \\\"filesystem\\\": {\\n    67|                \\\"command\\\": \\\"npx\\\",\\n    68|                \\\"args\\\": [\\\"-y\\\", \\\"@modelcontextprotocol/server-filesystem\\\", \\\"/tmp\\\"],\\n    69|                \\\"env\\\": {},\\n    70|            }\\n    71|        }\\n    72|        with patch(\\\"hermes_cli.config.load_config\\\", return_value={\\\"mcp_servers\\\": servers}):\\n    73|            from tools.mcp_tool import _load_mcp_config\\n    74|            result = _load_mcp_config()\\n    75|            assert \\\"filesystem\\\" in result\\n    76|            assert result[\\\"filesystem\\\"][\\\"command\\\"] == \\\"npx\\\"\\n    77|\\n    78|    def test_mcp_servers_not_dict_returns_empty(self):\\n    79|        \\\"\\\"\\\"mcp_servers set to non-dict value -> empty dict.\\\"\\\"\\\"\\n    80|        with patch(\\\"hermes_cli.config.load_config\\\", return_value={\\\"mcp_servers\\\": \\\"invalid\\\"}):\\n    81|            from tools.mcp_tool import _load_mcp_config\\n    82|            result = _load_mcp_config()\\n    83|            assert result == {}\\n    84|\\n    85|\\n    86|# ---------------------------------------------------------------------------\\n    87|# Schema conversion\\n    88|# ---------------------------------------------------------------------------\\n    89|\\n    90|class TestSchemaConversion:\\n    91|    def test_converts_mcp_tool_to_hermes_schema(self):\\n    92|        from tools.mcp_tool import _convert_mcp_schema\\n    93|\\n    94|        mcp_tool = _make_mcp_tool(name=\\\"read_file\\\", description=\\\"Read a file\\\")\\n    95|        schema = _convert_mcp_schema(\\\"filesystem\\\", mcp_tool)\\n    96|\\n    97|        assert schema[\\\"name\\\"] == \\\"mcp_filesystem_read_file\\\"\\n    98|        assert schema[\\\"description\\\"] == \\\"Read a file\\\"\\n    99|        assert \\\"properties\\\" in schema[\\\"parameters\\\"]\\n   100|\\n   101|    def test_empty_input_schema_gets_default(self):\\n   102|        from tools.mcp_tool import _convert_mcp_schema\\n   103|\\n   104|        mcp_tool = _make_mcp_tool(name=\\\"ping\\\", description=\\\"Ping\\\", input_schema=None)\\n   105|        mcp_tool.inputSchema = None\\n   106|        schema = _convert_mcp_schema(\\\"test\\\", mcp_tool)\\n   107|\\n   108|        assert schema[\\\"parameters\\\"][\\\"type\\\"] == \\\"object\\\"\\n   109|        assert schema[\\\"parameters\\\"][\\\"properties\\\"] == {}\\n   110|\\n   111|    def test_object_schema_without_properties_gets_normalized(self):\\n   112|        from tools.mcp_tool import _convert_mcp_schema\\n   113|\\n   114|        mcp_tool = _make_mcp_tool(\\n   115|            name=\\\"ask\\\",\\n   116|            description=\\\"Ask Crawl4AI\\\",\\n   117|            input_schema={\\\"type\\\": \\\"object\\\"},\\n   118|        )\\n   119|        schema = _convert_mcp_schema(\\\"crawl4ai\\\", mcp_tool)\\n   120|\\n   121|        assert schema[\\\"parameters\\\"] == {\\\"type\\\": \\\"object\\\", \\\"properties\\\": {}}\\n   122|\\n   123|    def test_definitions_refs_are_rewritten_to_defs(self):\\n   124|        from tools.mcp_tool import _convert_mcp_schema\\n   125|\\n   126|        mcp_tool = _make_mcp_tool(\\n   127|            name=\\\"submit\\\",\\n   128|            description=\\\"Submit a payload\\\",\\n   129|            input_schema={\\n   130|                \\\"type\\\": \\\"object\\\",\\n   131|                \\\"properties\\\": {\\n   132|                    \\\"input\\\": {\\\"$ref\\\": \\\"#/definitions/Payload\\\"},\\n   133|                },\\n   134|                \\\"required\\\": [\\\"input\\\"],\\n   135|                \\\"definitions\\\": {\\n   136|                    \\\"Payload\\\": {\\n   137|                        \\\"type\\\": \\\"object\\\",\\n   138|                        \\\"properties\\\": {\\n   139|                            \\\"query\\\": {\\\"type\\\": \\\"string\\\"},\\n   140|                        },\\n   141|                        \\\"required\\\": [\\\"query\\\"],\\n   142|                    }\\n   143|                },\\n   144|            },\\n   145|        )\\n   146|\\n   147|        schema = _convert_mcp_schema(\\\"forms\\\", mcp_tool)\\n   148|\\n   149|        assert schema[\\\"parameters\\\"][\\\"properties\\\"][\\\"input\\\"][\\\"$ref\\\"] == \\\"#/$defs/Payload\\\"\\n   150|        assert \\\"$defs\\\" in schema[\\\"parameters\\\"]\\n   151|        assert \\\"definitions\\\" not in schema[\\\"parameters\\\"]\\n   152|\\n   153|    def test_nested_definition_refs_are_rewritten_recursively(self):\\n   154|        from tools.mcp_tool import _convert_mcp_schema\\n   155|\\n   156|        mcp_tool = _make_mcp_tool(\\n   157|            name=\\\"nested\\\",\\n   158|            description=\\\"Nested schema\\\",\\n   159|            input_schema={\\n   160|                \\\"type\\\": \\\"object\\\",\\n   161|                \\\"properties\\\": {\\n   162|                    \\\"items\\\": {\\n   163|                        \\\"type\\\": \\\"array\\\",\\n   164|                        \\\"items\\\": {\\\"$ref\\\": \\\"#/definitions/Entry\\\"},\\n   165|                    },\\n   166|                },\\n   167|                \\\"definitions\\\": {\\n   168|                    \\\"Entry\\\": {\\n   169|                        \\\"type\\\": \\\"object\\\",\\n   170|                        \\\"properties\\\": {\\n   171|                            \\\"child\\\": {\\\"$ref\\\": \\\"#/definitions/Child\\\"},\\n   172|                        },\\n   173|                    },\\n   174|                    \\\"Child\\\": {\\n   175|                        \\\"type\\\": \\\"object\\\",\\n   176|                        \\\"properties\\\": {\\n   177|                            \\\"value\\\": {\\\"type\\\": \\\"string\\\"},\\n   178|                        },\\n   179|                    },\\n   180|                },\\n   181|            },\\n   182|        )\\n   183|\\n   184|        schema = _convert_mcp_schema(\\\"forms\\\", mcp_tool)\\n   185|\\n   186|        assert schema[\\\"parameters\\\"][\\\"properties\\\"][\\\"items\\\"][\\\"items\\\"][\\\"$ref\\\"] == \\\"#/$defs/Entry\\\"\\n   187|        assert schema[\\\"parameters\\\"][\\\"$defs\\\"][\\\"Entry\\\"][\\\"properties\\\"][\\\"child\\\"][\\\"$ref\\\"] == \\\"#/$defs/Child\\\"\\n   188|\\n   189|    def test_missing_type_on_object_is_coerced(self):\\n   190|        \\\"\\\"\\\"Schemas that describe an object but omit ``type`` get type='object'.\\\"\\\"\\\"\\n   191|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   192|\\n   193|        schema = _normalize_mcp_input_schema({\\n   194|            \\\"properties\\\": {\\\"q\\\": {\\\"type\\\": \\\"string\\\"}},\\n   195|            \\\"required\\\": [\\\"q\\\"],\\n   196|        })\\n   197|\\n   198|        assert schema[\\\"type\\\"] == \\\"object\\\"\\n   199|        assert schema[\\\"properties\\\"][\\\"q\\\"][\\\"type\\\"] == \\\"string\\\"\\n   200|        assert schema[\\\"required\\\"] == [\\\"q\\\"]\\n   201|\\n   202|    def test_null_type_on_object_is_coerced(self):\\n   203|        \\\"\\\"\\\"type: None should be treated like missing type (common MCP server bug).\\\"\\\"\\\"\\n   204|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   205|\\n   206|        schema = _normalize_mcp_input_schema({\\n   207|            \\\"type\\\": None,\\n   208|            \\\"properties\\\": {\\\"x\\\": {\\\"type\\\": \\\"integer\\\"}},\\n   209|        })\\n   210|\\n   211|        assert schema[\\\"type\\\"] == \\\"object\\\"\\n   212|\\n   213|    def test_required_pruned_when_property_missing(self):\\n   214|        \\\"\\\"\\\"Gemini 400s on required names that don't exist in properties.\\\"\\\"\\\"\\n   215|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   216|\\n   217|        schema = _normalize_mcp_input_schema({\\n   218|            \\\"type\\\": \\\"object\\\",\\n   219|            \\\"properties\\\": {\\\"a\\\": {\\\"type\\\": \\\"string\\\"}},\\n   220|            \\\"required\\\": [\\\"a\\\", \\\"ghost\\\", \\\"phantom\\\"],\\n   221|        })\\n   222|\\n   223|        assert schema[\\\"required\\\"] == [\\\"a\\\"]\\n   224|\\n   225|    def test_required_removed_when_all_names_dangle(self):\\n   226|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   227|\\n   228|        schema = _normalize_mcp_input_schema({\\n   229|            \\\"type\\\": \\\"object\\\",\\n   230|            \\\"properties\\\": {},\\n   231|            \\\"required\\\": [\\\"ghost\\\"],\\n   232|        })\\n   233|\\n   234|        assert \\\"required\\\" not in schema\\n   235|\\n   236|    def test_required_pruning_applies_recursively_inside_nested_objects(self):\\n   237|        \\\"\\\"\\\"Nested object schemas also get required pruning.\\\"\\\"\\\"\\n   238|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   239|\\n   240|        schema = _normalize_mcp_input_schema({\\n   241|            \\\"type\\\": \\\"object\\\",\\n   242|            \\\"properties\\\": {\\n   243|                \\\"filter\\\": {\\n   244|                    \\\"type\\\": \\\"object\\\",\\n   245|                    \\\"properties\\\": {\\\"field\\\": {\\\"type\\\": \\\"string\\\"}},\\n   246|                    \\\"required\\\": [\\\"field\\\", \\\"missing\\\"],\\n   247|                },\\n   248|            },\\n   249|        })\\n   250|\\n   251|        assert schema[\\\"properties\\\"][\\\"filter\\\"][\\\"required\\\"] == [\\\"field\\\"]\\n   252|\\n   253|    def test_object_in_array_items_gets_properties_filled(self):\\n   254|        \\\"\\\"\\\"Array-item object schemas without properties get an empty dict.\\\"\\\"\\\"\\n   255|        from tools.mcp_tool import _normalize_mcp_input_schema\\n   256|\\n   257|        schema = _normalize_mcp_input_schema({\\n   258|            \\\"type\\\": \\\"object\\\",\\n   259|            \\\"properties\\\": {\\n   260|                \\\"items\\\": {\\n   261|                    \\\"type\\\": \\\"array\\\",\\n   262|                    \\\"items\\\": {\\\"type\\\": \\\"object\\\"},\\n   263|                },\\n   264|            },\\n   265|        })\\n   266|\\n   267|        assert schema[\\\"properties\\\"][\\\"items\\\"][\\\"items\\\"][\\\"properties\\\"] == {}\\n   268|\\n   269|    def test_convert_mcp_schema_survives_missing_inputschema_attribute(self):\\n   270|        \\\"\\\"\\\"A Tool object without .inputSchema must not crash registration.\\\"\\\"\\\"\\n   271|        import types\\n   272|\\n   273|        from tools.mcp_tool import _convert_mcp_schema\\n   274|\\n   275|        bare_tool = types.SimpleNamespace(name=\\\"probe\\\", description=\\\"Probe\\\")\\n   276|        schema = _convert_mcp_schema(\\\"srv\\\", bare_tool)\\n   277|\\n   278|        assert schema[\\\"name\\\"] == \\\"mcp_srv_probe\\\"\\n   279|        assert schema[\\\"parameters\\\"] == {\\\"type\\\": \\\"object\\\", \\\"properties\\\": {}}\\n   280|\\n   281|    def test_convert_mcp_schema_with_none_inputschema(self):\\n   282|        \\\"\\\"\\\"Tool with inputSchema=None produces a valid empty object schema.\\\"\\\"\\\"\\n   283|        import types\\n   284|\\n   285|        from tools.mcp_tool import _convert_mcp_schema\\n   286|\\n   287|        # Note: _make_mcp_tool(input_schema=None) falls back to a default —\\n   288|        # build the namespace directly so .inputSchema really is None.\\n   289|        mcp_tool = types.SimpleNamespace(name=\\\"probe\\\", description=\\\"Probe\\\", inputSchema=None)\\n   290|        schema = _convert_mcp_schema(\\\"srv\\\", mcp_tool)\\n   291|\\n   292|        assert schema[\\\"parameters\\\"] == {\\\"type\\\": \\\"object\\\", \\\"properties\\\": {}}\\n   293|\\n   294|    def test_tool_name_prefix_format(self):\\n   295|        from tools.mcp_tool import _convert_mcp_schema\\n   296|\\n   297|        mcp_tool = _make_mcp_tool(name=\\\"list_dir\\\")\\n   298|        schema = _convert_mcp_schema(\\\"my_server\\\", mcp_tool)\\n   299|\\n   300|        assert schema[\\\"name\\\"] == \\\"mcp_my_server_list_dir\\\"\\n   301|\\n   302|    def test_hyphens_sanitized_to_underscores(self):\\n   303|        \\\"\\\"\\\"Hyphens in tool/server names are replaced with underscores for LLM compat.\\\"\\\"\\\"\\n   304|        from tools.mcp_tool import _convert_mcp_schema\\n   305|\\n   306|        mcp_tool = _make_mcp_tool(name=\\\"get-sum\\\")\\n   307|        schema = _convert_mcp_schema(\\\"my-server\\\", mcp_tool)\\n   308|\\n   309|        assert schema[\\\"name\\\"] == \\\"mcp_my_server_get_sum\\\"\\n   310|        assert \\\"-\\\" not in schema[\\\"name\\\"]\\n   311|\\n   312|\\n   313|# ---------------------------------------------------------------------------\\n   314|# Check function\\n   315|# ---------------------------------------------------------------------------\\n   316|\\n   317|class TestCheckFunction:\\n   318|    def test_disconnected_returns_false(self):\\n   319|        from tools.mcp_tool import _make_check_fn, _servers\\n   320|\\n   321|        _servers.pop(\\\"test_server\\\", None)\\n   322|        check = _make_check_fn(\\\"test_server\\\")\\n   323|        assert check() is False\\n   324|\\n   325|    def test_connected_returns_true(self):\\n   326|        from tools.mcp_tool import _make_check_fn, _servers\\n   327|\\n   328|        server = _make_mock_server(\\\"test_server\\\", session=MagicMock())\\n   329|        _servers[\\\"test_server\\\"] = server\\n   330|        try:\\n   331|            check = _make_check_fn(\\\"test_server\\\")\\n   332|            assert check() is True\\n   333|        finally:\\n   334|            _servers.pop(\\\"test_server\\\", None)\\n   335|\\n   336|    def test_session_none_returns_false(self):\\n   337|        from tools.mcp_tool import _make_check_fn, _servers\\n   338|\\n   339|        server = _make_mock_server(\\\"test_server\\\", session=None)\\n   340|        _servers[\\\"test_server\\\"] = server\\n   341|        try:\\n   342|            check = _make_check_fn(\\\"test_server\\\")\\n   343|            assert check() is False\\n   344|        finally:\\n   345|            _servers.pop(\\\"test_server\\\", None)\\n   346|\\n   347|\\n   348|# ---------------------------------------------------------------------------\\n   349|# Tool handler\\n   350|# ---------------------------------------------------------------------------\\n   351|\\n   352|class TestToolHandler:\\n   353|    \\\"\\\"\\\"Tool handlers are sync functions that schedule work on the MCP loop.\\\"\\\"\\\"\\n   354|\\n   355|    def _patch_mcp_loop(self, coro_side_effect=None):\\n   356|        \\\"\\\"\\\"Return a patch for _run_on_mcp_loop that runs the coroutine directly.\\\"\\\"\\\"\\n   357|        def fake_run(coro, timeout=30):\\n   358|            return asyncio.run(coro)\\n   359|        if coro_side_effect:\\n   360|            return patch(\\\"tools.mcp_tool._run_on_mcp_loop\\\", side_effect=coro_side_effect)\\n   361|        return patch(\\\"tools.mcp_tool._run_on_mcp_loop\\\", side_effect=fake_run)\\n   362|\\n   363|    def test_successful_call(self):\\n   364|        from tools.mcp_tool import _make_tool_handler, _servers\\n   365|\\n   366|        mock_session = MagicMock()\\n   367|        mock_session.call_tool = AsyncMock(\\n   368|            return_value=_make_call_result(\\\"hello world\\\", is_error=False)\\n   369|        )\\n   370|        server = _make_mock_server(\\\"test_srv\\\", session=mock_session)\\n   371|        _servers[\\\"test_srv\\\"] = server\\n   372|\\n   373|        try:\\n   374|            handler = _make_tool_handler(\\\"test_srv\\\", \\\"greet\\\", 120)\\n   375|            with self._patch_mcp_loop():\\n   376|                result = json.loads(handler({\\\"name\\\": \\\"world\\\"}))\\n   377|            assert result[\\\"result\\\"] == \\\"hello world\\\"\\n   378|            mock_session.call_tool.assert_called_once_with(\\\"greet\\\", arguments={\\\"name\\\": \\\"world\\\"})\\n   379|        finally:\\n   380|            _servers.pop(\\\"test_srv\\\", None)\\n   381|\\n   382|    def test_mcp_error_result(self):\\n   383|        from tools.mcp_tool import _make_tool_handler, _servers\\n   384|\\n   385|        mock_session = MagicMock()\\n   386|        mock_session.call_tool = AsyncMock(\\n   387|            return_value=_make_call_result(\\\"something went wrong\\\", is_error=True)\\n   388|        )\\n   389|        server = _make_mock_server(\\\"test_srv\\\", session=mock_session)\\n   390|        _servers[\\\"test_srv\\\"] = server\\n   391|\\n   392|        try:\\n   393|            handler = _make_tool_handler(\\\"test_srv\\\", \\\"fail_tool\\\", 120)\\n   394|            with self._patch_mcp_loop():\\n   395|                result = json.loads(handler({}))\\n   396|            assert \\\"error\\\" in result\\n   397|            assert \\\"something went wrong\\\" in result[\\\"error\\\"]\\n   398|        finally:\\n   399|            _servers.pop(\\\"test_srv\\\", None)\\n   400|\\n   401|    def test_disconnected_server(self):\\n   402|        from tools.mcp_tool import _make_tool_handler, _servers\\n   403|\\n   404|        _servers.pop(\\\"ghost\\\", None)\\n   405|        handler = _make_tool_handler(\\\"ghost\\\", \\\"any_tool\\\", 120)\\n   406|        result = json.loads(handler({}))\\n   407|        assert \\\"error\\\" in result\\n   408|        assert \\\"not connected\\\" in result[\\\"error\\\"]\\n   409|\\n   410|    def test_exception_during_call(self):\\n   411|        from tools.mcp_tool import _make_tool_handler, _servers\\n   412|\\n   413|        mock_session = MagicMock()\\n   414|        mock_session.call_tool = AsyncMock(side_effect=RuntimeError(\\\"connection lost\\\"))\\n   415|        server = _make_mock_server(\\\"test_srv\\\", session=mock_session)\\n   416|        _servers[\\\"test_srv\\\"] = server\\n   417|\\n   418|        try:\\n   419|            handler = _make_tool_handler(\\\"test_srv\\\", \\\"broken_tool\\\", 120)\\n   420|            with self._patch_mcp_loop():\\n   421|                result = json.loads(handler({}))\\n   422|            assert \\\"error\\\" in result\\n   423|            assert \\\"connection lost\\\" in result[\\\"error\\\"]\\n   424|        finally:\\n   425|            _servers.pop(\\\"test_srv\\\", None)\\n   426|\\n   427|    def test_interrupted_call_returns_interrupted_error(self):\\n   428|        from tools.mcp_tool import _make_tool_handler, _servers\\n   429|\\n   430|        mock_session = MagicMock()\\n   431|        server = _make_mock_server(\\\"test_srv\\\", session=mock_session)\\n   432|        _servers[\\\"test_srv\\\"] = server\\n   433|\\n   434|        try:\\n   435|            handler = _make_tool_handler(\\\"test_srv\\\", \\\"greet\\\", 120)\\n   436|            def _interrupting_run(coro, timeout=30):\\n   437|                coro.close()\\n   438|                raise InterruptedError(\\\"User sent a new message\\\")\\n   439|            with patch(\\n   440|                \\\"tools.mcp_tool._run_on_mcp_loop\\\",\\n   441|                side_effect=_interrupting_run,\\n   442|            ):\\n   443|                result = json.loads(handler({}))\\n   444|            assert result == {\\\"error\\\": \\\"MCP call interrupted: user sent a new message\\\"}\\n   445|        finally:\\n   446|            _servers.pop(\\\"test_srv\\\", None)\\n   447|\\n   448|\\n   449|class TestRunOnMCPLoopInterrupts:\\n   450|    def test_interrupt_cancels_waiting_mcp_call(self):\\n   451|        import tools.mcp_tool as mcp_mod\\n   452|        from tools.interrupt import set_interrupt\\n   453|\\n   454|        loop = asyncio.new_event_loop()\\n   455|        thread = threading.Thread(target=loop.run_forever, daemon=True)\\n   456|        thread.start()\\n   457|\\n   458|        cancelled = threading.Event()\\n   459|\\n   460|        async def _slow_call():\\n   461|            try:\\n   462|                await asyncio.sleep(5)\\n   463|                return \\\"done\\\"\\n   464|            except asyncio.CancelledError:\\n   465|                cancelled.set()\\n   466|                raise\\n   467|\\n   468|        old_loop = mcp_mod._mcp_loop\\n   469|        old_thread = mcp_mod._mcp_thread\\n   470|        mcp_mod._mcp_loop = loop\\n   471|        mcp_mod._mcp_thread = thread\\n   472|\\n   473|        waiter_tid = threading.current_thread().ident\\n   474|\\n   475|        def _interrupt_soon():\\n   476|            time.sleep(0.2)\\n   477|            set_interrupt(True, waiter_tid)\\n   478|\\n   479|        interrupter = threading.Thread(target=_interrupt_soon, daemon=True)\\n   480|        interrupter.start()\\n   481|\\n   482|        try:\\n   483|            with pytest.raises(InterruptedError, match=\\\"User sent a new message\\\"):\\n   484|                mcp_mod._run_on_mcp_loop(_slow_call(), timeout=2)\\n   485|\\n   486|            deadline = time.time() + 2\\n   487|            while time.time() < deadline and not cancelled.is_set():\\n   488|                time.sleep(0.05)\\n   489|            assert cancelled.is_set()\\n   490|        finally:\\n   491|            set_interrupt(False, waiter_tid)\\n   492|            loop.call_soon_threadsafe(loop.stop)\\n   493|            thread.join(timeout=2)\\n   494|            loop.close()\\n   495|            mcp_mod._mcp_loop = old_loop\\n   496|            mcp_mod._mcp_thread = old_thread\\n   497|\\n   498|\\n   499|# ---------------------------------------------------------------------------\\n   500|# Tool registration (discovery + register)\\n   501|\", \"total_lines\": 3438, \"file_size\": 132727, \"truncated\": true, \"hint\": \"Use offset=501 to continue reading (showing 1-500 of 3438 lines)\", \"is_binary\": false, \"is_image\": false}\n\n[Subdirectory context discovered: hermes-agent/AGENTS.md]\n# Hermes Agent - Development Guide\n\nInstructions for AI coding assistants and developers working on the hermes-agent codebase.\n\n## Development Environment\n\n```bash\n# Prefer .venv; fall back to venv if that's what your checkout has.\nsource .venv/bin/activate   # or: source venv/bin/activate\n```\n\n`scripts/run_tests.sh` probes `.venv` first, then `venv`, then\n`$HOME/.hermes/hermes-agent/venv` (for worktrees that share a venv with the\nmain checkout).\n\n## Project Structure\n\nFile counts shift constantly — don't treat the tree below as exhaustive.\nThe canonical source is the filesystem. The notes call out the load-bearing\nentry points you'll actually edit.\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent class — core conversation loop (~12k LOC)\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # Toolset definitions, _HERMES_CORE_TOOLS list\n├── cli.py                # HermesCLI class — interactive CLI orchestrator (~11k LOC)\n├── hermes_state.py       # SessionDB — SQLite session store (FTS5 search)\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # setup_logging() — agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # Agent internals (provider adapters, memory, caching, compression, etc.)\n├── hermes_cli/           # CLI subcommands, setup wizard, plugins loader, skin engine\n├── tools/                # Tool implementations — auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity)\n├── gateway/              # Messaging gateway — run.py + session.py + platforms/\n│   ├── platforms/        # Adapter per platform (telegram, discord, slack, whatsapp,\n│   │                     #   homeassistant, signal, matrix, mattermost, email, sms,\n│   │                     #   dingtalk, wecom, weixin, feishu, qqbot, bluebubbles,\n│   │                     #   webhook, api_server, ...). See ADDING_A_PLATFORM.md.\n│   └── builtin_hooks/    # Always-registered gateway hooks (boot-md, ...)\n├── plugins/              # Plugin system (see \"Plugins\" section below)\n│   ├── memory/           # Memory-provider plugins (honcho, mem0, supermemory, ...)\n│   ├── context_engine/   # Context-engine plugins\n│   └── <others>/         # Dashboard, image-gen, disk-cleanup, examples, ...\n├── optional-skills/      # Heavier/niche skills shipped but NOT active by default\n├── skills/               # Built-in skills bundled with the repo\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n│   └── src/              # entry.tsx, app.tsx, gatewayClient.ts + app/components/hooks/lib\n├── tui_gateway/          # Python JSON-RPC backend for the TUI\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains integration)\n├── cron/                 # Scheduler — jobs.py, scheduler.py\n├── environments/         # RL training environments (Atropos)\n├── scripts/              # run_tests.sh, release.py, auxiliary scripts\n├── website/              # Docusaurus docs site\n└── tests/                # Pytest suite (~15k tests across ~700 files as of Apr 2026)\n```\n\n**User config:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys only).\n**Logs:** `~/.hermes/logs/` — `agent.log` (INFO+), `errors.log` (WARNING+),\n`gateway.log` when running the gateway. Profile-aware via `get_hermes_home()`.\nBrowse with `hermes logs [--follow] [--level ...] [--session ...]`.\n\n## File Dependency Chain\n\n```\ntools/registry.py  (no deps — imported by all tool files)\n       ↑\ntools/*.py  (each calls registry.register() at import time)\n       ↑\nmodel_tools.py  (imports tools/registry + triggers tool discovery)\n       ↑\nrun_agent.py, cli.py, batch_runner.py, environments/\n```\n\n---\n\n## AIAgent Class (run_agent.py)\n\nThe real `AIAgent.__init__` takes ~60 parameters (credentials, routing, callbacks,\nsession context, budget, credential pool, etc.). The signature below is the\nminimum subset you'll usually touch — read `run_agent.py` for the full list.\n\n```python\nclass AIAgent:\n    def __init__(self,\n        base_url: str = None,\n        api_key: str = None,\n        provider: str = None,\n        api_mode: str = None,              # \"chat_completions\" | \"codex_responses\" | ...\n        model: str = \"\",                   # empty → resolved from config/provider later\n        max_iterations: int = 90,          # tool-calling iterations (shared with subagents)\n        enabled_toolsets: list = None,\n        disabled_toolsets: list = None,\n        quiet_mode: bool = False,\n        save_trajectories: bool = False,\n        platform: str = None,              # \"cli\", \"telegram\", etc.\n        session_id: str = None,\n        skip_context_files: bool = False,\n        skip_memory: bool = False,\n        credential_pool=None,\n        # ... plus callbacks, thread/user/chat IDs, iteration_budget, fallback_model,\n        # checkpoints config, prefill_messages, service_tier, reasoning_config, etc.\n    ): ...\n\n    def chat(self, message: str) -> str:\n        \"\"\"Simple interface — returns final response string.\"\"\"\n\n    def run_conversation(self, user_message: str, system_message: str = None,\n                         conversation_history: list = None, task_id: str = None) -> dict:\n        \"\"\"Full interface — returns dict with final_response + messages.\"\"\"\n```\n\n### Agent Loop\n\nThe core loop is inside `run_conversation()` — entirely synchronous, with\ninterrupt checks, budget tracking, and a one-turn grace call:\n\n```python\nwhile (api_call_count < self.max_iterations and self.iteration_budget.remaining > 0) \\\n        or self._budget_grace_call:\n    if self._interrupt_requested: break\n    response = client.chat.completions.create(model=model, messages=messages, tools=tool_schemas)\n    if response.tool_calls:\n        for tool_call in response.tool_calls:\n            result = handle_function_call(tool_call.name, tool_call.args, task_id)\n            messages.append(tool_result_message(result))\n        api_call_count += 1\n    else:\n        return response.content\n```\n\nMessages follow OpenAI format: `{\"role\": \"system/user/assistant/tool\", ...}`.\nReasoning content is stored in `assistant_msg[\"reasoning\"]`.\n\n---\n\n## CLI Architecture (cli.py)\n\n- **Rich** for banner/panels, **prompt_toolkit** for input with autocomplete\n- **KawaiiSpinner** (`agent/display.py`) — animated faces during API calls, `┊` activity feed for tool results\n- `load_cli_config()` in cli.py merges hardcoded defaults + user config YAML\n- **Skin engine** (`hermes_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text\n- `process_command()` is a method on `HermesCLI` — dispatches on canonical command name resolved via `resolve_command()` from the central registry\n- Skill slash commands: `agent/skill_commands.py` scans `~/.hermes/skills/`, injects as **user message** (not system prompt) to preserve prompt caching\n\n### Slash Command Registry (`hermes_cli/commands.py`)\n\nAll slash commands are defined in a central `COMMAND_REGISTRY` list of `CommandDef` objects. Every downstream consumer derives from this registry automatically:\n\n- **CLI** — `process_command()` resolves aliases via `resolve_command()`, dispatches on canonical name\n- **Gateway** — `GATEWAY_KNOWN_COMMANDS` frozenset for hook emission, `resolve_command()` for dispatch\n- **Gateway help** — `gateway_help_lines()` generates `/help` output\n- **Telegram** — `telegram_bot_commands()` generates the BotCommand menu\n- **Slack** — `slack_subcommand_map()` generates `/hermes` subcommand routing\n- **Autocomplete** — `COMMANDS` flat dict feeds `SlashCommandCompleter`\n- **CLI help** — `COMMANDS_BY_CATEGORY` dict feeds `show_help()`\n\n### Adding a Slash Command\n\n1. Add a `CommandDef` entry to `COMMAND_RE\n\n[...truncated AGENTS.md: 35,069 chars total]",
+      "tool_call_id": "call_function_b7neo7gf6ir7_1"
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_b7neo7gf6ir7_2"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Now let me look at the actual mcp_tool.py implementation to understand what transport types are supported.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "4790634e3189424663966badc3ceb13e0380afb2729729016fbc64ddceb3b7bc",
+          "thinking": "Now let me look at the actual mcp_tool.py implementation to understand what transport types are supported.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_6g3y6jqdd3ri_1",
+          "call_id": "call_function_6g3y6jqdd3ri_1",
+          "response_item_id": "fc_function_6g3y6jqdd3ri_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"context\": 3, \"file_glob\": \"mcp_tool.py\", \"output_mode\": \"content\", \"path\": \"/app/hermes-agent/tools\", \"pattern\": \"sse|SSE|http_client|url.*mcp|transport\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_6g3y6jqdd3ri_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "No results from searching mcp_tool.py for SSE/transport. Let me check the actual mcp_tool.py file to see what transport types are supported.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "3235a58e209e0193d687ea5e2714ba45d6ea1115442d0b692d25ae043f39f619",
+          "thinking": "No results from searching mcp_tool.py for SSE/transport. Let me check the actual mcp_tool.py file to see what transport types are supported.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_9y7v1xugekhh_1",
+          "call_id": "call_function_9y7v1xugekhh_1",
+          "response_item_id": "fc_function_9y7v1xugekhh_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"context\": 5, \"file_glob\": \"*.py\", \"output_mode\": \"content\", \"path\": \"/app/hermes-agent/tools\", \"pattern\": \"sse|SSE|http|url\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_9y7v1xugekhh_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me look at the actual mcp_tool.py to understand how it connects to servers.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "0f3162867ed0ee343103b7b443c32d8acb7cace1a7561ed204b85fe7d10479d9",
+          "thinking": "Let me look at the actual mcp_tool.py to understand how it connects to servers.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_n3byzzhqbm5v_1",
+          "call_id": "call_function_n3byzzhqbm5v_1",
+          "response_item_id": "fc_function_n3byzzhqbm5v_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"pattern\": \"mcp_tool.py\", \"target\": \"files\", \"path\": \"/app/hermes-agent\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 1, \"files\": [\"/app/hermes-agent/tools/mcp_tool.py\"]}",
+      "tool_call_id": "call_function_n3byzzhqbm5v_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Let me read the mcp_tool.py file to understand the current implementation.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "6a7a4f7fcf25f430642deca9316b74af92d874e473636ba116b8fe251e54ca5d",
+          "thinking": "Let me read the mcp_tool.py file to understand the current implementation.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_pfqlkk86n3y2_1",
+          "call_id": "call_function_pfqlkk86n3y2_1",
+          "response_item_id": "fc_function_pfqlkk86n3y2_1",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"/app/hermes-agent/tools/mcp_tool.py\", \"limit\": 100}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"content\": \"     1|#!/usr/bin/env python3\\n     2|\\\"\\\"\\\"\\n     3|MCP (Model Context Protocol) Client Support\\n     4|\\n     5|Connects to external MCP servers via stdio or HTTP/StreamableHTTP transport,\\n     6|discovers their tools, and registers them into the hermes-agent tool registry\\n     7|so the agent can call them like any built-in tool.\\n     8|\\n     9|Configuration is read from ~/.hermes/config.yaml under the ``mcp_servers`` key.\\n    10|The ``mcp`` Python package is optional -- if not installed, this module is a\\n    11|no-op and logs a debug message.\\n    12|\\n    13|Example config::\\n    14|\\n    15|    mcp_servers:\\n    16|      filesystem:\\n    17|        command: \\\"npx\\\"\\n    18|        args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-filesystem\\\", \\\"/tmp\\\"]\\n    19|        env: {}\\n    20|        timeout: 120         # per-tool-call timeout in seconds (default: 120)\\n    21|        connect_timeout: 60  # initial connection timeout (default: 60)\\n    22|      github:\\n    23|        command: \\\"npx\\\"\\n    24|        args: [\\\"-y\\\", \\\"@modelcontextprotocol/server-github\\\"]\\n    25|        env:\\n    26|          GITHUB_PERSONAL_ACCESS_TOKEN: \\\"ghp_...\\\"\\n    27|      remote_api:\\n    28|        url: \\\"https://my-mcp-server.example.com/mcp\\\"\\n    29|        headers:\\n    30|          Authorization: \\\"Bearer sk-...\\\"\\n    31|        timeout: 180\\n    32|      analysis:\\n    33|        command: \\\"npx\\\"\\n    34|        args: [\\\"-y\\\", \\\"analysis-server\\\"]\\n    35|        sampling:                    # server-initiated LLM requests\\n    36|          enabled: true              # default: true\\n    37|          model: \\\"gemini-3-flash\\\"    # override model (optional)\\n    38|          max_tokens_cap: 4096       # max tokens per request\\n    39|          timeout: 30                # LLM call timeout (seconds)\\n    40|          max_rpm: 10                # max requests per minute\\n    41|          allowed_models: []         # model whitelist (empty = all)\\n    42|          max_tool_rounds: 5         # tool loop limit (0 = disable)\\n    43|          log_level: \\\"info\\\"          # audit verbosity\\n    44|\\n    45|Features:\\n    46|    - Stdio transport (command + args) and HTTP/StreamableHTTP transport (url)\\n    47|    - Automatic reconnection with exponential backoff (up to 5 retries)\\n    48|    - Environment variable filtering for stdio subprocesses (security)\\n    49|    - Credential stripping in error messages returned to the LLM\\n    50|    - Configurable per-server timeouts for tool calls and connections\\n    51|    - Thread-safe architecture with dedicated background event loop\\n    52|    - Sampling support: MCP servers can request LLM completions via\\n    53|      sampling/createMessage (text and tool-use responses)\\n    54|\\n    55|Architecture:\\n    56|    A dedicated background event loop (_mcp_loop) runs in a daemon thread.\\n    57|    Each MCP server runs as a long-lived asyncio Task on this loop, keeping\\n    58|    its transport context alive. Tool call coroutines are scheduled onto the\\n    59|    loop via ``run_coroutine_threadsafe()``.\\n    60|\\n    61|    On shutdown, each server Task is signalled to exit its ``async with``\\n    62|    block, ensuring the anyio cancel-scope cleanup happens in the *same*\\n    63|    Task that opened the connection (required by anyio).\\n    64|\\n    65|Thread safety:\\n    66|    _servers and _mcp_loop/_mcp_thread are accessed from both the MCP\\n    67|    background thread and caller threads.  All mutations are protected by\\n    68|    _lock so the code is safe regardless of GIL presence (e.g. Python 3.13+\\n    69|    free-threading).\\n    70|\\\"\\\"\\\"\\n    71|\\n    72|import asyncio\\n    73|import concurrent.futures\\n    74|import inspect\\n    75|import json\\n    76|import logging\\n    77|import math\\n    78|import os\\n    79|import re\\n    80|import shutil\\n    81|import sys\\n    82|import threading\\n    83|import time\\n    84|from datetime import datetime\\n    85|from typing import Any, Dict, List, Optional\\n    86|\\n    87|logger = logging.getLogger(__name__)\\n    88|\\n    89|\\n    90|# ---------------------------------------------------------------------------\\n    91|# Stdio subprocess stderr redirection\\n    92|# ---------------------------------------------------------------------------\\n    93|#\\n    94|# The MCP SDK's ``stdio_client(server, errlog=sys.stderr)`` defaults the\\n    95|# subprocess stderr stream to the parent process's real stderr, i.e. the\\n    96|# user's TTY.  That means any MCP server we spawn at startup (FastMCP\\n    97|# banners, slack-mcp-server JSON startup logs, etc.) writes directly onto\\n    98|# the terminal while prompt_toolkit / Rich is rendering the TUI — which\\n    99|# corrupts the display and can hang the session.\\n   100|#\\n   101|\", \"total_lines\": 3026, \"file_size\": 120450, \"truncated\": true, \"hint\": \"Use offset=101 to continue reading (showing 1-100 of 3026 lines)\", \"is_binary\": false, \"is_image\": false}",
+      "tool_call_id": "call_function_pfqlkk86n3y2_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "The code clearly says it supports both stdio and HTTP/StreamableHTTP transports. Let me look at the HTTP transport implementation to understand how it connects and whether it supports SSE.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "1b91cfb2075d6d12cb3f9f4a582de5267f7593ec0f0064cd580bc28bb101f59b",
+          "thinking": "The code clearly says it supports both stdio and HTTP/StreamableHTTP transports. Let me look at the HTTP transport implementation to understand how it connects and whether it supports SSE.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_zccdq33gfuwn_1",
+          "call_id": "call_function_zccdq33gfuwn_1",
+          "response_item_id": "fc_function_zccdq33gfuwn_1",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"/app/hermes-agent/tools/mcp_tool.py\", \"offset\": 101, \"limit\": 200}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"content\": \"   101|# Instead we redirect every stdio MCP subprocess's stderr into a shared\\n   102|# per-profile log file (~/.hermes/logs/mcp-stderr.log), tagged with the\\n   103|# server name so individual servers remain debuggable.\\n   104|#\\n   105|# Fallback is os.devnull if opening the log file fails for any reason.\\n   106|\\n   107|_mcp_stderr_log_fh: Optional[Any] = None\\n   108|_mcp_stderr_log_lock = threading.Lock()\\n   109|\\n   110|\\n   111|def _get_mcp_stderr_log() -> Any:\\n   112|    \\\"\\\"\\\"Return a shared append-mode file handle for MCP subprocess stderr.\\n   113|\\n   114|    Opened once per process and reused for every stdio server.  Must have a\\n   115|    real OS-level file descriptor (``fileno()``) because asyncio's subprocess\\n   116|    machinery wires the child's stderr directly to that fd.  Falls back to\\n   117|    ``/dev/null`` if opening the log file fails.\\n   118|    \\\"\\\"\\\"\\n   119|    global _mcp_stderr_log_fh\\n   120|    with _mcp_stderr_log_lock:\\n   121|        if _mcp_stderr_log_fh is not None:\\n   122|            return _mcp_stderr_log_fh\\n   123|        try:\\n   124|            from hermes_constants import get_hermes_home\\n   125|            log_dir = get_hermes_home() / \\\"logs\\\"\\n   126|            log_dir.mkdir(parents=True, exist_ok=True)\\n   127|            log_path = log_dir / \\\"mcp-stderr.log\\\"\\n   128|            # Line-buffered so server output lands on disk promptly; errors=\\n   129|            # \\\"replace\\\" tolerates garbled binary output from misbehaving\\n   130|            # servers.\\n   131|            fh = open(log_path, \\\"a\\\", encoding=\\\"utf-8\\\", errors=\\\"replace\\\", buffering=1)\\n   132|            # Sanity-check: confirm a real fd is available before we commit.\\n   133|            fh.fileno()\\n   134|            _mcp_stderr_log_fh = fh\\n   135|        except Exception as exc:  # pragma: no cover — best-effort fallback\\n   136|            logger.debug(\\\"Failed to open MCP stderr log, using devnull: %s\\\", exc)\\n   137|            try:\\n   138|                _mcp_stderr_log_fh = open(os.devnull, \\\"w\\\", encoding=\\\"utf-8\\\")\\n   139|            except Exception:\\n   140|                # Last resort: the real stderr.  Not ideal for TUI users but\\n   141|                # it matches pre-fix behavior.\\n   142|                _mcp_stderr_log_fh = sys.stderr\\n   143|        return _mcp_stderr_log_fh\\n   144|\\n   145|\\n   146|def _write_stderr_log_header(server_name: str) -> None:\\n   147|    \\\"\\\"\\\"Write a human-readable session marker before launching a server.\\n   148|\\n   149|    Gives operators a way to find each server's output in the shared\\n   150|    ``mcp-stderr.log`` file without needing per-line prefixes (which would\\n   151|    require a pipe + reader thread and complicate shutdown).\\n   152|    \\\"\\\"\\\"\\n   153|    fh = _get_mcp_stderr_log()\\n   154|    try:\\n   155|        ts = datetime.now().strftime(\\\"%Y-%m-%d %H:%M:%S\\\")\\n   156|        fh.write(f\\\"\\\\n===== [{ts}] starting MCP server '{server_name}' =====\\\\n\\\")\\n   157|        fh.flush()\\n   158|    except Exception:\\n   159|        pass\\n   160|\\n   161|# ---------------------------------------------------------------------------\\n   162|# Graceful import -- MCP SDK is an optional dependency\\n   163|# ---------------------------------------------------------------------------\\n   164|\\n   165|_MCP_AVAILABLE = False\\n   166|_MCP_HTTP_AVAILABLE = False\\n   167|_MCP_SAMPLING_TYPES = False\\n   168|_MCP_NOTIFICATION_TYPES = False\\n   169|_MCP_MESSAGE_HANDLER_SUPPORTED = False\\n   170|# Conservative fallback for SDK builds that don't export LATEST_PROTOCOL_VERSION.\\n   171|# Streamable HTTP was introduced by 2025-03-26, so this remains valid for the\\n   172|# HTTP transport path even on older-but-supported SDK versions.\\n   173|LATEST_PROTOCOL_VERSION = \\\"2025-03-26\\\"\\n   174|try:\\n   175|    from mcp import ClientSession, StdioServerParameters\\n   176|    from mcp.client.stdio import stdio_client\\n   177|    _MCP_AVAILABLE = True\\n   178|    try:\\n   179|        from mcp.client.streamable_http import streamablehttp_client\\n   180|        _MCP_HTTP_AVAILABLE = True\\n   181|    except ImportError:\\n   182|        _MCP_HTTP_AVAILABLE = False\\n   183|    # Prefer the non-deprecated API (mcp >= 1.24.0); fall back to the\\n   184|    # deprecated wrapper for older SDK versions.\\n   185|    try:\\n   186|        from mcp.client.streamable_http import streamable_http_client\\n   187|        _MCP_NEW_HTTP = True\\n   188|    except ImportError:\\n   189|        _MCP_NEW_HTTP = False\\n   190|    try:\\n   191|        from mcp.types import LATEST_PROTOCOL_VERSION\\n   192|    except ImportError:\\n   193|        logger.debug(\\\"mcp.types.LATEST_PROTOCOL_VERSION not available -- using fallback protocol version\\\")\\n   194|    # Sampling types -- separated so older SDK versions don't break MCP support\\n   195|    try:\\n   196|        from mcp.types import (\\n   197|            CreateMessageResult,\\n   198|            CreateMessageResultWithTools,\\n   199|            ErrorData,\\n   200|            SamplingCapability,\\n   201|            SamplingToolsCapability,\\n   202|            TextContent,\\n   203|            ToolUseContent,\\n   204|        )\\n   205|        _MCP_SAMPLING_TYPES = True\\n   206|    except ImportError:\\n   207|        logger.debug(\\\"MCP sampling types not available -- sampling disabled\\\")\\n   208|    # Notification types for dynamic tool discovery (tools/list_changed)\\n   209|    try:\\n   210|        from mcp.types import (\\n   211|            ServerNotification,\\n   212|            ToolListChangedNotification,\\n   213|            PromptListChangedNotification,\\n   214|            ResourceListChangedNotification,\\n   215|        )\\n   216|        _MCP_NOTIFICATION_TYPES = True\\n   217|    except ImportError:\\n   218|        logger.debug(\\\"MCP notification types not available -- dynamic tool discovery disabled\\\")\\n   219|except ImportError:\\n   220|    logger.debug(\\\"mcp package not installed -- MCP tool support disabled\\\")\\n   221|\\n   222|\\n   223|def _check_message_handler_support() -> bool:\\n   224|    \\\"\\\"\\\"Check if ClientSession accepts ``message_handler`` kwarg.\\n   225|\\n   226|    Inspects the constructor signature for backward compatibility with older\\n   227|    MCP SDK versions that don't support notification handlers.\\n   228|    \\\"\\\"\\\"\\n   229|    if not _MCP_AVAILABLE:\\n   230|        return False\\n   231|    try:\\n   232|        return \\\"message_handler\\\" in inspect.signature(ClientSession).parameters\\n   233|    except (TypeError, ValueError):\\n   234|        return False\\n   235|\\n   236|\\n   237|_MCP_MESSAGE_HANDLER_SUPPORTED = _check_message_handler_support()\\n   238|if _MCP_AVAILABLE and not _MCP_MESSAGE_HANDLER_SUPPORTED:\\n   239|    logger.debug(\\\"MCP SDK does not support message_handler -- dynamic tool discovery disabled\\\")\\n   240|\\n   241|# ---------------------------------------------------------------------------\\n   242|# Constants\\n   243|# ---------------------------------------------------------------------------\\n   244|\\n   245|_DEFAULT_TOOL_TIMEOUT = 120      # seconds for tool calls\\n   246|_DEFAULT_CONNECT_TIMEOUT = 60    # seconds for initial connection per server\\n   247|_MAX_RECONNECT_RETRIES = 5\\n   248|_MAX_INITIAL_CONNECT_RETRIES = 3 # retries for the very first connection attempt\\n   249|_MAX_BACKOFF_SECONDS = 60\\n   250|\\n   251|# Environment variables that are safe to pass to stdio subprocesses\\n   252|_SAFE_ENV_KEYS = frozenset({\\n   253|    \\\"PATH\\\", \\\"HOME\\\", \\\"USER\\\", \\\"LANG\\\", \\\"LC_ALL\\\", \\\"TERM\\\", \\\"SHELL\\\", \\\"TMPDIR\\\",\\n   254|})\\n   255|\\n   256|# Regex for credential patterns to strip from error messages\\n   257|_CREDENTIAL_PATTERN=***\\n   258|    r\\\"(?:\\\"\\n   259|    r\\\"ghp_[A-Za-z0-9_]{1,255}\\\"           # GitHub PAT\\n   260|    r\\\"|sk-[A-Za-z0-9_]{1,255}\\\"           # OpenAI-style key\\n   261|    r\\\"|Bearer\\\\s+\\\\S+\\\"                      # Bearer token\\n   262|    r\\\"|token=[^\\\\s&,;\\\\\\\"']{1,255}\\\"         # token=...\\n   263|    r\\\"|key=[^\\\\s&,;\\\\\\\"']{1,255}\\\"           # key=...\\n   264|    r\\\"|API_KEY=[^\\\\s&,...55}\\\"       # API_KEY=***\\n   265|    r\\\"|password=[^\\\\s&,;\\\\\\\"']{1,255}\\\"      # password=...\\n   266|    r\\\"|secret=[^\\\\s&,;\\\\\\\"']{1,255}\\\"        # secret=...\\n   267|    r\\\")\\\",\\n   268|    re.IGNORECASE,\\n   269|)\\n   270|\\n   271|\\n   272|# ---------------------------------------------------------------------------\\n   273|# Security helpers\\n   274|# ---------------------------------------------------------------------------\\n   275|\\n   276|def _build_safe_env(user_env: Optional[dict]) -> dict:\\n   277|    \\\"\\\"\\\"Build a filtered environment dict for stdio subprocesses.\\n   278|\\n   279|    Only passes through safe baseline variables (PATH, HOME, etc.) and XDG_*\\n   280|    variables from the current process environment, plus any variables\\n   281|    explicitly specified by the user in the server config.\\n   282|\\n   283|    This prevents accidentally leaking secrets like API keys, tokens, or\\n   284|    credentials to MCP server subprocesses.\\n   285|    \\\"\\\"\\\"\\n   286|    env = {}\\n   287|    for key, value in os.environ.items():\\n   288|        if key in _SAFE_ENV_KEYS or key.startswith(\\\"XDG_\\\"):\\n   289|            env[key] = value\\n   290|    if user_env:\\n   291|        env.update(user_env)\\n   292|    return env\\n   293|\\n   294|\\n   295|def _sanitize_error(text: str) -> str:\\n   296|    \\\"\\\"\\\"Strip credential-like patterns from error text before returning to LLM.\\n   297|\\n   298|    Replaces tokens, keys, and other secrets with [REDACTED] to prevent\\n   299|    accidental credential exposure in tool error responses.\\n   300|    \\\"\\\"\\\"\\n   301|\", \"total_lines\": 3026, \"file_size\": 120450, \"truncated\": true, \"hint\": \"Use offset=301 to continue reading (showing 101-300 of 3026 lines)\", \"is_binary\": false, \"is_image\": false}",
+      "tool_call_id": "call_function_zccdq33gfuwn_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Good. Now let me look at how the HTTP transport is used in mcp_tool.py, specifically how the URL is handled:",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "43cca3b694041a092890b663443d9df935fb228128bb7e631fd8a0b65dac1297",
+          "thinking": "Good. Now let me look at how the HTTP transport is used in mcp_tool.py, specifically how the URL is handled:",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_dmlbi4is6epm_1",
+          "call_id": "call_function_dmlbi4is6epm_1",
+          "response_item_id": "fc_function_dmlbi4is6epm_1",
+          "type": "function",
+          "function": {
+            "name": "search_files",
+            "arguments": "{\"context\": 8, \"output_mode\": \"content\", \"path\": \"/app/hermes-agent/tools/mcp_tool.py\", \"pattern\": \"streamablehttp_client|streamable_http_client|url.*header|_MCP_HTTP\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"total_count\": 0}",
+      "tool_call_id": "call_function_dmlbi4is6epm_1"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "reasoning": "Hmm, let me search more carefully. The tool shows \"no matches found\" for \"streamablehttp_client\" but earlier when I looked at the import section I saw:\n\n```python\ntry:\n    from mcp.client.streamable_http import streamablehttp_client\n    _MCP_HTTP_AVAILABLE = True\nexcept ImportError:\n    _MCP_HTTP_AVAILABLE = False\n```\n\nLet me search for where this is actually used.",
+      "finish_reason": "tool_calls",
+      "reasoning_details": [
+        {
+          "signature": "0ebc2e12da9f5ee1711025f649774a6ee6f69bd122896f4eaf33b6f5a868cd95",
+          "thinking": "Hmm, let me search more carefully. The tool shows \"no matches found\" for \"streamablehttp_client\" but earlier when I looked at the import section I saw:\n\n```python\ntry:\n    from mcp.client.streamable_http import streamablehttp_client\n    _MCP_HTTP_AVAILABLE = True\nexcept ImportError:\n    _MCP_HTTP_AVAILABLE = False\n```\n\nLet me search for where this is actually used.",
+          "type": "thinking"
+        }
+      ],
+      "tool_calls": [
+        {
+          "id": "call_function_l6hsvbnh1mn0_1",
+          "call_id": "call_function_l6hsvbnh1mn0_1",
+          "response_item_id": "fc_function_l6hsvbnh1mn0_1",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"limit\": 300, \"offset\": 500, \"path\": \"/app/hermes-agent/tools/mcp_tool.py\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"content\": \"   500|    def __init__(self, server_name: str, config: dict):\\n   501|        self.server_name = server_name\\n   502|        self.max_rpm = _safe_numeric(config.get(\\\"max_rpm\\\", 10), 10, int)\\n   503|        self.timeout = _safe_numeric(config.get(\\\"timeout\\\", 30), 30, float)\\n   504|        self.max_tokens_cap = _safe_numeric(config.get(\\\"max_tokens_cap\\\", 4096), 4096, int)\\n   505|        self.max_tool_rounds = _safe_numeric(\\n   506|            config.get(\\\"max_tool_rounds\\\", 5), 5, int, minimum=0,\\n   507|        )\\n   508|        self.model_override = config.get(\\\"model\\\")\\n   509|        self.allowed_models = config.get(\\\"allowed_models\\\", [])\\n   510|\\n   511|        _log_levels = {\\\"debug\\\": logging.DEBUG, \\\"info\\\": logging.INFO, \\\"warning\\\": logging.WARNING}\\n   512|        self.audit_level = _log_levels.get(\\n   513|            str(config.get(\\\"log_level\\\", \\\"info\\\")).lower(), logging.INFO,\\n   514|        )\\n   515|\\n   516|        # Per-instance state\\n   517|        self._rate_timestamps: List[float] = []\\n   518|        self._tool_loop_count = 0\\n   519|        self.metrics = {\\\"requests\\\": 0, \\\"errors\\\": 0, \\\"tokens_used\\\": 0, \\\"tool_use_count\\\": 0}\\n   520|\\n   521|    # -- Rate limiting -------------------------------------------------------\\n   522|\\n   523|    def _check_rate_limit(self) -> bool:\\n   524|        \\\"\\\"\\\"Sliding-window rate limiter.  Returns True if request is allowed.\\\"\\\"\\\"\\n   525|        now = time.time()\\n   526|        window = now - 60\\n   527|        self._rate_timestamps[:] = [t for t in self._rate_timestamps if t > window]\\n   528|        if len(self._rate_timestamps) >= self.max_rpm:\\n   529|            return False\\n   530|        self._rate_timestamps.append(now)\\n   531|        return True\\n   532|\\n   533|    # -- Model resolution ----------------------------------------------------\\n   534|\\n   535|    def _resolve_model(self, preferences) -> Optional[str]:\\n   536|        \\\"\\\"\\\"Config override > server hint > None (use default).\\\"\\\"\\\"\\n   537|        if self.model_override:\\n   538|            return self.model_override\\n   539|        if preferences and hasattr(preferences, \\\"hints\\\") and preferences.hints:\\n   540|            for hint in preferences.hints:\\n   541|                if hasattr(hint, \\\"name\\\") and hint.name:\\n   542|                    return hint.name\\n   543|        return None\\n   544|\\n   545|    # -- Message conversion --------------------------------------------------\\n   546|\\n   547|    @staticmethod\\n   548|    def _extract_tool_result_text(block) -> str:\\n   549|        \\\"\\\"\\\"Extract text from a ToolResultContent block.\\\"\\\"\\\"\\n   550|        if not hasattr(block, \\\"content\\\") or block.content is None:\\n   551|            return \\\"\\\"\\n   552|        items = block.content if isinstance(block.content, list) else [block.content]\\n   553|        return \\\"\\\\n\\\".join(item.text for item in items if hasattr(item, \\\"text\\\"))\\n   554|\\n   555|    def _convert_messages(self, params) -> List[dict]:\\n   556|        \\\"\\\"\\\"Convert MCP SamplingMessages to OpenAI format.\\n   557|\\n   558|        Uses ``msg.content_as_list`` (SDK helper) so single-block and\\n   559|        list-of-blocks are handled uniformly.  Dispatches per block type\\n   560|        with ``isinstance`` on real SDK types when available, falling back\\n   561|        to duck-typing via ``hasattr`` for compatibility.\\n   562|        \\\"\\\"\\\"\\n   563|        messages: List[dict] = []\\n   564|        for msg in params.messages:\\n   565|            blocks = msg.content_as_list if hasattr(msg, \\\"content_as_list\\\") else (\\n   566|                msg.content if isinstance(msg.content, list) else [msg.content]\\n   567|            )\\n   568|\\n   569|            # Separate blocks by kind\\n   570|            tool_results = [b for b in blocks if hasattr(b, \\\"toolUseId\\\")]\\n   571|            tool_uses = [b for b in blocks if hasattr(b, \\\"name\\\") and hasattr(b, \\\"input\\\") and not hasattr(b, \\\"toolUseId\\\")]\\n   572|            content_blocks = [b for b in blocks if not hasattr(b, \\\"toolUseId\\\") and not (hasattr(b, \\\"name\\\") and hasattr(b, \\\"input\\\"))]\\n   573|\\n   574|            # Emit tool result messages (role: tool)\\n   575|            for tr in tool_results:\\n   576|                messages.append({\\n   577|                    \\\"role\\\": \\\"tool\\\",\\n   578|                    \\\"tool_call_id\\\": tr.toolUseId,\\n   579|                    \\\"content\\\": self._extract_tool_result_text(tr),\\n   580|                })\\n   581|\\n   582|            # Emit assistant tool_calls message\\n   583|            if tool_uses:\\n   584|                tc_list = []\\n   585|                for tu in tool_uses:\\n   586|                    tc_list.append({\\n   587|                        \\\"id\\\": getattr(tu, \\\"id\\\", f\\\"call_{len(tc_list)}\\\"),\\n   588|                        \\\"type\\\": \\\"function\\\",\\n   589|                        \\\"function\\\": {\\n   590|                            \\\"name\\\": tu.name,\\n   591|                            \\\"arguments\\\": json.dumps(tu.input, ensure_ascii=False) if isinstance(tu.input, dict) else str(tu.input),\\n   592|                        },\\n   593|                    })\\n   594|                msg_dict: dict = {\\\"role\\\": msg.role, \\\"tool_calls\\\": tc_list}\\n   595|                # Include any accompanying text\\n   596|                text_parts = [b.text for b in content_blocks if hasattr(b, \\\"text\\\")]\\n   597|                if text_parts:\\n   598|                    msg_dict[\\\"content\\\"] = \\\"\\\\n\\\".join(text_parts)\\n   599|                messages.append(msg_dict)\\n   600|            elif content_blocks:\\n   601|                # Pure text/image content\\n   602|                if len(content_blocks) == 1 and hasattr(content_blocks[0], \\\"text\\\"):\\n   603|                    messages.append({\\\"role\\\": msg.role, \\\"content\\\": content_blocks[0].text})\\n   604|                else:\\n   605|                    parts = []\\n   606|                    for block in content_blocks:\\n   607|                        if hasattr(block, \\\"text\\\"):\\n   608|                            parts.append({\\\"type\\\": \\\"text\\\", \\\"text\\\": block.text})\\n   609|                        elif hasattr(block, \\\"data\\\") and hasattr(block, \\\"mimeType\\\"):\\n   610|                            parts.append({\\n   611|                                \\\"type\\\": \\\"image_url\\\",\\n   612|                                \\\"image_url\\\": {\\\"url\\\": f\\\"data:{block.mimeType};base64,{block.data}\\\"},\\n   613|                            })\\n   614|                        else:\\n   615|                            logger.warning(\\n   616|                                \\\"Unsupported sampling content block type: %s (skipped)\\\",\\n   617|                                type(block).__name__,\\n   618|                            )\\n   619|                    if parts:\\n   620|                        messages.append({\\\"role\\\": msg.role, \\\"content\\\": parts})\\n   621|\\n   622|        return messages\\n   623|\\n   624|    # -- Error helper --------------------------------------------------------\\n   625|\\n   626|    @staticmethod\\n   627|    def _error(message: str, code: int = -1):\\n   628|        \\\"\\\"\\\"Return ErrorData (MCP spec) or raise as fallback.\\\"\\\"\\\"\\n   629|        if _MCP_SAMPLING_TYPES:\\n   630|            return ErrorData(code=code, message=message)\\n   631|        raise Exception(message)\\n   632|\\n   633|    # -- Response building ---------------------------------------------------\\n   634|\\n   635|    def _build_tool_use_result(self, choice, response):\\n   636|        \\\"\\\"\\\"Build a CreateMessageResultWithTools from an LLM tool_calls response.\\\"\\\"\\\"\\n   637|        self.metrics[\\\"tool_use_count\\\"] += 1\\n   638|\\n   639|        # Tool loop governance\\n   640|        if self.max_tool_rounds == 0:\\n   641|            self._tool_loop_count = 0\\n   642|            return self._error(\\n   643|                f\\\"Tool loops disabled for server '{self.server_name}' (max_tool_rounds=0)\\\"\\n   644|            )\\n   645|\\n   646|        self._tool_loop_count += 1\\n   647|        if self._tool_loop_count > self.max_tool_rounds:\\n   648|            self._tool_loop_count = 0\\n   649|            return self._error(\\n   650|                f\\\"Tool loop limit exceeded for server '{self.server_name}' \\\"\\n   651|                f\\\"(max {self.max_tool_rounds} rounds)\\\"\\n   652|            )\\n   653|\\n   654|        content_blocks = []\\n   655|        for tc in choice.message.tool_calls:\\n   656|            args = tc.function.arguments\\n   657|            if isinstance(args, str):\\n   658|                try:\\n   659|                    parsed = json.loads(args)\\n   660|                except (json.JSONDecodeError, ValueError):\\n   661|                    logger.warning(\\n   662|                        \\\"MCP server '%s': malformed tool_calls arguments \\\"\\n   663|                        \\\"from LLM (wrapping as raw): %.100s\\\",\\n   664|                        self.server_name, args,\\n   665|                    )\\n   666|                    parsed = {\\\"_raw\\\": args}\\n   667|            else:\\n   668|                parsed = args if isinstance(args, dict) else {\\\"_raw\\\": str(args)}\\n   669|\\n   670|            content_blocks.append(ToolUseContent(\\n   671|                type=\\\"tool_use\\\",\\n   672|                id=tc.id,\\n   673|                name=tc.function.name,\\n   674|                input=parsed,\\n   675|            ))\\n   676|\\n   677|        logger.log(\\n   678|            self.audit_level,\\n   679|            \\\"MCP server '%s' sampling response: model=%s, tokens=%s, tool_calls=%d\\\",\\n   680|            self.server_name, response.model,\\n   681|            getattr(getattr(response, \\\"usage\\\", None), \\\"total_tokens\\\", \\\"?\\\"),\\n   682|            len(content_blocks),\\n   683|        )\\n   684|\\n   685|        return CreateMessageResultWithTools(\\n   686|            role=\\\"assistant\\\",\\n   687|            content=content_blocks,\\n   688|            model=response.model,\\n   689|            stopReason=\\\"toolUse\\\",\\n   690|        )\\n   691|\\n   692|    def _build_text_result(self, choice, response):\\n   693|        \\\"\\\"\\\"Build a CreateMessageResult from a normal text response.\\\"\\\"\\\"\\n   694|        self._tool_loop_count = 0  # reset on text response\\n   695|        response_text = choice.message.content or \\\"\\\"\\n   696|\\n   697|        logger.log(\\n   698|            self.audit_level,\\n   699|            \\\"MCP server '%s' sampling response: model=%s, tokens=%s\\\",\\n   700|            self.server_name, response.model,\\n   701|            getattr(getattr(response, \\\"usage\\\", None), \\\"total_tokens\\\", \\\"?\\\"),\\n   702|        )\\n   703|\\n   704|        return CreateMessageResult(\\n   705|            role=\\\"assistant\\\",\\n   706|            content=TextContent(type=\\\"text\\\", text=_sanitize_error(response_text)),\\n   707|            model=response.model,\\n   708|            stopReason=self._STOP_REASON_MAP.get(choice.finish_reason, \\\"endTurn\\\"),\\n   709|        )\\n   710|\\n   711|    # -- Session kwargs helper -----------------------------------------------\\n   712|\\n   713|    def session_kwargs(self) -> dict:\\n   714|        \\\"\\\"\\\"Return kwargs to pass to ClientSession for sampling support.\\\"\\\"\\\"\\n   715|        return {\\n   716|            \\\"sampling_callback\\\": self,\\n   717|            \\\"sampling_capabilities\\\": SamplingCapability(\\n   718|                tools=SamplingToolsCapability(),\\n   719|            ),\\n   720|        }\\n   721|\\n   722|    # -- Main callback -------------------------------------------------------\\n   723|\\n   724|    async def __call__(self, context, params):\\n   725|        \\\"\\\"\\\"Sampling callback invoked by the MCP SDK.\\n   726|\\n   727|        Conforms to ``SamplingFnT`` protocol.  Returns\\n   728|        ``CreateMessageResult``, ``CreateMessageResultWithTools``, or\\n   729|        ``ErrorData``.\\n   730|        \\\"\\\"\\\"\\n   731|        # Rate limit\\n   732|        if not self._check_rate_limit():\\n   733|            logger.warning(\\n   734|                \\\"MCP server '%s' sampling rate limit exceeded (%d/min)\\\",\\n   735|                self.server_name, self.max_rpm,\\n   736|            )\\n   737|            self.metrics[\\\"errors\\\"] += 1\\n   738|            return self._error(\\n   739|                f\\\"Sampling rate limit exceeded for server '{self.server_name}' \\\"\\n   740|                f\\\"({self.max_rpm} requests/minute)\\\"\\n   741|            )\\n   742|\\n   743|        # Resolve model\\n   744|        model = self._resolve_model(getattr(params, \\\"modelPreferences\\\", None))\\n   745|\\n   746|        # Get auxiliary LLM client via centralized router\\n   747|        from agent.auxiliary_client import call_llm\\n   748|\\n   749|        # Model whitelist check (we need to resolve model before calling)\\n   750|        resolved_model = model or self.model_override or \\\"\\\"\\n   751|\\n   752|        if self.allowed_models and resolved_model and resolved_model not in self.allowed_models:\\n   753|            logger.warning(\\n   754|                \\\"MCP server '%s' requested model '%s' not in allowed_models\\\",\\n   755|                self.server_name, resolved_model,\\n   756|            )\\n   757|            self.metrics[\\\"errors\\\"] += 1\\n   758|            return self._error(\\n   759|                f\\\"Model '{resolved_model}' not allowed for server \\\"\\n   760|                f\\\"'{self.server_name}'. Allowed: {', '.join(self.allowed_models)}\\\"\\n   761|            )\\n   762|\\n   763|        # Convert messages\\n   764|        messages = self._convert_messages(params)\\n   765|        if hasattr(params, \\\"systemPrompt\\\") and params.systemPrompt:\\n   766|            messages.insert(0, {\\\"role\\\": \\\"system\\\", \\\"content\\\": params.systemPrompt})\\n   767|\\n   768|        # Build LLM call kwargs\\n   769|        max_tokens = min(params.maxTokens, self.max_tokens_cap)\\n   770|        call_temperature = None\\n   771|        if hasattr(params, \\\"temperature\\\") and params.temperature is not None:\\n   772|            call_temperature = params.temperature\\n   773|\\n   774|        # Forward server-provided tools\\n   775|        call_tools = None\\n   776|        server_tools = getattr(params, \\\"tools\\\", None)\\n   777|        if server_tools:\\n   778|            call_tools = [\\n   779|                {\\n   780|                    \\\"type\\\": \\\"function\\\",\\n   781|                    \\\"function\\\": {\\n   782|                        \\\"name\\\": getattr(t, \\\"name\\\", \\\"\\\"),\\n   783|                        \\\"description\\\": getattr(t, \\\"description\\\", \\\"\\\") or \\\"\\\",\\n   784|                        \\\"parameters\\\": _normalize_mcp_input_schema(\\n   785|                            getattr(t, \\\"inputSchema\\\", None)\\n   786|                        ),\\n   787|                    },\\n   788|                }\\n   789|                for t in server_tools\\n   790|            ]\\n   791|\\n   792|        logger.log(\\n   793|            self.audit_level,\\n   794|            \\\"MCP server '%s' sampling request: model=%s, max_tokens=%d, messages=%d\\\",\\n   795|            self.server_name, resolved_model, max_tokens, len(messages),\\n   796|        )\\n   797|\\n   798|        # Offload sync LLM call to thread (non-blocking)\\n   799|        def _sync_call():\\n   800|\", \"total_lines\": 3026, \"file_size\": 120450, \"truncated\": true, \"hint\": \"Use offset=800 to continue reading (showing 500-799 of 3026 lines)\", \"is_binary\": false, \"is_image\": false}",
+      "tool_call_id": "call_function_l6hsvbnh1mn0_1"
+    }
+  ]
+}

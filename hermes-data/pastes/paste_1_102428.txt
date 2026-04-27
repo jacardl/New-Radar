@@ -1,0 +1,5 @@
+你现在有cdp mcp，我需要你安装 https://github.com/lightpanda-io/browser ，用来做为默认浏览器
+
+
+
+
