@@ -123,7 +123,7 @@ new-radar/
 
 ### 环境要求
 
-- Python 3.10+
+- Python 3.10+ (用于本地开发)
 - Docker & Docker Compose
 - PostgreSQL 15+ with pgvector (Docker 内置)
 
@@ -135,6 +135,36 @@ docker compose up -d
 
 # 2. 初始化数据库
 docker exec radar python scripts/db/init_db.py
+
+# 3. 访问服务
+# - radar API: http://localhost:8642
+# - Adminer DB: http://localhost:8080
+```
+
+## Web UI
+
+### Hermes Web UI (可选)
+
+hermes-web-ui 提供图形化界面来管理 Hermes Agent，但需要本地安装 hermes-agent：
+
+```bash
+# 1. 安装 hermes-agent (需要 Python 环境)
+pip install hermes-agent
+
+# 2. 安装 hermes-web-ui
+npm install -g hermes-web-ui
+
+# 3. 启动 hermes-web-ui
+hermes-web-ui start --port 8648
+```
+
+**注意**：hermes-web-ui 需要 hermes CLI 来管理网关进程。当前 hermes-agent 运行在 Docker 中，需要本地 Python 环境才能运行 hermes-web-ui。
+
+### Adminer 数据库管理
+
+http://localhost:8080
+
+直接访问 PostgreSQL 数据库进行管理。
 
 ## API 端点
 

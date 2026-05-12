@@ -87,27 +87,5 @@ services:
       db:
         condition: service_healthy
 
-  # ---------------------------------------------------------------------------
-  # Hermes Web UI (Dashboard)
-  # ---------------------------------------------------------------------------
-  web-ui:
-    build:
-      context: ./hermes-agent/web
-      dockerfile: Dockerfile
-    container_name: radar-web-ui
-    restart: unless-stopped
-    environment:
-      - PORT=8648
-      - UPSTREAM=http://radar:8642
-      - HERMES_HOME=/app/.hermes
-      - AUTH_DISABLED=false
-    ports:
-      - "8648:8648"
-    volumes:
-      - ./hermes-agent/data:/app/.hermes
-    depends_on:
-      radar:
-        condition: service_healthy
-
 volumes:
   radar_db_data:
