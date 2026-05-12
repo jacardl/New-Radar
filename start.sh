@@ -14,7 +14,6 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 API_PORT=8642
-WEB_PORT=3010
 
 log_info() { echo -e "${CYAN}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
@@ -75,13 +74,9 @@ case $MODE in
         log_info "重建 radar (后端代码变更)..."
         docker-compose up -d --build radar
         ;;
-    open-webui)
-        log_info "重建 open-webui..."
-        docker-compose up -d --build open-webui
-        ;;
     env)
         log_info "重启服务 (env 变更，无需重建)..."
-        docker-compose restart radar open-webui
+        docker-compose restart radar
         ;;
     none)
         log_info "启动已有容器..."
@@ -106,7 +101,6 @@ esac
 log_success "服务已启动"
 echo ""
 echo "  API:       http://localhost:$API_PORT"
-echo "  OpenWebUI: http://localhost:$WEB_PORT"
 echo "  Adminer:   http://localhost:8080"
 echo ""
 echo "用法: start.sh [radar|backend|env|none]"

@@ -15,13 +15,6 @@ cd /d "%SCRIPT_DIR%"
 set "RADAR_CONTAINER=radar"
 set "DB_CONTAINER=radar-db"
 set "ADMINER_CONTAINER=radar-adminer"
-set "OPEN_WEBUI_CONTAINER=open-webui"
-
-:: Open WebUI Configuration
-set OW_PORT=3000
-set OW_API_URL=http://host.docker.internal:5000/v1
-set OW_API_KEY=sk-local-dev
-set OW_MODEL=new-radar-agent
 
 :: Check Docker Compose
 docker compose version >nul 2>&1
@@ -215,9 +208,6 @@ if errorlevel 1 (
     call :log_info "Initializing pgvector extension..."
     docker exec %DB_CONTAINER% psql -U radar -d radar -c "CREATE EXTENSION IF NOT EXISTS vector;" >nul 2>&1
 
-    :: Start Open WebUI
-    call :do_owrstart
-
     call :log_ok "Deployment complete!"
     echo.
     echo ================================================================================
@@ -227,12 +217,6 @@ if errorlevel 1 (
     echo   New Radar API:     http://localhost:5000
     echo   API Health Check:  http://localhost:5000/v1/health
     echo   Adminer DB Manage: http://localhost:8080
-    echo   Open WebUI:        http://localhost:%OW_PORT%
-    echo.
-    echo   Open WebUI Configuration:
-    echo     API URL:  %OW_API_URL%
-    echo     API Key:  %OW_API_KEY%
-    echo     Model:    %OW_MODEL%
     echo.
     goto :eof
 
@@ -247,9 +231,6 @@ if errorlevel 1 (
     goto :eof
 
 :do_stop
-    call :log_info "Stopping Open WebUI..."
-    docker stop %OPEN_WEBUI_CONTAINER% >nul 2>&1
-    docker rm %OPEN_WEBUI_CONTAINER% >nul 2>&1
     call :log_info "Stopping New Radar services..."
     %DC% stop
     call :log_ok "All services stopped"
@@ -307,7 +288,7 @@ if errorlevel 1 (
     echo ================================================================================
     echo.
 
-    for %%c in (radar-db radar radar-adminer open-webui) do (
+    for %%c in (radar-db radar radar-adminer) do (
         call :get_container_status %%c s
         if "!s!"=="running" (
             echo   [GREEN]%%c: running
@@ -357,77 +338,10 @@ if errorlevel 1 (
     ) else (
         call :log_ok "responding
     )
-
-    call :log_info "Open WebUI: "
-    curl -s -o nul -w "HTTP %%{http_code}" http://localhost:%OW_PORT%
-    echo.
     goto :eof
 
 ::===============================================================================
-:: 8. Open WebUI
-::===============================================================================
-:do_owrstart
-    echo.
-    call :log_info "Pulling Open WebUI image..."
-    docker pull ghcr.io/open-webui/open-webui:main
-
-    call :log_info "Starting Open WebUI container..."
-    docker run -d ^
-        --name %OPEN_WEBUI_CONTAINER% ^
-        --add-host=host.docker.internal:host-gateway ^
-        -p %OW_PORT%:8080 ^
-        -v open-webui:/app/backend/data ^
-        --restart unless-stopped ^
-        ghcr.io/open-webui/open-webui:main
-
-    call :show_progress open-webui
-    call :log_ok "Open WebUI started: http://localhost:%OW_PORT%"
-    goto :eof
-
-:do_owrstop
-    call :log_info "Stopping Open WebUI..."
-    docker stop %OPEN_WEBUI_CONTAINER% >nul 2>&1
-    docker rm %OPEN_WEBUI_CONTAINER% >nul 2>&1
-    call :log_ok "Open WebUI stopped"
-    goto :eof
-
-:do_owrrestart
-    call :do_owrstop
-    timeout /t 1 /nobreak >nul
-    call :do_owrstart
-    goto :eof
-
-:do_owrconfig
-    echo ================================================================================
-    echo   Open WebUI Configuration Guide
-    echo ================================================================================
-    echo.
-    echo   1. Visit http://localhost:%OW_PORT% and register an admin account
-    echo.
-    echo   2. Click avatar -^> Settings -^> Connections
-    echo.
-    echo   3. Fill in the OpenAI section:
-    echo.
-    echo      API URL:
-    echo        %OW_API_URL%
-    echo.
-    echo      API Key:
-    echo        %OW_API_KEY%
-    echo.
-    echo      Model:
-    echo        %OW_MODEL%
-    echo.
-    echo   4. Save and start using New Radar multi-engine analysis
-    echo.
-    goto :eof
-
-:do_owrreinstall
-    call :do_owrstop
-    call :do_owrstart
-    goto :eof
-
-::===============================================================================
-:: 9. dbinit
+:: 8. dbinit
 ::===============================================================================
 :do_dbinit
     echo.
@@ -497,11 +411,6 @@ if errorlevel 1 (
     echo   deploy.bat shell      Enter Flask container
     echo   deploy.bat db         Enter PostgreSQL terminal
     echo   deploy.bat dbinit     Initialize database
-    echo   deploy.bat owrstart   Start Open WebUI
-    echo   deploy.bat owrstop    Stop Open WebUI
-    echo   deploy.bat owrrestart Restart Open WebUI
-    echo   deploy.bat owrconfig  Show Open WebUI config guide
-    echo   deploy.bat owrreinstall Reinstall Open WebUI
     echo   deploy.bat prune      Clean up unused Docker resources
     echo.
     goto :eof
@@ -525,12 +434,6 @@ if "%CMD%"=="db"          goto :do_db
 if "%CMD%"=="health"      goto :do_health
 if "%CMD%"=="dbinit"       goto :do_dbinit
 if "%CMD%"=="prune"       goto :do_prune
-if "%CMD%"=="owrstart"    goto :do_owrstart
-if "%CMD%"=="owrstop"     goto :do_owrstop
-if "%CMD%"=="owrrestart"  goto :do_owrrestart
-if "%CMD%"=="owrconfig"   goto :do_owrconfig
-if "%CMD%"=="owrreinstall" goto :do_owrreinstall
-if "%CMD%"=="openwebui"   goto :do_owrstart
 if "%CMD%"=="help"        goto :show_help
 
 call :log_error "Unknown command: %CMD%"

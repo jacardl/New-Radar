@@ -35,16 +35,9 @@ cd "$SCRIPT_DIR"
 RADAR_CONTAINER="radar"
 DB_CONTAINER="radar-db"
 ADMINER_CONTAINER="radar-adminer"
-OPEN_WEBUI_CONTAINER="open-webui"
 
 # Docker 网络
 NETWORK_NAME="radar-net"
-
-# Open WebUI 配置
-OW_PORT=3000
-OW_API_URL="http://host.docker.internal:5000/v1"
-OW_API_KEY="sk-local-dev"
-OW_MODEL="new-radar-agent"
 
 #-------------------------------------------------------------------------------
 # 辅助函数
@@ -226,9 +219,6 @@ EOF
     log_info "初始化数据库扩展..."
     docker exec ${DB_CONTAINER} psql -U radar -d radar -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null || true
 
-    # 启动 Open WebUI
-    do_start_open_webui
-
     log_success "部署完成！"
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -237,12 +227,6 @@ EOF
     echo -e "  New Radar API:     ${CYAN}http://localhost:5000${NC}"
     echo -e "  API 健康检查:      ${CYAN}http://localhost:5000/v1/health${NC}"
     echo -e "  Adminer DB管理:    ${CYAN}http://localhost:8080${NC}"
-    echo -e "  Open WebUI:        ${CYAN}http://localhost:${OW_PORT}${NC}"
-    echo ""
-    echo -e "  Open WebUI 配置:"
-    echo -e "    API URL:  ${CYAN}${OW_API_URL}${NC}"
-    echo -e "    API Key:  ${CYAN}${OW_API_KEY}${NC}"
-    echo -e "    Model:    ${CYAN}${OW_MODEL}${NC}"
     echo ""
 }
 
@@ -266,10 +250,6 @@ do_start() {
 #-------------------------------------------------------------------------------
 do_stop() {
     section "停止所有服务"
-    log_info "停止 Open WebUI..."
-    docker stop ${OPEN_WEBUI_CONTAINER} 2>/dev/null || true
-    docker rm ${OPEN_WEBUI_CONTAINER} 2>/dev/null || true
-
     log_info "停止 New Radar 服务..."
     docker_compose stop
     log_success "所有服务已停止"
@@ -359,14 +339,6 @@ do_status() {
         echo -e "    容器:      ${RED}未运行${NC}"
     fi
 
-    echo -e "  ${CYAN}Open WebUI (对话前端):${NC}"
-    if docker ps --format '{{.Names}}' | grep -q "^${OPEN_WEBUI_CONTAINER}$"; then
-        echo -e "    容器:      ${GREEN}运行中${NC}"
-        echo -e "    地址:      http://localhost:${OW_PORT}"
-    else
-        echo -e "    容器:      ${YELLOW}未运行（可执行 ./deploy.sh owrstart 启动）${NC}"
-    fi
-
     echo ""
 }
 
@@ -409,91 +381,10 @@ do_health() {
     else
         log_error "PostgreSQL: 异常"
     fi
-
-    # Open WebUI
-    log_info "检查 Open WebUI..."
-    local ow_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${OW_PORT} 2>/dev/null || echo "000")
-    if [ "$ow_code" = "200" ]; then
-        log_success "Open WebUI: 运行正常 (HTTP $ow_code)"
-    else
-        log_warn "Open WebUI: 未运行或未就绪 (HTTP $ow_code)"
-    fi
 }
 
 #-------------------------------------------------------------------------------
-# 11. open-webui start / stop / restart
-#-------------------------------------------------------------------------------
-do_owrstart() {
-    section "启动 Open WebUI"
-    log_info "拉取镜像..."
-    docker pull ghcr.io/open-webui/open-webui:main
-
-    log_info "启动容器..."
-    docker run -d \
-        --name ${OPEN_WEBUI_CONTAINER} \
-        --network ${NETWORK_NAME} \
-        --add-host=host.docker.internal:host-gateway \
-        -p ${OW_PORT}:8080 \
-        -v open-webui:/app/backend/data \
-        --restart unless-stopped \
-        ghcr.io/open-webui/open-webui:main
-
-    show_progress open-webui
-    log_success "Open WebUI 已启动: http://localhost:${OW_PORT}"
-}
-
-do_owrstop() {
-    log_info "停止 Open WebUI..."
-    docker stop ${OPEN_WEBUI_CONTAINER} && docker rm ${OPEN_WEBUI_CONTAINER}
-    log_success "Open WebUI 已停止"
-}
-
-do_owrrestart() {
-    do_owrstop
-    sleep 1
-    do_owrstart
-}
-
-#-------------------------------------------------------------------------------
-# 12. open-webui configure - 打印配置指南
-#-------------------------------------------------------------------------------
-do_owrconfig() {
-    section "Open WebUI 配置指南"
-    echo ""
-    echo "  1. 访问 http://localhost:${OW_PORT} ，注册管理员账号"
-    echo ""
-    echo "  2. 点击左下角头像 → Settings → Connections"
-    echo ""
-    echo "  3. 在 OpenAI 区块填入："
-    echo ""
-    echo -e "     ${CYAN}API URL:${NC}"
-    echo -e "       ${OW_API_URL}"
-    echo ""
-    echo -e "     ${CYAN}API Key:${NC}"
-    echo -e "       ${OW_API_KEY}"
-    echo ""
-    echo -e "     ${CYAN}Model:${NC}"
-    echo -e "       ${OW_MODEL}"
-    echo ""
-    echo "  4. 保存后即可在对话中使用 New Radar 多引擎分析"
-    echo ""
-    echo "  5. 建议 System Prompt:"
-    echo -e "     ${CYAN}你是一个专业的舆情分析助手。当用户提出分析需求时，系统会调用本地数据库和网络搜索工具获取最新数据，并返回三个引擎的分析结果（Insight / Media / Query）。请用清晰的 Markdown 格式呈现分析结论。${NC}"
-    echo ""
-}
-
-#-------------------------------------------------------------------------------
-# 13. open-webui reinstall - 重装 Open WebUI
-#-------------------------------------------------------------------------------
-do_owrreinstall() {
-    section "重装 Open WebUI"
-    do_owrstop
-    sleep 1
-    do_owrstart
-}
-
-#-------------------------------------------------------------------------------
-# 14. dbinit - 初始化数据库
+# 11. dbinit - 初始化数据库
 #-------------------------------------------------------------------------------
 do_dbinit() {
     section "初始化数据库"
@@ -573,13 +464,6 @@ show_help() {
     echo "  ./deploy.sh db         进入数据库容器"
     echo "  ./deploy.sh dbinit     初始化数据库"
     echo ""
-    echo -e "${GREEN}Open WebUI:${NC}"
-    echo "  ./deploy.sh owrstart   启动 Open WebUI"
-    echo "  ./deploy.sh owrstop    停止 Open WebUI"
-    echo "  ./deploy.sh owrrestart 重启 Open WebUI"
-    echo "  ./deploy.sh owrconfig  显示 Open WebUI 配置指南"
-    echo "  ./deploy.sh owrreinstall 重装 Open WebUI"
-    echo ""
     echo -e "${GREEN}维护:${NC}"
     echo "  ./deploy.sh prune      清理未使用的 Docker 资源"
     echo "  ./deploy.sh help       显示本帮助信息"
@@ -609,16 +493,6 @@ case "$COMMAND" in
     health)         do_health ;;
     dbinit)         do_dbinit ;;
     prune)          do_prune ;;
-
-    # Open WebUI commands
-    owrstart)       do_owrstart ;;
-    owrstop)        do_owrstop ;;
-    owrrestart)     do_owrrestart ;;
-    owrconfig)      do_owrconfig ;;
-    owrreinstall)   do_owrreinstall ;;
-    openwebui)      do_owrstart ;;
-    open-webui)     do_owrstart ;;
-    ow)             do_owrstart ;;
 
     help|--help|-h) show_help ;;
     *)              log_error "未知命令: $COMMAND"; show_help; exit 1 ;;

@@ -366,3 +366,9 @@ After testing the skill, users may request improvements. Often this happens righ
 2. Notice struggles or inefficiencies
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
+
+## Reference Materials
+
+> **Hermes 目录结构规范**：新建技能或项目时的文件夹结构参考，见 [references/folder-structure.md](references/folder-structure.md)。
+>
+> **Skill Discovery Pitfalls**: When `skill_view` fails for Unicode-named skills or the MCP layer returns an incomplete list, see [references/skill-discovery.md](references/skill-discovery.md) for the filesystem-based diagnosis workflow.

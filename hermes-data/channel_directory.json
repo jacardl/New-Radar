@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-27T05:07:23.348523",
+  "updated_at": "2026-05-11T13:31:07.428465",
   "platforms": {
     "telegram": [],
     "discord": [],
@@ -18,12 +18,22 @@
         "name": "oc_4170685723882cbc4ea2c4cd24658577",
         "type": "dm",
         "thread_id": null
+      },
+      {
+        "id": "oc_4170685723882cbc4ea2c4cd24658577:om_x100b50dc3ce860acc3dd39379f12fd6",
+        "name": "oc_4170685723882cbc4ea2c4cd24658577 / topic om_x100b50dc3ce860acc3dd39379f12fd6",
+        "type": "dm",
+        "thread_id": "om_x100b50dc3ce860acc3dd39379f12fd6"
       }
     ],
     "wecom": [],
     "wecom_callback": [],
     "weixin": [],
     "bluebubbles": [],
-    "qqbot": []
+    "qqbot": [],
+    "yuanbao": [],
+    "google_chat": [],
+    "irc": [],
+    "teams": []
   }
 }

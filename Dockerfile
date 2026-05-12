@@ -26,10 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY hermes-agent /app/hermes-agent
 RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -e /app/hermes-agent[cli,messaging,api_server]
 
-# Copy application files (mcp-servers, skills, microservices)
-COPY mcp-servers/ /app/mcp-servers/
-COPY skills/ /app/skills/
-COPY microservices/ /app/microservices/
+# Copy application files (mcp, skills, microservices, MindSpider)
+COPY hermes-agent/mcp/ /app/mcp/
+COPY hermes-agent/skills/ /app/skills/
+COPY hermes-agent/microservices/ /app/microservices/
+COPY hermes-agent/MindSpider/ /app/MindSpider/
 
 # Install MCP server and microservices dependencies
 RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple \

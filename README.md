@@ -7,7 +7,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         用户界面层                                │
-│              Open WebUI (:3010) + REST API (:8642)              │
+│              REST API (:8642)                                   │
 └──────────────────────────────┬──────────────────────────────────┘
                                │ OpenAI-compatible API
 ┌──────────────────────────────▼──────────────────────────────────┐
@@ -63,22 +63,22 @@
 
 ```
 new-radar/
-├── hermes-agent/              # [SUBMODULE] Nous Research Hermes Agent
-├── hermes-data/              # Hermes 运行时数据
-│   ├── config.yaml           # Agent 配置 (MCP servers, skills)
-│   └── skills/              # 激活的 skills
-├── mcp-servers/             # MCP Server 实现
-│   ├── data-collection/     # 数据采集 MCP
-│   │   └── server.py        # anspire/bocha/tavily/firecrawl + crawl_media
-│   └── data-storage/        # 数据存储 MCP
-│       └── server.py        # keyword/vector search + save_crawled_data
-├── microservices/            # 微服务层
-│   ├── DataCollector/       # 外部搜索 API 聚合
-│   ├── MediaCrawler/      # 社媒平台爬虫 (xhs/dy/wb/bili/zhihu)
-│   └── web-access/         # CDP 浏览器自动化
-├── MindSpider/             # [SUBMODULE] AI 话题发现 + 深度舆情爬取
-├── skills/                 # 项目 Skills
-│   └── radar-engine/       # 主技能：完整采集→分析→报告流程
+├── hermes-agent/              # Hermes Agent 主项目（统一架构）
+│   ├── tools/                # 内置工具
+│   ├── skills/               # 技能（内置 + 业务）
+│   │   ├── apple/           # 内置技能
+│   │   ├── creative/
+│   │   └── business/        # 业务技能
+│   │       └── radar-engine/# 主技能：完整采集→分析→报告流程
+│   ├── mcp/                 # MCP Server 实现
+│   │   ├── data-collection/ # 数据采集 MCP
+│   │   └── data-storage/    # 数据存储 MCP
+│   ├── microservices/        # 微服务层
+│   │   ├── DataCollector/  # 外部搜索 API 聚合
+│   │   ├── MediaCrawler/   # 社媒平台爬虫 (xhs/dy/wb/bili/zhihu)
+│   │   └── web-access/     # CDP 浏览器自动化
+│   ├── MindSpider/         # AI 话题发现 + 深度舆情爬取
+│   └── data/               # Hermes 运行时数据
 ├── scripts/                # 工具脚本
 │   └── db/init_db.py      # 数据库初始化
 ├── docker-compose.yml      # 容器编排
@@ -135,20 +135,6 @@ docker compose up -d
 
 # 2. 初始化数据库
 docker exec radar python scripts/db/init_db.py
-
-# 3. 访问 Open WebUI
-# http://localhost:3010
-```
-
-### 连接配置
-
-在 Open WebUI Settings → Connections → OpenAI：
-
-```
-API URL: http://host.docker.internal:8642/v1
-API Key: hermes-secret-key-2026 (或 .env 中 API_SERVER_KEY)
-Model: qwen-plus
-```
 
 ## API 端点
 

@@ -19,12 +19,10 @@ services:
       - HERMES_HOME=/app/.hermes
       - PYTHONPATH=/app/hermes-agent:/app
       - HF_ENDPOINT=https://hf-mirror.com
-      # Hermes API Server
       - API_SERVER_ENABLED=true
       - API_SERVER_KEY=${API_SERVER_KEY:-hermes-secret-key-2026}
       - API_SERVER_PORT=8642
       - API_SERVER_HOST=0.0.0.0
-      # Database connection
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=${POSTGRES_USER:-radar}
@@ -33,15 +31,16 @@ services:
     env_file:
       - .env
     ports:
-      - "8642:8642"  # Hermes API Server
+      - "8642:8642"
     volumes:
       - ./logs:/app/logs
       - ./final_reports:/app/final_reports
       - ./.env:/app/.env
-      - ./mcp-servers:/app/mcp-servers
-      - ./skills:/app/skills
-      - ./microservices:/app/microservices
-      - ./hermes-data:/app/.hermes
+      - ./hermes-agent/mcp:/app/mcp
+      - ./hermes-agent/skills:/app/skills
+      - ./hermes-agent/microservices:/app/microservices
+      - ./hermes-agent/MindSpider:/app/MindSpider
+      - ./hermes-agent/data:/app/.hermes
     depends_on:
       db:
         condition: service_healthy
@@ -89,28 +88,26 @@ services:
         condition: service_healthy
 
   # ---------------------------------------------------------------------------
-  # Open WebUI (OpenAI-compatible Chat Interface)
+  # Hermes Web UI (Dashboard)
   # ---------------------------------------------------------------------------
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: radar-open-webui
+  web-ui:
+    build:
+      context: ./hermes-agent/web
+      dockerfile: Dockerfile
+    container_name: radar-web-ui
     restart: unless-stopped
-    ports:
-      - "3010:8080"
     environment:
-      - OAI_API_BASE=http://radar:8642/v1
-      - OPENAI_API_KEY=${API_SERVER_KEY:-hermes-secret-key-2026}
-      - WEBUI_SECRET_KEY=${OPEN_WEBUI_SECRET:-new-radar-secret-key-2026}
-      - WEBUI_URL=http://localhost:3010
-      - OLLAMA_BASE_URL=http://localhost:11434
+      - PORT=8648
+      - UPSTREAM=http://radar:8642
+      - HERMES_HOME=/app/.hermes
+      - AUTH_DISABLED=false
+    ports:
+      - "8648:8648"
     volumes:
-      - open_webui_data:/app/backend/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ./hermes-agent/data:/app/.hermes
     depends_on:
       radar:
         condition: service_healthy
 
 volumes:
   radar_db_data:
-  open_webui_data:

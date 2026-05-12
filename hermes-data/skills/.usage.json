@@ -1,0 +1,67 @@
+{
+  "content-research-writer": {
+    "archived_at": null,
+    "created_at": "2026-05-09T14:26:27.980191+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": "2026-05-09T14:26:28.041256+00:00",
+    "last_viewed_at": "2026-05-09T14:26:27.980240+00:00",
+    "patch_count": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "keyword-research": {
+    "archived_at": null,
+    "created_at": "2026-05-09T14:26:22.772178+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-05-10T07:07:48.824281+00:00",
+    "last_used_at": "2026-05-10T07:06:29.889508+00:00",
+    "last_viewed_at": "2026-05-10T07:06:29.817502+00:00",
+    "patch_count": 4,
+    "pinned": false,
+    "state": "active",
+    "use_count": 9,
+    "view_count": 9
+  },
+  "radar-engine": {
+    "archived_at": null,
+    "created_at": "2026-05-09T14:24:06.303557+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-05-10T01:59:10.231513+00:00",
+    "last_used_at": "2026-05-10T01:58:55.922989+00:00",
+    "last_viewed_at": "2026-05-10T01:58:55.874312+00:00",
+    "patch_count": 1,
+    "pinned": false,
+    "state": "active",
+    "use_count": 2,
+    "view_count": 2
+  },
+  "scrapling-web-scraper": {
+    "archived_at": null,
+    "created_at": "2026-05-10T05:07:07.483334+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-05-10T11:45:55.340976+00:00",
+    "last_used_at": "2026-05-10T11:44:10.533973+00:00",
+    "last_viewed_at": "2026-05-10T11:44:10.488126+00:00",
+    "patch_count": 6,
+    "pinned": false,
+    "state": "active",
+    "use_count": 5,
+    "view_count": 5
+  },
+  "web-access": {
+    "archived_at": null,
+    "created_at": "2026-05-09T14:26:31.780305+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-05-10T11:45:26.788752+00:00",
+    "last_used_at": "2026-05-10T11:44:52.775155+00:00",
+    "last_viewed_at": "2026-05-10T11:44:52.729124+00:00",
+    "patch_count": 10,
+    "pinned": false,
+    "state": "active",
+    "use_count": 8,
+    "view_count": 8
+  }
+}
