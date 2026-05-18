@@ -21,6 +21,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uv (for MCP servers that use uvx/uv run)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    ln -s /root/.local/bin/uv /usr/local/bin/uv
+
 # Install Hermes Agent from local directory
 # Use Chinese PyPI mirror for faster download
 COPY hermes-agent /app/hermes-agent

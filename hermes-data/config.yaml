@@ -404,7 +404,7 @@ mcp_servers:
   data-storage:
     command: python
     args:
-    - /app/mcp-servers/data-storage/server.py
+    - /app/mcp/data-storage/server.py
     env:
       DB_HOST: db
       DB_PORT: '5432'
@@ -415,7 +415,7 @@ mcp_servers:
   data-collection:
     command: python
     args:
-    - /app/mcp-servers/data-collection/server.py
+    - /app/mcp/data-collection/server.py
     env:
       PYTHONPATH: /app
       ANSPIRE_API_KEY: ${ANSPIRE_API_KEY}
@@ -426,8 +426,9 @@ mcp_servers:
       BOCHA_BASE_URL: ${BOCHA_BASE_URL}
     enabled: true
   minimax-token-plan:
-    command: uvx
+    command: uv
     args:
+    - run
     - minimax-coding-plan-mcp
     - -y
     env:
