@@ -1,6 +1,0 @@
-[submodule "hermes-agent"]
-	path = hermes-agent
-	url = https://github.com/NousResearch/hermes-agent.git
-[submodule "hermes-agent/MindSpider/DeepSentimentCrawling/MediaCrawler"]
-	path = hermes-agent/MindSpider/DeepSentimentCrawling/MediaCrawler
-	url = https://github.com/NanmiCoder/MediaCrawler
