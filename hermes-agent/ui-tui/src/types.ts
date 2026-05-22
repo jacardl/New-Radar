@@ -17,8 +17,6 @@ export interface ActivityItem {
   tone: 'error' | 'info' | 'warn'
 }
 
-export type SubagentStatus = 'completed' | 'error' | 'failed' | 'interrupted' | 'queued' | 'running' | 'timeout'
-
 export interface SubagentProgress {
   apiCalls?: number
   costUsd?: number
@@ -38,7 +36,7 @@ export interface SubagentProgress {
   parentId: null | string
   reasoningTokens?: number
   startedAt?: number
-  status: SubagentStatus
+  status: 'completed' | 'failed' | 'interrupted' | 'queued' | 'running'
   summary?: string
   taskCount: number
   thinking: string[]

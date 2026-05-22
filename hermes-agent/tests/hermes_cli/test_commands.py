@@ -107,7 +107,6 @@ class TestResolveCommand:
         assert resolve_command("gateway").name == "platforms"
         assert resolve_command("set-home").name == "sethome"
         assert resolve_command("reload_mcp").name == "reload-mcp"
-        assert resolve_command("codex_runtime").name == "codex-runtime"
         assert resolve_command("tasks").name == "agents"
 
     def test_topic_is_gateway_command(self):
@@ -243,20 +242,12 @@ class TestTelegramBotCommands:
                 tg_name = cmd.name.replace("-", "_")
                 assert tg_name not in names
 
-    def test_includes_builtin_commands_with_required_args(self):
-        """Built-in arg-taking commands (e.g. /queue, /steer, /background)
-        are now included because their handlers return usage text when
-        invoked without arguments — issue #24312."""
+    def test_excludes_commands_with_required_args(self):
         names = {name for name, _ in telegram_bot_commands()}
-        assert "background" in names
-        assert "queue" in names
-        assert "steer" in names
-
-    def test_hyphenated_codex_runtime_is_exposed_as_underscore_command(self):
-        """Telegram autocomplete exposes /codex-runtime as /codex_runtime."""
-        names = {name for name, _ in telegram_bot_commands()}
-        assert "codex_runtime" in names
-        assert "codex-runtime" not in names
+        assert "background" not in names
+        assert "queue" not in names
+        assert "steer" not in names
+        assert "background" in GATEWAY_KNOWN_COMMANDS
 
 
 class TestSlackSubcommandMap:

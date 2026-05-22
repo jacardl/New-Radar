@@ -66,7 +66,6 @@ declare module '@hermes/ink' {
     readonly exitOnCtrlC?: boolean
     readonly patchConsole?: boolean
     readonly onFrame?: (event: FrameEvent) => void
-    readonly onHyperlinkClick?: (url: string) => void
   }
 
   export type Instance = {
@@ -164,7 +163,6 @@ declare module '@hermes/ink' {
     readonly column: number
     readonly active: boolean
   }): (el: unknown) => void
-  export function useCursorAdvance(): (dx: number, dy?: number) => void
   export function useStdin(): {
     readonly stdin: NodeJS.ReadStream
     readonly setRawMode: (value: boolean) => void

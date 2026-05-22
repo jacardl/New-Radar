@@ -2,7 +2,6 @@
 
 from typing import Any
 
-from agent.portal_tags import nous_portal_tags
 from providers import register_provider
 from providers.base import ProviderProfile
 
@@ -13,7 +12,7 @@ class NousProfile(ProviderProfile):
     def build_extra_body(
         self, *, session_id: str | None = None, **context
     ) -> dict[str, Any]:
-        return {"tags": nous_portal_tags()}
+        return {"tags": ["product=hermes-agent"]}
 
     def build_api_kwargs_extras(
         self,

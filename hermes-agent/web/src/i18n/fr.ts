@@ -662,7 +662,7 @@ export const fr: Translations = {
     columnHelp: {
       triage: "Idées brutes — un specifier rédigera la spécification",
       todo: "En attente de dépendances ou non assigné",
-      ready: "Dépendances satisfaites ; assignez un profil pour dispatch",
+      ready: "Assigné et en attente d'un tick du dispatcher",
       running: "Réclamé par un worker — en cours d'exécution",
       blocked: "Le worker a demandé une intervention humaine",
       done: "Terminé",

@@ -397,26 +397,10 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Gated on `dashboard.show_token_analytics` (default off).  When off the
-  // page renders an explanation card instead of fetching analytics — the
-  // local token counts exclude auxiliary calls and provider retries, so
-  // they diverge from provider billing in ways that mislead users.
-  const [showTokens, setShowTokens] = useState<boolean | null>(null);
   const { t } = useI18n();
   const { setAfterTitle, setEnd } = usePageHeader();
 
-  useEffect(() => {
-    api
-      .getConfig()
-      .then((cfg) => {
-        const dash = (cfg?.dashboard ?? {}) as { show_token_analytics?: unknown };
-        setShowTokens(dash.show_token_analytics === true);
-      })
-      .catch(() => setShowTokens(false));
-  }, []);
-
   const load = useCallback(() => {
-    if (!showTokens) return;
     setLoading(true);
     setError(null);
     api
@@ -424,7 +408,7 @@ export default function AnalyticsPage() {
       .then(setData)
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));
-  }, [days, showTokens]);
+  }, [days]);
 
   useLayoutEffect(() => {
     const periodLabel =
@@ -438,39 +422,37 @@ export default function AnalyticsPage() {
       </span>,
     );
     setEnd(
-      showTokens === false ? null : (
-        <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {PERIODS.map((p) => (
-              <Button
-                key={p.label}
-                type="button"
-                size="sm"
-                outlined={days !== p.days}
-                onClick={() => setDays(p.days)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            outlined
-            onClick={load}
-            disabled={loading}
-            prefix={loading ? <Spinner /> : <RefreshCw />}
-          >
-            {t.common.refresh}
-          </Button>
+      <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {PERIODS.map((p) => (
+            <Button
+              key={p.label}
+              type="button"
+              size="sm"
+              outlined={days !== p.days}
+              onClick={() => setDays(p.days)}
+            >
+              {p.label}
+            </Button>
+          ))}
         </div>
-      ),
+        <Button
+          type="button"
+          size="sm"
+          outlined
+          onClick={load}
+          disabled={loading}
+          prefix={loading ? <Spinner /> : <RefreshCw />}
+        >
+          {t.common.refresh}
+        </Button>
+      </div>,
     );
     return () => {
       setAfterTitle(null);
       setEnd(null);
     };
-  }, [days, loading, load, setAfterTitle, setEnd, t.common.refresh, showTokens]);
+  }, [days, loading, load, setAfterTitle, setEnd, t.common.refresh]);
 
   useEffect(() => {
     load();
@@ -479,51 +461,13 @@ export default function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PluginSlot name="analytics:top" />
-
-      {showTokens === false && (
-        <Card>
-          <CardContent className="py-12">
-            <div className="mx-auto flex max-w-2xl flex-col gap-3 text-sm text-muted-foreground">
-              <h2 className="font-display text-base tracking-wider uppercase text-foreground">
-                Token analytics hidden
-              </h2>
-              <p>
-                The token, cost, and per-day analytics on this page are a
-                local debug estimate. They only count successful main-agent
-                responses with a usable <span className="font-mono">usage</span>{" "}
-                block, and silently exclude auxiliary calls (context
-                compression, title generation, vision, session search, web
-                extract, smart approvals, MCP routing, plugin LLM access)
-                plus provider-side retries and fallback attempts. Cache
-                writes are missing entirely.
-              </p>
-              <p>
-                On models with heavy auxiliary traffic (Kimi K2.6, MiniMax
-                M2.7) the local total can be 10x–100x lower than what your
-                provider bills. Hiding these numbers is safer than letting
-                them look authoritative.
-              </p>
-              <p>
-                Check your provider dashboard (OpenRouter, Anthropic, etc.)
-                for actual usage and billing. To re-enable the local debug
-                estimate anyway, set{" "}
-                <span className="font-mono">
-                  dashboard.show_token_analytics: true
-                </span>{" "}
-                in <a href="/config" className="underline">Config</a>.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {showTokens && loading && !data && (
+      {loading && !data && (
         <div className="flex items-center justify-center py-24">
           <Spinner className="text-2xl text-primary" />
         </div>
       )}
 
-      {showTokens && error && (
+      {error && (
         <Card>
           <CardContent className="py-6">
             <p className="text-sm text-destructive text-center">{error}</p>
@@ -531,7 +475,7 @@ export default function AnalyticsPage() {
         </Card>
       )}
 
-      {showTokens && data && (
+      {data && (
         <>
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>

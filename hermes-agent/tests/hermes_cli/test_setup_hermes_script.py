@@ -18,3 +18,4 @@ def test_setup_hermes_script_has_termux_path():
     assert ".[termux]" in content
     assert "constraints-termux.txt" in content
     assert "$PREFIX/bin" in content
+    assert "Skipping tinker-atropos on Termux" in content

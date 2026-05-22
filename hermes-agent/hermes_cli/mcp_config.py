@@ -25,7 +25,6 @@ from hermes_cli.config import (
 )
 from hermes_cli.colors import Colors, color
 from hermes_constants import display_hermes_home
-from tools.mcp_tool import _ENV_VAR_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -552,7 +551,7 @@ def cmd_mcp_test(args):
         for k, v in headers.items():
             if isinstance(v, str) and ("key" in k.lower() or "auth" in k.lower()):
                 # Mask the value
-                resolved = _ENV_VAR_PATTERN.sub(lambda m: os.getenv(m.group(1), ""), v)
+                resolved = _interpolate_value(v)
                 if len(resolved) > 8:
                     masked = resolved[:4] + "***" + resolved[-4:]
                 else:
@@ -580,6 +579,13 @@ def cmd_mcp_test(args):
             short = desc[:55] + "..." if len(desc) > 55 else desc
             print(f"    {color(tool_name, Colors.GREEN):36s} {short}")
     print()
+
+
+def _interpolate_value(value: str) -> str:
+    """Resolve ``${ENV_VAR}`` references in a string."""
+    def _replace(m):
+        return os.getenv(m.group(1), "")
+    return re.sub(r"\$\{(\w+)\}", _replace, value)
 
 
 # ─── hermes mcp login ────────────────────────────────────────────────────────

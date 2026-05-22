@@ -175,10 +175,7 @@ export class LogUpdate {
     if (altScreen && next.scrollHint && decstbmSafe) {
       const { top, bottom, delta } = next.scrollHint
 
-      // Keep DECSTBM away from the terminal's last visible row. In alt-screen
-      // layouts we reserve that lane for status/cursor parking, and scrolling
-      // it can leave transient ghosting/bleed artifacts until a later repaint.
-      if (top >= 0 && bottom < prev.screen.height - 1 && bottom < next.screen.height - 1) {
+      if (top >= 0 && bottom < prev.screen.height && bottom < next.screen.height) {
         shiftRows(prev.screen, top, bottom, delta)
         scrollPatch = [
           {

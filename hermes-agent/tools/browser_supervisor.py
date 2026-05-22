@@ -368,13 +368,11 @@ class CDPSupervisor:
                         pass
 
             try:
-                from agent.async_utils import safe_schedule_threadsafe
-                fut = safe_schedule_threadsafe(_close_ws(), loop)
-                if fut is not None:
-                    try:
-                        fut.result(timeout=2.0)
-                    except Exception:
-                        pass
+                fut = asyncio.run_coroutine_threadsafe(_close_ws(), loop)
+                try:
+                    fut.result(timeout=2.0)
+                except Exception:
+                    pass
             except RuntimeError:
                 pass  # loop already shutting down
         if self._thread is not None:
@@ -453,10 +451,7 @@ class CDPSupervisor:
             )
 
         try:
-            from agent.async_utils import safe_schedule_threadsafe
-            fut = safe_schedule_threadsafe(_do_respond(), loop)
-            if fut is None:
-                return {"ok": False, "error": "Browser supervisor loop unavailable"}
+            fut = asyncio.run_coroutine_threadsafe(_do_respond(), loop)
             fut.result(timeout=timeout)
         except Exception as e:
             return {"ok": False, "error": f"{type(e).__name__}: {e}"}
@@ -512,10 +507,7 @@ class CDPSupervisor:
             )
 
         try:
-            from agent.async_utils import safe_schedule_threadsafe
-            fut = safe_schedule_threadsafe(_do_eval(), loop)
-            if fut is None:
-                return {"ok": False, "error": "Browser supervisor loop unavailable"}
+            fut = asyncio.run_coroutine_threadsafe(_do_eval(), loop)
             response = fut.result(timeout=timeout + 1)
         except Exception as exc:
             return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}

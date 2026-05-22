@@ -663,7 +663,7 @@ export const tr: Translations = {
     columnHelp: {
       triage: "Ham fikirler — bir specifier şartnameyi detaylandıracak",
       todo: "Bağımlılıklar bekleniyor veya atanmamış",
-      ready: "Bağımlılıklar karşılandı; dispatch için bir profil atayın",
+      ready: "Atanmış ve dispatcher tick'i bekleniyor",
       running: "Bir worker tarafından alındı — yürütülüyor",
       blocked: "Worker insan girdisi istedi",
       done: "Tamamlandı",

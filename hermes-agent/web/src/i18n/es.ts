@@ -662,7 +662,7 @@ export const es: Translations = {
     columnHelp: {
       triage: "Ideas en bruto — un specifier desarrollará la especificación",
       todo: "Esperando dependencias o sin asignar",
-      ready: "Dependencias satisfechas; asigna un perfil para despachar",
+      ready: "Asignado y esperando un tick del dispatcher",
       running: "Reclamado por un worker — en ejecución",
       blocked: "El worker pidió intervención humana",
       done: "Completado",

@@ -153,14 +153,9 @@ def resolve_sync_compat(
     Prefer the async ``resolve()`` from an async context.
     """
     try:
-        from agent.async_utils import safe_schedule_threadsafe
-        fut = safe_schedule_threadsafe(
+        fut = asyncio.run_coroutine_threadsafe(
             resolve(session_key, confirm_id, choice), loop,
-            logger=logger,
-            log_message="resolve_sync_compat scheduling failed",
         )
-        if fut is None:
-            return None
         return fut.result(timeout=30)
     except Exception as exc:
         logger.error("resolve_sync_compat failed: %s", exc)

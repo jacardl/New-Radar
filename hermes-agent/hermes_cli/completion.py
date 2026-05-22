@@ -238,7 +238,7 @@ _hermes() {{
     esac
 }}
 
-compdef _hermes hermes
+_hermes "$@"
 """
 
 

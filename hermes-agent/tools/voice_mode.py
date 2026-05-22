@@ -130,9 +130,7 @@ def detect_audio_environment() -> dict:
         try:
             devices = sd.query_devices()
             if not devices:
-                if os.environ.get('PULSE_SERVER'):
-                    notices.append("No PortAudio devices detected but PULSE_SERVER is set -- continuing")
-                elif termux_capture:
+                if termux_capture:
                     notices.append("No PortAudio devices detected, but Termux:API microphone capture is available")
                 else:
                     warnings.append("No audio input/output devices detected")

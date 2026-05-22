@@ -10,28 +10,11 @@ from unittest.mock import patch
 import pytest
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-TOOLS_DIR = REPO_ROOT / "tools"
-PLUGINS_DIR = REPO_ROOT / "plugins"
+TOOLS_DIR = Path(__file__).resolve().parents[2] / "tools"
 
 
 def _load_tool_module(module_name: str, filename: str):
     spec = spec_from_file_location(module_name, TOOLS_DIR / filename)
-    assert spec and spec.loader
-    module = module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_plugin_module(module_name: str, relpath: str):
-    """Load a plugin module by file path from ``plugins/``.
-
-    Mirror of :func:`_load_tool_module` for the plugin tree. Used by tests
-    that exercise the per-vendor browser plugins' session-lifecycle
-    behaviour after the PR #25214 migration.
-    """
-    spec = spec_from_file_location(module_name, PLUGINS_DIR / relpath)
     assert spec and spec.loader
     module = module_from_spec(spec)
     sys.modules[module_name] = module
@@ -92,48 +75,6 @@ def _install_fake_tools_package():
     sys.modules["agent.auxiliary_client"] = types.SimpleNamespace(
         call_llm=lambda *args, **kwargs: "",
     )
-
-    # Stubs for the browser-provider plugin layer introduced in PR #25214.
-    # The fake `agent` package has an empty __path__ so real submodules
-    # aren't reachable; we install just enough stand-ins to satisfy
-    # ``tools.browser_tool``'s top-level imports. The actual lifecycle
-    # tests instantiate the real plugin classes via _load_tool_module
-    # below, so the stubs only need to satisfy import + isinstance.
-    class _StubBrowserProvider:
-        """Minimal BrowserProvider stub for ``from agent.browser_provider import BrowserProvider``."""
-
-    sys.modules["agent.browser_provider"] = types.SimpleNamespace(
-        BrowserProvider=_StubBrowserProvider,
-    )
-    sys.modules["agent.browser_registry"] = types.SimpleNamespace(
-        get_provider=lambda name: None,
-        list_providers=lambda: [],
-        register_provider=lambda provider: None,
-        _resolve=lambda configured: None,
-    )
-
-    # Plugin module stubs — the real plugin classes are loaded from disk by
-    # the lifecycle tests below via _load_tool_module(). For the import
-    # phase, we just need the class names to exist on the right module path.
-    plugins_package = types.ModuleType("plugins")
-    plugins_package.__path__ = []  # type: ignore[attr-defined]
-    sys.modules["plugins"] = plugins_package
-    plugins_browser_package = types.ModuleType("plugins.browser")
-    plugins_browser_package.__path__ = []  # type: ignore[attr-defined]
-    sys.modules["plugins.browser"] = plugins_browser_package
-
-    for _name, _classname in (
-        ("browserbase", "BrowserbaseBrowserProvider"),
-        ("browser_use", "BrowserUseBrowserProvider"),
-        ("firecrawl", "FirecrawlBrowserProvider"),
-    ):
-        _vendor_pkg = types.ModuleType(f"plugins.browser.{_name}")
-        _vendor_pkg.__path__ = []  # type: ignore[attr-defined]
-        sys.modules[f"plugins.browser.{_name}"] = _vendor_pkg
-        _provider_stub_cls = type(_classname, (_StubBrowserProvider,), {})
-        sys.modules[f"plugins.browser.{_name}.provider"] = types.SimpleNamespace(
-            **{_classname: _provider_stub_cls},
-        )
 
     sys.modules["tools.managed_tool_gateway"] = _load_tool_module(
         "tools.managed_tool_gateway",
@@ -216,13 +157,13 @@ def test_browserbase_does_not_use_gateway_only_configuration():
     })
 
     with patch.dict(os.environ, env, clear=True):
-        browserbase_module = _load_plugin_module(
-            "plugins.browser.browserbase.provider",
-            "browser/browserbase/provider.py",
+        browserbase_module = _load_tool_module(
+            "tools.browser_providers.browserbase",
+            "browser_providers/browserbase.py",
         )
-        provider = browserbase_module.BrowserbaseBrowserProvider()
+        provider = browserbase_module.BrowserbaseProvider()
 
-    assert provider.is_available() is False
+    assert provider.is_configured() is False
 
 
 def test_browser_use_managed_gateway_adds_idempotency_key_and_persists_external_call_id():
@@ -247,13 +188,13 @@ def test_browser_use_managed_gateway_adds_idempotency_key_and_persists_external_
             }
 
     with patch.dict(os.environ, env, clear=True):
-        browser_use_module = _load_plugin_module(
-            "plugins.browser.browser_use.provider",
-            "browser/browser_use/provider.py",
+        browser_use_module = _load_tool_module(
+            "tools.browser_providers.browser_use",
+            "browser_providers/browser_use.py",
         )
 
         with patch.object(browser_use_module.requests, "post", return_value=_Response()) as post:
-            provider = browser_use_module.BrowserUseBrowserProvider()
+            provider = browser_use_module.BrowserUseProvider()
             session = provider.create_session("task-browser-use-managed")
 
     sent_headers = post.call_args.kwargs["headers"]
@@ -287,11 +228,11 @@ def test_browser_use_managed_gateway_reuses_pending_idempotency_key_after_timeou
             }
 
     with patch.dict(os.environ, env, clear=True):
-        browser_use_module = _load_plugin_module(
-            "plugins.browser.browser_use.provider",
-            "browser/browser_use/provider.py",
+        browser_use_module = _load_tool_module(
+            "tools.browser_providers.browser_use",
+            "browser_providers/browser_use.py",
         )
-        provider = browser_use_module.BrowserUseBrowserProvider()
+        provider = browser_use_module.BrowserUseProvider()
         timeout = browser_use_module.requests.Timeout("timed out")
 
         with patch.object(
@@ -349,11 +290,11 @@ def test_browser_use_managed_gateway_preserves_pending_idempotency_key_for_in_pr
             }
 
     with patch.dict(os.environ, env, clear=True):
-        browser_use_module = _load_plugin_module(
-            "plugins.browser.browser_use.provider",
-            "browser/browser_use/provider.py",
+        browser_use_module = _load_tool_module(
+            "tools.browser_providers.browser_use",
+            "browser_providers/browser_use.py",
         )
-        provider = browser_use_module.BrowserUseBrowserProvider()
+        provider = browser_use_module.BrowserUseProvider()
 
         with patch.object(
             browser_use_module.requests,
@@ -396,11 +337,11 @@ def test_browser_use_managed_gateway_uses_new_idempotency_key_for_a_new_session_
             }
 
     with patch.dict(os.environ, env, clear=True):
-        browser_use_module = _load_plugin_module(
-            "plugins.browser.browser_use.provider",
-            "browser/browser_use/provider.py",
+        browser_use_module = _load_tool_module(
+            "tools.browser_providers.browser_use",
+            "browser_providers/browser_use.py",
         )
-        provider = browser_use_module.BrowserUseBrowserProvider()
+        provider = browser_use_module.BrowserUseProvider()
 
         with patch.object(browser_use_module.requests, "post", side_effect=[_Response(), _Response()]) as post:
             provider.create_session("task-browser-use-new")

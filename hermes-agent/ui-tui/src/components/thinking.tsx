@@ -327,11 +327,7 @@ function SubagentAccordion({
   const aggregate = node.aggregate
 
   const statusTone: 'dim' | 'error' | 'warn' =
-    item.status === 'error' || item.status === 'failed'
-      ? 'error'
-      : item.status === 'interrupted' || item.status === 'timeout'
-        ? 'warn'
-        : 'dim'
+    item.status === 'failed' ? 'error' : item.status === 'interrupted' ? 'warn' : 'dim'
 
   const prefix = item.taskCount > 1 ? `[${item.index + 1}/${item.taskCount}] ` : ''
   const goalLabel = item.goal || `Subagent ${item.index + 1}`

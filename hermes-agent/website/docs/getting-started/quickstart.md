@@ -48,16 +48,7 @@ Pick the row that matches your goal:
 
 ## 1. Install Hermes Agent
 
-**Option A — pip (simplest):**
-
-```bash
-pip install hermes-agent
-hermes postinstall     # optional: installs Node.js, browser, ripgrep, ffmpeg + runs setup
-```
-
-PyPI releases track tagged versions (major/minor releases), not every commit on `main`. For bleeding-edge, use Option B.
-
-**Option B — git installer (tracks main branch):**
+Run the one-line installer:
 
 ```bash
 # Linux / macOS / WSL2 / Android (Termux)
